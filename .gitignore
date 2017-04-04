@@ -1,0 +1,9 @@
+*.pyc
+*.pdf
+.tmp*
+*~
+gcode-lang
+dated_files
+referances
+images/BACKUPS
+images/images_sources
