@@ -1,20 +1,20 @@
 # hazzy
 
-A new UI for LinuxCNC designed for use with touchscreens
+A new UI for LinuxCNC designed for use with touch screens
 
-![Main screen with backplot](/screenshots/Screenshot_1.png?raw=true "Optional Title")
+![Main screen with back-plot](/screenshots/Screenshot_1.png?raw=true "Optional Title")
 
 
-##### File selection tab with Gcode preview/edit window and popup keyboard
+##### File selection tab with G-code preview/edit window and pop-up keyboard
 ![File selection page](/screenshots/Screenshot_2.png?raw=true "Optional Title")
 
-##### Tool offsets tab with popup numberpad
+##### Tool offsets tab with pop-up number-pad
 ![Tool edit page](/screenshots/Screenshot_3.png?raw=true "Optional Title")
 
 
 ### Installing
 
-This UI is very much under deveopment and is not fully functional yet. However, it does support homing and you should be able to test it out on a 4 axis sim config if you want. I don't recommend running a machine with it at this stage, although I do.
+This UI is very much under development and is not fully functional yet. However, it does support homing and you should be able to test it out on a 4 axis sim config if you want. I don't recommend running a machine with it at this stage, although I do.
 The easiest way to try hazzy is to clone this repository and than place symbolic links in the correct places.
 
 To clone this repository open a terminal at a convenient location (e.g. Desktop) and say:
