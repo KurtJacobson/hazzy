@@ -1708,9 +1708,9 @@ class hazzy(object):
         # Set style scheme and language 
         self.lm = gtksourceview.LanguageManager()
         self.sm = gtksourceview.StyleSchemeManager()
-        if self.lang_spec_name != None:
+        if self.lang_spec != None:
             self.preview_buf.set_language(self.lm.get_language(self.lang_spec))
-        if self.style_scheme_name != None:
+        if self.style_scheme != None:
             self.preview_buf.set_style_scheme(self.sm.get_scheme(self.style_scheme))
     
         
