@@ -23,11 +23,11 @@ git clone https://github.com/KurtJacobson/hazzy
 ```
 Next place a  symbolic link to the hazzy folder in you machines config directory. In debian you can do this by dragging the folder into your config directory and holding **Shift+Ctrl** before dropping the folder.
 
-The last step is to put a link to hazzy.py in your usr/bin directory. To do this graphically open a root file browser. To do this on Debian by say
+The last step is to put a link to hazzy.py in your usr/bin directory. To do this graphically open a root file browser. On Debian say
 ```
 sudo thunar
 ```
-To open a root terminal on Ubuntu say
+If you are using Ubuntu you might need to say
 ```
  sudo nautilus
 ```
