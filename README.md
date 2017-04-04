@@ -14,26 +14,34 @@ A new UI for LinuxCNC designed for use with touch screens
 
 ### Installing
 
-This UI is very much under development and is not fully functional yet. However, it does support homing and you should be able to test it out on a 4 axis sim config if you want. I don't recommend running a machine with it at this stage, although I do.
-The easiest way to try hazzy is to clone this repository and than place symbolic links in the correct places.
+The UI is very much under development, and is not fully functional yet, so I don't recommend running a machine with it at this stage.  However, if you want to give hazzy a spin it should run fine on any basic 4-axis sim config. 
 
-To clone this repository open a terminal at a convenient location (e.g. Desktop) and say:
+The easiest way to try hazzy is to clone this repository and place a symbolic link to hazzy.py in your usr/bin directory.
+
+To clone this repository open a terminal at any convenient location (e.g. Desktop) and say
 ```
 git clone https://github.com/KurtJacobson/hazzy
 ```
-Next place a  symbolic link to the hazzy folder in you machines config directory. In debian you can do this by dragging the folder into your config directory and holding **Shift+Ctrl** before dropping the folder.
 
-The last step is to put a link to hazzy.py in your usr/bin directory. To do this graphically open a root file browser. On Debian say
+Enter the newly cloned hazzy directory by saying
 ```
-sudo thunar
-```
-If you are using Ubuntu you might need to say
-```
- sudo nautilus
+cd hazzy
 ```
 
-Navigate to **usr/bin** and create a link to hazzy.py in the same manner as you did for the folder above. *You will need to remove the .py extension from the link or hazzy will not run.*
+Then add a link to hazzy.py to your usr/bin directory by saying  
 
-The last step is to tell Linuxcnc to use hazzy as the UI. In your machines ini file change [DISPLAY] DISPLAY = hazzy
+```
+sudo ln -sf $(pwd)/hazzy.py /usr/bin/hazzy
+```
 
-That should be all you need to do to try hazzy. If this does not work for you let me know!
+The last step is to tell Linuxcnc to use hazzy as the UI. In your machine's ini file under the [DISPLAY] section set DISPLAY = hazzy
+
+
+If all went well that is it!  Start LinuxCNC however you normally would and click the Reset button. If the machine starts up in E-stop clicking Reset the first time puts the machine in E-stop Reset, click Reset again to turn the machine ON.  Home the machine by clicking on the ABS DROs.  If you click on the ABS DRO label all axes will be homed (assuming the ini file is configured correctly).
+
+
+I will be updating this repo frequently. To get the latest commits say
+```
+git pull origin master
+```
+in your hazzy directory
