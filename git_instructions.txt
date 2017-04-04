@@ -1,0 +1,28 @@
+to init a git repo
+>> git init
+
+to add all files in repo to staging environment
+>> git add . 
+
+to add specific file
+>> git add <file_name.ext>
+
+to initiate a commit
+>> commit -m "commit comment"
+
+to add a remote origin
+>> git remote add origin https://github.com/KurtJacobson/hazzy.git
+
+to push the commit
+>> git push origin master
+
+to pull
+>> git pull origin master
+
+to create a new branch
+>>  git checkout -b <branch name>
+
+to check current branch
+>> git branch
+
+
