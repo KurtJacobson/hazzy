@@ -40,8 +40,7 @@ The last step is to tell Linuxcnc to use hazzy as the UI. In your machine's ini 
 If all went well that is it!  Start LinuxCNC however you normally would and click the Reset button. If the machine starts up in E-stop clicking Reset the first time puts the machine in E-stop Reset, click Reset again to turn the machine ON.  Home the machine by clicking on the ABS DROs.  If you click on the ABS DRO label all axes will be homed (assuming the ini file is configured correctly).
 
 
-I will be updating this repo frequently. To get the latest commits say
+I will be updating this repo frequently. To get the latest version enter your hazzy directory and say
 ```
 git pull origin master
 ```
-in your hazzy directory
