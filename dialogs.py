@@ -25,7 +25,9 @@
 
 import gtk
 import os
-from hazzy import IMAGEDIR
+
+pydir = os.path.abspath(os.path.dirname(__file__))
+IMAGEDIR = os.path.join(pydir, "images") 
 
 
 class dialogs(object):

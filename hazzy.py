@@ -33,10 +33,9 @@ import sys                # Handle system calls
 import os                 # Needed to get the paths and directories
 import pango              # Needed for font settings
 import gladevcp.makepins  # To make HAL pins and set up updating for them
-import atexit             # Needed to register child's to be closed on closing the GUI
 import subprocess         # To launch onboard and other processes
 import vte                # To get the embedded terminal
-import tempfile           # Needed only if the user click new in edit mode to open a new empty file
+import tempfile           # Needed for creating a new file
 import datetime           # Needed for the clock
 import linuxcnc           # To get our own error system
 import gobject            # Needed to add the timer for periodic
@@ -44,31 +43,35 @@ import logging            # Needed for logging errors
 from gladevcp.gladebuilder import GladeBuilder
 import gtksourceview2 as gtksourceview
 
+
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-inifile = sys.argv[2]                             # Path to .ini file
-CONFIGDIR = os.path.dirname(inifile)            # Path to config dir
-HAZZYDIR = os.path.join(CONFIGDIR, 'hazzy')     # Path to hazzy dir
-IMAGEDIR = os.path.join(HAZZYDIR, 'images')     # Path to hazzy images and glade file
-LANGDIR = os.path.join(HAZZYDIR, 'gcode-lang')  # Set the highlighting in the gcode view
-sys.path.insert(1 , HAZZYDIR)                   # Set system path so we can find our own modules
+INIFILE = sys.argv[2]                                   # Path to .ini file
+CONFIGDIR = os.path.dirname(INIFILE)                    # Path to config dir
+
+# We use __file__ to get the file dir so we can run from any location
+HAZZYDIR = os.path.dirname(os.path.realpath(__file__))  # Path to hazzy.py dir
+print"The hazzy directory is: " + HAZZYDIR
+IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade 
+sys.path.insert(1 , HAZZYDIR)  # Set system path so we can find our own modules
 
 # Now we have the path to our own modules so we can import them
-import tc                 # For highlighting terminal messages.
-import widgets            # Norbert's module for geting objects quickly
-import hazzy_prefs        # Handles the preferences
-import getiniinfo         # Handles .ini file reading. Validation is done in this module
-import touchpad           # On screen numpad and keypad for use with touchscreens
-import keyboard           # On screen keyboard emulator for use with touchscreens
+import tc               # For highlighting terminal messages.
+import widgets          # Norbert's module for geting objects quickly
+import hazzy_prefs      # Handles the preferences
+import getiniinfo       # Handles .ini file reading and value validation
+import touchpad         # On screen numpad and keypad for use with touchscreens
+import keyboard         # On screen keyboard emulator for use with touchscreens
 import entry_keyboard
-import dialogs            # Used for confirmation and error dialogs
+import dialogs          # Used for confirmation and error dialogs
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
 # Have some fun with our Terminal Colors module.
-# tc.I will print "HAZZY INFO" in gray, tc.W is for WARNINGS and tc.E is for ERRORS
+# tc.I will print "HAZZY INFO" in gray, tc.W is for WARNINGS, tc.E for ERRORS
 print tc.I + "The config dir is: " + CONFIGDIR
+
 
 
 # Create a logger
@@ -166,12 +169,13 @@ class hazzy(object):
         self.nc_file_dir = self.get_ini_info.get_program_prefix()
         self.log_file = self.get_ini_info.get_log_file_path()
         self.tool_table = self.get_ini_info.get_tool_table()
-        # CYCLE_TIME = time, in milliseconds, that display will sleep between polls
-        cycle_time = self.get_ini_info.get_cycle_time()         # This defaults to 50ms if not specified in INI
-        gobject.timeout_add(cycle_time, self._fast_periodic)  # Calls _fast_periodic at CYCLE_TIME
+        # CYCLE_TIME = time, in ms, that display will sleep between polls
+        cycle_time = self.get_ini_info.get_cycle_time() # Defaults to 50ms
+        # Call _fast_periodic at CYCLE_TIME
+        gobject.timeout_add(cycle_time, self._fast_periodic)
         
         # Set the conversions used for changing the DRO units
-        # Only want to convert linear units, hence the need for a list of conversion factors
+        # Only want to convert linear units, hence a list of conversion factors
         if self.machine_metric: 
             # List of factors for converting from mm to inches
             self.conversion = [1.0/25.4]*3+[1]*3+[1.0/25.4]*3
@@ -197,18 +201,18 @@ class hazzy(object):
         self.style_scheme = None
         self.lang_spec = None
         
-        self.new_error = False          # Whether there is a new error, used to load error_flash.gif
-        self.error_flash_timer = 0      # Keep track of _slow_periodic cycles since error_flash.gif loaded
+        self.new_error = False          # Used to load error_flash.gif
+        self.error_flash_timer = 0      # Slow_periodic cycles since error
         
-        self.gremlin_mouse_mode = 2     # Keep track of current gremlin mouse btn mode
+        self.gremlin_mouse_mode = 2     # Current gremlin mouse btn mode
         
         self.display_metric = False
         self.start_line = 0             # Needed for start from line
-        self.periodic_cycle_counter = 0 # Used to determine when to call _slow_periodic()
+        self.periodic_cycle_counter = 0 # Determine when to call slow_periodic()
 
-        self.dro_has_focus = False      # Used to stop DRO update if user is trying to type into it
-        self.zoom_in_pressed = False    # Used to keep track of continuous zoom IN button on gremlin
-        self.zoom_out_pressed = False   # Used to keep track of continuous zoom OUT button on gremlin
+        self.dro_has_focus = False      # To stop DRO update if user is trying to type into it
+        self.zoom_in_pressed = False    # Keep track of continuous zoom IN button on gremlin
+        self.zoom_out_pressed = False   # Keep track of continuous zoom OUT button on gremlin
         
         self.gcodeerror = ""            # Needed to avoid printing multiple identical messages
         self.usb_dir = ""
@@ -936,7 +940,7 @@ class hazzy(object):
         
     def on_gcode_preview_button_press_event(self, widget, data = None):
         if self.keypad:
-            keyboard.keyboard(widget, self.get_win_pos())
+            keyboard.keyboard(widget, self.get_win_pos(), True)
             
             
 # =========================================================      
@@ -1131,6 +1135,7 @@ class hazzy(object):
     def on_remark_editing_started(self, renderer, entry, dont_know):
         keyboard.keyboard(entry, self.get_win_pos())
         #touchpad.touchpad(entry, keypad)
+        
         
     # Toggle selection checkbox value
     def on_select_toggled(self, widget, path):

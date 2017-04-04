@@ -25,11 +25,8 @@ import gtk
 import os
 import sys
 
-try:
-    from hazzy import IMAGEDIR
-except:
-    IMAGEDIR = '/home/kurt/Desktop/hazzy/images/'
-    print IMAGEDIR
+pydir = os.path.abspath(os.path.dirname(__file__))
+IMAGEDIR = os.path.join(pydir, "images") 
 
 _keymap = gtk.gdk.keymap_get_default()  # Needed for keypress emulation
 

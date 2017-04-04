@@ -25,7 +25,9 @@ import os
 import sys
 import gobject
 import pango
-from hazzy import IMAGEDIR
+
+pydir = os.path.abspath(os.path.dirname(__file__))
+IMAGEDIR = os.path.join(pydir, "images") 
 
 _keymap = gtk.gdk.keymap_get_default()
 

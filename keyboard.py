@@ -25,19 +25,21 @@ import gtk
 import os
 import sys
 import gobject
-import gtk.keysyms
-from hazzy import IMAGEDIR
+
+pydir = os.path.abspath(os.path.dirname(__file__))
+IMAGEDIR = os.path.join(pydir, "images") 
 
 _keymap = gtk.gdk.keymap_get_default()
 
 
 class keyboard(object):
 
-    def __init__(self, entry, pos):
+    def __init__(self, entry, pos, persistent=False ):
         
         self.keyboard = keyboard
         self.entry_buf = entry.get_buffer()
         self.entry = entry
+        self.persistent = persistent
         
         # Glade setup
         gladefile = os.path.join(IMAGEDIR, 'keyboard.glade')
@@ -50,10 +52,11 @@ class keyboard(object):
         self.window.move(pos[0]+105, pos[1]+440) #545, 650)
         self.window.show()
         
-        gobject.timeout_add(50, self.repeat_event)    # Keypress repeat time
+        gobject.timeout_add(50, self.repeat_event)  # Keypress repeat function
         
+        # FIXME this is messy
         self.event = None
-        self.widget = self.builder.get_object('a')      # Define initial 
+        self.widget = self.builder.get_object('a')
         self.wait_counter = 0
         
         
@@ -65,10 +68,10 @@ class keyboard(object):
         self.numbers = '`1234567890-=' # Now I've said my 1 2 3's
         
         # Relate special character to their glade names.
-        self.characters = {'`':'~', '1':'!', '2':'@', '3':'#', '4':'$', \
-                           '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', \
-                           '0':')', '-':'_', '=':'+', '[':'{', ']':'}', \
-                           '\\':'|', ';':':', "'":'"', ',':'<', '.':'>',\
+        self.characters = {'`':'~', '1':'!', '2':'@', '3':'#', '4':'$', 
+                           '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', 
+                           '0':')', '-':'_', '=':'+', '[':'{', ']':'}', 
+                           '\\':'|', ';':':', "'":'"', ',':'<', '.':'>',
                            '/':'?'} # Now I've said my @#$%^%!
         
         self.letter_btn_dict = dict((l, self.builder.get_object(l)) for l in self.letters)
@@ -155,9 +158,8 @@ class keyboard(object):
             event.window = self.entry.window
             self.event = event
             self.widget = widget
-            self.wait_counter = 0                       # Set counter for repeat timout
-            #self.entry.emit("key-press-event", event)  # Some systems might need this??
-            self.entry.event(self.event)          # Do the initial event
+            self.wait_counter = 0           # Set counter for repeat timeout
+            self.entry.event(self.event)    # Do the initial event
         except:
             self.window.hide()
 
@@ -168,7 +170,7 @@ class keyboard(object):
                 self.wait_counter += 1
             else:
                 try:
-                    self.entry.event(self.event)              # Do the initial event
+                    self.entry.event(self.event)    # Do an initial event
                 except:
                     pass
         return True
@@ -192,13 +194,12 @@ class keyboard(object):
         try: # Needed since the widget may not have focus anymore
             event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
             event.keyval = ord(widget.get_label())
-            event.hardware_keycode = -1    # For some reason these don't need a keycode...
+            event.hardware_keycode = -1    # For some reason don't need a keycode...
             event.window = self.entry.window
             self.event = event
             self.widget = widget
-            self.wait_counter = 0                       # Set counter for repeat timout
-            #self.entry.emit("key-press-event", event)  # Some systems might need this??
-            self.entry.event(self.event)              # Do the initial event
+            self.wait_counter = 0           # Set counter for repeat timout
+            self.entry.event(self.event)    # Do the initial event
         except:
             self.window.hide()
             pass
@@ -218,7 +219,7 @@ class keyboard(object):
         
     # Return    
     def on_return_pressed(self, widget):
-        self.emulate_key(widget, "Return")
+        self.enter(widget)
         
     # Left arrow
     def on_arrow_left_pressed(self, widget):
@@ -250,6 +251,8 @@ class keyboard(object):
         kv = event.keyval
         if kv == gtk.keysyms.Escape:
             self.escape() # Close the keyboard
+        elif kv == gtk.keysyms.Return or kv == gtk.keysyms.KP_Enter:
+            self.enter(widget)
         else: # Pass other keypresses on to the entry widget
             #print _keymap.get_entries_for_keyval(kv)
             try:
@@ -272,6 +275,13 @@ class keyboard(object):
             pass
         #self.window.destroy()
         self.window.hide()
+        
+        
+    def enter(self, widget):
+        self.emulate_key(widget, "Return")
+        if not self.persistent:
+            self.window.hide()
+        
         
     def on_window_focus_out_event(self, widget, data=None):
         print "Focus out"
