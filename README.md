@@ -25,7 +25,7 @@ Next place a  symbolic link to the hazzy folder in you machines config directory
 
 The last step is to put a link to hazzy.py in your usr/bin directory. To do this graphically open a root file browser by saying
 ```
-sudo nautilus
+sudo thunar **on debian or** sudo nautilus **on ubuntu**
 ```
 
 Navigate to **usr/bin** and create a link to hazzy.py in the same manner as you did for the folder above. *You will need to remove the .py extension from the link or hazzy will not run.*
