@@ -1,3 +1,4 @@
+Some basic git instructions so I don't for-git
 to init a git repo
 >> git init
 
