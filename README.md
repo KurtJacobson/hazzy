@@ -28,7 +28,7 @@ The last step is to put a link to hazzy.py in your usr/bin directory. To do this
 sudo nautilus
 ```
 
-Navigate to **usr/bin** and create a link to hazzy.py in the same manner as you did for the folder above. You will need to remove the .py extension from the link or hazzy will not run.
+Navigate to **usr/bin** and create a link to hazzy.py in the same manner as you did for the folder above. *You will need to remove the .py extension from the link or hazzy will not run.*
 
 The last step is to tell Linuxcnc to use hazzy as the UI. In your machines ini file change [DISPLAY] DISPLAY = hazzy
 
