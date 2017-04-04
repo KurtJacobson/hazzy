@@ -192,7 +192,10 @@ class hazzy(object):
         
         # Define default button states 
         self.cycle_start_button_state = 'start'
-        self.hold_resume_button_state = 'inactive' 
+        self.hold_resume_button_state = 'inactive'
+        
+        self.style_scheme = None
+        self.lang_spec = None
         
         self.new_error = False          # Whether there is a new error, used to load error_flash.gif
         self.error_flash_timer = 0      # Keep track of _slow_periodic cycles since error_flash.gif loaded
@@ -278,27 +281,42 @@ class hazzy(object):
 ## BEGIN - Appearance initialize
 # =========================================================
         
-        # Set the gcode sourcview style scheme if it is present, elif use Kate, else nothing   
+        # Set the gcode sourceview style scheme if it is present, elif use Kate, else nothing   
         if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', self.style_scheme_file)):
             print(tc.I + self.style_scheme_name + " style scheme found!")
-            self.widgets.gcode_view.set_style_scheme(self.style_scheme_name)
-            #self.widgets.gcode_preview.set_style_scheme(self.style_scheme_name)
+            self.style_scheme = self.style_scheme_name
         elif os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', 'kate.xml')):
             print(tc.I + "Gcode style not found, using Kate instead")
-            self.widgets.gcode_view.set_style_scheme('kate') # Use Kate instead
-            #self.widgets.gcode_preview.set_style_scheme('kate')
+            self.style_scheme = 'kate' # Use Kate instead
         else:
             print(tc.I + self.style_scheme_file + "style not found")
             print("Looked in: ", os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles'))
+            print("Verify that the style scheme file and name are entered correctly")
+
         
-        # Set the gcode sourcview language hilighting if it is present, else nothing
+        # Set the gcode sourceview language highlighting if it is present, else nothing
         if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs', self.lang_spec_file)):
             print(tc.I + self.lang_spec_file + " found!")
-            self.widgets.gcode_view.set_language(self.lang_spec_name)
-            #self.widgets.gcode_preview.set_language(self.lang_spec_name)
+            self.lang_spec = self.lang_spec_name
         else:
             print(tc.I + self.lang_spec_file  + " not found")
             print("Looked in: ", os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs'))
+            
+            
+        if self.style_scheme != None:
+            try:
+                self.widgets.gcode_view.set_style_scheme(self.style_scheme)
+            except:
+                print(tc.E + "Could not set %s style scheme!" % self.style_scheme)
+                print("Verify that the style scheme file and name are correct")
+                
+        if self.lang_spec != None:
+            try:
+                self.widgets.gcode_view.set_language(self.lang_spec)
+            except:
+                print(tc.E + "Could not set %s language spec!" % self.lang_spec)
+                print("Verify that the lang spec file and name are correct")
+                
          
 
         # Set the fonts for the labels in the spindle display area
@@ -1690,8 +1708,10 @@ class hazzy(object):
         # Set style scheme and language 
         self.lm = gtksourceview.LanguageManager()
         self.sm = gtksourceview.StyleSchemeManager()
-        self.preview_buf.set_language(self.lm.get_language(self.lang_spec_name))
-        self.preview_buf.set_style_scheme(self.sm.get_scheme(self.style_scheme_name))
+        if self.lang_spec_name != None:
+            self.preview_buf.set_language(self.lm.get_language(self.lang_spec))
+        if self.style_scheme_name != None:
+            self.preview_buf.set_style_scheme(self.sm.get_scheme(self.style_scheme))
     
         
     def load_gcode_preview(self, fn=None):
