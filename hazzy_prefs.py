@@ -36,6 +36,7 @@ import os
 import ConfigParser
 
 cp = ConfigParser.RawConfigParser
+cp.optionxform = str  # Needed to maintain option case
 
 class preferences(cp):
     types = {

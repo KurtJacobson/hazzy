@@ -642,6 +642,7 @@
                 <child>
                   <object class="GtkTable" id="tool_table_actions">
                     <property name="width_request">100</property>
+                    <property name="height_request">340</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="n_rows">9</property>
@@ -796,7 +797,7 @@
                 <property name="height_request">18</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Offsets</property>
+                <property name="label" translatable="yes">Tool</property>
               </object>
               <packing>
                 <property name="position">2</property>
@@ -815,86 +816,6 @@
                     <property name="can_focus">False</property>
                     <property name="pixbuf">notebook_file_backgound.png</property>
                   </object>
-                </child>
-                <child>
-                  <object class="GtkTable" id="table5">
-                    <property name="width_request">100</property>
-                    <property name="height_request">190</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="n_rows">5</property>
-                    <property name="row_spacing">10</property>
-                    <child>
-                      <object class="GtkButton" id="button1">
-                        <property name="label" translatable="yes">Home All</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_home_all_clicked" swapped="no"/>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="home_x">
-                        <property name="label" translatable="yes">Home X</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_home_selected_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="top_attach">1</property>
-                        <property name="bottom_attach">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="home_y">
-                        <property name="label" translatable="yes">Home Y</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_home_selected_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="top_attach">2</property>
-                        <property name="bottom_attach">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="home_z">
-                        <property name="label" translatable="yes">Home Z</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_home_selected_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="top_attach">3</property>
-                        <property name="bottom_attach">4</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="home_4">
-                        <property name="label" translatable="yes">Home A</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_home_selected_clicked" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="top_attach">4</property>
-                        <property name="bottom_attach">5</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="x">17</property>
-                    <property name="y">35</property>
-                  </packing>
                 </child>
                 <child>
                   <object class="GtkTable" id="hal_tools">
@@ -989,19 +910,6 @@
                   <packing>
                     <property name="x">884</property>
                     <property name="y">20</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkComboBox" id="theme_choice">
-                    <property name="width_request">150</property>
-                    <property name="height_request">30</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="has_frame">False</property>
-                  </object>
-                  <packing>
-                    <property name="x">327</property>
-                    <property name="y">17</property>
                   </packing>
                 </child>
               </object>

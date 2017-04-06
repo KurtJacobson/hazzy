@@ -73,7 +73,6 @@ TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 print tc.I + "The config dir is: " + CONFIGDIR
 
 
-
 # Create a logger
 log = logging.getLogger(__name__)
 log.setLevel(logging.DEBUG)
@@ -87,10 +86,10 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 
 # Create formatter and add it to the handlers
-fformatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-cformatter = logging.Formatter('HAZZY %(levelname)s - %(message)s')
-fh.setFormatter(fformatter)
-ch.setFormatter(cformatter)
+ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+cf = logging.Formatter('HAZZY %(levelname)s - %(message)s')
+fh.setFormatter(ff)
+ch.setFormatter(cf)
 
 # Add handlers to the logger
 log.addHandler(fh)
@@ -110,7 +109,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
     dialogs.dialogs("".join(message) , 2).run()
     
     
-# Connect the exception hook
+# Connect the except hook to the handler
 sys.excepthook = excepthook
 
     
@@ -139,7 +138,8 @@ class hazzy(object):
         self.get_ini_info = getiniinfo.GetIniInfo()
 
         # Module to get/set preferences
-        self.prefs = hazzy_prefs.preferences(self.get_ini_info.get_preference_file_path())
+        pref_file = self.get_ini_info.get_preference_file_path()
+        self.prefs = hazzy_prefs.preferences(pref_file)
         
         # Get the tool table liststore
         self.tool_listore = self.builder.get_object("tool_liststore")
@@ -150,7 +150,7 @@ class hazzy(object):
 ## BEGIN - HAL setup  
 # =========================================================
             
-        #Note: Pins/signals must be connected in the POSTGUI halfile
+        # Note: Pins/signals must be connected in the POSTGUI halfile
 
         self.hal.newpin('coolant', hal.HAL_BIT, hal.HAL_OUT)
         self.hal.newpin('error', hal.HAL_BIT, hal.HAL_OUT)
@@ -171,11 +171,10 @@ class hazzy(object):
         self.tool_table = self.get_ini_info.get_tool_table()
         # CYCLE_TIME = time, in ms, that display will sleep between polls
         cycle_time = self.get_ini_info.get_cycle_time() # Defaults to 50ms
-        # Call _fast_periodic at CYCLE_TIME
         gobject.timeout_add(cycle_time, self._fast_periodic)
         
         # Set the conversions used for changing the DRO units
-        # Only want to convert linear units, hence a list of conversion factors
+        # Only want to convert linear axes, hence a list of conversion factors
         if self.machine_metric: 
             # List of factors for converting from mm to inches
             self.conversion = [1.0/25.4]*3+[1]*3+[1.0/25.4]*3
@@ -185,9 +184,9 @@ class hazzy(object):
 
         
         # Clear the log file
-        openfile = open(self.log_file, "w")
-        openfile.write("*** HAZZY SESSION LOG FILE *** \n")
-        openfile.close() 
+        logfile = open(self.log_file, "w")
+        logfile.write("*** HAZZY SESSION LOG FILE *** \n")
+        logfile.close() 
 
         
 # =========================================================
@@ -201,7 +200,7 @@ class hazzy(object):
         self.style_scheme = None
         self.lang_spec = None
         
-        self.new_error = False          # Used to load error_flash.gif
+        self.new_error = False          # Used to know when to load error_flash.gif
         self.error_flash_timer = 0      # Slow_periodic cycles since error
         
         self.gremlin_mouse_mode = 2     # Current gremlin mouse btn mode
@@ -238,45 +237,46 @@ class hazzy(object):
         # If a preference file does not exist it will be created in the config dir
         
         # [FILE PATHS]
-        self.nc_file_path = self.prefs.getpref("FILE PATHS", "default_nc_dir", self.nc_file_dir, str)
+        self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_dir, str)
         self.log_file = self.prefs.getpref("FILE PATHS", "LOG_FILE", self.log_file, str)
         
         # [FILE FILTERS]
-        self.preview_ext = self.prefs.getpref("FILE FILTERS", "preview_ext", [".ngc", ".txt", ".tap", ".nc"], str)
+        self.preview_ext = self.prefs.getpref("FILE FILTERS", "PREVIEW_EXT", [".ngc", ".txt", ".tap", ".nc"], str)
         
-        # [TOUCHSCREEN]        
-        self.keypad = self.prefs.getpref("TOUCHSCREEN", "use_keypad", True)
-        self.numpad = self.prefs.getpref("TOUCHSCREEN", "use_numpad", True)
-        self.mdipad = self.prefs.getpref("TOUCHSCREEN", "use_mdipad", True)
+        # [POP-UP KEYPAD]        
+        self.keypad_on_mdi = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_MDI", True)
+        self.keypad_on_dro = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_DRO", True)
+        self.keypad_on_offsets = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_OFFSETS", True)
+        self.keypad_on_edit = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", True)
 
         # [FONTS]
-        self.mdi_font = pango.FontDescription(self.prefs.getpref("FONTS", "mdi_font", 'dejavusans condensed 14', str))
-        self.dro_font = pango.FontDescription(self.prefs.getpref("FONTS", "dro_font", 'dejavusans condensed 16', str))
-        self.abs_font = pango.FontDescription(self.prefs.getpref("FONTS", "abs_font", 'dejavusans condensed 12', str))
-        self.vel_font = pango.FontDescription(self.prefs.getpref("FONTS", "vel_font", 'dejavusans condensed 14', str))
-        self.label_font = pango.FontDescription(self.prefs.getpref("FONTS", "label_font", 'NimbusSansL 10', str))
+        self.mdi_font = pango.FontDescription(self.prefs.getpref("FONTS", "MDI_FONT", 'dejavusans condensed 14', str))
+        self.dro_font = pango.FontDescription(self.prefs.getpref("FONTS", "DRO_FONT", 'dejavusans condensed 16', str))
+        self.abs_font = pango.FontDescription(self.prefs.getpref("FONTS", "ABS_FONT", 'dejavusans condensed 12', str))
+        self.vel_font = pango.FontDescription(self.prefs.getpref("FONTS", "VEL_FONT", 'dejavusans condensed 14', str))
+        self.label_font = pango.FontDescription(self.prefs.getpref("FONTS", "LABEL_FONT", 'NimbusSansL 10', str))
         
         # [POS DROs]
-        self.in_dro_plcs = self.prefs.getpref("POS DROs", "in_dec_plcs", 4, int)
-        self.mm_dro_plcs = self.prefs.getpref("POS DROs", "mm_dec_plcs", 3, int)
+        self.in_dro_plcs = self.prefs.getpref("POS DROs", "IN_DEC_PLCS", 4, int)
+        self.mm_dro_plcs = self.prefs.getpref("POS DROs", "MM_DEC_PLCS", 3, int)
         
         # [VEL DROs]
-        self.in_vel_dec_plcs = self.prefs.getpref("VEL DROs", "in_vel_dec_plcs", 1, int)
-        self.in_feed_dec_plcs = self.prefs.getpref("VEL DROs", "in_feed_dec_plcs", 1, int)
-        self.in_g95_dec_plcs = self.prefs.getpref("VEL DROs", "in_g95_dec_plcs", 3, int)
-        self.mm_vel_dec_plcs = self.prefs.getpref("VEL DROs", "mm_vel_dec_plcs", 2, int)
-        self.mm_feed_dec_plcs = self.prefs.getpref("VEL DROs", "mm_feed_dec_plcs", 0, int)
-        self.mm_g95_dec_plcs = self.prefs.getpref("VEL DROs", "mm_g95_dec_plcs", 0, int)
+        self.in_vel_dec_plcs = self.prefs.getpref("VEL DROs", "IN_VEL_DEC_PLCS", 1, int)
+        self.in_feed_dec_plcs = self.prefs.getpref("VEL DROs", "IN_FEED_DEC_PLCS", 1, int)
+        self.in_g95_dec_plcs = self.prefs.getpref("VEL DROs", "IN_G95_DEC_PLCS", 3, int)
+        self.mm_vel_dec_plcs = self.prefs.getpref("VEL DROs", "MM_VEL_DEC_PLCS", 2, int)
+        self.mm_feed_dec_plcs = self.prefs.getpref("VEL DROs", "MM_FEED_DEC_PLCS", 0, int)
+        self.mm_g95_dec_plcs = self.prefs.getpref("VEL DROs", "MM_G95_DEC_PLCS", 0, int)
         
         # [GCODE VIEW]
-        self.style_scheme_file = self.prefs.getpref("GCODE VIEW", "style_scheme_file", 'GCode.xml', str)
-        self.style_scheme_name = self.prefs.getpref("GCODE VIEW", "style_scheme_name", 'gcode', str)
-        self.lang_spec_file = self.prefs.getpref("GCODE VIEW", "lang_spec_file", 'hngc.lang', str)
-        self.lang_spec_name = self.prefs.getpref("GCODE VIEW", "lang_spec_name", 'hngc', str)
+        self.style_scheme_file = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_FILE", 'GCode.xml', str)
+        self.style_scheme_name = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_NAME", 'gcode', str)
+        self.lang_spec_file = self.prefs.getpref("GCODE VIEW", "LANG_SPEC_FILE", 'hngc.lang', str)
+        self.lang_spec_name = self.prefs.getpref("GCODE VIEW", "LANG_SPEC_NAME", 'hngc', str)
         
         # [MACHINE DEFAULTS]
-        self.df_feed = self.prefs.getpref("MACHINE DEFAULTS", "df_speed", 10, int)
-        self.df_speed = self.prefs.getpref("MACHINE DEFAULTS", "df_feed", 300, int)
+        self.df_feed = self.prefs.getpref("MACHINE DEFAULTS", "DF_SPEED", 10, int)
+        self.df_speed = self.prefs.getpref("MACHINE DEFAULTS", "DF_FEED", 300, int)
         
         
         
@@ -352,9 +352,9 @@ class hazzy(object):
         self.dro_list = [ self.builder.get_object(dro) for dro in self.dro_list ]
         
         # Set DRO fonts/colors
-        for axis in range(0, 4):
-            self.dro_list[axis].modify_font(self.dro_font)
-            self.dro_list[axis].modify_text(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+        for dro in self.dro_list:
+            dro.modify_font(self.dro_font)
+            dro.modify_text(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
             #self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))
         
         
@@ -364,24 +364,24 @@ class hazzy(object):
         # Convert to list of corresponding GtkLable objects
         self.dtg_list = [ self.builder.get_object(dtg) for dtg in self.dtg_list ]
             
-        # Set DTG DRO fonts/colors. We don't refer to them elsewhere so no need to make object list
-        
-        for dtg_dro in self.dtg_list: 
-            dtg_dro.modify_font(self.dro_font)
-            dtg_dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+        # Set DTG DRO fonts/colors.
+        # We don't refer to these elsewhere so no need to make an object list
+        for dtg in self.dtg_list: 
+            dtg.modify_font(self.dro_font)
+            dtg.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
         
         
         # List of ABS DRO GtkLabel names  
         self.abs_list = ('abs_x', 'abs_y', 'abs_z', 'abs_4')
         
-        # Convert to list of corresponding GtkLable objects so we can refer to them by index, SEE home_axis()
+        # Convert to list of corresponding GtkLable objects so we can refer to them by index
         self.abs_list = [ self.builder.get_object(abs_dro) for abs_dro in self.abs_list ]
         
         # Set ABS DRO fonts/colors 
-        for axis in range(0, 4):
-            self.abs_list[axis].modify_font(self.abs_font)
+        for abs_ in self.abs_list:
+            abs_.modify_font(self.abs_font)
             if not self.no_force_homing:
-                self.abs_list[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+                abs_.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
                 
         self.widgets.abs_label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
 
@@ -408,8 +408,8 @@ class hazzy(object):
         self._update_interp_state()
         self._get_axis_list()
        
-        # Show the window    
-        self.widgets.window.show()
+        # Show the window   
+        self.window.show()
         self._init_gremlin()
         
         #
@@ -531,13 +531,13 @@ class hazzy(object):
 ## BEGIN - Info/Error message display 
 # =========================================================
 
-    # Format Info & Error messages and display at bottom of screen, print to terminal
+    # Format Info & Error messages and display at bottom of screen, terminal
     def _show_message(self, message):
         
         kind, text = message # Unpack
 
         if "joint" in text:
-            # Replace "joint N" with "L axis" to make messages easter to understand for newbies
+            # Replace "joint N" with "L axis" 
             for axis in self.axis_list:
                 joint = 'XYZABCUVWS'.index(axis)
                 text = text.replace("joint %d" % joint, "%s axis" % axis)
@@ -735,14 +735,12 @@ class hazzy(object):
     # 
     def on_step_clicked(self, widget, data = None):
         print "STEP was clicked, I don't know by who though."
-        
-        
-            
-    
+
     
     def on_button1_clicked(self, widget, data = None):
         print "TOGGLE Pressed"
-        tooledit.tooledit()     
+        tooledit.tooledit() 
+            
         
     def on_redraw_clicked(self, widget, data = None):
         tooledit.tooledit()
@@ -753,7 +751,6 @@ class hazzy(object):
 # BEGIN - [Main] notebook page button handlers
 # ========================================================= 
                 
-                    
     # HAL_Gremlin preview buttons
     def on_zoom_in_button_press_event(self, widget, data=None):
         self.zoom_in_pressed = True
@@ -805,6 +802,7 @@ class hazzy(object):
                 widget.set_show_line_numbers(False)
             else:
                 widget.set_show_line_numbers(True)
+                
         
 # =========================================================      
 # BEGIN - [File] notebook page button handlers
@@ -838,7 +836,7 @@ class hazzy(object):
         fname = str(self.widgets.filechooser.get_filename())
         if os.path.isfile(fname):
             self.widgets.load_gcode.set_label("Load Gcode")
-            if not self.preview_buf.get_modified():         # If not modified we can load file
+            if not self.preview_buf.get_modified():  # If not modified we can load file
                 self.load_gcode_preview(fname)    # Preview/edit in sourceview
         elif os.path.isdir(fname):
             self.widgets.load_gcode.set_label("Open Folder")
@@ -939,7 +937,7 @@ class hazzy(object):
         
         
     def on_gcode_preview_button_press_event(self, widget, data = None):
-        if self.keypad:
+        if self.keypad_on_edit:
             keyboard.keyboard(widget, self.get_win_pos(), True)
             
             
@@ -997,7 +995,6 @@ class hazzy(object):
             self.add_tool(array)
             
             
-    # Save to tool table
     def save_tool_table(self, fn = None):
         if fn == None:
             fn = self.tool_table
@@ -1024,12 +1021,10 @@ class hazzy(object):
         linuxcnc.command().load_tool_table()
 
 
-    # Add a new tool
     def add_tool(self, data = None):
         self.tool_listore.append(data)
         
         
-    # Get the selected tool info
     def get_selected_tool(self):
         model = self.tool_listore
         def match_value_cb(model, path, iter, pathlist):
@@ -1067,24 +1062,20 @@ class hazzy(object):
             self.issue_mdi('M6 T%s' % tool_num )
         
     
-    # Add tool button handler
     def on_add_tool_clicked(self, widget, data = None):
         num = len(self.tool_listore) + 1
         array = [ False, num, num, '0.0000', '0.0000', 'New Tool', 'white' ]
         self.add_tool(array)
         
         
-    # Load tool table button handler
     def on_load_tool_table_clicked(self, widget, data = None):
         self.load_tool_table()
         
-        
-    # Save tool table button handler
+
     def on_save_tool_table_clicked(self, widget, data = None):
         self.save_tool_table()
 
-        
-    # Tool number entry
+
     def on_tool_num_edited(self, widget, path, new_text):
         try:
             new_int = int(new_text)
@@ -1093,8 +1084,7 @@ class hazzy(object):
         except:
             self._show_message(["ERROR", '"%s" is not a valid tool number' % new_text])
             
-        
-    # Tool pocket entry
+
     def on_tool_pocket_edited(self, widget, path, new_text):
         try:
             new_int = int(new_text)
@@ -1103,7 +1093,6 @@ class hazzy(object):
             self._show_message(["ERROR", '"%s" is not a valid tool pocket' % new_text])
 
 
-    # Tool diameter entry
     def on_tool_dia_edited(self, widget, path, new_text):
         try:
             new_num = float(new_text)
@@ -1112,7 +1101,6 @@ class hazzy(object):
             self._show_message(["ERROR", '"%s" is not a valid diameter' % new_text])
 
 
-    # Tool length entry
     def on_z_offset_edited(self, widget, path, new_text):
         try:
             new_num = float(new_text)
@@ -1121,20 +1109,20 @@ class hazzy(object):
             self._show_message(["ERROR", '"%s" is not a valid tool length' % new_text])
 
 
-    # Remark entry
     def on_tool_remark_edited(self, widget, path, new_text):
-       self.tool_listore[path][5] =  new_text
+        self.tool_listore[path][5] =  new_text
 
 
     # Popup numpad on number edit
     def on_editing_started(self, renderer, entry, dont_know):
-        touchpad.touchpad(entry)
+        if self.keypad_on_offsets:
+            touchpad.touchpad(entry)
         
         
     # Popup keyboard on text edit
     def on_remark_editing_started(self, renderer, entry, dont_know):
-        keyboard.keyboard(entry, self.get_win_pos())
-        #touchpad.touchpad(entry, keypad)
+        if self.keypad_on_offsets:
+            keyboard.keyboard(entry, self.get_win_pos())
         
         
     # Toggle selection checkbox value
@@ -1467,11 +1455,11 @@ class hazzy(object):
         if self.is_moving() or not self.is_homed() or self.no_force_homing:
             # An eventbox is placed over the editable DROs, if it is visible it blocks them from events 
             self.widgets.dro_mask.set_visible(True)
-            for axis in range(0, 4):
+            for axis in range(0, len(self.axis_list)):
                 self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))
         else:
             self.widgets.dro_mask.set_visible(False)
-            for axis in range(0, 4):
+            for axis in range(0, len(self.axis_list)):
                 self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))          
 
 
@@ -1480,15 +1468,10 @@ class hazzy(object):
 ## BEGIN - DRO entry handlers
 # =========================================================
 
-    def on_mdi_entry_changed(self, widget, data=None):
-        # Convert MDI entry text to UPPERCASE
-        self.widgets.mdi_entry.set_text(widget.get_text().upper())
-
-
     def on_dro_gets_focus(self, widget, event):
         self.dro_has_focus = True
         widget.select_region(0, -1)
-        if self.numpad:
+        if self.keypad_on_dro:
             touchpad.touchpad(widget)
 
 
@@ -1528,9 +1511,15 @@ class hazzy(object):
         #    self.window.set_focus(None)
         #    return
         self.widgets.mdi_entry.set_text("")
-        if self.mdipad: 
+        if self.keypad_on_mdi: 
             #touchpad.touchpad(widget, True)
             keyboard.keyboard(widget, self.get_win_pos())
+            
+    
+    def on_mdi_entry_changed(self, widget, data=None):
+        # Convert MDI entry text to UPPERCASE
+        self.widgets.mdi_entry.set_text(widget.get_text().upper())
+
             
     def on_mdi_entry_loses_focus(self, widget, data=None):
         self.widgets.mdi_entry.set_text("MDI:")
@@ -1540,19 +1529,19 @@ class hazzy(object):
     def on_mdi_entry_key_press_event(self, widget, event): 
         if event.keyval == gtk.keysyms.Escape:
             self.window.set_focus(None)
-            return True
 
 
     def on_mdi_entry_activate(self, widget):
         command = self.widgets.mdi_entry.get_text()
         if len(command) == 0:
-            # Ignore an empty command
-            return
-        # Issue the command
-        self.issue_mdi(command)
-        # Set button to 'stop' so can kill MDI motion if need be
-        self.set_cycle_start_button_state('stop')
-        self.window.set_focus(None)
+            # Ignore it
+            self.window.set_focus(None)
+        else:
+            # Issue the command
+            self.issue_mdi(command)
+            # Set button to 'stop' so can kill MDI motion if need be
+            self.set_cycle_start_button_state('stop')
+            self.window.set_focus(None)
             
             
 # =========================================================
@@ -1643,7 +1632,8 @@ class hazzy(object):
 
     # Set image from file
     def set_image(self, image_name, image_file):
-        self.builder.get_object(image_name).set_from_file(os.path.join(IMAGEDIR, image_file))
+        image = self.builder.get_object(image_name)
+        image.set_from_file(os.path.join(IMAGEDIR, image_file))
         
           
     # Set animation from file         
@@ -1696,7 +1686,6 @@ class hazzy(object):
              + str(screen_h) + "  Screen too small to decorate window")
             
         
-    # init the preview
     def _init_gremlin(self):
         self.widgets.gremlin.set_property('view', 'z')
         self.widgets.gremlin.set_property("mouse_btn_mode", 2)
@@ -1735,7 +1724,8 @@ class hazzy(object):
     def save(self, fn = None):
         if fn == None:
             fn = self.current_preview_file
-        text = self.preview_buf.get_text(self.preview_buf.get_start_iter(), self.preview_buf.get_end_iter())
+        buf = self.preview_buf
+        text = self.preview_buf.get_text(buf.get_start_iter(), buf.get_end_iter())
         openfile = open(fn, "w")
         openfile.write(text)
         openfile.close()
