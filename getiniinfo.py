@@ -10,7 +10,7 @@
 #     <kurtjacobson@bellsouth.net>
 #
 #   This file is part of Hazzy.
-#   It is a modified version of a class from Gmoccapy
+#   It is a slightly modified version of a class from Gmoccapy
 #   Original Author: Norbert Schechner
 #
 #   Hazzy is free software: you can redistribute it and/or modify
@@ -85,13 +85,115 @@ class GetIniInfo:
                 temp = os.path.join(CONFIGPATH, "%s.log" % machinename)
         print tc.GI + "Log file path: %s" % temp
         return temp
-
+        
+        
     def get_coordinates(self):
         temp = self.inifile.find("TRAJ", "COORDINATES")
+        # Get rid of any spaces
+        temp = temp.replace(' ','')
+
         if not temp:
-            print tc.GW + "No coordinates entry found in [TRAJ] of INI file"
-            return ("XYZ")
-        return temp
+            print(tc.I + "No coordinates entry found in [TRAJ] of INI file, using XYZ")
+            temp = "xyz"
+        return temp.lower()
+
+    
+    def get_joints(self):
+        temp = self.inifile.find("KINS", "JOINTS")
+        if not temp:
+            print(tc.I + "No JOINTS entry found in [KINS] of INI file, using 3")
+            return (3)
+        return int(temp)
+        
+        
+    def get_axis_list(self):
+        axis_list = []
+        coordinates = self.get_coordinates()
+        for joint, axisletter in enumerate(coordinates):
+            if axisletter in axis_list:
+                continue
+            axis_list.append(axisletter)
+        return axis_list
+        
+        
+    def get_joint_axis_relation(self):
+        # Find out the relation between joint and axis.
+        # first we look if the kinematics module will be loaded with the coordinates parameter
+        temp = self.inifile.find("KINS", "KINEMATICS").split()
+        print "found kinematics module", temp
+
+        if temp[0].lower() != "trivkins":
+            print tc.I + "[KINS] KINEMATICS is not trivkins" 
+            print "Will use mode to switch between Joints and World mode" 
+            print "hopefully supported by the used <<%s>> module\n"%temp[0] 
+            return None
+
+        # follow the order given in $ man trivkins
+        # Joint numbers are assigned sequentialy according to  the  axis  letters
+        # specified with the coordinates= parameter.
+        #
+        # If the coordinates= parameter is omitted, joint numbers are assigned
+        # sequentially to every known axis letter ("xyzabcuvw").
+
+        joint_axis_dic = {}
+        coordinates = None
+        for entry in temp:
+            print "Entry =", entry
+            if "coordinates" in entry.lower():
+                coordinates = entry.split("=")[1].lower()
+                print "found the following coordinates", coordinates
+            if "kinstype" in entry.lower():
+                print "found kinstype", entry.split("=")[1]
+                # we will not take care of this one, because linuxcnc will take
+                # care about the differences between KINEMATICS_IDENTITY and others
+                # a additional check is done on some places within the gmoccapy code
+
+        if not coordinates:
+            print "no coordinates found in [KINS] KINEMATICS, using order from"
+            print "[TRAJ] COORDINATES"
+            coordinates = self.get_coordinates()
+
+        # at this point we should have the coordinates of the config, we will check if the amount of
+        # coordinates does match the [KINS] JOINTS part
+        print "Number of joints = ", self.get_joints()
+        print "%s COORDINATES found = %s" %(len(coordinates), coordinates)
+
+        # let us check if there are double letters, as that would be a gantry machine
+        double_axis_letter = []
+        for axisletter in ["x", "y", "z", "a", "b", "c", "u", "v", "w"]:
+            if coordinates.count(axisletter) > 1:
+                # OK we have a special case here, we need to take care off
+                # i.e. a Gantry XYYZ config
+                double_axis_letter.append(axisletter)
+        print "Found double letter ", double_axis_letter
+
+        if self.get_joints() == len(coordinates):
+            count = 0
+            for joint, axisletter in enumerate(coordinates):
+                if axisletter in double_axis_letter:
+                    axisletter = axisletter + str(count)
+                    count += 1
+                joint_axis_dic[axisletter] = joint
+                print("axis %s = joint %s" %(axisletter, joint_axis_dic[axisletter]))
+        else:
+            print("\n**** GMOCCAPY GETINIINFO **** ")
+            print("Amount of joints from [KINS]JOINTS= is not identical with axisletters")
+            print("given in [TRAJ]COORDINATES or [KINS]KINEMATICS")
+            print("will use the old style used prior to joint axis branch merge,")
+            print("see man trivkins for details")
+            print("It is strongly recommended to update your config\n")
+            print("\nFor all unused joints an entry like [JOINT_3]HOME_SEQUENCE = 0 in your")
+            print("INI File is needed to get the <<all homed>> signal and be able")
+            print("to switch to MDI or AUTO Mode\n")
+            for joint, axisletter in enumerate(["x", "y", "z", "a", "b", "c", "u", "v", "w"]):
+                if axisletter in coordinates:
+                    joint_axis_dic[axisletter] = joint
+
+        return joint_axis_dic
+
+
+
+
         
     def get_machine_metric(self):
         temp = self.inifile.find("TRAJ", "LINEAR_UNITS")

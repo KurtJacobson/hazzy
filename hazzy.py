@@ -344,46 +344,57 @@ class hazzy(object):
         self.widgets.mdi_entry.modify_font(self.mdi_font)
         self.widgets.mdi_entry.set_text("MDI:")
             
+        self._get_axis_list()
+            
                   
         # List of DRO GtkEntry object names
-        self.dro_list = ('dro_x', 'dro_y', 'dro_z', 'dro_4')
+        self.rel_dro_list = ('dro_x', 'dro_y', 'dro_z', 'dro_4')
 
-        # Convert to list of corresponding GtkEntry objects so we can refer to them by index
-        self.dro_list = [ self.builder.get_object(dro) for dro in self.dro_list ]
+        # Dict of DRO GtkEntry objects and there corresponding joints
+        self.rel_dro_dict = {}
+        for i, dro in enumerate(self.rel_dro_list):
+            self.rel_dro_dict[self.dro_joint_list[i]] = self.builder.get_object(dro)
+        
+        print self.rel_dro_dict
         
         # Set DRO fonts/colors
-        for dro in self.dro_list:
+        for joint, dro in self.rel_dro_dict.iteritems():
             dro.modify_font(self.dro_font)
             dro.modify_text(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
             #self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))
         
         
-        # List of DTG DRO GtkLable names
-        self.dtg_list = ('dtg_x', 'dtg_y', 'dtg_z', 'dtg_4')
         
-        # Convert to list of corresponding GtkLable objects
-        self.dtg_list = [ self.builder.get_object(dtg) for dtg in self.dtg_list ]
+        # List of DTG DRO GtkLable names
+        self.dtg_dro_list = ('dtg_x', 'dtg_y', 'dtg_z', 'dtg_4')
+        
+        # Dict of DTG GtkLabel objects and there corresponding joints
+        self.dtg_dro_dict = {}
+        for i, dro in enumerate(self.dtg_dro_list):
+            self.dtg_dro_dict[self.dro_joint_list[i]] = self.builder.get_object(dro)
             
         # Set DTG DRO fonts/colors.
-        # We don't refer to these elsewhere so no need to make an object list
-        for dtg in self.dtg_list: 
-            dtg.modify_font(self.dro_font)
-            dtg.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+        for joint, dro in self.dtg_dro_dict.iteritems():
+            dro.modify_font(self.dro_font)
+            dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+        
         
         
         # List of ABS DRO GtkLabel names  
-        self.abs_list = ('abs_x', 'abs_y', 'abs_z', 'abs_4')
+        self.abs_dro_list = ('abs_x', 'abs_y', 'abs_z', 'abs_4')
         
-        # Convert to list of corresponding GtkLable objects so we can refer to them by index
-        self.abs_list = [ self.builder.get_object(abs_dro) for abs_dro in self.abs_list ]
+        # Dict of ABS GtkLabel objects and there corresponding joints
+        self.abs_dro_dict = {}
+        for i, dro in enumerate(self.abs_dro_list):
+            joint = self.dro_joint_list[i]
+            self.abs_dro_dict[joint] = self.builder.get_object(dro)
         
         # Set ABS DRO fonts/colors 
-        for abs_ in self.abs_list:
-            abs_.modify_font(self.abs_font)
+        for joint, dro in self.abs_dro_dict.iteritems():
+            dro.modify_font(self.abs_font)
             if not self.no_force_homing:
-                abs_.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
-                
-        self.widgets.abs_label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+                dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+
 
             
         self.widgets.spindle_text.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
@@ -1289,15 +1300,32 @@ class hazzy(object):
             
         # XXX - this is a hack, works for trivial configs, but not gantry etc.   
         # Put values in the DROs
-        if not self.dro_has_focus: # Keep from overwriting user input
-            for i in range(0, len(self.dro_list)):
-                self.dro_list[i].set_text("%.*f" % (dec_plc, rel[self.joint_list[i]]))
+#        if not self.dro_has_focus: # Keep from overwriting user input
+#            for i in range(0, len(self.dro_list)):
+#                self.dro_list[i].set_text("%.*f" % (dec_plc, rel[self.joint_list[i]]))
 
-        for i in range(0, len(self.dtg_list)):
-            self.dtg_list[i].set_text("%.*f" % (dec_plc, dtg[self.joint_list[i]]))
-        
-        for i in range(0, len(self.abs_list)):
-            self.abs_list[i].set_text("%.*f" % (dec_plc,pos[self.joint_list[i]]))
+
+        if not self.dro_has_focus: # Keep from overwriting user input
+            for joint, dro in self.rel_dro_dict.iteritems():
+                dro.set_text("%.*f" % (dec_plc, rel[joint]))
+                
+                
+        for joint, dro in self.dtg_dro_dict.iteritems():
+                dro.set_text("%.*f" % (dec_plc, dtg[joint]))
+                
+                
+        for joint, dro in self.abs_dro_dict.iteritems():
+                dro.set_text("%.*f" % (dec_plc, pos[joint]))
+                
+                
+                
+                
+
+#        for i in range(0, len(self.dtg_list)):
+#            self.dtg_list[i].set_text("%.*f" % (dec_plc, dtg[self.joint_list[i]]))
+#        
+#        for i in range(0, len(self.abs_list)):
+#            self.abs_list[i].set_text("%.*f" % (dec_plc,pos[self.joint_list[i]]))
         
         
     def _update_work_cord(self):
@@ -1395,6 +1423,47 @@ class hazzy(object):
 
 
     def _get_axis_list(self):
+        self.axis_list = self.get_ini_info.get_axis_list() # ['x', 'y', 'z', 'b']
+        self.axis_joint_dict = self.get_ini_info.get_joint_axis_relation() # {'x':0, 'y0':1, 'y1':2, 'z':3, 'b':4}
+
+        print self.axis_list
+        print self.axis_joint_dict
+
+        # if we receive a None, that means we do not have a trivial kinematics
+        # like a scara or robot
+        if self.axis_joint_dict == None:
+            self._init_extra_axes()
+            return
+
+        dro_axis_dict = {}
+        for axis in self.axis_joint_dict:
+            print axis
+            if len(axis) == 1 or "0" in axis:
+                dro_axis_dict[axis[0]] = self.axis_joint_dict[axis]
+
+        print dro_axis_dict
+        
+        self.dro_joint_list = []
+        dro = 0
+        for axis in  ['X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W']:
+            try:
+                self.dro_joint_list.append(dro_axis_dict[axis.lower()])
+                dro += 1
+            except KeyError:
+                pass
+        print self.dro_joint_list
+        
+        self.joint_list = [0, 1, 2, 3]
+        
+
+
+
+
+
+
+    def _get_axis_list_old(self):
+        self.joint_axis_dic = self.get_ini_info.get_joint_axis_relation()
+        print "Joint axis relation: ", self.joint_axis_dic
         coordinates = self.get_ini_info.get_coordinates()
         coordinates = "".join(coordinates.split()).upper()
         self.axis_list = []
@@ -1440,13 +1509,13 @@ class hazzy(object):
         for joint in self.joint_list:
             if self.stat.homed[joint]:
                 homed_joints[joint] = 1 # 1 indicates homed
-                self.abs_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
-            elif self.stat.axis[joint]['homing'] != 0:
+                self.abs_dro_dict[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+            elif self.stat.joint[joint]['homing'] != 0:
                 homed_joints[joint] = 2 # 2 indicates homing in progress
-                self.abs_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('yellow'))
+                self.abs_dro_dict[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('yellow'))
             else:
                 homed_joints[joint] = 0 # 0 indicates unhomed
-                self.abs_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+                self.abs_dro_dict[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
         self.homed_joints = homed_joints
 
 
@@ -1455,12 +1524,12 @@ class hazzy(object):
         if self.is_moving() or not self.is_homed() or self.no_force_homing:
             # An eventbox is placed over the editable DROs, if it is visible it blocks them from events 
             self.widgets.dro_mask.set_visible(True)
-            for axis in range(0, len(self.axis_list)):
-                self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))
+            for joint, dro in self.rel_dro_dict.iteritems():
+                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))  
         else:
             self.widgets.dro_mask.set_visible(False)
-            for axis in range(0, len(self.axis_list)):
-                self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))          
+            for joint, dro in self.rel_dro_dict.iteritems():
+                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))          
 
 
 
@@ -1587,9 +1656,9 @@ class hazzy(object):
 
     
     def home_axis(self, joint):
-        if self.stat.axis[joint]['homed'] == 0 and not self.stat.estop and self.stat.axis[joint]['homing'] == 0:
+        if self.stat.joint[joint]['homed'] == 0 and not self.stat.estop and self.stat.joint[joint]['homing'] == 0:
             self.set_mode(linuxcnc.MODE_MANUAL)
-            self._show_message(["INFO", "Homing joint %s " % joint])
+            #self._show_message(["INFO", "Homing joint %s " % joint])
             self.command.home(joint)
             self.homed_joints[joint] = 2 # Indicate homing in process, needed to cause update of joint states
         elif self.stat.homed[joint]:
@@ -1598,7 +1667,7 @@ class hazzy(object):
                 self.set_mode(linuxcnc.MODE_MANUAL)
                 self._show_message(["INFO", "Unhoming joint %s " % joint])
                 self.command.unhome(joint)
-        elif self.stat.axis[joint]['homing'] != 0:
+        elif self.stat.joint[joint]['homing'] != 0:
             self._show_message(["ERROR", "Homing sequence already in progress"])
         else:
             self._show_message(["ERROR", "Can't home joint %s, check E-stop and machine power" % joint])
