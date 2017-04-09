@@ -10,7 +10,7 @@
 #     <kurtjacobson@bellsouth.net>
 #
 #   This file is part of Hazzy.
-#   It is a modified version of a class from Gmoccapy
+#   It is a slightly modified version of a class from Gmoccapy
 #   Original Author: Norbert Schechner
 #
 #   Hazzy is free software: you can redistribute it and/or modify
@@ -85,13 +85,35 @@ class GetIniInfo:
                 temp = os.path.join(CONFIGPATH, "%s.log" % machinename)
         print tc.GI + "Log file path: %s" % temp
         return temp
-
+        
+        
     def get_coordinates(self):
         temp = self.inifile.find("TRAJ", "COORDINATES")
+        # Get rid of any spaces
+        temp = temp.replace(' ','')
+
         if not temp:
-            print tc.GW + "No coordinates entry found in [TRAJ] of INI file"
-            return ("XYZ")
-        return temp
+            print(tc.I + "No coordinates entry found in [TRAJ] of INI file, using XYZ")
+            temp = "XYZ"
+        return temp.upper()
+
+    
+    def get_joints(self):
+        temp = self.inifile.find("KINS", "JOINTS")
+        if not temp:
+            print(tc.I + "No JOINTS entry found in [KINS] of INI file, using 3")
+            return (3)
+        return int(temp)
+        
+        
+    def get_axis_list(self):
+        axis_list = []
+        coordinates = self.get_coordinates()
+        for joint, axisletter in enumerate(coordinates):
+            if axisletter in axis_list:
+                continue
+            axis_list.append(axisletter)
+        return axis_list
         
     def get_machine_metric(self):
         temp = self.inifile.find("TRAJ", "LINEAR_UNITS")

@@ -170,8 +170,8 @@ class hazzy(object):
         self.log_file = self.get_ini_info.get_log_file_path()
         self.tool_table = self.get_ini_info.get_tool_table()
         # CYCLE_TIME = time, in ms, that display will sleep between polls
-        cycle_time = self.get_ini_info.get_cycle_time() # Defaults to 50ms
-        gobject.timeout_add(cycle_time, self._fast_periodic)
+        #cycle_time = self.get_ini_info.get_cycle_time() # Defaults to 50ms
+        gobject.timeout_add(50, self._fast_periodic)
         
         # Set the conversions used for changing the DRO units
         # Only want to convert linear axes, hence a list of conversion factors
@@ -192,6 +192,9 @@ class hazzy(object):
 # =========================================================
 ## BEGIN - Set initial toggle button states, and other values
 # =========================================================
+        
+        # Constants
+        self.axis_letters = [ 'X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W' ]
         
         # Define default button states 
         self.cycle_start_button_state = 'start'
@@ -225,9 +228,11 @@ class hazzy(object):
         self.current_work_cord = ""     # Keep track of current work cord
         self.codes = []                 # Unformatted G codes + M codes to check if an update is required
         self.active_codes = []          # Formated G codes + M codes for display
-        self.axis_list = []             # List of axes used in the machine [ X, Y, Z, B ]
-        self.joint_list = []            # List of joints used in the machine 
-        self.axis_joint_dict = {}       # 
+        self.number_axes = 0            # Total number of Cartesian axes
+        self.axis_letter_list = []      # Axes used in the machine [X, Y, Z, B]
+        self.axis_number_list = []      # Corresponding axis numbers [0, 1, 2, 4]
+        self.joint_list = []            # Joints used in the machine [0, 1, 2, 3]
+        self.joint_axis_dict = {}       # Joint axis correspondence
         self.homed_joints = []          # List of homed joints
 
                 
@@ -344,55 +349,81 @@ class hazzy(object):
         self.widgets.mdi_entry.modify_font(self.mdi_font)
         self.widgets.mdi_entry.set_text("MDI:")
             
-                  
-        # List of DRO GtkEntry object names
-        self.dro_list = ('dro_x', 'dro_y', 'dro_z', 'dro_4')
-
-        # Convert to list of corresponding GtkEntry objects so we can refer to them by index
-        self.dro_list = [ self.builder.get_object(dro) for dro in self.dro_list ]
+        #XXX Move
+        self._get_axis_list()
         
+
+        
+        self.rel_dro_list = ('dro_0', 'dro_1', 'dro_2', 'dro_3', 'dro_4')
+        self.dtg_dro_list = ('dtg_0', 'dtg_1', 'dtg_2', 'dtg_3', 'dtg_4')    
+        self.abs_dro_list = ('abs_0', 'abs_1', 'abs_2', 'abs_3', 'abs_4')
+        self.abs_dro_eventboxes = ('abs_eventbox_0', 'abs_eventbox_1', 'abs_eventbox_2', 'abs_eventbox_3', 'abs_eventbox_4')          
+        self.dro_label_list = ('dro_label_0', 'dro_label_1', 'dro_label_2', 'dro_label_3', 'dro_label_4')
+        
+        
+        count = 4
+        table = self.widgets.dro_table
+        while count >= self.number_axes: 
+            table.remove(self.builder.get_object(self.rel_dro_list[count]))
+            table.remove(self.builder.get_object(self.dtg_dro_list[count]))
+            table.remove(self.builder.get_object(self.abs_dro_eventboxes[count]))
+            table.remove(self.builder.get_object(self.dro_label_list[count]))
+            count -= 1
+            
+        
+        # Dict of DRO GtkEntry objects and there corresponding axes
+        self.rel_dro_dict = {}
+        for i in range(self.number_axes):
+            axis = self.axis_number_list[i]
+            dro = self.rel_dro_list[i]
+            self.rel_dro_dict[axis] = self.builder.get_object(dro)
+            
         # Set DRO fonts/colors
-        for dro in self.dro_list:
+        for axis, dro in self.rel_dro_dict.iteritems():
             dro.modify_font(self.dro_font)
             dro.modify_text(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
-            #self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))
         
-        
-        # List of DTG DRO GtkLable names
-        self.dtg_list = ('dtg_x', 'dtg_y', 'dtg_z', 'dtg_4')
-        
-        # Convert to list of corresponding GtkLable objects
-        self.dtg_list = [ self.builder.get_object(dtg) for dtg in self.dtg_list ]
+        self.dtg_dro_dict = {}
+        for i in range(self.number_axes):
+            axis = self.axis_number_list[i]
+            dro = self.dtg_dro_list[i]
+            self.dtg_dro_dict[axis] = self.builder.get_object(dro)
             
         # Set DTG DRO fonts/colors.
-        # We don't refer to these elsewhere so no need to make an object list
-        for dtg in self.dtg_list: 
-            dtg.modify_font(self.dro_font)
-            dtg.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+        for axis, dro in self.dtg_dro_dict.iteritems():
+            dro.modify_font(self.dro_font)
+            dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
         
-        
-        # List of ABS DRO GtkLabel names  
-        self.abs_list = ('abs_x', 'abs_y', 'abs_z', 'abs_4')
-        
-        # Convert to list of corresponding GtkLable objects so we can refer to them by index
-        self.abs_list = [ self.builder.get_object(abs_dro) for abs_dro in self.abs_list ]
+        self.abs_dro_dict = {}
+        for i in range(self.number_axes):
+            axis = self.axis_number_list[i]
+            dro = self.abs_dro_list[i]
+            self.abs_dro_dict[axis] = self.builder.get_object(dro)
         
         # Set ABS DRO fonts/colors 
-        for abs_ in self.abs_list:
-            abs_.modify_font(self.abs_font)
+        for axis, dro in self.abs_dro_dict.iteritems():
+            dro.modify_font(self.abs_font)
             if not self.no_force_homing:
-                abs_.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+                dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+            
+        self.abs_dro_eventboxes_dict = {}
+        for i in range(self.number_axes):
+            axis = self.axis_number_list[i]
+            eventbox = self.abs_dro_eventboxes[i]
+            self.abs_dro_eventboxes_dict[axis] = self.builder.get_object(eventbox)
                 
-        self.widgets.abs_label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+        # Set DRO axis labels
+        for i in range(self.number_axes):
+            label = self.builder.get_object(self.dro_label_list[i])
+            label.set_text(self.axis_letter_list[i])
 
+            
             
         self.widgets.spindle_text.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
         self.widgets.spindle_text.modify_font(pango.FontDescription('FreeSans condensed  14'))
         self.set_animation('reset_image', 'reset.gif') # Set the initial animated reset image
         
-        
-        
-                
+
         # Initial poll so all is up to date
         self.stat.poll()
         self.error_channel.poll()
@@ -406,7 +437,8 @@ class hazzy(object):
         self._update_machine_state() 
         self._update_machine_mode()
         self._update_interp_state()
-        self._get_axis_list()
+        self._update_motion_mode()
+        # self._get_axis_list()
        
         # Show the window   
         self.window.show()
@@ -483,6 +515,9 @@ class hazzy(object):
         if self.interp != self.stat.interp_state:    
             self._update_interp_state()
             
+        if self.motion_mode != self.stat.motion_mode:
+            self._update_motion_mode()
+            
         # Update homed joints
         if tuple(self.homed_joints) != self.stat.homed:
             self._update_homing_status()
@@ -536,12 +571,12 @@ class hazzy(object):
         
         kind, text = message # Unpack
 
-        if "joint" in text:
-            # Replace "joint N" with "L axis" 
-            for axis in self.axis_list:
-                joint = 'XYZABCUVWS'.index(axis)
-                text = text.replace("joint %d" % joint, "%s axis" % axis)
-            text = text.replace("joint -1", "all axes")
+#        if "joint" in text:
+#            # Replace "joint N" with "L axis" 
+#            for axis in self.axis_list:
+#                joint = 'XYZABCUVWS'.index(axis)
+#                text = text.replace("joint %d" % joint, "%s axis" % axis)
+#            text = text.replace("joint -1", "all axes")
                 
         if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR):
             kind = "ERROR"
@@ -685,25 +720,27 @@ class hazzy(object):
             self.set_image('reset_image', 'reset.png')
         
         
-    def on_home_all_clicked(self, widget, data = None):
+    def on_abs_label_clicked(self, widget, data = None):
         # Home -1 means all
         self.set_mode(linuxcnc.MODE_MANUAL)
-        self.home_axis(-1)
+        self.home_joint(-1)
         
         
-    def on_home_selected_clicked(self, widget, data = None):
+    def on_abs_dro_clicked(self, widget, data = None):
         # Make sure we are in manual mode  
         self.set_mode(linuxcnc.MODE_MANUAL)
-        if widget == self.widgets.abs_x_eventbox:
-            axis = 0
-        elif widget == self.widgets.abs_y_eventbox:
-            axis = 1
-        elif widget == self.widgets.abs_z_eventbox:
-            axis = 2
-        elif widget == self.widgets.abs_4_eventbox:
-            axis = 'xyzabcuvw'.index('a')
-        # Home the selected axis    
-        self.home_axis(axis)
+        # Look up the axis from the GTK object 
+        for anum, eventbox in self.abs_dro_eventboxes_dict.iteritems():
+            if eventbox == widget:
+                aletter = self.axis_letters[anum]
+                break
+        if aletter in self.aletter_jnum_dict:
+            jnum = self.aletter_jnum_dict[aletter]
+        else:
+            aletter += "0" 
+            jnum = self.aletter_jnum_dict[aletter]
+        print "Attempting to home Axis %s --> Joint %s" % (aletter, jnum)
+        self.home_joint(jnum)
         
         
     def on_exit_program_clicked(self, widget, data = None):
@@ -711,7 +748,7 @@ class hazzy(object):
 
 
     # =========================================================      
-    # Main panel CheckBoxe handlers
+    # Main panel CheckBox handlers
     # Have to use pressed for these as clicked is emited on 
     # set_active() in the update function in slow_periodic
         
@@ -735,12 +772,10 @@ class hazzy(object):
     # 
     def on_step_clicked(self, widget, data = None):
         print "STEP was clicked, I don't know by who though."
-
     
     def on_button1_clicked(self, widget, data = None):
         print "TOGGLE Pressed"
         tooledit.tooledit() 
-            
         
     def on_redraw_clicked(self, widget, data = None):
         tooledit.tooledit()
@@ -1189,84 +1224,89 @@ class hazzy(object):
         if self.stat.task_state == linuxcnc.STATE_ESTOP:
             self.state = linuxcnc.STATE_ESTOP
             state_str = "ESTOP"
-            print "Machine is in STATE_ESTOP"
         elif self.stat.task_state == linuxcnc.STATE_ESTOP_RESET:
             self.state = linuxcnc.STATE_ESTOP_RESET
-            state_str = "RESET"
-            print "Machine is in STATE_ESTOP_RESET"    
+            state_str = "RESET"   
         elif self.stat.task_state == linuxcnc.STATE_ON:
             self.state = linuxcnc.STATE_ON
-            state_str = "ON"
-            print "Machine is in STATE_ON" 
+            state_str = "ON" 
         elif self.stat.task_state == linuxcnc.STATE_OFF:
             self.state = linuxcnc.STATE_OFF
             state_str = "OFF"
-            print "Machine is in STATE_OFF"
         else:
             state_str = "Unknown state"
             print "Unknown state!!!"
-        self.widgets.state_lable.set_text(state_str)
+        print "Machine is in state ", state_str
+        self.widgets.emc_state_label.set_text("State: " + state_str)
         
             
     def _update_machine_mode(self):
         if self.stat.task_mode == linuxcnc.MODE_MDI:
             self.mode = linuxcnc.MODE_MDI
             mode_str = "MDI"
-            print "Machine is in MDI mode"
         elif self.stat.task_mode == linuxcnc.MODE_MANUAL:
             self.mode = linuxcnc.MODE_MANUAL
-            mode_str = "MAN"
-            print "Machine is in MANUAL mode"    
+            mode_str = "MAN"    
         elif self.stat.task_mode == linuxcnc.MODE_AUTO:
             self.mode = linuxcnc.MODE_AUTO
             mode_str = "AUTO"
-            print "Machine is in AUTO mode" 
         else:
             state_str = "Unknown mode"
-            print "Unknown mode!!!"
-        self.widgets.mode_lable.set_text(mode_str)
+        print "Machine is in mode ",mode_str
+        self.widgets.emc_mode_label.set_text("Mode: " + mode_str)
         
         
     def _update_interp_state(self):
         if self.stat.interp_state == linuxcnc.INTERP_IDLE:
             self.interp = linuxcnc.INTERP_IDLE
             state_str = "IDLE"
-            print "Interpreter is IDLE"
         elif self.stat.interp_state == linuxcnc.INTERP_READING:
             self.interp = linuxcnc.INTERP_READING
-            state_str = "READ"
-            print "Interpreter is READING"    
+            state_str = "READ"    
         elif self.stat.interp_state == linuxcnc.INTERP_PAUSED:
             self.interp = linuxcnc.INTERP_PAUSED
-            state_str = "PAUS"
-            print "Interpreter is PAUSED"
+            state_str = "PAUSE"
         elif self.stat.interp_state == linuxcnc.INTERP_WAITING:
             self.interp = linuxcnc.INTERP_WAITING
-            state_str = "WAIT"
-            print "Interpreter is WAITING"  
+            state_str = "WAIT" 
         else:
-            state_str = "Unknown state"
-            print "Unknown interp state!!!"
-        self.widgets.interp_lable.set_text(state_str)     
-            
-                
+            state_str = "Unknown"
+        print "Interpreter is in state ",state_str
+        self.widgets.emc_interp_label.set_text("Interp: " + state_str)
+        
+        
+    def _update_motion_mode(self):
+        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_COORD: 
+            self.motion_mode = linuxcnc.TRAJ_MODE_COORD
+            motion_str = "COORD"
+        elif self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
+            self.motion_mode = linuxcnc.TRAJ_MODE_FREE
+            motion_str = "FREE"
+        elif self.stat.motion_mode == linuxcnc.TRAJ_MODE_TELEOP:
+            self.motion_mode = linuxcnc.TRAJ_MODE_TELEOP
+            motion_str = "TELEOP"
+        else:
+            self.motion_mode = -1
+            motion_str = "Unknown"
+        print "Motion mode is %s" % motion_str
+        self.widgets.emc_motion_label.set_text("Motion: " + motion_str)
+        
     
     def _update_dros(self):
-        
         if self.dro_actual_pos:
-            # Get actual machine position
             pos = self.stat.actual_position
         else:
-            # Get commanded machine position
             pos = self.stat.position
             
-        # Get distance to go
         dtg = self.stat.dtg
-        
-        rel = []
-        for joint in self.joint_list:
-            rel.append(pos[joint] - self.stat.g5x_offset[joint] - self.stat.tool_offset[joint])
-        
+        g5x_offset = self.stat.g5x_offset        
+        g92_offset = self.stat.g92_offset
+        tool_offset = self.stat.tool_offset
+
+        rel = [0]*9
+        for axis in self.axis_number_list:
+            rel[axis] = pos[axis] - g5x_offset[axis] - tool_offset[axis]
+            
         if self.stat.rotation_xy != 0:
             t = math.radians(-self.stat.rotation_xy)
             xr = rel[0] * math.cos(t) - rel[1] * math.sin(t)
@@ -1274,8 +1314,8 @@ class hazzy(object):
             rel[0] = xr
             rel[1] = yr
             
-        for joint in self.joint_list:
-            rel[joint] -= self.stat.g92_offset[joint]
+        for axis in self.axis_number_list:
+            rel[axis] -= g92_offset[axis]
             
         if self.display_metric != self.machine_metric: # We need to convert
             rel = self.convert_dro_units(rel)
@@ -1286,18 +1326,25 @@ class hazzy(object):
             dec_plc = self.mm_dro_plcs
         else:
             dec_plc = self.in_dro_plcs
-            
-        # XXX - this is a hack, works for trivial configs, but not gantry etc.   
-        # Put values in the DROs
-        if not self.dro_has_focus: # Keep from overwriting user input
-            for i in range(0, len(self.dro_list)):
-                self.dro_list[i].set_text("%.*f" % (dec_plc, rel[self.joint_list[i]]))
 
-        for i in range(0, len(self.dtg_list)):
-            self.dtg_list[i].set_text("%.*f" % (dec_plc, dtg[self.joint_list[i]]))
-        
-        for i in range(0, len(self.abs_list)):
-            self.abs_list[i].set_text("%.*f" % (dec_plc,pos[self.joint_list[i]]))
+        if not self.dro_has_focus: # Keep from overwriting user input
+            for axis, dro in self.rel_dro_dict.iteritems():
+                #print axis, rel[axis]
+                dro.set_text("%.*f" % (dec_plc, rel[axis]))
+                
+        for axis, dro in self.dtg_dro_dict.iteritems():
+                dro.set_text("%.*f" % (dec_plc, dtg[axis]))     
+                
+        for axis, dro in self.abs_dro_dict.iteritems():
+                dro.set_text("%.*f" % (dec_plc, pos[axis]))
+
+            
+    # Convert DRO units back and forth from in to mm    
+    def convert_dro_units(self, values):
+        out = [0]*9
+        for axis, value in enumerate(values) :  
+            out[axis] = values[axis] * self.conversion[axis]
+        return out
         
         
     def _update_work_cord(self):
@@ -1351,11 +1398,9 @@ class hazzy(object):
             if not self.machine_metric:
                 act_vel = act_vel * 25.4 # Is this conversion needed??
         
-        # Set the labels
         self.widgets.current_vel_label.set_text("%.*f" %(vel_dec_plcs, act_vel))
         self.widgets.active_feed_label.set_label("%.*f" %(feed_dec_plcs, prog_feed))
         self.widgets.actual_feed_label.set_text("%.*f" %(feed_dec_plcs, act_feed))
-        
         
         
     def _update_override_labels (self):
@@ -1382,7 +1427,7 @@ class hazzy(object):
         self.current_tool_dia = self.stat.tool_table[self.current_tool][10]
         
         
-    # FIXME This won't work properly till the "statetags" branch is merged
+    # FIXME This won't work properly till the "state-tags" branch is merged
     def _update_cutting_parameters(self):
         if "G1" in self.active_codes and self.current_tool_dia != 0:
             self.surface_speed = self.spindle_speed * self.current_tool_dia * 0.2618
@@ -1395,58 +1440,87 @@ class hazzy(object):
 
 
     def _get_axis_list(self):
+        
         coordinates = self.get_ini_info.get_coordinates()
-        coordinates = "".join(coordinates.split()).upper()
-        self.axis_list = []
-        for axis in coordinates:
-            if axis in self.axis_list:
-                continue
-            if not axis in [ 'X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W' ]:
-                continue
-            self.axis_list.append(axis)
+        num_joints = self.get_ini_info.get_joints()
+        
+        for joint in range(0, num_joints):
+            self.joint_list.append(joint)
+        #print "Joint list: ", self.joint_list
 
-        if len(coordinates) != len(self.axis_list):
-            print tc.E + 'Hazzy does not yet support gantry type machines!'
-            
-        # TODO Add support for gantry machines
-        #    if self.stat.kinematics_type != linuxcnc.KINEMATICS_IDENTITY:
-        #        print "Identity kinematics with more joints than axes"
-        #        
-        #    print "Coordinates:", coordinates
-        #    
-        #    for axis in [ 'X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W' ]:
-        #        if coordinates.count(axis) > 1:
-        #            # We have a gantry with something like XYYZ (or if we are RodW XXYZ!!)
-        #            print tc.I + 'Machine is a gantry configuration' 
-        #            
-        #            if len(self.axis_list) == 3: # Gantry with no rotary axis
-        #                print "Gantry with no rotary axis"
-        #                self.joint_list = [0, 1, 2, 3]
-        #              
-        #                
-        #            if len(self.axis_list) == 4: # Gantry with one rotary axis
-        #                print "Gantry with one rotary axis"
-        #                rotary_axis = [ 'X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W' ].index(self.axis_lisat[-1])
-        #                self.joint_list = [0, 1, 2, 3] 
-            
+        # Axis letter list (Ex. ['X', 'Y', 'Z', 'B'])
+        for joint, axis_letter in enumerate(coordinates):
+            if axis_letter in self.axis_letter_list:
+                continue
+            self.axis_letter_list.append(axis_letter)
+        
+        self.number_axes = len(self.axis_letter_list)
+        
+        #print "The machine has %s axes: %s" % (self.number_axes, self.axis_letter_list)
+                
+        # Axis number list (Ex. [0, 1, 2, 4])
+        for axis in self.axis_letter_list:
+            axis_number = self.axis_letters.index(axis)
+            self.axis_number_list.append(axis_number)
+        
+        #print "Axis number list: ", self.axis_number_list
+        
+        # Joint:Axis dict (Ex. {0:0, 1:1, 2:2, 3:4})
+        for jnum, aletter in enumerate(coordinates):
+            anum = self.axis_letters.index(aletter)
+            self.joint_axis_dict[jnum] = anum
+        
+        #print "Joint-axis dict: ", self.joint_axis_dict
+        
+
+        double_aletter = ""
+        for aletter in self.axis_letters:
+            if coordinates.count(aletter) > 1:
+                double_aletter += aletter
+        if double_aletter != "":
+            print "\nMachine appearers to be a gantry config with double %s Axis" % double_aletter
+        
+        self.aletter_jnum_dict = {}
+        if num_joints == len(coordinates):
+            print "\nThe machine has %s axes and %s joints" % (self.number_axes, num_joints)
+            print "Assuming the Axes/Joints mapping is:"
+            count = 0
+            for jnum, aletter in enumerate(coordinates):
+                if aletter in double_aletter:
+                    aletter = aletter + str(count)
+                    count += 1
+                self.aletter_jnum_dict[aletter] = jnum
+                print("Axis %s --> Joint %s" %(aletter, jnum))
         else:
-            for axis in coordinates:
-                joint = [ 'X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W' ].index(axis)
-                self.joint_list.append(joint)
+            print "The number of joints (%s) is not equal to the number of coordinates (%s)" % (num_joints, len(coordinates))
+            print "It is highly recommended you update your config. Reverting to old style."
+            print "This will likely result in incorrect behavior... "
+            print "\nGuessing the Axes/Joints mapping is:"
+            for jnum, aletter in enumerate(self.axis_letters):
+                if aletter in coordinates:
+                    self.aletter_jnum_dict[aletter] = jnum
+                    print("Axis %s --> Joint %s" %(aletter, jnum))
+            
+
+
+
         
 
     def _update_homing_status(self):
         homed_joints = [0]*9
         for joint in self.joint_list:
-            if self.stat.homed[joint]:
+            if self.stat.joint[joint]['homed'] != 0:
                 homed_joints[joint] = 1 # 1 indicates homed
-                self.abs_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
-            elif self.stat.axis[joint]['homing'] != 0:
+                axis = self.joint_axis_dict[joint]
+                self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+            elif self.stat.joint[joint]['homing'] != 0:
                 homed_joints[joint] = 2 # 2 indicates homing in progress
-                self.abs_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('yellow'))
+                axis = self.joint_axis_dict[joint]
+                self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('yellow'))
             else:
                 homed_joints[joint] = 0 # 0 indicates unhomed
-                self.abs_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+                axis = self.joint_axis_dict[joint]
+                self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
         self.homed_joints = homed_joints
 
 
@@ -1455,12 +1529,12 @@ class hazzy(object):
         if self.is_moving() or not self.is_homed() or self.no_force_homing:
             # An eventbox is placed over the editable DROs, if it is visible it blocks them from events 
             self.widgets.dro_mask.set_visible(True)
-            for axis in range(0, len(self.axis_list)):
-                self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))
+            for anum, dro in self.rel_dro_dict.iteritems():
+                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))  
         else:
             self.widgets.dro_mask.set_visible(False)
-            for axis in range(0, len(self.axis_list)):
-                self.dro_list[axis].modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))          
+            for joint, dro in self.rel_dro_dict.iteritems():
+                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))          
 
 
 
@@ -1474,31 +1548,23 @@ class hazzy(object):
         if self.keypad_on_dro:
             touchpad.touchpad(widget)
 
-
     def on_dro_loses_focus(self, widget, data=None):
         self.dro_has_focus = False
         widget.select_region(-1, -1)
         self.window.set_focus(None)
 
-
     def on_dro_key_press_event(self, widget, event, data=None):
         if event.keyval == gtk.keysyms.Escape:
             self.dro_has_focus = False
             self.window.set_focus(None)
-            #return True
-
 
     def on_dro_activate(self, widget):
-        if widget == self.widgets.dro_x:
-            axis = 'X'
-        elif widget == self.widgets.dro_y:
-            axis = 'Y'
-        elif widget == self.widgets.dro_z:
-            axis = 'Z'
-        elif widget == self.widgets.dro_4:
-            axis = 'A'
-
-        self.set_work_offset(axis, widget.get_text())
+        # Look up the axis from the GTK object 
+        for axis_number, dro in self.rel_dro_dict.iteritems():
+            if dro == widget:
+                axis_letter = self.axis_letters[axis_number]
+                break
+        self.set_work_offset(axis_letter, widget.get_text())
         self.window.set_focus(None)
         
         
@@ -1512,33 +1578,26 @@ class hazzy(object):
         #    return
         self.widgets.mdi_entry.set_text("")
         if self.keypad_on_mdi: 
-            #touchpad.touchpad(widget, True)
             keyboard.keyboard(widget, self.get_win_pos())
             
-    
     def on_mdi_entry_changed(self, widget, data=None):
         # Convert MDI entry text to UPPERCASE
         self.widgets.mdi_entry.set_text(widget.get_text().upper())
-
             
     def on_mdi_entry_loses_focus(self, widget, data=None):
         self.widgets.mdi_entry.set_text("MDI:")
         self.window.set_focus(None)
         
-        
     def on_mdi_entry_key_press_event(self, widget, event): 
         if event.keyval == gtk.keysyms.Escape:
             self.window.set_focus(None)
-
-
+            
     def on_mdi_entry_activate(self, widget):
-        command = self.widgets.mdi_entry.get_text()
-        if len(command) == 0:
-            # Ignore it
+        cmd = self.widgets.mdi_entry.get_text()
+        if len(cmd) == 0:
             self.window.set_focus(None)
         else:
-            # Issue the command
-            self.issue_mdi(command)
+            self.issue_mdi(cmd)
             # Set button to 'stop' so can kill MDI motion if need be
             self.set_cycle_start_button_state('stop')
             self.window.set_focus(None)
@@ -1550,7 +1609,6 @@ class hazzy(object):
                         
     def set_mode(self, mode):
         if self.stat.task_mode == mode:
-            # If already in the desired mode do nothing
             return True
         self.command.mode(mode)
         self.command.wait_complete()
@@ -1559,7 +1617,6 @@ class hazzy(object):
         
     def set_state(self, state):
         if self.stat.state == state:
-            # If already in the desired state do nothing
             return True
         self.command.state(state)
         self.command.wait_complete()
@@ -1586,19 +1643,19 @@ class hazzy(object):
         self.widgets.gremlin.reloadfile(self.stat.file)
 
     
-    def home_axis(self, joint):
-        if self.stat.axis[joint]['homed'] == 0 and not self.stat.estop and self.stat.axis[joint]['homing'] == 0:
+    def home_joint(self, joint):
+        if self.stat.joint[joint]['homed'] == 0 and not self.stat.estop and self.stat.joint[joint]['homing'] == 0:
             self.set_mode(linuxcnc.MODE_MANUAL)
             self._show_message(["INFO", "Homing joint %s " % joint])
             self.command.home(joint)
-            self.homed_joints[joint] = 2 # Indicate homing in process, needed to cause update of joint states
+            self.homed_joints[joint] = 2 # Indicate homing in process, needed to cause update of joint status
         elif self.stat.homed[joint]:
             message = ("joint %s is already homed. \n Unhome?" % joint)
             if dialogs.dialogs(message).run():
                 self.set_mode(linuxcnc.MODE_MANUAL)
                 self._show_message(["INFO", "Unhoming joint %s " % joint])
                 self.command.unhome(joint)
-        elif self.stat.axis[joint]['homing'] != 0:
+        elif self.stat.joint[joint]['homing'] != 0:
             self._show_message(["ERROR", "Homing sequence already in progress"])
         else:
             self._show_message(["ERROR", "Can't home joint %s, check E-stop and machine power" % joint])
@@ -1607,17 +1664,9 @@ class hazzy(object):
     # Check if all joints are homed  
     def is_homed(self):
         for joint in self.joint_list:
-            if not self.stat.homed[joint]:
+            if not self.stat.joint[joint]['homed']:
                 return False
-        return True            
-        
-            
-    # Convert DRO units back and forth from in to mm    
-    def convert_dro_units(self, values):
-        out = []
-        for joint in self.joint_list:  
-            out.append(values[joint] * self.conversion[joint])
-        return out
+        return True
         
 
     # Check if the machine is moving due to MDI, program execution, etc.        

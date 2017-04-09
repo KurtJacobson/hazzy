@@ -83,8 +83,7 @@
                         <property name="cursor_visible">False</property>
                         <property name="accepts_tab">False</property>
                         <property name="show_line_numbers">True</property>
-                        <property name="show_line_marks">True</property>
-                        <property name="highlight_current_line">True</property>
+                        <property name="indent_on_tab">False</property>
                         <signal name="button-press-event" handler="on_gcode_view_button_press_event" swapped="no"/>
                       </object>
                     </child>
@@ -100,7 +99,7 @@
                     <property name="height_request">23</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">label</property>
+                    <property name="label" translatable="yes">No program loaded</property>
                     <property name="ellipsize">middle</property>
                     <property name="single_line_mode">True</property>
                   </object>
@@ -1014,16 +1013,16 @@
           </packing>
         </child>
         <child>
-          <object class="GtkTable" id="table1">
-            <property name="width_request">220</property>
-            <property name="height_request">150</property>
+          <object class="GtkTable" id="dro_table">
+            <property name="width_request">300</property>
+            <property name="height_request">175</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="n_rows">5</property>
+            <property name="n_rows">6</property>
             <property name="n_columns">4</property>
             <property name="column_spacing">4</property>
             <child>
-              <object class="GtkEntry" id="dro_x">
+              <object class="GtkEntry" id="dro_0">
                 <property name="width_request">100</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
@@ -1051,7 +1050,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="dro_y">
+              <object class="GtkEntry" id="dro_1">
                 <property name="width_request">100</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
@@ -1079,7 +1078,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="dro_z">
+              <object class="GtkEntry" id="dro_2">
                 <property name="width_request">100</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
@@ -1107,7 +1106,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEntry" id="dro_4">
+              <object class="GtkEntry" id="dro_3">
                 <property name="width_request">100</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
@@ -1135,7 +1134,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label10">
+              <object class="GtkLabel" id="dro_label_0">
                 <property name="width_request">8</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
@@ -1147,7 +1146,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label11">
+              <object class="GtkLabel" id="dro_label_1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Y</property>
@@ -1158,7 +1157,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label12">
+              <object class="GtkLabel" id="dro_label_2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Z</property>
@@ -1169,7 +1168,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label13">
+              <object class="GtkLabel" id="dro_label_3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">A</property>
@@ -1193,7 +1192,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label15">
+              <object class="GtkLabel" id="dtg_dro_lable">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">DTG</property>
@@ -1204,7 +1203,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="dtg_x">
+              <object class="GtkLabel" id="dtg_0">
                 <property name="width_request">100</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
@@ -1221,7 +1220,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="dtg_y">
+              <object class="GtkLabel" id="dtg_1">
                 <property name="width_request">100</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
@@ -1237,7 +1236,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="dtg_z">
+              <object class="GtkLabel" id="dtg_2">
                 <property name="width_request">100</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
@@ -1253,7 +1252,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="dtg_4">
+              <object class="GtkLabel" id="dtg_3">
                 <property name="width_request">100</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
@@ -1273,7 +1272,7 @@
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="visible_window">False</property>
-                <signal name="button-press-event" handler="on_home_all_clicked" swapped="no"/>
+                <signal name="button-press-event" handler="on_abs_label_clicked" swapped="no"/>
                 <child>
                   <object class="GtkLabel" id="abs_label">
                     <property name="visible">True</property>
@@ -1288,13 +1287,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEventBox" id="abs_x_eventbox">
+              <object class="GtkEventBox" id="abs_eventbox_0">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="visible_window">False</property>
-                <signal name="button-press-event" handler="on_home_selected_clicked" swapped="no"/>
+                <signal name="button-press-event" handler="on_abs_dro_clicked" swapped="no"/>
                 <child>
-                  <object class="GtkLabel" id="abs_x">
+                  <object class="GtkLabel" id="abs_0">
                     <property name="width_request">70</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -1311,13 +1310,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEventBox" id="abs_y_eventbox">
+              <object class="GtkEventBox" id="abs_eventbox_1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="visible_window">False</property>
-                <signal name="button-press-event" handler="on_home_selected_clicked" swapped="no"/>
+                <signal name="button-press-event" handler="on_abs_dro_clicked" swapped="no"/>
                 <child>
-                  <object class="GtkLabel" id="abs_y">
+                  <object class="GtkLabel" id="abs_1">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="xalign">1</property>
@@ -1333,13 +1332,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEventBox" id="abs_z_eventbox">
+              <object class="GtkEventBox" id="abs_eventbox_2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="visible_window">False</property>
-                <signal name="button-press-event" handler="on_home_selected_clicked" swapped="no"/>
+                <signal name="button-press-event" handler="on_abs_dro_clicked" swapped="no"/>
                 <child>
-                  <object class="GtkLabel" id="abs_z">
+                  <object class="GtkLabel" id="abs_2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="xalign">1</property>
@@ -1355,13 +1354,13 @@
               </packing>
             </child>
             <child>
-              <object class="GtkEventBox" id="abs_4_eventbox">
+              <object class="GtkEventBox" id="abs_eventbox_3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="visible_window">False</property>
-                <signal name="button-press-event" handler="on_home_selected_clicked" swapped="no"/>
+                <signal name="button-press-event" handler="on_abs_dro_clicked" swapped="no"/>
                 <child>
-                  <object class="GtkLabel" id="abs_4">
+                  <object class="GtkLabel" id="abs_3">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="xalign">1</property>
@@ -1379,94 +1378,88 @@
             <child>
               <placeholder/>
             </child>
+            <child>
+              <object class="GtkEntry" id="dro_4">
+                <property name="width_request">100</property>
+                <property name="height_request">30</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="has_frame">False</property>
+                <property name="invisible_char">●</property>
+                <property name="xalign">1</property>
+                <property name="shadow_type">none</property>
+                <property name="invisible_char_set">True</property>
+                <property name="primary_icon_activatable">False</property>
+                <property name="secondary_icon_activatable">False</property>
+                <property name="primary_icon_sensitive">True</property>
+                <property name="secondary_icon_sensitive">True</property>
+                <signal name="activate" handler="on_dro_activate" swapped="no"/>
+                <signal name="button-release-event" handler="on_dro_gets_focus" swapped="no"/>
+                <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
+                <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
+                <property name="x_options"/>
+                <property name="y_options"/>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="dtg_4">
+                <property name="width_request">100</property>
+                <property name="height_request">30</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">1</property>
+                <property name="label" translatable="yes">dtg_4</property>
+              </object>
+              <packing>
+                <property name="left_attach">2</property>
+                <property name="right_attach">3</property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="dro_label_4">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">B</property>
+              </object>
+              <packing>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEventBox" id="abs_eventbox_4">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="visible_window">False</property>
+                <signal name="button-press-event" handler="on_abs_dro_clicked" swapped="no"/>
+                <child>
+                  <object class="GtkLabel" id="abs_4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="xalign">1</property>
+                    <property name="label" translatable="yes">abs_4</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="left_attach">3</property>
+                <property name="right_attach">4</property>
+                <property name="top_attach">5</property>
+                <property name="bottom_attach">6</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="x">362</property>
-            <property name="y">502</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="label2">
-            <property name="width_request">50</property>
-            <property name="height_request">20</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="xalign">1</property>
-            <property name="label" translatable="yes">State:</property>
-          </object>
-          <packing>
-            <property name="x">15</property>
-            <property name="y">686</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="label3">
-            <property name="width_request">50</property>
-            <property name="height_request">20</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="xalign">1</property>
-            <property name="label" translatable="yes">Mode:</property>
-          </object>
-          <packing>
-            <property name="x">15</property>
-            <property name="y">700</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="state_lable">
-            <property name="width_request">100</property>
-            <property name="height_request">20</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">label</property>
-          </object>
-          <packing>
-            <property name="x">70</property>
-            <property name="y">686</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="mode_lable">
-            <property name="width_request">100</property>
-            <property name="height_request">20</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">label</property>
-          </object>
-          <packing>
-            <property name="x">70</property>
-            <property name="y">700</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="interp">
-            <property name="width_request">50</property>
-            <property name="height_request">20</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="xalign">1</property>
-            <property name="label" translatable="yes">Interp:</property>
-          </object>
-          <packing>
-            <property name="x">120</property>
-            <property name="y">686</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="interp_lable">
-            <property name="width_request">55</property>
-            <property name="height_request">20</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="xalign">0</property>
-            <property name="label" translatable="yes">label</property>
-          </object>
-          <packing>
-            <property name="x">175</property>
-            <property name="y">686</property>
+            <property name="y">495</property>
           </packing>
         </child>
         <child>
@@ -1597,8 +1590,8 @@
         </child>
         <child>
           <object class="GtkEventBox" id="dro_mask">
-            <property name="width_request">100</property>
-            <property name="height_request">120</property>
+            <property name="width_request">166</property>
+            <property name="height_request">180</property>
             <property name="can_focus">False</property>
             <property name="visible_window">False</property>
             <child>
@@ -1606,8 +1599,8 @@
             </child>
           </object>
           <packing>
-            <property name="x">396</property>
-            <property name="y">530</property>
+            <property name="x">365</property>
+            <property name="y">493</property>
           </packing>
         </child>
         <child>
@@ -1989,6 +1982,76 @@
           <packing>
             <property name="x">231</property>
             <property name="y">688</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTable" id="emc_state_table">
+            <property name="width_request">200</property>
+            <property name="height_request">35</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="n_rows">2</property>
+            <property name="n_columns">2</property>
+            <child>
+              <object class="GtkLabel" id="emc_state_label">
+                <property name="width_request">100</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">State:</property>
+              </object>
+              <packing>
+                <property name="x_options"/>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="emc_interp_label">
+                <property name="width_request">100</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Interp:</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="x_options"/>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="emc_mode_label">
+                <property name="width_request">100</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Mode:</property>
+              </object>
+              <packing>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+                <property name="x_options"/>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="emc_motion_label">
+                <property name="width_request">100</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="xalign">0</property>
+                <property name="label" translatable="yes">Motion:</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
+                <property name="top_attach">1</property>
+                <property name="bottom_attach">2</property>
+                <property name="x_options"/>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="x">18</property>
+            <property name="y">686</property>
           </packing>
         </child>
       </object>
