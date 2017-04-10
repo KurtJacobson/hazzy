@@ -51,11 +51,11 @@ class dialogs(object):
         self.message = message
         self.result = False
         
-        if "joint" in self.message:
-            # Replace "joint N" with "L Axis" to make mesages easyer to understant for noobies
-            for letter in [ 'x', 'y', 'z', 'a', 'b', 'c', 'u', 'v', 'w', 's' ]:
-                axnum = "xyzabcuvws".index(letter)
-                message = message.replace("joint %d" % axnum, "%s axis" % letter.upper())
+#        if "joint" in self.message:
+#            # Replace "joint N" with "L Axis" to make mesages easyer to understant for noobies
+#            for letter in [ 'x', 'y', 'z', 'a', 'b', 'c', 'u', 'v', 'w', 's' ]:
+#                axnum = "xyzabcuvws".index(letter)
+#                message = message.replace("joint %d" % axnum, "%s axis" % letter.upper())
 
         self.builder.get_object("mesage_label").set_text(message)
         

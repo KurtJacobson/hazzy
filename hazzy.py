@@ -142,7 +142,7 @@ class hazzy(object):
         self.prefs = hazzy_prefs.preferences(pref_file)
         
         # Get the tool table liststore
-        self.tool_listore = self.builder.get_object("tool_liststore")
+        self.tool_liststore = self.builder.get_object("tool_liststore")
 
        
 
@@ -225,6 +225,7 @@ class hazzy(object):
         self.rapid_override = ""
         self.spindle_speed = ""
         self.current_tool = ""
+        self.current_tool_data = [""]*5 + ["No Tool Loaded"]
         self.current_work_cord = ""     # Keep track of current work cord
         self.codes = []                 # Unformatted G codes + M codes to check if an update is required
         self.active_codes = []          # Formated G codes + M codes for display
@@ -348,12 +349,13 @@ class hazzy(object):
         # Initialize MDI entry  
         self.widgets.mdi_entry.modify_font(self.mdi_font)
         self.widgets.mdi_entry.set_text("MDI:")
+        
+        self.widgets.tool_number_entry.modify_font(self.dro_font)
+        
             
         #XXX Move
         self._get_axis_list()
-        
 
-        
         self.rel_dro_list = ('dro_0', 'dro_1', 'dro_2', 'dro_3', 'dro_4')
         self.dtg_dro_list = ('dtg_0', 'dtg_1', 'dtg_2', 'dtg_3', 'dtg_4')    
         self.abs_dro_list = ('abs_0', 'abs_1', 'abs_2', 'abs_3', 'abs_4')
@@ -463,6 +465,11 @@ class hazzy(object):
     
     # Called at ini [DISPLAY] CYCLE_TIME to update readouts     
     def _fast_periodic(self): # Called at 50ms default
+        # Check for messages
+        message = self.error_channel.poll()
+        if message:
+            self._show_message(message)
+        
         self.stat.poll()
         self._update_dros()
         self._update_override_labels()
@@ -490,10 +497,10 @@ class hazzy(object):
     # Called every 5 fast_periodic cycles to update slower moving readouts and button states
     def _slow_periodic(self):
         
-        # Check for messages
-        message = self.error_channel.poll()
-        if message:
-            self._show_message(message)
+#        # Check for messages
+#        message = self.error_channel.poll()
+#        if message:
+#            self._show_message(message)
         
         # Update work cord if it has changed
         if self.current_work_cord != self.stat.g5x_index:
@@ -573,7 +580,7 @@ class hazzy(object):
 
 #        if "joint" in text:
 #            # Replace "joint N" with "L axis" 
-#            for axis in self.axis_list:
+#            for axis in self.axis_letter_list:
 #                joint = 'XYZABCUVWS'.index(axis)
 #                text = text.replace("joint %d" % joint, "%s axis" % axis)
 #            text = text.replace("joint -1", "all axes")
@@ -585,7 +592,9 @@ class hazzy(object):
             kind = "INFO"
         elif kind in (linuxcnc.NML_DISPLAY, linuxcnc.OPERATOR_DISPLAY):
             kind = "MSG"
-        elif kind == "" or kind == None:
+        elif kind == "INFO" or kind == "ERROR":
+            pass
+        else:
             kind = "ERROR"
             
         if text == "" or text == None:
@@ -778,7 +787,7 @@ class hazzy(object):
         tooledit.tooledit() 
         
     def on_redraw_clicked(self, widget, data = None):
-        tooledit.tooledit()
+        self.highlight_tool(3)
     
         
     
@@ -977,7 +986,7 @@ class hazzy(object):
             
             
 # =========================================================      
-# BEGIN - [Offsets] notebook page button handlers
+# BEGIN - [Tool] notebook page button handlers
 # =========================================================
             
 
@@ -989,7 +998,7 @@ class hazzy(object):
         if not os.path.exists(fn):
             print "Tool table does not exist"
             return
-        self.tool_listore.clear() # Clear any existing data
+        self.tool_liststore.clear() # Clear any existing data
         print "Loading tool table: ", fn              
         tf = open(fn, "r")
         tool_table = tf.readlines()
@@ -1037,7 +1046,7 @@ class hazzy(object):
             return
         print "Saving tool table as: ", fn
         fn = open(fn, "w")
-        for row in self.tool_listore:
+        for row in self.tool_liststore:
             values = [ value for value in row ]
             line = ""
             for num,i in enumerate(values):
@@ -1057,11 +1066,11 @@ class hazzy(object):
 
 
     def add_tool(self, data = None):
-        self.tool_listore.append(data)
+        self.tool_liststore.append(data)
         
         
     def get_selected_tool(self):
-        model = self.tool_listore
+        model = self.tool_liststore
         def match_value_cb(model, path, iter, pathlist):
             if model.get_value(iter, 0) == 1:
                 pathlist.append(path)
@@ -1076,9 +1085,8 @@ class hazzy(object):
             return(model.get_value(model.get_iter(pathlist[0]), 1))
         
         
-    # Delete selected tools
     def on_delete_selected_clicked(self, widget):
-        liststore  = self.tool_listore
+        liststore  = self.tool_liststore
         def match_value_cb(model, path, iter, pathlist):
             if model.get_value(iter, 0) == 1 :
                 pathlist.append(path)
@@ -1094,11 +1102,11 @@ class hazzy(object):
     def on_change_to_selected__tool_clicked(self, widget, data = None):
         tool_num = self.get_selected_tool()
         if tool_num != None:
-            self.issue_mdi('M6 T%s' % tool_num )
+            self.issue_mdi('M6 T%s G43' % tool_num )
         
     
     def on_add_tool_clicked(self, widget, data = None):
-        num = len(self.tool_listore) + 1
+        num = len(self.tool_liststore) + 1
         array = [ False, num, num, '0.0000', '0.0000', 'New Tool', 'white' ]
         self.add_tool(array)
         
@@ -1114,8 +1122,8 @@ class hazzy(object):
     def on_tool_num_edited(self, widget, path, new_text):
         try:
             new_int = int(new_text)
-            self.tool_listore[path][1] = new_int
-            self.tool_listore[path][2] = new_int
+            self.tool_liststore[path][1] = new_int
+            self.tool_liststore[path][2] = new_int
         except:
             self._show_message(["ERROR", '"%s" is not a valid tool number' % new_text])
             
@@ -1123,7 +1131,7 @@ class hazzy(object):
     def on_tool_pocket_edited(self, widget, path, new_text):
         try:
             new_int = int(new_text)
-            self.tool_listore[path][2] = new_int
+            self.tool_liststore[path][2] = new_int
         except:
             self._show_message(["ERROR", '"%s" is not a valid tool pocket' % new_text])
 
@@ -1131,7 +1139,7 @@ class hazzy(object):
     def on_tool_dia_edited(self, widget, path, new_text):
         try:
             new_num = float(new_text)
-            self.tool_listore[path][3] = "%.4f" % float(new_text)
+            self.tool_liststore[path][3] = "%.4f" % float(new_text)
         except:
             self._show_message(["ERROR", '"%s" is not a valid diameter' % new_text])
 
@@ -1139,35 +1147,31 @@ class hazzy(object):
     def on_z_offset_edited(self, widget, path, new_text):
         try:
             new_num = float(new_text)
-            self.tool_listore[path][4] = "%.4f" % float(new_text)
+            self.tool_liststore[path][4] = "%.4f" % float(new_text)
         except:
             self._show_message(["ERROR", '"%s" is not a valid tool length' % new_text])
 
 
     def on_tool_remark_edited(self, widget, path, new_text):
-        self.tool_listore[path][5] =  new_text
+        self.tool_liststore[path][5] =  new_text
 
 
     # Popup numpad on number edit
-    def on_editing_started(self, renderer, entry, dont_know):
+    def on_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
             touchpad.touchpad(entry)
         
         
     # Popup keyboard on text edit
-    def on_remark_editing_started(self, renderer, entry, dont_know):
+    def on_remark_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
             keyboard.keyboard(entry, self.get_win_pos())
         
         
     # Toggle selection checkbox value
     def on_select_toggled(self, widget, path):
-        model = self.tool_listore
+        model = self.tool_liststore
         model[path][0] = not model[path][0]
-        #if model[path][0] == True:
-        #    model[path][6] = 'gray'
-        #else:
-        #    model[path][6] = 'white'
         
         
     # For single click selection and edit
@@ -1178,6 +1182,34 @@ class hazzy(object):
                 widget.set_cursor(path, None, True)
             except:
                 pass
+    
+    
+    # Used for indicating tool in spindle
+    def highlight_tool(self, tool_num):
+        for row in range(len(self.tool_liststore)):
+            self.tool_liststore[row][0] = 0
+            self.tool_liststore[row][6] = "white"
+            if self.tool_liststore[row][1] == tool_num:
+                self.current_tool_data = self.tool_liststore[row]
+                self.tool_liststore[row][6] = "gray"
+
+    
+    def set_selected_tool(self,toolnumber):
+        try:
+            treeselection = self.view2.get_selection()
+            liststore  = self.model
+            def match_tool(model, path, iter, pathlist):
+                if model.get_value(iter, 1) == toolnumber:
+                    pathlist.append(path)
+                return False     # keep the foreach going
+            pathlist = []
+            liststore.foreach(match_tool, pathlist)
+            # foreach works in a depth first fashion
+            if len(pathlist) == 1:
+                liststore.set_value(liststore.get_iter(pathlist[0]),0,1)
+                treeselection.select_path(pathlist[0])
+        except:
+            print "tooledit_widget error: cannot select tool number",toolnumber
       
 
             
@@ -1251,7 +1283,7 @@ class hazzy(object):
             self.mode = linuxcnc.MODE_AUTO
             mode_str = "AUTO"
         else:
-            state_str = "Unknown mode"
+            mode_str = "Unknown mode"
         print "Machine is in mode ",mode_str
         self.widgets.emc_mode_label.set_text("Mode: " + mode_str)
         
@@ -1286,7 +1318,6 @@ class hazzy(object):
             self.motion_mode = linuxcnc.TRAJ_MODE_TELEOP
             motion_str = "TELEOP"
         else:
-            self.motion_mode = -1
             motion_str = "Unknown"
         print "Motion mode is %s" % motion_str
         self.widgets.emc_motion_label.set_text("Motion: " + motion_str)
@@ -1423,8 +1454,11 @@ class hazzy(object):
             
     def _update_current_tool_data(self):
         self.current_tool = self.stat.tool_in_spindle
-        self.current_tool_num = self.stat.tool_table[self.current_tool][1]
-        self.current_tool_dia = self.stat.tool_table[self.current_tool][10]
+        self.highlight_tool(self.current_tool)
+        self.widgets.tool_number_entry.set_text(str(self.current_tool))
+        self.widgets.tool_comment_label.set_text(self.current_tool_data[5])
+        self.widgets.tool_diameter_label.set_text(self.current_tool_data[3])
+        self.widgets.tool_length_label.set_text(self.current_tool_data[4])
         
         
     # FIXME This won't work properly till the "state-tags" branch is merged
@@ -1500,11 +1534,7 @@ class hazzy(object):
                 if aletter in coordinates:
                     self.aletter_jnum_dict[aletter] = jnum
                     print("Axis %s --> Joint %s" %(aletter, jnum))
-            
 
-
-
-        
 
     def _update_homing_status(self):
         homed_joints = [0]*9
@@ -1526,7 +1556,7 @@ class hazzy(object):
 
     #TODO Make so does not run if it does not need to 
     def _updade_dro_status(self):
-        if self.is_moving() or not self.is_homed() or self.no_force_homing:
+        if self.is_moving() or not self.is_homed(): #or not self.no_force_homing:
             # An eventbox is placed over the editable DROs, if it is visible it blocks them from events 
             self.widgets.dro_mask.set_visible(True)
             for anum, dro in self.rel_dro_dict.iteritems():
@@ -1567,6 +1597,12 @@ class hazzy(object):
         self.set_work_offset(axis_letter, widget.get_text())
         self.window.set_focus(None)
         
+        
+    def on_tool_number_entry_activate(self, widget):
+        tool_num = widget.get_text()
+        self.issue_mdi("M6 T%s G43" % tool_num)
+        widget.set_text(str(self.current_tool))
+        self.window.set_focus(None) 
         
 # =========================================================
 ## BEGIN - MDI entry handlers
@@ -1623,6 +1659,15 @@ class hazzy(object):
         return True
         
         
+    def set_motion_mode(self, mode):
+        if self.stat.motion_mode == mode:
+            return True
+        self.command.teleop_enable(0)
+        self.command.traj_mode(mode)
+        self.command.wait_complete()
+        return True
+        
+        
     def issue_mdi(self, mdi_command):
         if self.set_mode(linuxcnc.MODE_MDI):
             print("Issuing MDI command: " + mdi_command)
@@ -1645,15 +1690,16 @@ class hazzy(object):
     
     def home_joint(self, joint):
         if self.stat.joint[joint]['homed'] == 0 and not self.stat.estop and self.stat.joint[joint]['homing'] == 0:
-            self.set_mode(linuxcnc.MODE_MANUAL)
             self._show_message(["INFO", "Homing joint %s " % joint])
+            self.set_mode(linuxcnc.MODE_MANUAL)
             self.command.home(joint)
             self.homed_joints[joint] = 2 # Indicate homing in process, needed to cause update of joint status
         elif self.stat.homed[joint]:
             message = ("joint %s is already homed. \n Unhome?" % joint)
             if dialogs.dialogs(message).run():
+                #self._show_message(["INFO", "Unhoming joint %s " % joint])
                 self.set_mode(linuxcnc.MODE_MANUAL)
-                self._show_message(["INFO", "Unhoming joint %s " % joint])
+                self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
                 self.command.unhome(joint)
         elif self.stat.joint[joint]['homing'] != 0:
             self._show_message(["ERROR", "Homing sequence already in progress"])
