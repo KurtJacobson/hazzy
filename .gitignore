@@ -2,6 +2,7 @@
 *.pdf
 *.log
 *.var
+*.var.bak
 *.pref
 *.halscope
 *~
