@@ -3,7 +3,7 @@
 #   Popup numberpad for use on all numeric only entries
 
 #   Copyright (c) 2017 Kurt Jacobson
-#        <kcjengr@gmail.com>
+#       <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #
@@ -20,10 +20,8 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-import pygtk
 import gtk
 import os
-import sys
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 IMAGEDIR = os.path.join(pydir, "images") 
@@ -36,7 +34,7 @@ class touchpad(object):
         
         self.dro = widget
         self.original_text = self.dro.get_text() # Save the original entry
-        self.dro.set_text('')                    # Clear the DRO    
+        #self.dro.set_text('')                    # Clear the DRO    
         
         # Glade setup
         if kind == 'numpad': 
@@ -60,6 +58,7 @@ class touchpad(object):
     
     # Handles all the character buttons
     def on_button_clicked(self, widget):
+        self.dro.delete_selection() 
         pos = self.dro.get_position()                  # Get current cursor pos 
         self.dro.insert_text(widget.get_label(), pos)  # Insert text at cursor pos
         self.dro.set_position(pos + 1)                 # Move cursor one space right
@@ -115,7 +114,7 @@ class touchpad(object):
         
     # Space    
     def on_space_clicked(self, widget, data=None):
-        pos = self.dro.get_position()         # Get current cursor pos 
+        pos = self.dro.get_position()       # Get current cursor pos 
         self.dro.insert_text("\t", pos)     # Insert tab at cursor pos
         self.dro.set_position(pos + 1)      # Move cursor one tab right
         
