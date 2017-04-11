@@ -7,7 +7,7 @@
 #   the HAL vcp widgets.
 
 #   Copyright (c) 2017 Kurt Jacobson
-#        <kcjengr@gmail.com>
+#       <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #
@@ -167,11 +167,10 @@ class hazzy(object):
         self.no_force_homing = self.get_ini_info.get_no_force_homing()
         self.machine_metric = self.get_ini_info.get_machine_metric()
         self.nc_file_dir = self.get_ini_info.get_program_prefix()
-        self.log_file = self.get_ini_info.get_log_file_path()
         self.tool_table = self.get_ini_info.get_tool_table()
         # CYCLE_TIME = time, in ms, that display will sleep between polls
         #cycle_time = self.get_ini_info.get_cycle_time() # Defaults to 50ms
-        gobject.timeout_add(50, self._fast_periodic)
+        gobject.timeout_add(75, self._fast_periodic)
         
         # Set the conversions used for changing the DRO units
         # Only want to convert linear axes, hence a list of conversion factors
@@ -181,12 +180,6 @@ class hazzy(object):
         else:
             # List of factors for converting from inches to mm
             self.conversion = [25.4]*3+[1]*3+[25.4]*3
-
-        
-        # Clear the log file
-        logfile = open(self.log_file, "w")
-        logfile.write("*** HAZZY SESSION LOG FILE *** \n")
-        logfile.close() 
 
         
 # =========================================================
@@ -244,16 +237,15 @@ class hazzy(object):
         
         # [FILE PATHS]
         self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_dir, str)
-        self.log_file = self.prefs.getpref("FILE PATHS", "LOG_FILE", self.log_file, str)
         
         # [FILE FILTERS]
         self.preview_ext = self.prefs.getpref("FILE FILTERS", "PREVIEW_EXT", [".ngc", ".txt", ".tap", ".nc"], str)
         
         # [POP-UP KEYPAD]        
-        self.keypad_on_mdi = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_MDI", True)
-        self.keypad_on_dro = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_DRO", True)
-        self.keypad_on_offsets = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_OFFSETS", True)
-        self.keypad_on_edit = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", True)
+        self.keypad_on_mdi = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_MDI", "YES")
+        self.keypad_on_dro = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_DRO", "YES")
+        self.keypad_on_offsets = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_OFFSETS", "YES")
+        self.keypad_on_edit = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES")
 
         # [FONTS]
         self.mdi_font = pango.FontDescription(self.prefs.getpref("FONTS", "MDI_FONT", 'dejavusans condensed 14', str))
@@ -328,7 +320,6 @@ class hazzy(object):
                 print("Verify that the lang spec file and name are correct")
                 
          
-
         # Set the fonts for the labels in the spindle display area
         '''for i in range(1, 7):
             label = self.widgets["spindle_label_%s" % i]
@@ -366,10 +357,10 @@ class hazzy(object):
         count = 4
         table = self.widgets.dro_table
         while count >= self.number_axes: 
-            table.remove(self.builder.get_object(self.rel_dro_list[count]))
-            table.remove(self.builder.get_object(self.dtg_dro_list[count]))
-            table.remove(self.builder.get_object(self.abs_dro_eventboxes[count]))
-            table.remove(self.builder.get_object(self.dro_label_list[count]))
+            table.remove(self.widgets[self.rel_dro_list[count]])
+            table.remove(self.widgets[self.dtg_dro_list[count]])
+            table.remove(self.widgets[self.abs_dro_eventboxes[count]])
+            table.remove(self.widgets[self.dro_label_list[count]])
             count -= 1
             
         
@@ -378,7 +369,7 @@ class hazzy(object):
         for i in range(self.number_axes):
             axis = self.axis_number_list[i]
             dro = self.rel_dro_list[i]
-            self.rel_dro_dict[axis] = self.builder.get_object(dro)
+            self.rel_dro_dict[axis] = self.widgets[dro]
             
         # Set DRO fonts/colors
         for axis, dro in self.rel_dro_dict.iteritems():
@@ -389,7 +380,7 @@ class hazzy(object):
         for i in range(self.number_axes):
             axis = self.axis_number_list[i]
             dro = self.dtg_dro_list[i]
-            self.dtg_dro_dict[axis] = self.builder.get_object(dro)
+            self.dtg_dro_dict[axis] = self.widgets[dro]
             
         # Set DTG DRO fonts/colors.
         for axis, dro in self.dtg_dro_dict.iteritems():
@@ -400,7 +391,7 @@ class hazzy(object):
         for i in range(self.number_axes):
             axis = self.axis_number_list[i]
             dro = self.abs_dro_list[i]
-            self.abs_dro_dict[axis] = self.builder.get_object(dro)
+            self.abs_dro_dict[axis] = self.widgets[dro]
         
         # Set ABS DRO fonts/colors 
         for axis, dro in self.abs_dro_dict.iteritems():
@@ -412,13 +403,20 @@ class hazzy(object):
         for i in range(self.number_axes):
             axis = self.axis_number_list[i]
             eventbox = self.abs_dro_eventboxes[i]
-            self.abs_dro_eventboxes_dict[axis] = self.builder.get_object(eventbox)
+            self.abs_dro_eventboxes_dict[axis] = self.widgets[eventbox]
                 
         # Set DRO axis labels
         for i in range(self.number_axes):
-            label = self.builder.get_object(self.dro_label_list[i])
+            label = self.widgets[self.dro_label_list[i]]
+            label.modify_font(self.mdi_font)
+            label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
             label.set_text(self.axis_letter_list[i])
+            
 
+        for i in ['rel_dro_label', 'dtg_dro_label', 'abs_dro_label']:
+            label = self.widgets[i]
+            label.modify_font(pango.FontDescription('dejavusans condensed 12'))
+            label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
             
             
         self.widgets.spindle_text.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
@@ -448,16 +446,7 @@ class hazzy(object):
         
         #
         self.load_tool_table(self.tool_table)
-        
-        
-    def print_to_log_file(self, message):
-        # Print to log file
-        log_entry = (datetime.datetime.now().strftime(" %Y-%m-%d %H:%M:%S") + "\n ERROR: " + message)
-        log_file = open(self.log_file, "a")
-        log_file.write("\n" + log_entry + "\n")
-        log_file.close() 
-        
-        
+       
     
 # =========================================================
 ## BEGIN - Periodic status checking and updating
@@ -602,27 +591,19 @@ class hazzy(object):
             
         # Print to terminal and display at bottom of screen
         if kind == "INFO":
-            print tc.I + text
+            print(tc.I + text)
             message = '<span size=\"11000\" weight=\"bold\" foreground=\"blue\">INFO:</span> %s' % text
         elif kind == "MSG":
-            print tc.I + text
+            print(tc.I + text)
             message = '<span size=\"11000\" weight=\"bold\" foreground=\"blue\">MSG:</span> %s' % text
         elif kind == "WARN":
-            print tc.W + text
+            print(tc.W + text)
             message = '<span size=\"11000\" weight=\"bold\" foreground=\"orange\">WARNING:</span> %s' % text
         else:
-            print tc.E + text
+            print(tc.E + text)
             message = '<span size=\"11000\" weight=\"bold\" foreground=\"red\">ERROR:</span> %s' % text
             self.set_animation('error_image', 'error_flash.gif')
             self.new_error = True
-            
-            self.print_to_log_file(text)
-            
-            '''# Print to log file
-            log_entry = (datetime.datetime.now().strftime(" %Y-%m-%d %H:%M:%S") + "\n ERROR: " + text)
-            openfile = open(self.log_file, "a")
-            openfile.write("\n" + log_entry + "\n")
-            openfile.close() '''
                         
         self.widgets.message_label.set_markup(message)
         
@@ -787,7 +768,7 @@ class hazzy(object):
         tooledit.tooledit() 
         
     def on_redraw_clicked(self, widget, data = None):
-        self.highlight_tool(3)
+        self.set_selected_tool(3)
     
         
     
@@ -991,6 +972,7 @@ class hazzy(object):
             
 
     # Parse and load tool table into the treeview
+    # More or less copied from Chris Morley's GladeVcp tooledit widget
     def load_tool_table(self, fn = None):
         # If no valid tool table given
         if fn == None:
@@ -1025,20 +1007,23 @@ class hazzy(object):
                         if offset in(1,2):
                             try:
                                 array[offset]= int(word.lstrip(i))
-                            except Exception as e:
-                                print "Tooledit int error with:", word.lstrip(i)
-                                print e
+                            except ValueError:
+                                text = 'Error reading tool table, can\'t convert'\
+                                ' "%s" to integer in %s' % (word.lstrip(i), line)
+                                self._show_message(["ERROR", text])
                         else:
                             try:
                                 array[offset]= "%.4f" % float(word.lstrip(i))
-                            except Exception as e:
-                                print "Tooledit float error with:", word.lstrip(i)
-                                print e
+                            except ValueError:
+                                text = 'Error reading tool table, can\'t convert'\
+                                ' "%s" to float in %s' % (word.lstrip(i), line)
+                                self._show_message(["ERROR", text])
                         break
             # Add array to liststore
             self.add_tool(array)
             
-            
+    # Save tool table
+    # More or less copied from Chris Morley's GladeVcp tooledit widget
     def save_tool_table(self, fn = None):
         if fn == None:
             fn = self.tool_table
@@ -1055,54 +1040,48 @@ class hazzy(object):
                     line = line + "%s%d "%(['S','T','P','D','Z',';'][num], i)
                 else:
                     line = line + "%s%s "%(['S','T','P','D','Z',';'][num], i.strip())
-            # Write to file
+            # Write line to file
             fn.write(line + "\n")
         # Theses lines make sure the OS doesn't cache the data so that
         # linuxcnc will actually load the updated tool table below
         fn.flush()
         os.fsync(fn.fileno())
-        # Reload the tooltable to linuxcnc
         linuxcnc.command().load_tool_table()
 
 
     def add_tool(self, data = None):
         self.tool_liststore.append(data)
-        
-        
-    def get_selected_tool(self):
+            
+            
+    def get_selected_tools(self):
         model = self.tool_liststore
-        def match_value_cb(model, path, iter, pathlist):
-            if model.get_value(iter, 0) == 1:
-                pathlist.append(path)
-            return False     # Keep the foreach going
-        pathlist = []
-        model.foreach(match_value_cb, pathlist)
-        # Foreach works in a depth first fashion
-        print pathlist
-        if len(pathlist) != 1:
-            return None
-        else:
-            return(model.get_value(model.get_iter(pathlist[0]), 1))
-        
-        
+        tools = []
+        for row in range(len(model)):
+            if model[row][0] == 1:
+                tools.append(int(model[row][1]))
+        return tools
+            
+    
     def on_delete_selected_clicked(self, widget):
-        liststore  = self.tool_liststore
-        def match_value_cb(model, path, iter, pathlist):
-            if model.get_value(iter, 0) == 1 :
-                pathlist.append(path)
-            return False     # Feep the foreach going
-        pathlist = []
-        liststore.foreach(match_value_cb, pathlist)
-        # Foreach works in a depth first fashion
-        pathlist.reverse()
-        for path in pathlist:
-            liststore.remove(liststore.get_iter(path))
+        model = self.tool_liststore
+        rows = []
+        for row in range(len(model)):
+            if model[row][0] == 1:
+                rows.append(row)
+        rows.reverse() # So we don't invalidate iters
+        for row in rows:
+            model.remove(model.get_iter(row))
             
             
-    def on_change_to_selected__tool_clicked(self, widget, data = None):
-        tool_num = self.get_selected_tool()
-        if tool_num != None:
+    def on_change_to_selected_tool_clicked(self, widget, data = None):
+        selected = self.get_selected_tools()
+        if len(selected) == 1:
+            tool_num = selected[0]
             self.issue_mdi('M6 T%s G43' % tool_num )
+        else:
+            num = len(selected)
+            text = "%s tools selected, you must select exactly one" % num
+            self._show_message(["ERROR", text])
         
     
     def on_add_tool_clicked(self, widget, data = None):
@@ -1124,7 +1103,7 @@ class hazzy(object):
             new_int = int(new_text)
             self.tool_liststore[path][1] = new_int
             self.tool_liststore[path][2] = new_int
-        except:
+        except ValueError:
             self._show_message(["ERROR", '"%s" is not a valid tool number' % new_text])
             
 
@@ -1132,7 +1111,7 @@ class hazzy(object):
         try:
             new_int = int(new_text)
             self.tool_liststore[path][2] = new_int
-        except:
+        except ValueError:
             self._show_message(["ERROR", '"%s" is not a valid tool pocket' % new_text])
 
 
@@ -1140,15 +1119,15 @@ class hazzy(object):
         try:
             new_num = float(new_text)
             self.tool_liststore[path][3] = "%.4f" % float(new_text)
-        except:
-            self._show_message(["ERROR", '"%s" is not a valid diameter' % new_text])
+        except ValueError:
+            self._show_message(["ERROR", '"%s" is not a valid tool diameter' % new_text])
 
 
     def on_z_offset_edited(self, widget, path, new_text):
         try:
             new_num = float(new_text)
             self.tool_liststore[path][4] = "%.4f" % float(new_text)
-        except:
+        except ValueError:
             self._show_message(["ERROR", '"%s" is not a valid tool length' % new_text])
 
 
@@ -1193,24 +1172,20 @@ class hazzy(object):
                 self.current_tool_data = self.tool_liststore[row]
                 self.tool_liststore[row][6] = "gray"
 
-    
-    def set_selected_tool(self,toolnumber):
-        try:
-            treeselection = self.view2.get_selection()
-            liststore  = self.model
-            def match_tool(model, path, iter, pathlist):
-                if model.get_value(iter, 1) == toolnumber:
-                    pathlist.append(path)
-                return False     # keep the foreach going
-            pathlist = []
-            liststore.foreach(match_tool, pathlist)
-            # foreach works in a depth first fashion
-            if len(pathlist) == 1:
-                liststore.set_value(liststore.get_iter(pathlist[0]),0,1)
-                treeselection.select_path(pathlist[0])
-        except:
-            print "tooledit_widget error: cannot select tool number",toolnumber
-      
+
+    # This is not used now, but might be useful at some point
+    def set_selected_tool(self, toolnum):
+        model = self.tool_liststore
+        found = False
+        for row in range(len(model)):
+            if model[row][1] == toolnum:
+                found = True
+                break
+        if found:
+            model[row][0] = 1
+            self.widgets.tooltable_treeview.set_cursor(row)
+        else:
+            print "Did not find tool %s in the tool table" % toolnum
 
             
 # =========================================================      
@@ -1381,7 +1356,7 @@ class hazzy(object):
     def _update_work_cord(self):
         work_cords = [ "G53", "G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3" ]
         self.current_work_cord = self.stat.g5x_index
-        self.widgets.work_cord_label.set_text(work_cords[self.current_work_cord])
+        self.widgets.rel_dro_label.set_text(work_cords[self.current_work_cord])
         
         
     def _update_active_codes(self):
@@ -1454,23 +1429,31 @@ class hazzy(object):
             
     def _update_current_tool_data(self):
         self.current_tool = self.stat.tool_in_spindle
-        self.highlight_tool(self.current_tool)
-        self.widgets.tool_number_entry.set_text(str(self.current_tool))
-        self.widgets.tool_comment_label.set_text(self.current_tool_data[5])
-        self.widgets.tool_diameter_label.set_text(self.current_tool_data[3])
-        self.widgets.tool_length_label.set_text(self.current_tool_data[4])
+        if self.current_tool == 0:
+            self.highlight_tool(self.current_tool)
+            self.widgets.tool_number_entry.set_text("0")
+            self.widgets.tool_comment_label.set_text("No tool in spindle")
+            self.widgets.tool_diameter.set_text("-")
+            self.widgets.tool_length.set_text("-")
+        else:
+            self.highlight_tool(self.current_tool)
+            self.widgets.tool_number_entry.set_text(str(self.current_tool))
+            self.widgets.tool_comment_label.set_text(self.current_tool_data[5])
+            self.widgets.tool_diameter.set_text(self.current_tool_data[3])
+            self.widgets.tool_length.set_text(self.current_tool_data[4])
         
         
     # FIXME This won't work properly till the "state-tags" branch is merged
     def _update_cutting_parameters(self):
-        if "G1" in self.active_codes and self.current_tool_dia != 0:
-            self.surface_speed = self.spindle_speed * self.current_tool_dia * 0.2618
+        if "G1" in self.active_codes and self.current_tool_data[3] != 0 and self.current_tool_data[3] != '' and self.stat.current_vel != 0:
+            tool_dia = float(self.current_tool_data[3])
+            self.surface_speed = self.spindle_speed * tool_dia * 0.2618
             self.chip_load = self.stat.current_vel * 60 / (self.spindle_speed + .01) * 2
-            self.widgets.surface_speed_label.set_text('{:.1f}'.format(self.surface_speed))
-            self.widgets.chip_load_label.set_text('{: .4f}'.format(self.chip_load))        
+            self.widgets.surface_speed.set_text('{:.1f}'.format(self.surface_speed))
+            self.widgets.chip_load.set_text('{:.4f}'.format(self.chip_load))        
         else:        
-            self.widgets.surface_speed_label.set_text("-")
-            self.widgets.chip_load_label.set_text("-")
+            self.widgets.surface_speed.set_text("-")
+            self.widgets.chip_load.set_text("-")
 
 
     def _get_axis_list(self):
