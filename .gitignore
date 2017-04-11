@@ -1,4 +1,9 @@
 *.pyc
 *.pdf
-.tmp*
+*.log
+*.var
+*.pref
+*.halscope
 *~
+.tmp*
+
