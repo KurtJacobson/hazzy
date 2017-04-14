@@ -758,7 +758,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="change_to_selected">
-                        <property name="label" translatable="yes">Change To</property>
+                        <property name="label" translatable="yes">M6 T# G43</property>
                         <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -2140,12 +2140,6 @@
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
                   <object class="GtkLabel" id="chip_load">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -2186,6 +2180,12 @@
                     <property name="top_attach">2</property>
                     <property name="bottom_attach">3</property>
                   </packing>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
               </object>
               <packing>
