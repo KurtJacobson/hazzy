@@ -125,7 +125,7 @@ class touchpad(object):
         
         
     # Enter
-    def enter_clicked(self, widget):
+    def on_enter_clicked(self, widget):
         self.enter()
         
         

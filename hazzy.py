@@ -64,7 +64,7 @@ import touchpad         # On screen numpad and keypad for use with touchscreens
 import keyboard         # On screen keyboard emulator for use with touchscreens
 import entry_keyboard
 import dialogs          # Used for confirmation and error dialogs
-import simpleeval
+import simpleeval       # Used to evaluate expressions in numeric entries
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
@@ -782,6 +782,94 @@ class hazzy(object):
     # 
     def on_step_clicked(self, widget, data = None):
         print "STEP was clicked, I don't know by who though."
+
+
+    # =========================================================
+    # DRO entry handlers
+
+    def on_dro_gets_focus(self, widget, event):
+        self.dro_has_focus = True
+        widget.select_region(0, -1)
+        if self.keypad_on_dro:
+            touchpad.touchpad(widget)
+
+    def on_dro_loses_focus(self, widget, data=None):
+        self.dro_has_focus = False
+        widget.select_region(-1, -1)
+        self.window.set_focus(None)
+
+    def on_dro_key_press_event(self, widget, event, data=None):
+        if event.keyval == gtk.keysyms.Escape:
+            self.dro_has_focus = False
+            self.window.set_focus(None)
+
+    def on_dro_activate(self, widget):
+        # Look up the axis from the GTK object 
+        for axis_number, dro in self.rel_dro_dict.iteritems():
+            if dro == widget:
+                aletter = self.axis_letters[axis_number]
+                break
+                
+        factor = 1
+        entry = widget.get_text().lower()
+        if "in" in entry or '"' in entry:
+            entry = entry.replace("in", "").replace('"', "")
+            if self.stat.program_units != 1:
+                factor = 25.4
+        elif "mm" in entry:
+            entry = entry.replace("mm", "")
+            if self.stat.program_units != 2:
+                factor = 1/25.4
+        try:
+            val = self.s.eval(entry) * factor
+            self.set_work_offset(aletter, val)
+        except: 
+            self._show_message(["ERROR", "%s axis DRO entry '%s' is not valid" % (aletter ,entry)])
+
+        self.window.set_focus(None)
+        
+        
+    def on_tool_number_entry_activate(self, widget):
+        tool_num = widget.get_text()
+        self.issue_mdi("M6 T%s G43" % tool_num)
+        widget.set_text(str(self.current_tool))
+        self.window.set_focus(None)
+            
+        
+    # =========================================================
+    # MDI entry handlers
+    
+    def on_mdi_entry_gets_focus(self, widget, event):
+        #if self.dro_is_locked:
+        #    self.window.set_focus(None)
+        #    return
+        self.widgets.mdi_entry.set_text("")
+        if self.keypad_on_mdi: 
+            keyboard.keyboard(widget, self.get_win_pos())
+            
+    def on_mdi_entry_changed(self, widget, data=None):
+        # Convert MDI entry text to UPPERCASE
+        self.widgets.mdi_entry.set_text(widget.get_text().upper())
+            
+    def on_mdi_entry_loses_focus(self, widget, data=None):
+        self.widgets.mdi_entry.set_text("MDI:")
+        self.window.set_focus(None)
+        
+    def on_mdi_entry_key_press_event(self, widget, event): 
+        if event.keyval == gtk.keysyms.Escape:
+            self.window.set_focus(None)
+            
+    def on_mdi_entry_activate(self, widget):
+        cmd = self.widgets.mdi_entry.get_text()
+        if len(cmd) == 0:
+            self.window.set_focus(None)
+        else:
+            self.issue_mdi(cmd)
+            # Set button to 'stop' so can kill MDI motion if need be
+            self.set_cycle_start_button_state('stop')
+            self.window.set_focus(None)
+            
+            
     
     def on_button1_clicked(self, widget, data = None):
         print "TOGGLE Pressed"
@@ -1124,7 +1212,8 @@ class hazzy(object):
             self.tool_liststore[path][1] = new_int
             self.tool_liststore[path][2] = new_int
         except ValueError:
-            self._show_message(["ERROR", '"%s" is not a valid tool number' % new_text])
+            text = '"%s" is not a valid tool number' % new_text
+            self._show_message(["ERROR", text])
             
 
     def on_tool_pocket_edited(self, widget, path, new_text):
@@ -1132,23 +1221,26 @@ class hazzy(object):
             new_int = int(new_text)
             self.tool_liststore[path][2] = new_int
         except ValueError:
-            self._show_message(["ERROR", '"%s" is not a valid tool pocket' % new_text])
+            text = '"%s" is not a valid tool pocket' % new_text
+            self._show_message(["ERROR", text])
 
 
     def on_tool_dia_edited(self, widget, path, new_text):
         try:
-            num = self.s.eval(new_text)
+            num = self.eval(new_text)
             self.tool_liststore[path][3] = "%.4f" % float(num)
-        except simpleeval.NameNotDefined:
-            self._show_message(["ERROR", '"%s" is not a valid tool diameter' % new_text])
+        except:
+            text = '"%s" does not evaluate to a valid tool diameter' % new_text
+            self._show_message(["ERROR", text])
 
 
     def on_z_offset_edited(self, widget, path, new_text):
         try:
-            num = self.s.eval(new_text)
+            num = self.eval(new_text)
             self.tool_liststore[path][4] = "%.4f" % float(num)
-        except simpleeval.NameNotDefined:
-            self._show_message(["ERROR", '"%s" is not a valid tool length' % new_text])
+        except:
+            text = '"%s" does not evaluate to a valid tool length' % new_text
+            self._show_message(["ERROR", text])
 
 
     def on_tool_remark_edited(self, widget, path, new_text):
@@ -1576,80 +1668,7 @@ class hazzy(object):
             self.widgets.dro_mask.set_visible(False)
             for joint, dro in self.rel_dro_dict.iteritems():
                 dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))          
-
-
-
-# =========================================================
-## BEGIN - DRO entry handlers
-# =========================================================
-
-    def on_dro_gets_focus(self, widget, event):
-        self.dro_has_focus = True
-        widget.select_region(0, -1)
-        if self.keypad_on_dro:
-            touchpad.touchpad(widget)
-
-    def on_dro_loses_focus(self, widget, data=None):
-        self.dro_has_focus = False
-        widget.select_region(-1, -1)
-        self.window.set_focus(None)
-
-    def on_dro_key_press_event(self, widget, event, data=None):
-        if event.keyval == gtk.keysyms.Escape:
-            self.dro_has_focus = False
-            self.window.set_focus(None)
-
-    def on_dro_activate(self, widget):
-        # Look up the axis from the GTK object 
-        for axis_number, dro in self.rel_dro_dict.iteritems():
-            if dro == widget:
-                axis_letter = self.axis_letters[axis_number]
-                break
-        val = self.s.eval(widget.get_text())
-        self.set_work_offset(axis_letter, val)
-        self.window.set_focus(None)
-        
-        
-    def on_tool_number_entry_activate(self, widget):
-        tool_num = widget.get_text()
-        self.issue_mdi("M6 T%s G43" % tool_num)
-        widget.set_text(str(self.current_tool))
-        self.window.set_focus(None) 
-        
-# =========================================================
-## BEGIN - MDI entry handlers
-# =========================================================
-    
-    def on_mdi_entry_gets_focus(self, widget, event):
-        #if self.dro_is_locked:
-        #    self.window.set_focus(None)
-        #    return
-        self.widgets.mdi_entry.set_text("")
-        if self.keypad_on_mdi: 
-            keyboard.keyboard(widget, self.get_win_pos())
-            
-    def on_mdi_entry_changed(self, widget, data=None):
-        # Convert MDI entry text to UPPERCASE
-        self.widgets.mdi_entry.set_text(widget.get_text().upper())
-            
-    def on_mdi_entry_loses_focus(self, widget, data=None):
-        self.widgets.mdi_entry.set_text("MDI:")
-        self.window.set_focus(None)
-        
-    def on_mdi_entry_key_press_event(self, widget, event): 
-        if event.keyval == gtk.keysyms.Escape:
-            self.window.set_focus(None)
-            
-    def on_mdi_entry_activate(self, widget):
-        cmd = self.widgets.mdi_entry.get_text()
-        if len(cmd) == 0:
-            self.window.set_focus(None)
-        else:
-            self.issue_mdi(cmd)
-            # Set button to 'stop' so can kill MDI motion if need be
-            self.set_cycle_start_button_state('stop')
-            self.window.set_focus(None)
-            
+                            
             
 # =========================================================
 ## BEGIN - Helper functions
@@ -1687,13 +1706,13 @@ class hazzy(object):
             # Can't have a wait_complete() here or it locks up the UI
             
             
-    def set_work_offset(self, axis, dro_text):
-        try:
-            dro_val = float(dro_text)
-        except:
-            self._show_message(["ERROR", "%s axis DRO entry '%s' is not a valid number" % (axis, dro_text)])
-            return
-        offset_command = 'G10 L20 P%d %s%.12f' % (self.current_work_cord, axis, dro_val)
+    def set_work_offset(self, axis, value):
+#        try:
+#            dro_val = float(dro_text)
+#        except:
+#            self._show_message(["ERROR", "%s axis DRO entry '%s' is not a valid number" % (axis, dro_text)])
+#            return
+        offset_command = 'G10 L20 P%d %s%.12f' % (self.current_work_cord, axis, value)
         self.issue_mdi(offset_command)
         self.set_mode(linuxcnc.MODE_MANUAL)
         # FIXME This does not always work to display the new work offset
@@ -1775,6 +1794,20 @@ class hazzy(object):
             print tc.I + "Hazzy UI will now quit"
             gtk.main_quit()
             
+            
+    # Evaluate expressions in numeric entries
+    def eval(self, data):
+        factor = 1
+        data = data.lower()
+        if "in" in data or '"' in data:
+            data = data.replace("in", "").replace('"', "")
+            if self.machine_metric:
+                factor = 25.4
+        elif "mm" in data:
+            data = data.replace("mm", "")
+            if not self.machine_metric:
+                factor = 1/25.4
+        return self.s.eval(data) * factor
         
 # =========================================================
 ## BEGIN - init functions
