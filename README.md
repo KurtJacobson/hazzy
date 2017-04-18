@@ -57,3 +57,5 @@ I will be updating this repo frequently. To get the latest version enter your ha
 ```
 git pull origin master
 ```
+
+Feedback of all types would be gratfully accepted at: kurtcjacobson at gmail
