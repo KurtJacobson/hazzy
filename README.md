@@ -1,20 +1,33 @@
 # hazzy
 
-A new UI for LinuxCNC designed for use with touch screens
+A UI for LinuxCNC designed for use with touch screens
 
-![Main screen with back-plot](/screenshots/Screenshot_1.png?raw=true "Optional Title")
-
+![Main screen with back-plot](/screenshots/Screenshot_1.png?raw=true "Main screen with back-plot")
 
 ##### File selection tab with G-code preview/edit window and pop-up keyboard
-![File selection page](/screenshots/Screenshot_2.png?raw=true "Optional Title")
+![File selection page](/screenshots/Screenshot_2.png?raw=true "File selection page")
 
-##### Tool offsets tab with pop-up number-pad
+##### Tool offsets tab with pop-up numberpad
 ![Tool edit page](/screenshots/Screenshot_3.png?raw=true "Optional Title")
 
+### Introduction
+Hazzy is an attempt at a new UI for LinuxCNC specifically intended for use on my RF45 clone milling machine. It will work with LinuxCNC 2.8 and should support any machine with trivial kinematics and up to 5 axes, including gantry configurations. The code is greatly influenced by Norbert's Gmoccapy, however, for better or worse, hazzy makes very sparing use of the HAL VCP widgets.
+
+### Features
+* Pop-up keypads on all entries
+* Type in DRO to set work offsets
+* Expression entry support
+    * Ex. entering 23/64 --> .3594
+    * Ex. entering 1 + 1/64 --> 1.0156
+    * Works in offset DROs and tooltable
+* Unit entry support
+    * Ex. entering 1in --> 25.4 if the machine is metric or G21 is active
+    * Ex. entering 6.35mm --> .25 if the machine is inch or G20 is active 
+    * Works in offset DROs and tooltable
 
 ### Installing
 
-The UI is very much under development, and is not fully functional yet, so I don't recommend running a machine with it at this stage.  However, if you want to give hazzy a spin it should run fine on any basic 4-axis sim config. 
+The UI is very much under development, so I don't recommend running a machine with it at this stage. However, if you want to give hazzy a spin I have included several sim configs in the sim.hazzy folder, you should also be able to run almost any of the sim configs includes with LinuxCNC.  
 
 The easiest way to try hazzy is to clone this repository and place a symbolic link to hazzy.py in your usr/bin directory.
 
