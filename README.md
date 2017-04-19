@@ -1,6 +1,6 @@
 # hazzy
 
-A UI for LinuxCNC designed for use with touch screens
+A UI for LinuxCNC designed for use with touchscreens
 
 ![Main screen with back-plot](/screenshots/Screenshot_1.png?raw=true "Main screen with back-plot")
 
@@ -11,43 +11,46 @@ A UI for LinuxCNC designed for use with touch screens
 ![Tool edit page](/screenshots/Screenshot_3.png?raw=true "Optional Title")
 
 ### Introduction
-Hazzy is an attempt at a new UI for LinuxCNC specifically intended for use on my RF45 clone milling machine. It will work with LinuxCNC 2.8 and should support any machine with trivial kinematics and up to 5 axes, including gantry configurations. The code is greatly influenced by Norbert's Gmoccapy, however, for better or worse, hazzy makes very sparing use of the HAL VCP widgets.
+Hazzy is an attempt at a UI for LinuxCNC that is uncompromised when used exclusively with a touchscreen (1024 x 728 idealy) and a basic control panel or MPG. It is designed to work with LinuxCNC 2.8 and should support any machine with trivial kinematics and up to 5 axes, including gantry configurations. I hope to make the interface customizable in the future by the use of embeddable panels and notebook pages.
 
 ### Features
 * Pop-up keypads on all entries
 * Type in DRO to set work offsets
-* Expression entry support
+* Expression evaluation in entry feilds
     * Ex. entering 23/64 --> .3594
     * Ex. entering 1 + 1/64 --> 1.0156
-    * Works in offset DROs and tooltable
-* Unit entry support
+    * Works in all floating point entries
+* Unit conversions in entry feilds
     * Ex. entering 1in --> 25.4 if the machine is metric or G21 is active
-    * Ex. entering 6.35mm --> .25 if the machine is inch or G20 is active 
-    * Works in offset DROs and tooltable
+    * Ex. entering 6 + .35mm --> .25 if the machine is imperial or G20 is active 
+    * Works in all unit specific entries
+    
+### Limitations
+Hazzy does not support keyboard or on-screen jogging, because it is not indented for use with a keyboard and jogging with a touchscreen is *dangerous* (don't ask how I know!). Instead I use a simple MPG with axis and increment selector switches, which is both a very safe and convenient way to move the machine during setup or manual operations. I will probably add very basic keyboard jogging in the future for convenience when putting the machine together.
 
 ### Installing
 
-The UI is very much under development, so I don't recommend running a machine with it at this stage. However, if you want to give hazzy a spin I have included several sim configs in the sim.hazzy folder, you should also be able to run almost any of the sim configs includes with LinuxCNC.  
+The UI is very much under development, so I don't recommend running a machine with it at this stage. However, if you want to give hazzy a spin I have included several sim configs in the sim.hazzy folder, you should also be able to run almost any of the sim configs included with LinuxCNC.  
 
-The easiest way to try hazzy is to clone this repository and place a symbolic link to hazzy.py in your usr/bin directory.
+If you have GIT installed the easiest way to try hazzy is to clone this repository and place a symbolic link to hazzy.py in your usr/bin directory. If you don't have git you can download and extract the zip and continue from step two. 
 
-To clone this repository open a terminal at any convenient location (e.g. Desktop) and say
+1. To clone this repository open a terminal at any convenient location (e.g. Desktop) and say
 ```
 git clone https://github.com/KurtJacobson/hazzy
 ```
 
-Enter the newly cloned hazzy directory by saying
+2. Enter the newly cloned hazzy directory by saying
 ```
 cd hazzy
 ```
 
-Then add a link to hazzy.py to your usr/bin directory by saying  
+3. Then add a link to hazzy.py to your usr/bin directory by saying  
 
 ```
 sudo ln -sf $(pwd)/hazzy.py /usr/bin/hazzy
 ```
 
-The last step is to tell Linuxcnc to use hazzy as the UI. In your machine's ini file under the [DISPLAY] section set DISPLAY = hazzy
+4. The last step is to tell Linuxcnc to use hazzy as the UI. In your machine's ini file under the [DISPLAY] section set DISPLAY = hazzy
 
 
 If all went well that is it!  Start LinuxCNC however you normally would and click the Reset button. If the machine starts up in E-stop clicking Reset the first time puts the machine in E-stop Reset, click Reset again to turn the machine ON.  Home the machine by clicking on the ABS DROs.  If you click on the ABS DRO label all axes will be homed (assuming the ini file is configured correctly).
@@ -57,5 +60,9 @@ I will be updating this repo frequently. To get the latest version enter your ha
 ```
 git pull origin master
 ```
+### Notes
+I started working on this project some time in 2015 with the intention of trying to learn some basic programing (I am a mechanical/nuclear engineer) while also learning about Linux and LinuxCNC. My idea was to make a Haas like interface, hence the name hazzy, but it has morphed into something more like Mach3 or PathPilot.
+
+Hazzy is greatly influenced by Norbert's excellent LinuxCNC UI Gmoccapy, and uses several of the same modules with minor modifications. Also, much of the status updating and tooltable code is more or less modified code from the HAL VCP widgets, mostly the work of Chris M.
 
 Feedback of all types would be appreciated: kurtcjacobson at gmail
