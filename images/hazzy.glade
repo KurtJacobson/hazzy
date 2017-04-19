@@ -407,6 +407,7 @@
                       <object class="GtkButton" id="save_file">
                         <property name="label" translatable="yes">Save</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="use_action_appearance">False</property>
@@ -562,7 +563,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_num">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_editing_started" swapped="no"/>
+                                <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_tool_num_edited" swapped="no"/>
                               </object>
                               <attributes>
@@ -578,7 +579,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_pocket">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_editing_started" swapped="no"/>
+                                <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_tool_pocket_edited" swapped="no"/>
                               </object>
                               <attributes>
@@ -594,7 +595,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_dia">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_editing_started" swapped="no"/>
+                                <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_tool_dia_edited" swapped="no"/>
                               </object>
                               <attributes>
@@ -610,7 +611,7 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_z_offset">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_editing_started" swapped="no"/>
+                                <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_z_offset_edited" swapped="no"/>
                               </object>
                               <attributes>
@@ -1802,20 +1803,6 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="spindle_text">
-            <property name="width_request">100</property>
-            <property name="height_request">24</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="label" translatable="yes">SPINDLE</property>
-            <property name="use_markup">True</property>
-          </object>
-          <packing>
-            <property name="x">607</property>
-            <property name="y">440</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkImage" id="error_image">
             <property name="width_request">681</property>
             <property name="height_request">45</property>
@@ -2038,7 +2025,7 @@
                     <property name="primary_icon_sensitive">True</property>
                     <property name="secondary_icon_sensitive">True</property>
                     <signal name="activate" handler="on_tool_number_entry_activate" swapped="no"/>
-                    <signal name="button-release-event" handler="on_dro_gets_focus" swapped="no"/>
+                    <signal name="button-release-event" handler="on_int_dro_gets_focus" swapped="no"/>
                     <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                     <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
                   </object>
@@ -2203,13 +2190,13 @@
         </child>
         <child>
           <object class="GtkHBox" id="hbox1">
-            <property name="width_request">100</property>
+            <property name="width_request">120</property>
             <property name="height_request">47</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkEntry" id="spindle_speed_label">
-                <property name="width_request">50</property>
+              <object class="GtkEntry" id="spindle_speed_entry">
+                <property name="width_request">60</property>
                 <property name="height_request">30</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -2222,6 +2209,10 @@
                 <property name="secondary_icon_activatable">False</property>
                 <property name="primary_icon_sensitive">True</property>
                 <property name="secondary_icon_sensitive">True</property>
+                <signal name="activate" handler="on_spindle_speed_entry_activate" swapped="no"/>
+                <signal name="button-release-event" handler="on_int_dro_gets_focus" swapped="no"/>
+                <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
+                <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -2230,7 +2221,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="label2">
+              <object class="GtkLabel" id="spindle_rpm_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">RPM</property>
@@ -2243,7 +2234,7 @@
             </child>
           </object>
           <packing>
-            <property name="x">31</property>
+            <property name="x">25</property>
             <property name="y">489</property>
           </packing>
         </child>

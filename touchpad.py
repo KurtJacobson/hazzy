@@ -30,19 +30,17 @@ _keymap = gtk.gdk.keymap_get_default()  # Needed for keypress emulation
 
 class touchpad(object):
 
-    def __init__(self, widget, position=None, kind='numpad'):
+    def __init__(self, widget, kind='float', position=None):
         
         self.dro = widget
         self.original_text = self.dro.get_text() # Save the original entry
         #self.dro.set_text('')                    # Clear the DRO    
         
         # Glade setup
-        if kind == 'numpad': 
-            gladefile = os.path.join(IMAGEDIR, 'numpad.glade')
-            self.keypad = False
+        if kind == 'float': 
+            gladefile = os.path.join(IMAGEDIR, 'float_numpad.glade')
         else:
-            gladefile = os.path.join(IMAGEDIR, 'keypad.glade')
-            self.keypad = True
+            gladefile = os.path.join(IMAGEDIR, 'int_numpad.glade')
 
         self.builder = gtk.Builder()
         self.builder.add_from_file(gladefile)
@@ -71,11 +69,11 @@ class touchpad(object):
         self.dro.set_position(pos - 1)      # Move cursor one space to left
 
         
-    # Change sign / Negative Sign  
+    # Change sign 
     def on_change_sign_clicked(self, widget):
         val = self.dro.get_text()
         pos = self.dro.get_position()
-        if self.keypad or val == "":
+        if val == "": # or self.keypad:
             self.dro.insert_text("-", pos)
             self.dro.set_position(pos + 1)
         else:
@@ -88,7 +86,7 @@ class touchpad(object):
     # Left arrow
     def on_arrow_left_clicked(self, widget):
         pos = self.dro.get_position()
-        if pos > 0: # Can't have -1 or we loop to the right
+        if pos > 0: # Can't have -1 or we'd loop to the right
             self.dro.set_position(pos - 1)
             
             
@@ -129,7 +127,7 @@ class touchpad(object):
         self.enter()
         
         
-    # Catch real ESC or ENTER keypresses, sent the rest on to the DRO
+    # Catch real ESC or ENTER keypresses, send the rest on to the DRO
     def on_window_key_press_event(self, widget, event, data=None):
         kv = event.keyval
         if kv == gtk.keysyms.Return or kv == gtk.keysyms.KP_Enter:
@@ -169,7 +167,7 @@ class touchpad(object):
         self.window.destroy()
         
         
-    # Escape on focus out
+    # Escape on focus out FIXME this don't work
     def on_window_focus_out_event(self, widget, data=None):
         self.escape()
         

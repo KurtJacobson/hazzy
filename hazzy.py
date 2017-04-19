@@ -169,7 +169,7 @@ class hazzy(object):
         self.dro_actual_pos = self.get_ini_info.get_position_feedback_actual()    
         self.no_force_homing = self.get_ini_info.get_no_force_homing()
         self.machine_metric = self.get_ini_info.get_machine_metric()
-        self.nc_file_dir = self.get_ini_info.get_program_prefix()
+        self.nc_file_path = self.get_ini_info.get_program_prefix()
         self.tool_table = self.get_ini_info.get_tool_table()
         # CYCLE_TIME = time, in ms, that display will sleep between polls
         #cycle_time = self.get_ini_info.get_cycle_time() # Defaults to 50ms
@@ -239,7 +239,7 @@ class hazzy(object):
         # If a preference file does not exist it will be created in the config dir
         
         # [FILE PATHS]
-        self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_dir, str)
+        self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_path, str)
         
         # [FILE FILTERS]
         self.preview_ext = self.prefs.getpref("FILE FILTERS", "PREVIEW_EXT", [".ngc", ".txt", ".tap", ".nc"], str)
@@ -290,9 +290,6 @@ class hazzy(object):
         
         # Initialize settings
         self._init_window()
-        self._init_file_chooser()
-        self._init_gremlin()
-        self._init_gcode_preview()
         self._update_machine_state() 
         self._update_machine_mode()
         self._update_interp_state()
@@ -349,7 +346,7 @@ class hazzy(object):
             
           
         # List of labels in the spindle display area    
-        spindle_dro_list = [ 'spindle_speed_label', 'surface_speed_label', 'chip_load_label', 'active_feed_label',\
+        spindle_dro_list = ['surface_speed_label', 'chip_load_label', 'active_feed_label',\
          'actual_feed_label', 'current_vel_label']
         
         '''for i in spindle_dro_list:
@@ -363,6 +360,7 @@ class hazzy(object):
         self.widgets.mdi_entry.set_text("MDI:")
         
         self.widgets.tool_number_entry.modify_font(self.dro_font)
+        self.widgets.spindle_speed_entry.modify_font(self.dro_font)
 
         self.rel_dro_list = ('dro_0', 'dro_1', 'dro_2', 'dro_3', 'dro_4')
         self.dtg_dro_list = ('dtg_0', 'dtg_1', 'dtg_2', 'dtg_3', 'dtg_4')    
@@ -447,27 +445,28 @@ class hazzy(object):
             label.set_text(self.axis_letter_list[i])
             
 
-        for i in ['rel_dro_label', 'dtg_dro_label', 'abs_dro_label']:
+        for i in ['rel_dro_label', 'dtg_dro_label', 'abs_dro_label', 'spindle_rpm_label']:
             label = self.widgets[i]
             label.modify_font(pango.FontDescription('dejavusans condensed 12'))
             label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
             
             
-        self.widgets.spindle_text.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
-        self.widgets.spindle_text.modify_font(pango.FontDescription('FreeSans condensed  14'))
+#        self.widgets.spindle_text.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+#        self.widgets.spindle_text.modify_font(pango.FontDescription('FreeSans condensed  14'))
         self.set_animation('reset_image', 'reset.gif') # Set the initial animated reset image
         
 
-
-       
-        # Show the window   
+        # Last things to init
+        self._init_file_chooser()
+        self._init_gremlin()
+        self._init_gcode_preview()
+        self.load_tool_table(self.tool_table)
+        
+        # Finally, show the window 
         self.window.show()
         self._init_gremlin()
+
         
-        #
-        self.load_tool_table(self.tool_table)
-       
-    
 # =========================================================
 ## BEGIN - Periodic status checking and updating
 # =========================================================
@@ -587,12 +586,12 @@ class hazzy(object):
         
         kind, text = message # Unpack
 
-#        if "joint" in text:
-#            # Replace "joint N" with "L axis" 
-#            for axis in self.axis_letter_list:
-#                joint = 'XYZABCUVWS'.index(axis)
-#                text = text.replace("joint %d" % joint, "%s axis" % axis)
-#            text = text.replace("joint -1", "all axes")
+        if "joint" in text:
+            # Replace "joint N" with "L axis" 
+            for axis in self.axis_letter_list:
+                joint = 'XYZABCUVWS'.index(axis)
+                text = text.replace("joint %d" % joint, "%s axis" % axis)
+            text = text.replace("joint -1", "all axes")
                 
         if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR):
             kind = "ERROR"
@@ -829,10 +828,31 @@ class hazzy(object):
         self.window.set_focus(None)
         
         
+    def on_int_dro_gets_focus(self, widget, event):
+        widget.select_region(0, -1)
+        if self.keypad_on_dro:
+            touchpad.touchpad(widget, "int")
+        
+        
     def on_tool_number_entry_activate(self, widget):
-        tool_num = widget.get_text()
-        self.issue_mdi("M6 T%s G43" % tool_num)
+        tnum = widget.get_text()
+        try: 
+            tnum = int(tnum)        
+            self.issue_mdi("M6 T%s G43" % tnum)
+        except:
+            self._show_message(["ERROR", '"%s" is not a valid tool number' % tnum])
+
         widget.set_text(str(self.current_tool))
+        self.window.set_focus(None)
+        
+        
+    def on_spindle_speed_entry_activate(self, widget):
+        speed = widget.get_text()
+        try:
+            speed = float(speed) 
+            self.issue_mdi("S%s" % speed)
+        except:
+            self._show_message(["ERROR", '"%s" is not a valid spindle speed' % speed])
         self.window.set_focus(None)
             
         
@@ -942,7 +962,6 @@ class hazzy(object):
 # ========================================================= 
 
     def _init_file_chooser(self):
-        self.nc_file_path = self.get_ini_info.get_program_prefix()
         self.widgets.filechooser.set_current_folder(self.nc_file_path)
         
         # Set filter for only .ngc files
@@ -1000,7 +1019,6 @@ class hazzy(object):
         
     
     # Jump to USB drive, if more than one list them all
-    # FIXME need to auto mount USB drive so they show up in /media/
     def on_open_usb_folder_clicked(self, widget, data = None):
         usbdirs = os.listdir('/media/')
         # If only one dir assume it's the USB drive and set it to current
@@ -1246,9 +1264,15 @@ class hazzy(object):
     def on_tool_remark_edited(self, widget, path, new_text):
         self.tool_liststore[path][5] =  new_text
 
-
-    # Popup numpad on number edit
-    def on_editing_started(self, renderer, entry, row):
+               
+    # Popup int numpad on int edit
+    def on_int_editing_started(self, renderer, entry, row):
+        if self.keypad_on_offsets:  
+            touchpad.touchpad(entry, 'int')
+            
+            
+    # Popup float numpad on float edit
+    def on_float_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
             touchpad.touchpad(entry)
         
@@ -1448,7 +1472,6 @@ class hazzy(object):
 
         if not self.dro_has_focus: # Keep from overwriting user input
             for axis, dro in self.rel_dro_dict.iteritems():
-                #print axis, rel[axis]
                 dro.set_text("%.*f" % (dec_plc, rel[axis]))
                 
         for axis, dro in self.dtg_dro_dict.iteritems():
@@ -1468,7 +1491,6 @@ class hazzy(object):
             dro.set_text(pos[joint])
             
 
-            
     # Convert DRO units back and forth from in to mm    
     def convert_dro_units(self, values):
         out = [0]*9
@@ -1548,7 +1570,7 @@ class hazzy(object):
     def _update_spindle_speed_label(self):
         if self.spindle_speed != self.stat.spindle_speed:
             self.spindle_speed = self.stat.spindle_speed
-            self.widgets.spindle_speed_label.set_text('{:.0f}'.format(self.stat.spindle_speed))
+            self.widgets.spindle_speed_entry.set_text('{:.0f}'.format(self.stat.spindle_speed))
             
             
     def _update_current_tool_data(self):
@@ -1846,12 +1868,13 @@ class hazzy(object):
             self.preview_buf.set_language(self.lm.get_language(self.lang_spec))
         if self.style_scheme != None:
             self.preview_buf.set_style_scheme(self.sm.get_scheme(self.style_scheme))
+        self.load_gcode_preview(None)
     
         
     def load_gcode_preview(self, fn=None):
         self.preview_buf.begin_not_undoable_action()
         if not fn or not os.path.splitext(fn)[1] in self.preview_ext:
-            self.preview_buf.set_text('\t\t\t\t\t*** No file to Preview ***')
+            self.preview_buf.set_text('\t\t\t\t*** No file to Preview ***')
             self.preview_buf.set_modified(False)
             return 
         self.preview_buf.set_text(open(fn).read())
