@@ -479,7 +479,15 @@ class hazzy(object):
             self._show_message(message)
         
         self.stat.poll()
-        self._update_dros()
+        
+        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
+            self._update_joint_dros()
+        else:
+            self._update_axis_dros()
+        
+        
+        
+        
         self._update_override_labels()
         self._update_spindle_speed_label()
         self._updade_dro_status()
@@ -566,7 +574,6 @@ class hazzy(object):
         # Update opskip status
         if self.stat.block_delete != self.widgets.opskip.get_active() :
             self.widgets.opskip.set_active(self.stat.block_delete)
-            
         
         # If new error flash message border red for 2s
         if self.new_error:
@@ -1435,7 +1442,7 @@ class hazzy(object):
         self.widgets.emc_motion_label.set_text("Motion: " + motion_str)
         
     
-    def _update_dros(self):
+    def _update_axis_dros(self):
         if self.dro_actual_pos:
             pos = self.stat.actual_position
         else:
@@ -1481,14 +1488,16 @@ class hazzy(object):
                 dro.set_text("%.*f" % (dec_plc, pos[axis]))
 
 
-    def _update_joint_postions(self):
+    def _update_joint_dros(self):
         if self.dro_actual_pos:
             pos = self.stat.joint_actual_position
         else:
             pos = self.stat.joint_position
         for joint in range(self.num_joints):
+            print "joint %s pos: " % joint, pos[joint]
             dro = self.widgets[self.rel_dro_list[joint]]
-            dro.set_text(pos[joint])
+            dro.set_text("%.4f" % pos[joint])
+        
             
 
     # Convert DRO units back and forth from in to mm    

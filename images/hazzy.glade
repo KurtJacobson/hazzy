@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <!-- interface-requires gtksourceview 0.0 -->
   <!-- interface-requires gladevcp 0.0 -->
+  <!-- interface-requires gtksourceview 0.0 -->
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkAction" id="action1"/>
   <object class="GtkFileFilter" id="nc_file_filter"/>
@@ -545,7 +545,6 @@
                               <object class="GtkCellRendererToggle" id="cell_toggle">
                                 <property name="indicator_size">18</property>
                                 <signal name="toggled" handler="on_select_toggled" swapped="no"/>
-                                <signal name="editing-started" handler="on_editing_started" swapped="no"/>
                               </object>
                               <attributes>
                                 <attribute name="cell-background">6</attribute>
