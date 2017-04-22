@@ -28,7 +28,8 @@ IMAGEDIR = os.path.join(pydir, "images")
 
 _keymap = gtk.gdk.keymap_get_default()  # Needed for keypress emulation
 
-class touchpad(object):
+
+class Touchpad(object):
 
     def __init__(self, widget, kind='float', position=None):
         
@@ -177,6 +178,6 @@ def main():
     
 
 if __name__ == "__main__":
-    ui = touchpad()
+    ui = Touchpad()
     main()
 

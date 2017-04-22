@@ -32,7 +32,7 @@ IMAGEDIR = os.path.join(pydir, "images")
 _keymap = gtk.gdk.keymap_get_default()
 
 
-class keyboard(object):
+class Keyboard(object):
 
     def __init__(self, pos, text):
         

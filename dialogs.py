@@ -30,7 +30,7 @@ pydir = os.path.abspath(os.path.dirname(__file__))
 IMAGEDIR = os.path.join(pydir, "images") 
 
 
-class dialogs(object):
+class Dialogs(object):
     def __init__(self, message, type = 0):
         #gtk.Window.__init__(self)
         
@@ -88,5 +88,5 @@ class dialogs(object):
         
         
 if __name__ == "__main__":
-    dialog = dialogs()
+    dialog = Dialogs()
     dialog.main()

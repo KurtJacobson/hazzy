@@ -107,7 +107,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
         w = None
     message = traceback.format_exception(exc_type, exc_value, exc_traceback)
     log.error("".join(message))
-    dialogs.dialogs("".join(message) , 2).run()
+    dialogs.Dialogs("".join(message), 2).run()
     
     
 # Connect the except hook to the handler
@@ -115,7 +115,7 @@ sys.excepthook = excepthook
 
     
 
-class hazzy(object):
+class Hazzy(object):
 
     def __init__(self):        
         
@@ -140,7 +140,7 @@ class hazzy(object):
 
         # Module to get/set preferences
         pref_file = self.get_ini_info.get_preference_file_path()
-        self.prefs = hazzy_prefs.preferences(pref_file)
+        self.prefs = hazzy_prefs.Preferences(pref_file)
         
         #
         self.s = simpleeval.SimpleEval()
@@ -820,7 +820,7 @@ class hazzy(object):
         self.dro_has_focus = True
         widget.select_region(0, -1)
         if self.keypad_on_dro:
-            touchpad.touchpad(widget)
+            touchpad.Touchpad(widget)
 
     def on_dro_loses_focus(self, widget, data=None):
         self.dro_has_focus = False
@@ -861,7 +861,7 @@ class hazzy(object):
     def on_int_dro_gets_focus(self, widget, event):
         widget.select_region(0, -1)
         if self.keypad_on_dro:
-            touchpad.touchpad(widget, "int")
+            touchpad.Touchpad(widget, "int")
         
         
     def on_tool_number_entry_activate(self, widget):
@@ -895,7 +895,7 @@ class hazzy(object):
         #    return
         self.widgets.mdi_entry.set_text("")
         if self.keypad_on_mdi: 
-            keyboard.keyboard(widget, self.get_win_pos())
+            keyboard.Keyboard(widget, self.get_win_pos())
             
     def on_mdi_entry_changed(self, widget, data=None):
         # Convert MDI entry text to UPPERCASE
@@ -1032,7 +1032,7 @@ class hazzy(object):
         fname = str(self.widgets.filechooser.get_filename())
         if self.preview_buf.get_modified():
             message = ("Save changes to: \n %s?" % os.path.split(self.current_preview_file)[1])
-            if dialogs.dialogs(message).run():
+            if dialogs.Dialogs(message).run():
                 self.save(self.current_preview_file)
             else:
                 self.preview_buf.set_modified(False) 
@@ -1079,7 +1079,7 @@ class hazzy(object):
     # TODO Need to make a popup for entering the new folder name
     def on_new_folder_btn_clicked(self, widget, data=None):
         currentdir = self.widgets.filechooser.get_current_folder()
-        entry_keyboard.keyboard(self.get_win_pos(), currentdir)
+        entry_keyboard.Keyboard(self.get_win_pos(), currentdir)
         
         #os.makedirs(currentdir + '/test')
         
@@ -1119,7 +1119,7 @@ class hazzy(object):
         
     def on_gcode_preview_button_press_event(self, widget, data=None):
         if self.keypad_on_edit:
-            keyboard.keyboard(widget, self.get_win_pos(), True)
+            keyboard.Keyboard(widget, self.get_win_pos(), True)
             
             
 # =========================================================      
@@ -1298,19 +1298,19 @@ class hazzy(object):
     # Popup int numpad on int edit
     def on_int_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:  
-            touchpad.touchpad(entry, 'int')
+            touchpad.Touchpad(entry, 'int')
             
             
     # Popup float numpad on float edit
     def on_float_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
-            touchpad.touchpad(entry)
+            touchpad.Touchpad(entry)
         
         
     # Popup keyboard on text edit
     def on_remark_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
-            keyboard.keyboard(entry, self.get_win_pos())
+            keyboard.Keyboard(entry, self.get_win_pos())
         
         
     # Toggle selection checkbox value
@@ -1381,7 +1381,7 @@ class hazzy(object):
             p = os.popen("classicladder  &", "w")
         else:
             text = "Classicladder real-time component not detected"
-            dialogs.dialogs(text, 2).run()
+            dialogs.Dialogs(text, 2).run()
 
 
 # =========================================================
@@ -1791,7 +1791,7 @@ class hazzy(object):
             self.homed_joints[joint] = 2
         elif self.stat.homed[joint]:
             message = ("joint %s is already homed. \n Unhome?" % joint)
-            if dialogs.dialogs(message).run():
+            if dialogs.Dialogs(message).run():
                 #self._show_message(["INFO", "Unhoming joint %s " % joint])
                 self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
@@ -1851,7 +1851,7 @@ class hazzy(object):
     # Display a dialog to confirm exit
     def close_window(self):
         message = "Are you sure you want \n to close LinuxCNC?"
-        if dialogs.dialogs(message).run():
+        if dialogs.Dialogs(message).run():
             print tc.I + "Turning machine off and E-stoping..."
             self.set_state(linuxcnc.STATE_OFF)
             self.set_state(linuxcnc.STATE_ESTOP)
@@ -1947,5 +1947,5 @@ def main():
     gtk.main()
 
 if __name__ == "__main__":
-    ui = hazzy()
+    ui = Hazzy()
     main()
