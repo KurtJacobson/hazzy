@@ -51,8 +51,8 @@ CONFIGDIR = os.path.dirname(INIFILE)                    # Path to config dir
 
 # We use __file__ to get the file dir so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))  # Path to hazzy.py dir
-print"The hazzy directory is: " + HAZZYDIR
-IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade 
+print("The hazzy directory is: {0}".format(HAZZYDIR))
+IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade
 sys.path.insert(1 , HAZZYDIR)  # Set system path so we can find our own modules
 
 # Now we have the path to our own modules so we can import them
@@ -60,7 +60,7 @@ import tc               # For highlighting terminal messages.
 import widgets          # Norbert's module for geting objects quickly
 import hazzy_prefs      # Handles the preferences
 import getiniinfo       # Handles .ini file reading and value validation
-import touchpad         # On screen numpad and keypad for use with touchscreens
+from touchpad import Touchpad         # On screen numpad and keypad for use with touchscreens
 from keyboard import Keyboard         # On screen keyboard emulator for use with touchscreens
 import entry_keyboard
 import dialogs          # Used for confirmation and error dialogs
@@ -71,7 +71,7 @@ TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
 # Have some fun with our Terminal Colors module.
 # tc.I will print "HAZZY INFO" in gray, tc.W is for WARNINGS, tc.E for ERRORS
-print tc.I + "The config dir is: " + CONFIGDIR
+print("{0}The config dir is: {1}".format(tc.I, CONFIGDIR))
 
 
 # Create a logger
@@ -119,6 +119,9 @@ class Hazzy(object):
     def __init__(self):        
 
         # Module init
+
+        self.float_touchpad = Touchpad("float")
+        self.int_touchpad = Touchpad("int")
 
         self.keyboard = Keyboard()
 
@@ -810,8 +813,8 @@ class Hazzy(object):
         else:
             self.command.set_block_delete(0)
             log.debug("Setting opskip OFF")
-            
-    # 
+
+
     def on_step_clicked(self, widget, data=None):
         print "STEP was clicked, I don't know by who though."
 
@@ -823,7 +826,7 @@ class Hazzy(object):
         self.dro_has_focus = True
         widget.select_region(0, -1)
         if self.keypad_on_dro:
-            touchpad.Touchpad(widget)
+            self.float_touchpad.show(widget)
 
     def on_dro_loses_focus(self, widget, data=None):
         self.dro_has_focus = False
@@ -864,7 +867,7 @@ class Hazzy(object):
     def on_int_dro_gets_focus(self, widget, event):
         widget.select_region(0, -1)
         if self.keypad_on_dro:
-            touchpad.Touchpad(widget, "int")
+            self.int_touchpad.show(widget)
         
         
     def on_tool_number_entry_activate(self, widget):
@@ -1299,13 +1302,13 @@ class Hazzy(object):
     # Popup int numpad on int edit
     def on_int_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:  
-            touchpad.Touchpad(entry, 'int')
+            self.int_touchpad.show(entry)
             
             
     # Popup float numpad on float edit
     def on_float_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
-            touchpad.Touchpad(entry)
+            self.float_touchpad.show(entry)
         
         
     # Popup keyboard on text edit
