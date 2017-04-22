@@ -17,6 +17,7 @@
     <property name="focus_on_map">False</property>
     <property name="decorated">False</property>
     <signal name="key-press-event" handler="on_window_key_press_event" swapped="no"/>
+    <signal name="focus-out-event" handler="on_window_focus_out_event" swapped="no"/>
     <child>
       <object class="GtkFixed" id="fixed1">
         <property name="visible">True</property>
@@ -54,8 +55,8 @@
                     <property name="width_request">50</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -66,8 +67,8 @@
                     <property name="width_request">50</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -82,8 +83,8 @@
                     <property name="width_request">50</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -98,8 +99,8 @@
                     <property name="width_request">40</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -116,8 +117,8 @@
                     <property name="width_request">40</property>
                     <property name="height_request">40</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -134,8 +135,8 @@
                     <property name="width_request">50</property>
                     <property name="height_request">40</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -150,8 +151,8 @@
                     <property name="width_request">40</property>
                     <property name="height_request">40</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -166,8 +167,8 @@
                     <property name="width_request">40</property>
                     <property name="height_request">40</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -184,8 +185,8 @@
                     <property name="width_request">40</property>
                     <property name="height_request">40</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -202,8 +203,8 @@
                     <property name="width_request">40</property>
                     <property name="height_request">40</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_backspace_clicked" swapped="no"/>
                   </object>
@@ -220,8 +221,8 @@
                     <property name="width_request">40</property>
                     <property name="height_request">40</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_change_sign_clicked" swapped="no"/>
                   </object>
@@ -238,8 +239,8 @@
                     <property name="width_request">40</property>
                     <property name="height_request">40</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_button_clicked" swapped="no"/>
                   </object>
@@ -269,8 +270,8 @@
                     <property name="width_request">0</property>
                     <property name="height_request">50</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_esc_clicked" swapped="no"/>
                   </object>
@@ -284,8 +285,8 @@
                   <object class="GtkButton" id="enter">
                     <property name="label" translatable="yes">ENTER</property>
                     <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="receives_default">False</property>
                     <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_enter_clicked" swapped="no"/>
                   </object>

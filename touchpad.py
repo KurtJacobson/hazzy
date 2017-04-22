@@ -33,9 +33,8 @@ class Touchpad(object):
 
     def __init__(self, kind='float'):
 
-        self.dro = None  # widget
-        self.original_text = None  # self.dro.get_text()  # Save the original entry
-        # self.dro.set_text('')                   # Clear the DRO
+        self.dro = None
+        self.original_text = None
         
         # Glade setup
         if kind == 'float': 
@@ -55,14 +54,12 @@ class Touchpad(object):
         self.dro.insert_text(widget.get_label(), pos)  # Insert text at cursor pos
         self.dro.set_position(pos + 1)                 # Move cursor one space right
         
-        
     # Backspace
     def on_backspace_clicked(self, widget):
         pos = self.dro.get_position()       # Get current cursor pos
         self.dro.delete_text(pos - 1, pos)  # Delete one space to left
         self.dro.set_position(pos - 1)      # Move cursor one space to left
 
-        
     # Change sign 
     def on_change_sign_clicked(self, widget):
         val = self.dro.get_text()
@@ -74,8 +71,7 @@ class Touchpad(object):
             if val[0] == '-':
                 self.dro.delete_text(0, 1)
             else:
-                self.dro.insert_text("-", 0)      
-                     
+                self.dro.insert_text("-", 0)            
         
     # Left arrow
     def on_arrow_left_clicked(self, widget):
@@ -83,12 +79,10 @@ class Touchpad(object):
         if pos > 0: # Can't have -1 or we'd loop to the right
             self.dro.set_position(pos - 1)
             
-            
     # Right arrow    
     def on_arrow_right_clicked(self, widget):
         pos = self.dro.get_position()  
         self.dro.set_position(pos + 1)
-        
         
     # Up arrow   
     def on_arrow_up_clicked(self, widget):
@@ -96,30 +90,25 @@ class Touchpad(object):
         event.keyval = gtk.keysyms.Up
         self.dro.emit("key-press-event", event)
         
-        
     # Down arrow
     def on_arrow_down_clicked(self, widget):
         event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
         event.keyval = gtk.keysyms.Down
         self.dro.emit("key-press-event", event)   
          
-        
     # Space    
     def on_space_clicked(self, widget, data=None):
         pos = self.dro.get_position()       # Get current cursor pos 
         self.dro.insert_text("\t", pos)     # Insert tab at cursor pos
         self.dro.set_position(pos + 1)      # Move cursor one tab right
         
-        
     # Escape
     def on_esc_clicked(self, widget, data=None):
         self.escape() 
         
-        
     # Enter
     def on_enter_clicked(self, widget):
         self.enter()
-        
         
     # Catch real ESC or ENTER keypresses, send the rest on to the DRO
     def on_window_key_press_event(self, widget, event, data=None):
@@ -132,24 +121,23 @@ class Touchpad(object):
             try:
                 self.dro.emit("key-press-event", event)
             except:
-                self.window.hide()  # was destroy()
+                self.window.hide()
             
-    
     # Enter action
     def enter(self):
-        # If entry is nothing escape
         try:
+            # If entry is nothing escape
             if self.dro.get_text() == "" or self.dro.get_text() == "-":
                 self.escape()
             else:
                 self.dro.emit('activate')
         except:
             pass
-        self.window.hide()  # was destroy()
-            
+        self.window.hide()
             
     # Escape action
     def escape(self):
+        self.dro.set_text(self.original_text)
         try:
             event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
             event.keyval = int(gtk.gdk.keyval_from_name("Escape"))
@@ -158,20 +146,18 @@ class Touchpad(object):
             self.dro.emit("key-press-event", event)
         except:
             pass
-        self.window.hide()  # destroy()
+        self.window.hide()
         
-        
-    # Escape on focus out FIXME this don't work
+    # Escape on focus out 
+    # FIXME Want to close popup on focus out, but cant get 
+    # get focus out to be triggered 
     def on_window_focus_out_event(self, widget, data=None):
         self.escape()
-
+        
     def show(self, widget, kind='float', position=None):
-
         self.dro = widget
-        self.original_text = self.dro.get_text()  # Save the original entry
-        # self.dro.set_text('')                   # Clear the DRO
+        self.original_text = self.dro.get_text()
 
-        # Set position if requested
         if position is not None:
             self.window.move(position[0], position[1])
 
