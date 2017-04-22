@@ -76,11 +76,11 @@ class keyboard(object):
         
         self.number_btn_dict = dict((n, self.builder.get_object(n)) for n in self.characters)
         
-        # Conncet letter button press events
+        # Connect letter button press events
         for l, btn in self.letter_btn_dict.iteritems():
             btn.connect("pressed", self.on_button_pressed)
             
-        # Conncet number button press events
+        # Connect number button press events
         for l, btn in self.number_btn_dict.iteritems():
             btn.connect("pressed", self.on_button_pressed)
         
