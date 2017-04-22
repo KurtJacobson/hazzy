@@ -38,7 +38,8 @@ import ConfigParser
 cp = ConfigParser.RawConfigParser
 cp.optionxform = str  # Needed to maintain option case
 
-class preferences(cp):
+
+class Preferences(cp):
     types = {
         bool: cp.getboolean,
         float: cp.getfloat,
@@ -53,7 +54,7 @@ class preferences(cp):
             path = "~/.hazzy_preferences"
         self.fn = os.path.expanduser(path)    
         if not os.path.isfile(self.fn):
-            print(tc.W + "No preference file found, creating one...")
+            print(Tc.W + "No preference file found, creating one...")
             print("Preference file: " + self.fn)
         self.read(self.fn)
         
@@ -65,9 +66,9 @@ class preferences(cp):
             value = rtn_type(self, section, option)
         # If the section does not exist add it and the option
         except ConfigParser.NoSectionError:
-            print(tc.I + "Adding missing section [%s]" % section)
+            print(Tc.I + "Adding missing section [%s]" % section)
             self.add_section(section)
-            print(tc.I + 'Adding missing option [%s] "%s"' % (section, option))
+            print(Tc.I + 'Adding missing option [%s] "%s"' % (section, option))
             self.set(section, option, default_val)
             self.write(open(self.fn, "w"))
             if type in(bool, float, int):
@@ -76,7 +77,7 @@ class preferences(cp):
                 value = default_val
         # If the option does not exist in the section add it
         except ConfigParser.NoOptionError:
-            print(tc.I + 'Adding missing option [%s] "%s"' % (section, option))
+            print(Tc.I + 'Adding missing option [%s] "%s"' % (section, option))
             self.set(section, option, default_val)
             self.write(open(self.fn, "w"))
             if type in(bool, float, int):
@@ -92,14 +93,14 @@ class preferences(cp):
             self.set(section, option, opt_type(value))
             self.write(open(self.fn, "w"))
         except ConfigParser.NoSectionError:
-            print(tc.I + 'Missing entry [%s] "%s" in .prefs file, adding defualt entry' % (section, option))
+            print(Tc.I + 'Missing entry [%s] "%s" in .prefs file, adding defualt entry' % (section, option))
             self.add_section(section)
             self.set(section, option, opt_type(value))
             self.write(open(self.fn, "w"))
 
             
             
-class tc(): #Small class to hold the terminal message prefixes 
+class Tc(): #Small class to hold the terminal message prefixes
 
     ## Hazzy preferances messages
     # Bold gray for general info

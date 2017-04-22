@@ -32,11 +32,11 @@ IMAGEDIR = os.path.join(pydir, "images")
 _keymap = gtk.gdk.keymap_get_default()
 
 
-class keyboard(object):
+class Keyboard(object):
 
     def __init__(self, entry, pos, persistent=False ):
         
-        self.keyboard = keyboard
+        self.keyboard = Keyboard
         self.entry_buf = entry.get_buffer()
         self.entry = entry
         self.persistent = persistent
@@ -293,6 +293,6 @@ def main():
     
 
 if __name__ == "__main__":
-    ui = keyboard()
+    ui = Keyboard()
     main()
 
