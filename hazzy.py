@@ -61,7 +61,7 @@ import widgets          # Norbert's module for geting objects quickly
 import hazzy_prefs      # Handles the preferences
 import getiniinfo       # Handles .ini file reading and value validation
 import touchpad         # On screen numpad and keypad for use with touchscreens
-import keyboard         # On screen keyboard emulator for use with touchscreens
+from keyboard import Keyboard         # On screen keyboard emulator for use with touchscreens
 import entry_keyboard
 import dialogs          # Used for confirmation and error dialogs
 import simpleeval       # Used to evaluate expressions in numeric entries
@@ -113,12 +113,15 @@ def excepthook(exc_type, exc_value, exc_traceback):
 # Connect the except hook to the handler
 sys.excepthook = excepthook
 
-    
 
 class Hazzy(object):
 
     def __init__(self):        
-        
+
+        # Module init
+
+        self.keyboard = Keyboard()
+
         # Glade setup
         gladefile = os.path.join(IMAGEDIR, 'hazzy.glade')
         self.builder = gtk.Builder()
@@ -894,8 +897,8 @@ class Hazzy(object):
         #    self.window.set_focus(None)
         #    return
         self.widgets.mdi_entry.set_text("")
-        if self.keypad_on_mdi: 
-            keyboard.Keyboard(widget, self.get_win_pos())
+        if self.keypad_on_mdi:
+            self.keyboard.show(widget, self.get_win_pos(), True)
             
     def on_mdi_entry_changed(self, widget, data=None):
         # Convert MDI entry text to UPPERCASE
@@ -1046,8 +1049,8 @@ class Hazzy(object):
     # Jump to folder specified in .prefs, defaults to program prefix in INI file    
     def on_open_gcode_folder_clicked(self, widget, data=None):
         self.widgets.filechooser.set_current_folder(self.nc_file_path)
-        
-    
+
+
     # Jump to USB drive, if more than one list them all
     def on_open_usb_folder_clicked(self, widget, data=None):
         usbdirs = os.listdir('/media/')
@@ -1059,8 +1062,8 @@ class Hazzy(object):
         else:
             self.widgets.filechooser.set_current_folder('/media/')
             print "More then one USB device", usbdirs
-            
-            
+
+
     # Eject the USB drive FIXME this needs some work
     def on_eject_usb_clicked(self, widget, data=None):
         if self.usb_dir != "":
@@ -1075,26 +1078,26 @@ class Hazzy(object):
             #       is there a neater way to keep the path intact?
             os.system('eject ' + '"' + usb_name + '"')
 
-        
+
     # TODO Need to make a popup for entering the new folder name
     def on_new_folder_btn_clicked(self, widget, data=None):
         currentdir = self.widgets.filechooser.get_current_folder()
         entry_keyboard.Keyboard(self.get_win_pos(), currentdir)
         
         #os.makedirs(currentdir + '/test')
-        
-        
-        
-        
+
+
+
+
     # Load file on activate in file chooser, better for mouse users
     def on_filechooser_file_activated(self, widget, data=None): 
         self.load_gcode_file(str(self.widgets.filechooser.get_filename()))
-    
-    
+
+
     # Load file on "Load Gcode" button clicked, better for touchscreen users
     def on_load_gcode_clicked(self, widget, data=None):
         self.load_gcode_file(str(self.widgets.filechooser.get_filename()))
-        
+
 
     def load_gcode_file(self, fname):
         if os.path.isfile(fname):
@@ -1111,15 +1114,15 @@ class Hazzy(object):
             print "NGC file loaded: ", fname
         elif os.path.isdir(fname):
             self.widgets.filechooser.set_current_folder(fname)
-            
-            
+
+
     def on_save_file_clicked(self, widget, data=None):
         self.save(self.current_preview_file)
-        
-        
+
+
     def on_gcode_preview_button_press_event(self, widget, data=None):
         if self.keypad_on_edit:
-            keyboard.Keyboard(widget, self.get_win_pos(), True)
+            self.keyboard.show(widget, self.get_win_pos(), True)
             
             
 # =========================================================      
