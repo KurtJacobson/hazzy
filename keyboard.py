@@ -78,11 +78,11 @@ class keyboard(object):
         
         self.number_btn_dict = dict((n, self.builder.get_object(n)) for n in self.characters)
         
-        # Connet letter button press events
+        # Connect letter button press events
         for l, btn in self.letter_btn_dict.iteritems():
             btn.connect("pressed", self.on_button_pressed)
             
-        # Connet number button press events
+        # Connect number button press events
         for l, btn in self.number_btn_dict.iteritems():
             btn.connect("pressed", self.on_button_pressed)
         
@@ -209,15 +209,15 @@ class keyboard(object):
             self.shift(False)
     
         
-    # Backspace    
+    # Backspace
     def on_backspace_pressed(self, widget): 
         self.emulate_key(widget, "BackSpace")
         
-    # Tab 
+    # Tab
     def on_tab_pressed(self, widget):
         self.emulate_key(widget, "Tab")
         
-    # Return    
+    # Return
     def on_return_pressed(self, widget):
         self.enter(widget)
         
@@ -225,7 +225,7 @@ class keyboard(object):
     def on_arrow_left_pressed(self, widget):
         self.emulate_key(widget, "Left")  
       
-    # Right arrow    
+    # Right arrow
     def on_arrow_right_pressed(self, widget):
         self.emulate_key(widget, "Right")
         
