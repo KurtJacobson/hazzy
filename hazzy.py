@@ -365,28 +365,22 @@ class Hazzy(object):
         self.widgets.tool_number_entry.modify_font(self.dro_font)
         self.widgets.spindle_speed_entry.modify_font(self.dro_font)
 
-        self.rel_dro_list = ('dro_0', 'dro_1', 'dro_2', 'dro_3', 'dro_4')
-        self.dtg_dro_list = ('dtg_0', 'dtg_1', 'dtg_2', 'dtg_3', 'dtg_4')    
-        self.abs_dro_list = ('abs_0', 'abs_1', 'abs_2', 'abs_3', 'abs_4')
-        self.dro_label_list = ('dro_label_0', 'dro_label_1', 'dro_label_2', 'dro_label_3', 'dro_label_4')
-        self.abs_dro_eventboxes = ('abs_eventbox_0', 'abs_eventbox_1', 'abs_eventbox_2', 'abs_eventbox_3', 'abs_eventbox_4')
         
-        
-        
+    # Axis DROs TODO Move to a DRO init section?
+        # Hide extra DROs
         count = 4
         while count >= self.num_axes:
-            self.widgets[self.rel_dro_list[count]].hide()
-            self.widgets[self.dtg_dro_list[count]].hide()
-            self.widgets[self.abs_dro_eventboxes[count]].hide()
-            self.widgets[self.dro_label_list[count]].hide()
+            self.widgets['dro_%s' % count].hide()
+            self.widgets['dtg_%s' % count].hide()
+            self.widgets['abs_%s' % count].hide()
+            self.widgets['dro_label_%s' % count].hide()
             count -= 1
         
         # Dict of DRO GtkEntry objects and there corresponding axes
         self.rel_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
-            dro = self.rel_dro_list[i]
-            self.rel_dro_dict[axis] = self.widgets[dro]
+            self.rel_dro_dict[axis] = self.widgets['dro_%s' % i]
             
         # Set DRO fonts/colors
         for axis, dro in self.rel_dro_dict.iteritems():
@@ -396,8 +390,7 @@ class Hazzy(object):
         self.dtg_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
-            dro = self.dtg_dro_list[i]
-            self.dtg_dro_dict[axis] = self.widgets[dro]
+            self.dtg_dro_dict[axis] = self.widgets['dtg_%s' % i]
             
         # Set DTG DRO fonts/colors.
         for axis, dro in self.dtg_dro_dict.iteritems():
@@ -407,8 +400,7 @@ class Hazzy(object):
         self.abs_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
-            dro = self.abs_dro_list[i]
-            self.abs_dro_dict[axis] = self.widgets[dro]
+            self.abs_dro_dict[axis] = self.widgets['abs_%s' % i]
         
         # Set ABS DRO fonts/colors 
         for axis, dro in self.abs_dro_dict.iteritems():
@@ -419,12 +411,11 @@ class Hazzy(object):
         self.abs_dro_eventboxes_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
-            eventbox = self.abs_dro_eventboxes[i]
-            self.abs_dro_eventboxes_dict[axis] = self.widgets[eventbox]
+            self.abs_dro_eventboxes_dict[axis] = self.widgets['abs_eventbox_%s' % i]
                 
         # Set DRO axis labels
         for i in range(self.num_axes):
-            label = self.widgets[self.dro_label_list[i]]
+            label = self.widgets['dro_label_%s' % i]
             label.modify_font(self.mdi_font)
             label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
             label.set_text(self.axis_letter_list[i])
@@ -435,10 +426,10 @@ class Hazzy(object):
             label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
         
         
-        # Joint DROs
+    # Joint DROs
+        # Hide extra DROs
         count = 4
         while count >= self.num_joints:
-            print "removing: ", count
             self.widgets['joint_label_%s' % count].hide()
             self.widgets['joint_pos_%s' % count].hide()
             self.widgets['joint_status_%s' % count].hide()
@@ -449,7 +440,6 @@ class Hazzy(object):
             axis = self.jnum_aletter_dict[joint]
             label = self.widgets['joint_label_%s' % joint]
             label.set_text("%s (%s)" % (joint, axis))
-            print "%s (%s)" % (joint, axis)
             
         self.joint_pos_dro_list = []
         for joint in range(self.num_joints):
@@ -1786,15 +1776,15 @@ class Hazzy(object):
     def home_joint(self, joint):
         if self.stat.joint[joint]['homed'] == 0 and not self.stat.estop and self.stat.joint[joint]['homing'] == 0:
             self._show_message(["INFO", "Homing joint %s " % joint])
-            self.set_mode(linuxcnc.MODE_MANUAL)
+            #self.set_mode(linuxcnc.MODE_MANUAL)
             self.command.home(joint)
             # Indicate homing in process, needed to cause update of joint status
             self.homed_joints[joint] = 2
         elif self.stat.homed[joint]:
             message = ("joint %s is already homed. \n Unhome?" % joint)
             if dialogs.Dialogs(message).run():
-                #self._show_message(["INFO", "Unhoming joint %s " % joint])
-                self.set_mode(linuxcnc.MODE_MANUAL)
+                self._show_message(["INFO", "Unhoming joint %s " % joint])
+                #self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
                 self.command.unhome(joint)
         elif self.stat.joint[joint]['homing'] != 0:
