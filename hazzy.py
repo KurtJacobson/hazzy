@@ -898,7 +898,7 @@ class Hazzy(object):
         #    return
         self.widgets.mdi_entry.set_text("")
         if self.keypad_on_mdi:
-            self.keyboard.show(widget, self.get_win_pos(), True)
+            self.keyboard.show(widget, self.get_win_pos())
             
     def on_mdi_entry_changed(self, widget, data=None):
         # Convert MDI entry text to UPPERCASE
@@ -921,9 +921,7 @@ class Hazzy(object):
             # Set button to 'stop' so can kill MDI motion if need be
             self.set_cycle_start_button_state('stop')
             self.window.set_focus(None)
-            
-            
-    
+
     def on_button1_clicked(self, widget, data=None):
         print "TOGGLE Pressed"
         tooledit.tooledit() 
