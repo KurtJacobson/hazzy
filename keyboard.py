@@ -291,6 +291,7 @@ class Keyboard(object):
         self.window.move(pos[0]+105, pos[1]+440) #545, 650)
         self.window.show()
 
+
 def main():
     gtk.main()
     
