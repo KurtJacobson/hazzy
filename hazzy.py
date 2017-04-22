@@ -1311,7 +1311,7 @@ class Hazzy(object):
     # Popup keyboard on text edit
     def on_remark_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
-            keyboard.Keyboard(entry, self.get_win_pos())
+            self.keyboard.show(entry, self.get_win_pos())
         
         
     # Toggle selection checkbox value
