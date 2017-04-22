@@ -31,11 +31,11 @@ _keymap = gtk.gdk.keymap_get_default()  # Needed for keypress emulation
 
 class Touchpad(object):
 
-    def __init__(self, widget, kind='float', position=None):
-        
-        self.dro = widget
-        self.original_text = self.dro.get_text() # Save the original entry
-        #self.dro.set_text('')                    # Clear the DRO    
+    def __init__(self, kind='float'):
+
+        self.dro = None  # widget
+        self.original_text = None  # self.dro.get_text()  # Save the original entry
+        # self.dro.set_text('')                   # Clear the DRO
         
         # Glade setup
         if kind == 'float': 
@@ -47,14 +47,7 @@ class Touchpad(object):
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
         self.window = self.builder.get_object("window")
-        
-        # Set position if requested
-        if position != None:
-            self.window.move(position[0], position[1])
-            
-        self.window.show()
-        
-    
+
     # Handles all the character buttons
     def on_button_clicked(self, widget):
         self.dro.delete_selection() 
@@ -139,10 +132,10 @@ class Touchpad(object):
             try:
                 self.dro.emit("key-press-event", event)
             except:
-                self.window.destroy()
+                self.window.hide()  # was destroy()
             
     
-    # Enter action    
+    # Enter action
     def enter(self):
         # If entry is nothing escape
         try:
@@ -152,7 +145,7 @@ class Touchpad(object):
                 self.dro.emit('activate')
         except:
             pass
-        self.window.destroy()
+        self.window.hide()  # was destroy()
             
             
     # Escape action
@@ -165,13 +158,25 @@ class Touchpad(object):
             self.dro.emit("key-press-event", event)
         except:
             pass
-        self.window.destroy()
+        self.window.hide()  # destroy()
         
         
     # Escape on focus out FIXME this don't work
     def on_window_focus_out_event(self, widget, data=None):
         self.escape()
-        
+
+    def show(self, widget, kind='float', position=None):
+
+        self.dro = widget
+        self.original_text = self.dro.get_text()  # Save the original entry
+        # self.dro.set_text('')                   # Clear the DRO
+
+        # Set position if requested
+        if position is not None:
+            self.window.move(position[0], position[1])
+
+        self.window.show()
+
 
 def main():
     gtk.main()
