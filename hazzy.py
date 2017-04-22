@@ -368,33 +368,15 @@ class hazzy(object):
         self.dro_label_list = ('dro_label_0', 'dro_label_1', 'dro_label_2', 'dro_label_3', 'dro_label_4')
         self.abs_dro_eventboxes = ('abs_eventbox_0', 'abs_eventbox_1', 'abs_eventbox_2', 'abs_eventbox_3', 'abs_eventbox_4')
         
-        # Hide any extra DROs
-        #def set_dro_display_mode(self, mode):
-#        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
-#            print self.num_joints
-#            #self.widgets.dro_table.hide()
-#            for i in range(self.num_joints):
-#                dro = self.rel_dro_list[i]
-#                print dro
-#                self.widgets[dro].show()
-#                self.widgets[dro].set_text('test')
-#        else:
         
-        self.widgets.dro_table.show_all()
+        
         count = 4
-        table = self.widgets.dro_table
         while count >= self.num_axes:
             self.widgets[self.rel_dro_list[count]].hide()
             self.widgets[self.dtg_dro_list[count]].hide()
             self.widgets[self.abs_dro_eventboxes[count]].hide()
             self.widgets[self.dro_label_list[count]].hide()
             count -= 1
-        
-#        self.widgets.dro_table.hide_all()
-#        #self.widgets.dro_table.show_all()
-#        dro = self.rel_dro_list[2]
-#        self.widgets[dro].show()
-#        self.widgets.dro_table.show(dro)
         
         # Dict of DRO GtkEntry objects and there corresponding axes
         self.rel_dro_dict = {}
@@ -444,11 +426,42 @@ class hazzy(object):
             label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
             label.set_text(self.axis_letter_list[i])
             
-
         for i in ['rel_dro_label', 'dtg_dro_label', 'abs_dro_label', 'spindle_rpm_label']:
             label = self.widgets[i]
             label.modify_font(pango.FontDescription('dejavusans condensed 12'))
             label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
+        
+        
+        # Joint DROs
+        count = 4
+        while count >= self.num_joints:
+            print "removing: ", count
+            self.widgets['joint_label_%s' % count].hide()
+            self.widgets['joint_pos_%s' % count].hide()
+            self.widgets['joint_status_%s' % count].hide()
+            self.widgets['joint_home_btn_%s' % count].hide()
+            count -= 1    
+            
+        for joint in range(self.num_joints):
+            axis = self.jnum_aletter_dict[joint]
+            label = self.widgets['joint_label_%s' % joint]
+            label.set_text("%s (%s)" % (joint, axis))
+            print "%s (%s)" % (joint, axis)
+            
+        self.joint_pos_dro_list = []
+        for joint in range(self.num_joints):
+            dro = self.widgets['joint_pos_%s' % joint]
+            self.joint_pos_dro_list.append(dro)
+            
+        self.joint_status_label_list = []
+        for joint in range(self.num_joints):
+            label = self.widgets['joint_status_%s' % joint]
+            self.joint_status_label_list.append(label)
+        
+        self.home_joint_btn_list = []
+        for joint in range(self.num_joints):
+            btn = self.widgets['joint_home_btn_%s' % joint]
+            self.home_joint_btn_list.append(btn)
             
             
 #        self.widgets.spindle_text.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
@@ -482,9 +495,10 @@ class hazzy(object):
         
         if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
             self._update_joint_dros()
+            self.widgets.dro_notebook.set_current_page(1)
         else:
             self._update_axis_dros()
-        
+            self.widgets.dro_notebook.set_current_page(0)
         
         
         
@@ -654,7 +668,7 @@ class hazzy(object):
         
   
     # Toggle the cycle start/stop button state and set the corresponding image
-    def on_cycle_start_pressed(self, widget, data = None):
+    def on_cycle_start_pressed(self, widget, data=None):
         if self.cycle_start_button_state == 'start':
             # FIXME Check for no force homing in INI
             if self.is_homed() and self.stat.file != "" and self.widgets.notebook.get_current_page() == 0:
@@ -690,7 +704,7 @@ class hazzy(object):
             self.cycle_start_button_state = 'stop'
              
             
-    def on_feed_hold_pressed(self, widget, data = None):
+    def on_feed_hold_pressed(self, widget, data=None):
         if self.hold_resume_button_state == 'hold':
             self.command.auto(linuxcnc.AUTO_PAUSE)
         elif self.hold_resume_button_state == 'resume':
@@ -719,7 +733,7 @@ class hazzy(object):
                        
 
     # Toggle the reset button state and set the corresponding image
-    def on_reset_pressed(self, widget, data = None):
+    def on_reset_pressed(self, widget, data=None):
         if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET:
             print "Reseting E-stop"
             self.set_state(linuxcnc.STATE_ESTOP_RESET)
@@ -736,13 +750,13 @@ class hazzy(object):
             self.set_image('reset_image', 'reset.png')
         
         
-    def on_abs_label_clicked(self, widget, data = None):
+    def on_abs_label_clicked(self, widget, data=None):
         # Home -1 means all
         self.set_mode(linuxcnc.MODE_MANUAL)
         self.home_joint(-1)
         
         
-    def on_abs_dro_clicked(self, widget, data = None):
+    def on_abs_dro_clicked(self, widget, data=None):
         # Make sure we are in manual mode  
         self.set_mode(linuxcnc.MODE_MANUAL)
         # Look up the axis from the GTK object 
@@ -758,10 +772,19 @@ class hazzy(object):
         print "Attempting to home Axis %s --> Joint %s" % (aletter, jnum)
         self.home_joint(jnum)
         
+    
+    # New handlers for btns in Joint DRO page, might get rid of above handlers  
+    def on_home_all_clicked(self, widget, data=None):
+        self.home_joint(-1)
+    
+    def on_home_joint_clicked(self, widget, data=None):
+        jnum = self.home_joint_btn_list.index(widget)
+        self.home_joint(jnum)
         
-    def on_exit_program_clicked(self, widget, data = None):
+        
+    def on_exit_program_clicked(self, widget, data=None):
         self.close_window() # This function displays a popup
-
+        
 
     # =========================================================      
     # Main panel CheckBox handlers
@@ -786,7 +809,7 @@ class hazzy(object):
             log.debug("Setting opskip OFF")
             
     # 
-    def on_step_clicked(self, widget, data = None):
+    def on_step_clicked(self, widget, data=None):
         print "STEP was clicked, I don't know by who though."
 
 
@@ -898,11 +921,11 @@ class hazzy(object):
             
             
     
-    def on_button1_clicked(self, widget, data = None):
+    def on_button1_clicked(self, widget, data=None):
         print "TOGGLE Pressed"
         tooledit.tooledit() 
         
-    def on_redraw_clicked(self, widget, data = None):
+    def on_redraw_clicked(self, widget, data=None):
         self.set_selected_tool(3)
     
         
@@ -956,7 +979,7 @@ class hazzy(object):
             self.widgets.gremlin.clear_live_plotter()
     
     # Toggle "show line numbers" in gcode view when double clicked
-    def on_gcode_view_button_press_event(self, widget, event, data = None):
+    def on_gcode_view_button_press_event(self, widget, event, data=None):
         if event.type == gtk.gdk._2BUTTON_PRESS:
             if widget.get_show_line_numbers():
                 widget.set_show_line_numbers(False)
@@ -983,7 +1006,7 @@ class hazzy(object):
             
             
     # To filter or not to filter, that is the question
-    def on_filter_ngc_chk_toggled(self, widget, data = None):
+    def on_filter_ngc_chk_toggled(self, widget, data=None):
         if self.widgets.filter_ngc_chk.get_active():
             self.widgets.filechooser.set_filter(self.widgets.ngc_file_filter)
         else:
@@ -991,7 +1014,7 @@ class hazzy(object):
             
             
     # Change button label if a file or folder is selected
-    def on_filechooser_selection_changed(self, widget, data = None):
+    def on_filechooser_selection_changed(self, widget, data=None):
         fname = str(self.widgets.filechooser.get_filename())
         if os.path.isfile(fname):
             self.widgets.load_gcode.set_label("Load Gcode")
@@ -1005,7 +1028,7 @@ class hazzy(object):
                 
     # If file has been edited ask if should save before reloading preview        
     # Need to do this on release or the popup gets the mouse up and we are stuck in drag
-    def on_filechooser_button_release_event(self, widget, data = None):
+    def on_filechooser_button_release_event(self, widget, data=None):
         fname = str(self.widgets.filechooser.get_filename())
         if self.preview_buf.get_modified():
             message = ("Save changes to: \n %s?" % os.path.split(self.current_preview_file)[1])
@@ -1021,12 +1044,12 @@ class hazzy(object):
 
     
     # Jump to folder specified in .prefs, defaults to program prefix in INI file    
-    def on_open_gcode_folder_clicked(self, widget, data = None):
+    def on_open_gcode_folder_clicked(self, widget, data=None):
         self.widgets.filechooser.set_current_folder(self.nc_file_path)
         
     
     # Jump to USB drive, if more than one list them all
-    def on_open_usb_folder_clicked(self, widget, data = None):
+    def on_open_usb_folder_clicked(self, widget, data=None):
         usbdirs = os.listdir('/media/')
         # If only one dir assume it's the USB drive and set it to current
         if len(usbdirs) == 1:
@@ -1054,7 +1077,7 @@ class hazzy(object):
 
         
     # TODO Need to make a popup for entering the new folder name
-    def on_new_folder_btn_clicked(self, widget, data = None):
+    def on_new_folder_btn_clicked(self, widget, data=None):
         currentdir = self.widgets.filechooser.get_current_folder()
         entry_keyboard.keyboard(self.get_win_pos(), currentdir)
         
@@ -1064,12 +1087,12 @@ class hazzy(object):
         
         
     # Load file on activate in file chooser, better for mouse users
-    def on_filechooser_file_activated(self, widget, data = None): 
+    def on_filechooser_file_activated(self, widget, data=None): 
         self.load_gcode_file(str(self.widgets.filechooser.get_filename()))
     
     
     # Load file on "Load Gcode" button clicked, better for touchscreen users
-    def on_load_gcode_clicked(self, widget, data = None):
+    def on_load_gcode_clicked(self, widget, data=None):
         self.load_gcode_file(str(self.widgets.filechooser.get_filename()))
         
 
@@ -1090,11 +1113,11 @@ class hazzy(object):
             self.widgets.filechooser.set_current_folder(fname)
             
             
-    def on_save_file_clicked(self, widget, data = None):
+    def on_save_file_clicked(self, widget, data=None):
         self.save(self.current_preview_file)
         
         
-    def on_gcode_preview_button_press_event(self, widget, data = None):
+    def on_gcode_preview_button_press_event(self, widget, data=None):
         if self.keypad_on_edit:
             keyboard.keyboard(widget, self.get_win_pos(), True)
             
@@ -1182,7 +1205,7 @@ class hazzy(object):
         linuxcnc.command().load_tool_table()
 
 
-    def add_tool(self, data = None):
+    def add_tool(self, data=None):
         self.tool_liststore.append(data)
             
             
@@ -1206,7 +1229,7 @@ class hazzy(object):
             model.remove(model.get_iter(row))
             
             
-    def on_change_to_selected_tool_clicked(self, widget, data = None):
+    def on_change_to_selected_tool_clicked(self, widget, data=None):
         selected = self.get_selected_tools()
         if len(selected) == 1:
             tool_num = selected[0]
@@ -1217,17 +1240,17 @@ class hazzy(object):
             self._show_message(["ERROR", text])
         
     
-    def on_add_tool_clicked(self, widget, data = None):
+    def on_add_tool_clicked(self, widget, data=None):
         num = len(self.tool_liststore) + 1
         array = [ 0, num, num, '0.0000', '0.0000', 'New Tool', 'white' ]
         self.add_tool(array)
         
         
-    def on_load_tool_table_clicked(self, widget, data = None):
+    def on_load_tool_table_clicked(self, widget, data=None):
         self.load_tool_table()
         
 
-    def on_save_tool_table_clicked(self, widget, data = None):
+    def on_save_tool_table_clicked(self, widget, data=None):
         self.save_tool_table()
 
 
@@ -1338,22 +1361,22 @@ class hazzy(object):
 
     # =========================================================
     # Launch HAL-tools, copied from gsreen
-    def on_hal_show_clicked(self, widget, data = None):
+    def on_hal_show_clicked(self, widget, data=None):
         p = os.popen("tclsh %s/bin/halshow.tcl &" % TCLPATH)
 
-    def on_calibration_clicked(self, widget, data = None):
+    def on_calibration_clicked(self, widget, data=None):
         p = os.popen("tclsh %s/bin/emccalib.tcl -- -ini %s > /dev/null &" % (TCLPATH, sys.argv[2]), "w")
 
-    def on_hal_meter_clicked(self, widget, data = None):
+    def on_hal_meter_clicked(self, widget, data=None):
         p = os.popen("halmeter &")
 
-    def on_status_clicked(self, widget, data = None):
+    def on_status_clicked(self, widget, data=None):
         p = os.popen("linuxcnctop  > /dev/null &", "w")
 
-    def on_hal_scope_clicked(self, widget, data = None):
+    def on_hal_scope_clicked(self, widget, data=None):
         p = os.popen("halscope  > /dev/null &", "w")
 
-    def on_classicladder_clicked(self, widget, data = None):
+    def on_classicladder_clicked(self, widget, data=None):
         if hal.component_exists("classicladder_rt"):
             p = os.popen("classicladder  &", "w")
         else:
@@ -1494,8 +1517,7 @@ class hazzy(object):
         else:
             pos = self.stat.joint_position
         for joint in range(self.num_joints):
-            print "joint %s pos: " % joint, pos[joint]
-            dro = self.widgets[self.rel_dro_list[joint]]
+            dro = self.joint_pos_dro_list[joint]
             dro.set_text("%.4f" % pos[joint])
         
             
@@ -1649,6 +1671,7 @@ class hazzy(object):
             print "\nMachine appearers to be a gantry config having a double %s axis" % double_aletter
         
         self.aletter_jnum_dict = {}
+        self.jnum_aletter_dict = {}
         if self.num_joints == len(coordinates):
             print "\nThe machine has %s axes and %s joints" % (self.num_axes, self.num_joints)
             print "The Axis/Joint mapping is:"
@@ -1658,6 +1681,7 @@ class hazzy(object):
                     aletter = aletter + str(count)
                     count += 1
                 self.aletter_jnum_dict[aletter] = jnum
+                self.jnum_aletter_dict[jnum] = aletter
                 print("Axis %s --> Joint %s" %(aletter, jnum))
         else:
             print "The number of joints (%s) is not equal to the number of coordinates (%s)" % (self.num_joints, len(coordinates))
@@ -1675,14 +1699,22 @@ class hazzy(object):
         for joint in range(self.num_joints):
             if self.stat.joint[joint]['homed'] != 0:
                 homed_joints[joint] = 1 # 1 indicates homed
+                self.joint_pos_dro_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+                self.joint_status_label_list[joint].set_text("homed")
+                self.home_joint_btn_list[joint].set_label("Unhome")
                 axis = self.joint_axis_dict[joint]
                 self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
             elif self.stat.joint[joint]['homing'] != 0:
                 homed_joints[joint] = 2 # 2 indicates homing in progress
+                self.joint_pos_dro_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('yellow'))
+                self.joint_status_label_list[joint].set_text("homing")
                 axis = self.joint_axis_dict[joint]
                 self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('yellow'))
             else:
                 homed_joints[joint] = 0 # 0 indicates unhomed
+                self.joint_pos_dro_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+                self.joint_status_label_list[joint].set_text("unhomed")
+                self.home_joint_btn_list[joint].set_label("Home")
                 axis = self.joint_axis_dict[joint]
                 self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
         self.homed_joints = homed_joints
@@ -1755,7 +1787,8 @@ class hazzy(object):
             self._show_message(["INFO", "Homing joint %s " % joint])
             self.set_mode(linuxcnc.MODE_MANUAL)
             self.command.home(joint)
-            self.homed_joints[joint] = 2 # Indicate homing in process, needed to cause update of joint status
+            # Indicate homing in process, needed to cause update of joint status
+            self.homed_joints[joint] = 2
         elif self.stat.homed[joint]:
             message = ("joint %s is already homed. \n Unhome?" % joint)
             if dialogs.dialogs(message).run():
