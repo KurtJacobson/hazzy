@@ -6,7 +6,7 @@
 # Bold gray for general info
 I = "\033[1;30mHAZZY INFO: \033[0m"
 
-# Greem for good news info lines
+# Green for good news info lines
 G = "\033[1;32mHAZZY INFO: \033[0m"
 
 # Bold Yellow for warnings
@@ -20,7 +20,7 @@ E = "\033[1;31mHAZZY ERROR\033[0m: "
 # Bold gray for general info
 GI = "\033[1;30mGETINI INFO: \033[0m"
 
-# Greem for good news info lines
+# Green for good news info lines
 GG = "\033[1;32mGETINI INFO: \033[0m"
 
 # Bold Yellow for warnings
@@ -34,7 +34,7 @@ GE = "\033[1;31mGETINI ERROR\033[0m: "
 # Bold gray for general info
 PI = "\033[1;30mHAZZY PREF INFO: \033[0m"
 
-# Greem for good news info lines
+# Green for good news info lines
 PG = "\033[1;32mHAZZY PREF INFO: \033[0m"
 
 # Bold Yellow for warnings
