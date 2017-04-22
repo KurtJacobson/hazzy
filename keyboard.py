@@ -34,12 +34,11 @@ _keymap = gtk.gdk.keymap_get_default()
 
 class Keyboard(object):
 
-    def __init__(self, entry, pos, persistent=False ):
-        
-        self.keyboard = Keyboard
-        self.entry_buf = entry.get_buffer()
-        self.entry = entry
-        self.persistent = persistent
+    def __init__(self):
+
+        self.entry_buf = None # entry.get_buffer()
+        self.entry = None # entry
+        self.persistent = False
         
         # Glade setup
         gladefile = os.path.join(IMAGEDIR, 'keyboard.glade')
@@ -48,18 +47,14 @@ class Keyboard(object):
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
         self.window = self.builder.get_object("window")
-        
-        self.window.move(pos[0]+105, pos[1]+440) #545, 650)
-        self.window.show()
-        
+
         gobject.timeout_add(50, self.repeat_event)  # Keypress repeat function
         
         # FIXME this is messy
         self.event = None
         self.widget = self.builder.get_object('a')
         self.wait_counter = 0
-        
-        
+
         self.window.set_keep_above(True)
     
         self.letters = 'abcdefghijklmnopqrstuvwxyz ' # Now I've said my abc's
@@ -85,8 +80,7 @@ class Keyboard(object):
         # Connect number button press events
         for l, btn in self.number_btn_dict.iteritems():
             btn.connect("pressed", self.on_button_pressed)
-        
-        
+
 # =========================================================
 ## BEGIN - Keyboard Settings
 # =========================================================
@@ -286,8 +280,18 @@ class Keyboard(object):
     def on_window_focus_out_event(self, widget, data=None):
         print "Focus out"
         self.escape()
-        
-        
+
+# ==========================================================
+# Show the keyboard
+# ==========================================================
+
+    def show(self, entry, pos, persistent=False ):
+        self.entry = entry
+        self.persistent = persistent
+        self.window.move(pos[0]+105, pos[1]+440) #545, 650)
+        self.window.show()
+
+
 def main():
     gtk.main()
     
@@ -295,4 +299,3 @@ def main():
 if __name__ == "__main__":
     ui = Keyboard()
     main()
-
