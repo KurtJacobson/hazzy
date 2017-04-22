@@ -105,7 +105,7 @@ class tc(): #Small class to hold the terminal message prefixes
     # Bold gray for general info
     I = "\033[1;30mHAZZY PREF: \033[0m"
 
-    # Greem for good news info lines
+    # Green for good news info lines
     G = "\033[1;32mHAZZY PREF: \033[0m"
 
     # Bold Yellow for warnings
