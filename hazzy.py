@@ -56,15 +56,15 @@ IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade
 sys.path.insert(1 , HAZZYDIR)  # Set system path so we can find our own modules
 
 # Now we have the path to our own modules so we can import them
-import tc               # For highlighting terminal messages.
-import widgets          # Norbert's module for geting objects quickly
-import hazzy_prefs      # Handles the preferences
-import getiniinfo       # Handles .ini file reading and value validation
-from touchpad import Touchpad         # On screen numpad and keypad for use with touchscreens
-from keyboard import Keyboard         # On screen keyboard emulator for use with touchscreens
+import tc                       # For highlighting terminal messages.
+import widgets                  # Norbert's module for geting objects quickly
+import hazzy_prefs              # Handles the preferences
+import getiniinfo               # Handles .ini file reading and value validation
+from touchpad import Touchpad   # On screen numpad and keypad for use with touchscreens
+from keyboard import Keyboard   # On screen keyboard emulator for use with touchscreens
 import entry_keyboard
-import dialogs          # Used for confirmation and error dialogs
-import simpleeval       # Used to evaluate expressions in numeric entries
+import dialogs                  # Used for confirmation and error dialogs
+import simpleeval               # Used to evaluate expressions in numeric entries
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
@@ -373,17 +373,17 @@ class Hazzy(object):
         # Hide extra DROs
         count = 4
         while count >= self.num_axes:
-            self.widgets['dro_%s' % count].hide()
-            self.widgets['dtg_%s' % count].hide()
-            self.widgets['abs_%s' % count].hide()
-            self.widgets['dro_label_%s' % count].hide()
+            self.widgets['dro_{0}'.format(count)].hide()
+            self.widgets['dtg_{0}'.format(count)].hide()
+            self.widgets['abs_{0}'.format(count)].hide()
+            self.widgets['dro_label_{0}'.format(count)].hide()
             count -= 1
         
         # Dict of DRO GtkEntry objects and there corresponding axes
         self.rel_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
-            self.rel_dro_dict[axis] = self.widgets['dro_%s' % i]
+            self.rel_dro_dict[axis] = self.widgets['dro_{0}'.format(i)]
             
         # Set DRO fonts/colors
         for axis, dro in self.rel_dro_dict.iteritems():
@@ -393,7 +393,7 @@ class Hazzy(object):
         self.dtg_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
-            self.dtg_dro_dict[axis] = self.widgets['dtg_%s' % i]
+            self.dtg_dro_dict[axis] = self.widgets['dtg_{0}'.format(i)]
             
         # Set DTG DRO fonts/colors.
         for axis, dro in self.dtg_dro_dict.iteritems():
@@ -403,7 +403,7 @@ class Hazzy(object):
         self.abs_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
-            self.abs_dro_dict[axis] = self.widgets['abs_%s' % i]
+            self.abs_dro_dict[axis] = self.widgets['abs_{0}'.format(i)]
         
         # Set ABS DRO fonts/colors 
         for axis, dro in self.abs_dro_dict.iteritems():
@@ -414,11 +414,11 @@ class Hazzy(object):
         self.abs_dro_eventboxes_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
-            self.abs_dro_eventboxes_dict[axis] = self.widgets['abs_eventbox_%s' % i]
+            self.abs_dro_eventboxes_dict[axis] = self.widgets['abs_eventbox_{0}'.format(i)]
                 
         # Set DRO axis labels
         for i in range(self.num_axes):
-            label = self.widgets['dro_label_%s' % i]
+            label = self.widgets['dro_label__{0}'.format(i)]
             label.modify_font(self.mdi_font)
             label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
             label.set_text(self.axis_letter_list[i])
@@ -433,30 +433,30 @@ class Hazzy(object):
         # Hide extra DROs
         count = 4
         while count >= self.num_joints:
-            self.widgets['joint_label_%s' % count].hide()
-            self.widgets['joint_pos_%s' % count].hide()
-            self.widgets['joint_status_%s' % count].hide()
-            self.widgets['joint_home_btn_%s' % count].hide()
+            self.widgets['joint_label_{0}'.format(count)].hide()
+            self.widgets['joint_pos_{0}'.format(count)].hide()
+            self.widgets['joint_status_{0}'.format(count)].hide()
+            self.widgets['joint_home_btn_{0}'.format(count)].hide()
             count -= 1    
             
         for joint in range(self.num_joints):
             axis = self.jnum_aletter_dict[joint]
-            label = self.widgets['joint_label_%s' % joint]
-            label.set_text("%s (%s)" % (joint, axis))
+            label = self.widgets['joint_label_{0}'.format(joint)]
+            label.set_text("{0} ({1})".format(joint, axis))
             
         self.joint_pos_dro_list = []
         for joint in range(self.num_joints):
-            dro = self.widgets['joint_pos_%s' % joint]
+            dro = self.widgets['joint_pos_{0}'.format(joint)]
             self.joint_pos_dro_list.append(dro)
             
         self.joint_status_label_list = []
         for joint in range(self.num_joints):
-            label = self.widgets['joint_status_%s' % joint]
+            label = self.widgets['joint_status_{0}'.format(joint)]
             self.joint_status_label_list.append(label)
         
         self.home_joint_btn_list = []
         for joint in range(self.num_joints):
-            btn = self.widgets['joint_home_btn_%s' % joint]
+            btn = self.widgets['joint_home_btn_{0}'.format(joint)]
             self.home_joint_btn_list.append(btn)
             
             
