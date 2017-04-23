@@ -88,7 +88,8 @@ ch.setLevel(logging.DEBUG)
 
 # Create formatter and add it to the handlers
 ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-cf = logging.Formatter('HAZZY %(levelname)s - %(message)s')
+#cf = logging.Formatter('HAZZY %(levelname)s - %(message)s')
+cf = logging.Formatter(tc.I + 'HAZZY %(levelname)s - %(message)s')
 fh.setFormatter(ff)
 ch.setFormatter(cf)
 
@@ -418,7 +419,7 @@ class Hazzy(object):
                 
         # Set DRO axis labels
         for i in range(self.num_axes):
-            label = self.widgets['dro_label__{0}'.format(i)]
+            label = self.widgets['dro_label_{0}'.format(i)]
             label.modify_font(self.mdi_font)
             label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
             label.set_text(self.axis_letter_list[i])
