@@ -88,8 +88,7 @@ ch.setLevel(logging.DEBUG)
 
 # Create formatter and add it to the handlers
 ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-#cf = logging.Formatter('HAZZY %(levelname)s - %(message)s')
-cf = logging.Formatter(tc.I + 'HAZZY %(levelname)s - %(message)s')
+cf = logging.Formatter('HAZZY %(levelname)s - %(message)s')
 fh.setFormatter(ff)
 ch.setFormatter(cf)
 
@@ -120,7 +119,6 @@ class Hazzy(object):
     def __init__(self):        
 
         # Module init
-
         self.float_touchpad = Touchpad("float")
         self.int_touchpad = Touchpad("int")
 
@@ -197,7 +195,7 @@ class Hazzy(object):
 # =========================================================
         
         # Constants
-        self.axis_letters = [ 'X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W' ]
+        self.axis_letters = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W']
         
         # Define default button states 
         self.cycle_start_button_state = 'start'
@@ -654,7 +652,7 @@ class Hazzy(object):
             error_line = text[1].replace("Near line ", "").replace(" of","")
             message = text[0] + ' near line ' + error_line + ', see log for more info'
             self._show_message(["ERROR", message ])
-            print errortext
+            print(errortext)
             #dialogs.dialogs(errortext, 2).run()
             self.widgets.gcode_view.set_line_number(error_line)
 
@@ -732,17 +730,17 @@ class Hazzy(object):
     # Toggle the reset button state and set the corresponding image
     def on_reset_pressed(self, widget, data=None):
         if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET:
-            print "Reseting E-stop"
+            print("Reseting E-stop")
             self.set_state(linuxcnc.STATE_ESTOP_RESET)
             self.stat.poll()
         # Check if the machine actually reset
         self.stat.poll()
         if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET and self.stat.task_state != linuxcnc.STATE_ON :
-            print "Failed to bring machine out of E-stop"
+            print("Failed to bring machine out of E-stop")
             return
         # Turn on after reset
         if self.stat.task_state != linuxcnc.STATE_ON:
-            print "Turning machine on"
+            print("Turning machine on")
             self.set_state(linuxcnc.STATE_ON)
             self.set_image('reset_image', 'reset.png')
         
@@ -766,7 +764,7 @@ class Hazzy(object):
         else:
             aletter += "0" 
             jnum = self.aletter_jnum_dict[aletter]
-        print "Attempting to home Axis %s --> Joint %s" % (aletter, jnum)
+        print("Attempting to home Axis {0} --> Joint {1}".format(aletter, jnum))
         self.home_joint(jnum)
         
     
@@ -807,7 +805,7 @@ class Hazzy(object):
 
 
     def on_step_clicked(self, widget, data=None):
-        print "STEP was clicked, I don't know by who though."
+        print("STEP was clicked, I don't know by who though.")
 
 
     # =========================================================
@@ -917,8 +915,7 @@ class Hazzy(object):
             self.window.set_focus(None)
 
     def on_button1_clicked(self, widget, data=None):
-        print "TOGGLE Pressed"
-        tooledit.tooledit() 
+        pass
         
     def on_redraw_clicked(self, widget, data=None):
         self.set_selected_tool(3)
@@ -1050,10 +1047,10 @@ class Hazzy(object):
         if len(usbdirs) == 1:
             self.usb_dir = os.path.join(path, usbdirs[0])
             self.widgets.filechooser.set_current_folder(self.usb_dir)
-            print "Only one USB device: ", self.usb_dir
+            print("Only one USB device: " + self.usb_dir)
         else:
             self.widgets.filechooser.set_current_folder('/media/')
-            print "More then one USB device", usbdirs
+            print("More then one USB device: " + usbdirs)
 
 
     # Eject the USB drive FIXME this needs some work
@@ -1063,7 +1060,7 @@ class Hazzy(object):
         else:
             usb_name = self.widgets.filechooser.get_current_folder()
         
-        print "USB name: ", usb_name
+        print("USB name: " + usb_name)
         self.widgets.filechooser.set_current_folder(self.nc_file_path)
         if usb_name != '':
             # FIXME The quotes are need as there may be spaces in the drive name,
@@ -1103,7 +1100,7 @@ class Hazzy(object):
             self.widgets.notebook.set_current_page(0)
             self.widgets.gcode_file_label.set_text(fname)
             #self.widgets.gremlin.reloadfile(fname)
-            print "NGC file loaded: ", fname
+            print("NGC file loaded: " + fname)
         elif os.path.isdir(fname):
             self.widgets.filechooser.set_current_folder(fname)
 
@@ -1129,10 +1126,10 @@ class Hazzy(object):
         if fn == None:
             fn = self.tool_table 
         if not os.path.exists(fn):
-            print "Tool table does not exist"
+            print("Tool table does not exist")
             return
         self.tool_liststore.clear() # Clear any existing data
-        print "Loading tool table: ", fn              
+        print("Loading tool table: " + fn)             
         tf = open(fn, "r")
         tool_table = tf.readlines()
         tf.close()
@@ -1180,7 +1177,7 @@ class Hazzy(object):
             fn = self.tool_table
         if fn == None:
             return
-        print "Saving tool table as: ", fn
+        print("Saving tool table as: " + fn)
         fn = open(fn, "w")
         for row in self.tool_liststore:
             values = [ value for value in row ]
@@ -1347,7 +1344,7 @@ class Hazzy(object):
             model[row][0] = 1
             self.widgets.tooltable_treeview.set_cursor(row)
         else:
-            print "Did not find tool %s in the tool table" % toolnum
+            print("Did not find tool {0} in the tool table".format(toolnum))
 
             
 # =========================================================      
@@ -1403,9 +1400,8 @@ class Hazzy(object):
             self.state = linuxcnc.STATE_OFF
             state_str = "OFF"
         else:
-            state_str = "Unknown state"
-            print "Unknown state!!!"
-        print "Machine is in state ", state_str
+            state_str = "Unknown"
+        print("Machine is in state: " + state_str)
         self.widgets.emc_state_label.set_text("State: " + state_str)
         
             
@@ -1420,8 +1416,8 @@ class Hazzy(object):
             self.mode = linuxcnc.MODE_AUTO
             mode_str = "AUTO"
         else:
-            mode_str = "Unknown mode"
-        print "Machine is in mode ",mode_str
+            mode_str = "Unknown"
+        print("Machine is in mode: " + mode_str)
         self.widgets.emc_mode_label.set_text("Mode: " + mode_str)
         
         
@@ -1440,7 +1436,7 @@ class Hazzy(object):
             state_str = "WAIT" 
         else:
             state_str = "Unknown"
-        print "Interpreter is in state ",state_str
+        print("Interpreter is in state: " + state_str)
         self.widgets.emc_interp_label.set_text("Interp: " + state_str)
         
         
@@ -1456,7 +1452,7 @@ class Hazzy(object):
             motion_str = "TELEOP"
         else:
             motion_str = "Unknown"
-        print "Motion mode is %s" % motion_str
+        print("Motion mode is: " + motion_str)
         self.widgets.emc_motion_label.set_text("Motion: " + motion_str)
         
     
@@ -1640,36 +1636,30 @@ class Hazzy(object):
             self.axis_letter_list.append(axis_letter)
         
         self.num_axes = len(self.axis_letter_list)
-        
-        #print "The machine has %s axes: %s" % (self.num_axes, self.axis_letter_list)
                 
         # Axis number list (Ex. [0, 1, 2, 4])
         for axis in self.axis_letter_list:
             axis_number = self.axis_letters.index(axis)
             self.axis_number_list.append(axis_number)
         
-        #print "Axis number list: ", self.axis_number_list
-        
         # Joint:Axis dict (Ex. {0:0, 1:1, 2:2, 3:4})
         for jnum, aletter in enumerate(coordinates):
             anum = self.axis_letters.index(aletter)
             self.joint_axis_dict[jnum] = anum
-        
-        #print "Joint-axis dict: ", self.joint_axis_dict
-        
 
         double_aletter = ""
         for aletter in self.axis_letters:
             if coordinates.count(aletter) > 1:
                 double_aletter += aletter
         if double_aletter != "":
-            print "\nMachine appearers to be a gantry config having a double %s axis" % double_aletter
+            print("\nMachine appearers to be a gantry config having a double" \
+                  " {0} axis".format(double_aletter))
         
         self.aletter_jnum_dict = {}
         self.jnum_aletter_dict = {}
         if self.num_joints == len(coordinates):
-            print "\nThe machine has %s axes and %s joints" % (self.num_axes, self.num_joints)
-            print "The Axis/Joint mapping is:"
+            print("\nThe machine has {0} axes and {1} joints".format(self.num_axes, self.num_joints))
+            print("The Axis/Joint mapping is:")
             count = 0
             for jnum, aletter in enumerate(coordinates):
                 if aletter in double_aletter:
@@ -1677,16 +1667,17 @@ class Hazzy(object):
                     count += 1
                 self.aletter_jnum_dict[aletter] = jnum
                 self.jnum_aletter_dict[jnum] = aletter
-                print("Axis %s --> Joint %s" %(aletter, jnum))
+                print("Axis {0} --> Joint {1}".format(aletter, jnum))
         else:
-            print "The number of joints (%s) is not equal to the number of coordinates (%s)" % (self.num_joints, len(coordinates))
-            print "It is highly recommended that you update your config."
-            print "Reverting to old style. This could result in incorrect behavior... "
-            print "\nGuessing the Axes/Joints mapping is:"
+            print("The number of joints ({0}) is not equal to the number of"
+                  " coordinates ({1})".format(self.num_joints, len(coordinates)))
+            print("It is highly recommended that you update your config.")
+            print("Reverting to old style. This could result in incorrect behavior...")
+            print("\nGuessing the Axes/Joints mapping is:")
             for jnum, aletter in enumerate(self.axis_letters):
                 if aletter in coordinates:
                     self.aletter_jnum_dict[aletter] = jnum
-                    print("Axis %s --> Joint %s" %(aletter, jnum))
+                    print("Axis {0} --> Joint {1}".format(aletter, jnum))
 
 
     def _update_homing_status(self):
@@ -1847,10 +1838,10 @@ class Hazzy(object):
     def close_window(self):
         message = "Are you sure you want \n to close LinuxCNC?"
         if dialogs.Dialogs(message).run():
-            print tc.I + "Turning machine off and E-stoping..."
+            print(tc.I + "Turning machine off and E-stoping")
             self.set_state(linuxcnc.STATE_OFF)
             self.set_state(linuxcnc.STATE_ESTOP)
-            print tc.I + "Hazzy UI will now quit"
+            print(tc.I + "Hazzy will now quit...")
             gtk.main_quit()
             
             
@@ -1877,7 +1868,7 @@ class Hazzy(object):
         screen_w = gtk.gdk.Screen().get_width()
         screen_h = gtk.gdk.Screen().get_height()
         if screen_w > 1024 and screen_h > 768:
-            print(tc.I + "Screen size: " + str(screen_w)+ " x " + \
+            print(tc.I + "Screen size: " + str(screen_w) + " x " + \
             str(screen_h) + "  Decorating the window!")
             self.window.set_decorated(True)
         else:
@@ -1930,7 +1921,7 @@ class Hazzy(object):
         openfile.write(text)
         openfile.close()
         self.preview_buf.set_modified(False)
-        print "Saved file as: ", fn 
+        print("Saved file as: " + fn)
         
         
     def get_win_pos(self):
