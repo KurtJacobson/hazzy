@@ -219,6 +219,7 @@ class Hazzy(object):
         
         self.gcodeerror = ""            # Needed to avoid printing multiple identical messages
         self.usb_dir = ""
+        self.current_preview_file = None
         self.surface_speed = ""
         self.chip_load = ""
         self.feed_override = ""
@@ -283,6 +284,7 @@ class Hazzy(object):
         # [MACHINE DEFAULTS]
         self.df_feed = self.prefs.getpref("MACHINE DEFAULTS", "DF_SPEED", 10, int)
         self.df_speed = self.prefs.getpref("MACHINE DEFAULTS", "DF_FEED", 300, int)
+        self.new_ngc_file_template = self.prefs.getpref("MACHINE DEFAULTS", "NEW_FILE_TEMPLATE", "(New File)\n\n\n\nM30", str)
         
         
 # =========================================================
@@ -983,6 +985,7 @@ class Hazzy(object):
 # BEGIN - [File] notebook page button handlers
 # ========================================================= 
 
+    # File chooser handlers
     def _init_file_chooser(self):
         self.widgets.filechooser.set_current_folder(self.nc_file_path)
         
@@ -1023,16 +1026,19 @@ class Hazzy(object):
     def on_filechooser_button_release_event(self, widget, data=None):
         fname = str(self.widgets.filechooser.get_filename())
         if self.preview_buf.get_modified():
-            message = ("Save changes to: \n %s?" % os.path.split(self.current_preview_file)[1])
-            if dialogs.Dialogs(message).run():
-                self.save(self.current_preview_file)
+            if self.current_preview_file == None:
+                pass # TODO Add save-as pop-up here
             else:
-                self.preview_buf.set_modified(False) 
+                name = os.path.split(self.current_preview_file)[1]
+                message = ("Save changes to: \n" + name)
+                if dialogs.Dialogs(message).run():
+                    self.save(self.current_preview_file)
+                else:
+                    self.preview_buf.set_modified(False) 
         if os.path.isfile(fname):
             self.load_gcode_preview(fname)    # Preview/edit in sourceview
-            self.current_preview_file = fname
         elif os.path.isdir(fname):
-            self.load_gcode_preview(None)     # Clear sourceview
+            self.load_gcode_preview()         # Clear sourceview
 
     
     # Jump to folder specified in .prefs, defaults to program prefix in INI file    
@@ -1068,14 +1074,11 @@ class Hazzy(object):
             os.system('eject ' + '"' + usb_name + '"')
 
 
-    # TODO Need to make a popup for entering the new folder name
+    # TODO Need to make a popup for entering new folder name
     def on_new_folder_btn_clicked(self, widget, data=None):
         currentdir = self.widgets.filechooser.get_current_folder()
-        entry_keyboard.Keyboard(self.get_win_pos(), currentdir)
-        
+        entry_keyboard.Keyboard(self.get_win_pos(), currentdir)        
         #os.makedirs(currentdir + '/test')
-
-
 
 
     # Load file on activate in file chooser, better for mouse users
@@ -1110,8 +1113,52 @@ class Hazzy(object):
 
 
     def on_gcode_preview_button_press_event(self, widget, data=None):
+        if self.current_preview_file == None:
+            self.preview_buf.set_text(self.new_ngc_file_template)
         if self.keypad_on_edit:
             self.keyboard.show(widget, self.get_win_pos(), True)
+      
+             
+    # G-code preview handlers
+    def _init_gcode_preview(self):
+        self.preview_buf = gtksourceview.Buffer()
+        self.preview_buf.set_max_undo_levels(20)
+        self.widgets.gcode_preview.set_buffer(self.preview_buf)
+        
+        # Set style scheme and language 
+        self.lm = gtksourceview.LanguageManager()
+        self.sm = gtksourceview.StyleSchemeManager()
+        if self.lang_spec != None:
+            self.preview_buf.set_language(self.lm.get_language(self.lang_spec))
+        if self.style_scheme != None:
+            self.preview_buf.set_style_scheme(self.sm.get_scheme(self.style_scheme))
+        self.load_gcode_preview(None)
+    
+        
+    def load_gcode_preview(self, fn=None):
+        self.current_preview_file = fn
+        self.preview_buf.begin_not_undoable_action()
+        if not fn or not os.path.splitext(fn)[1] in self.preview_ext:
+            self.preview_buf.set_text('\t\t\t\t*** No file to Preview ***')
+            self.preview_buf.set_modified(False)
+            return 
+        self.preview_buf.set_text(open(fn).read())
+        self.preview_buf.end_not_undoable_action()
+        self.preview_buf.set_modified(False)
+
+
+            
+    # If no "save as" file name specified save to the current file in preview    
+    def save(self, fn = None):
+        if fn == None:
+            fn = self.current_preview_file
+        buf = self.preview_buf
+        text = self.preview_buf.get_text(buf.get_start_iter(), buf.get_end_iter())
+        openfile = open(fn, "w")
+        openfile.write(text)
+        openfile.close()
+        self.preview_buf.set_modified(False)
+        print("Saved file as: " + fn)
             
             
 # =========================================================      
@@ -1157,14 +1204,14 @@ class Hazzy(object):
                                 array[offset]= int(word.lstrip(i))
                             except ValueError:
                                 text = 'Error reading tool table, can\'t convert'\
-                                ' "%s" to integer in %s' % (word.lstrip(i), line)
+                                ' "{0}" to integer in {1}'.format(word.lstrip(i), line)
                                 self._show_message(["ERROR", text])
                         else:
                             try:
                                 array[offset]= "%.4f" % float(word.lstrip(i))
                             except ValueError:
                                 text = 'Error reading tool table, can\'t convert'\
-                                ' "%s" to float in %s' % (word.lstrip(i), line)
+                                ' "{0}" to float in {1}'.format(word.lstrip(i), line)
                                 self._show_message(["ERROR", text])
                         break
             # Add array to liststore
@@ -1228,7 +1275,7 @@ class Hazzy(object):
             self.issue_mdi('M6 T%s G43' % tool_num )
         else:
             num = len(selected)
-            text = "%s tools selected, you must select exactly one" % num
+            text = "{0} tools selected, you must select exactly one".format(num)
             self._show_message(["ERROR", text])
         
     
@@ -1252,7 +1299,7 @@ class Hazzy(object):
             self.tool_liststore[path][1] = new_int
             self.tool_liststore[path][2] = new_int
         except ValueError:
-            text = '"%s" is not a valid tool number' % new_text
+            text = '"{0}" is not a valid tool number'.format(new_text)
             self._show_message(["ERROR", text])
             
 
@@ -1261,25 +1308,25 @@ class Hazzy(object):
             new_int = int(new_text)
             self.tool_liststore[path][2] = new_int
         except ValueError:
-            text = '"%s" is not a valid tool pocket' % new_text
+            text = '"{0}" is not a valid tool pocket'.format(new_text)
             self._show_message(["ERROR", text])
 
 
     def on_tool_dia_edited(self, widget, path, new_text):
         try:
             num = self.eval(new_text)
-            self.tool_liststore[path][3] = "%.4f" % float(num)
+            self.tool_liststore[path][3] = "{:.4f}".format(float(num))
         except:
-            text = '"%s" does not evaluate to a valid tool diameter' % new_text
+            text = '"{0}" does not evaluate to a valid tool diameter'.format(new_text)
             self._show_message(["ERROR", text])
 
 
     def on_z_offset_edited(self, widget, path, new_text):
         try:
             num = self.eval(new_text)
-            self.tool_liststore[path][4] = "%.4f" % float(num)
+            self.tool_liststore[path][4] = "{:.4f}".format(float(num))
         except:
-            text = '"%s" does not evaluate to a valid tool length' % new_text
+            text = '"{0}" does not evaluate to a valid tool length'.format(new_text)
             self._show_message(["ERROR", text])
 
 
@@ -1341,7 +1388,7 @@ class Hazzy(object):
                 found = True
                 break
         if found:
-            model[row][0] = 1
+            model[row][0] = 1 # Check the box
             self.widgets.tooltable_treeview.set_cursor(row)
         else:
             print("Did not find tool {0} in the tool table".format(toolnum))
@@ -1510,8 +1557,7 @@ class Hazzy(object):
         for joint in range(self.num_joints):
             dro = self.joint_pos_dro_list[joint]
             dro.set_text("%.4f" % pos[joint])
-        
-            
+
 
     # Convert DRO units back and forth from in to mm    
     def convert_dro_units(self, values):
@@ -1555,22 +1601,22 @@ class Hazzy(object):
         act_vel = self.stat.current_vel * 60.0      # Convert to units per min. Machine units???
         
 
-        if self.stat.program_units == 1:            # If program is in inches
+        if self.stat.program_units == 1:            # Program is in inches
             vel_dec_plcs = self.in_vel_dec_plcs
-            if "G95" in self.active_codes:          # If units per rev mode
+            if "G95" in self.active_codes:          # Units per rev mode
                 feed_dec_plcs = self.in_g95_dec_plcs
             else:
                 feed_dec_plcs = self.in_feed_dec_plcs
             if self.machine_metric:
-                 act_vel = act_vel / 25.4 # Is this conversion needed??
-        else:                                       # The program is metric
+                 act_vel = act_vel / 25.4  # Is this conversion needed??
+        else:                                       # Program is metric
             vel_dec_plcs = self.mm_vel_dec_plcs
-            if "G95" in self.active_codes:          # If units per rev mode
+            if "G95" in self.active_codes:          # Units per rev mode
                 feed_dec_plcs = self.mm_g95_dec_plcs
             else:
                 feed_dec_plcs = self.mm_feed_dec_plcs
             if not self.machine_metric:
-                act_vel = act_vel * 25.4 # Is this conversion needed??
+                act_vel = act_vel * 25.4  # Is this conversion needed??
         
         self.widgets.current_vel_label.set_text("%.*f" %(vel_dec_plcs, act_vel))
         self.widgets.active_feed_label.set_label("%.*f" %(feed_dec_plcs, prog_feed))
@@ -1756,11 +1802,6 @@ class Hazzy(object):
             
             
     def set_work_offset(self, axis, value):
-#        try:
-#            dro_val = float(dro_text)
-#        except:
-#            self._show_message(["ERROR", "%s axis DRO entry '%s' is not a valid number" % (axis, dro_text)])
-#            return
         offset_command = 'G10 L20 P%d %s%.12f' % (self.current_work_cord, axis, value)
         self.issue_mdi(offset_command)
         self.set_mode(linuxcnc.MODE_MANUAL)
@@ -1798,12 +1839,27 @@ class Hazzy(object):
 
     # Check if the machine is moving due to MDI, program execution, etc.        
     def is_moving(self):
-        # http://wallacecompany.com/tmp/probing.py
-        # self.stat.state (returns integer) for current command execution status. One of RCS_DONE, RCS_EXEC, RCS_ERROR.
+        # self.stat.state returns current command execution status. 
+        # one of RCS_DONE, RCS_EXEC, RCS_ERROR.
         if self.stat.state == linuxcnc.RCS_EXEC:
             return True
         else:
             return self.stat.task_mode == linuxcnc.MODE_AUTO and self.stat.interp_state != linuxcnc.INTERP_IDLE
+            
+                
+    # Evaluate expressions in numeric entries
+    def eval(self, data):
+        factor = 1
+        data = data.lower()
+        if "in" in data or '"' in data:
+            data = data.replace("in", "").replace('"', "")
+            if self.machine_metric:
+                factor = 25.4
+        elif "mm" in data:
+            data = data.replace("mm", "")
+            if not self.machine_metric:
+                factor = 1/25.4
+        return self.s.eval(data) * factor
 
 
     # Set image from file
@@ -1843,21 +1899,7 @@ class Hazzy(object):
             self.set_state(linuxcnc.STATE_ESTOP)
             print(tc.I + "Hazzy will now quit...")
             gtk.main_quit()
-            
-            
-    # Evaluate expressions in numeric entries
-    def eval(self, data):
-        factor = 1
-        data = data.lower()
-        if "in" in data or '"' in data:
-            data = data.replace("in", "").replace('"', "")
-            if self.machine_metric:
-                factor = 25.4
-        elif "mm" in data:
-            data = data.replace("mm", "")
-            if not self.machine_metric:
-                factor = 1/25.4
-        return self.s.eval(data) * factor
+
         
 # =========================================================
 ## BEGIN - init functions
@@ -1882,46 +1924,6 @@ class Hazzy(object):
         self.widgets.gremlin.grid_size = 1.0
         self.widgets.gremlin.set_property("metric_units", int(self.stat.linear_units))
         self.widgets.gremlin.set_property("use_commanded", not self.dro_actual_pos)
-        
-        
-    def _init_gcode_preview(self):
-        self.preview_buf = gtksourceview.Buffer()
-        self.preview_buf.set_max_undo_levels(20)
-        self.widgets.gcode_preview.set_buffer(self.preview_buf)
-        
-        # Set style scheme and language 
-        self.lm = gtksourceview.LanguageManager()
-        self.sm = gtksourceview.StyleSchemeManager()
-        if self.lang_spec != None:
-            self.preview_buf.set_language(self.lm.get_language(self.lang_spec))
-        if self.style_scheme != None:
-            self.preview_buf.set_style_scheme(self.sm.get_scheme(self.style_scheme))
-        self.load_gcode_preview(None)
-    
-        
-    def load_gcode_preview(self, fn=None):
-        self.preview_buf.begin_not_undoable_action()
-        if not fn or not os.path.splitext(fn)[1] in self.preview_ext:
-            self.preview_buf.set_text('\t\t\t\t*** No file to Preview ***')
-            self.preview_buf.set_modified(False)
-            return 
-        self.preview_buf.set_text(open(fn).read())
-        self.preview_buf.end_not_undoable_action()
-        self.preview_buf.set_modified(False)
-
-
-            
-    # If no "save as" file name specified save to the current file in preview    
-    def save(self, fn = None):
-        if fn == None:
-            fn = self.current_preview_file
-        buf = self.preview_buf
-        text = self.preview_buf.get_text(buf.get_start_iter(), buf.get_end_iter())
-        openfile = open(fn, "w")
-        openfile.write(text)
-        openfile.close()
-        self.preview_buf.set_modified(False)
-        print("Saved file as: " + fn)
         
         
     def get_win_pos(self):
