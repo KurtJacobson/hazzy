@@ -311,11 +311,11 @@ class Hazzy(object):
         
         # Set the gcode sourceview style scheme if it is present, elif use Kate, else nothing   
         if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', self.style_scheme_file)):
-            print(tc.I + self.style_scheme_name + " style scheme found!")
+            print("{0} {1} style scheme found!".format(tc.I, self.style_scheme_name))
             self.style_scheme = self.style_scheme_name
         elif os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', 'kate.xml')):
-            print(tc.I + "Gcode style not found, using Kate instead")
-            self.style_scheme = 'kate' # Use Kate instead
+            print("{0}Gcode style not found, using Kate instead".format(tc.I))
+            self.style_scheme = 'kate'  # Use Kate instead
         else:
             print(tc.I + self.style_scheme_file + "style not found")
             print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles')))
@@ -323,7 +323,7 @@ class Hazzy(object):
 
         # Set the gcode sourceview language highlighting if it is present, else nothing
         if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs', self.lang_spec_file)):
-            print(tc.I + self.lang_spec_file + " found!")
+            print("{0} {1} found!".format(tc.I, self.lang_spec_file))
             self.lang_spec = self.lang_spec_name
         else:
             print(tc.I + self.lang_spec_file  + " not found")
