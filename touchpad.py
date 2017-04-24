@@ -45,7 +45,9 @@ class Touchpad(object):
         self.builder = gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
+
         self.window = self.builder.get_object("window")
+        self.window.set_keep_above(True)
 
     # Handles all the character buttons
     def on_button_clicked(self, widget):
@@ -134,6 +136,7 @@ class Touchpad(object):
         except:
             pass
         self.window.hide()
+        self.dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
             
     # Escape action
     def escape(self):
@@ -147,6 +150,7 @@ class Touchpad(object):
         except:
             pass
         self.window.hide()
+        self.dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("white"))
         
     # Escape on focus out 
     # FIXME Want to close popup on focus out, but cant get 
@@ -154,9 +158,10 @@ class Touchpad(object):
     def on_window_focus_out_event(self, widget, data=None):
         self.escape()
         
-    def show(self, widget, kind='float', position=None):
+    def show(self, widget, position=None):
         self.dro = widget
         self.original_text = self.dro.get_text()
+        self.dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.color_parse("green"))
 
         if position is not None:
             self.window.move(position[0], position[1])

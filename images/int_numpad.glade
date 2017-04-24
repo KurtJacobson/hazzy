@@ -5,14 +5,12 @@
   <object class="GtkWindow" id="window">
     <property name="width_request">186</property>
     <property name="height_request">292</property>
-    <property name="can_focus">False</property>
     <property name="resizable">False</property>
     <property name="modal">True</property>
     <property name="window_position">center</property>
     <property name="destroy_with_parent">True</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
-    <property name="focus_on_map">False</property>
     <property name="decorated">False</property>
     <signal name="key-press-event" handler="on_window_key_press_event" swapped="no"/>
     <signal name="focus-out-event" handler="on_window_focus_out_event" swapped="no"/>
