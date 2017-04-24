@@ -317,7 +317,7 @@ class Hazzy(object):
             self.style_scheme = 'kate' # Use Kate instead
         else:
             print(tc.I + self.style_scheme_file + "style not found")
-            print("Looked in: ", os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles'))
+            print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles')))
             print("Verify that the style scheme file and name are entered correctly")
 
         
@@ -327,7 +327,7 @@ class Hazzy(object):
             self.lang_spec = self.lang_spec_name
         else:
             print(tc.I + self.lang_spec_file  + " not found")
-            print("Looked in: ", os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs'))
+            print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs')))
             
             
         if self.style_scheme != None:
