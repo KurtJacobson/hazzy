@@ -46,6 +46,7 @@ class Touchpad(object):
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
         self.window = self.builder.get_object("window")
+        self.window.set_keep_above(True)
 
     # Handles all the character buttons
     def on_button_clicked(self, widget):
@@ -148,15 +149,16 @@ class Touchpad(object):
             pass
         self.window.hide()
         
-    # Escape on focus out 
-    # FIXME Want to close popup on focus out, but cant get 
-    # get focus out to be triggered 
-    def on_window_focus_out_event(self, widget, data=None):
+        
+    # Escape on entry focus out 
+    def on_entry_loses_focus(self, widget, data=None):
         self.escape()
+        
         
     def show(self, widget, kind='float', position=None):
         self.dro = widget
         self.original_text = self.dro.get_text()
+        widget.connect('focus-out-event', self.on_entry_loses_focus)
 
         if position is not None:
             self.window.move(position[0], position[1])
