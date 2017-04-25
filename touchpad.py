@@ -155,10 +155,11 @@ class Touchpad(object):
         self.escape()
         
         
-    def show(self, widget, kind='float', position=None):
+    def show(self, widget, position=None):
         self.dro = widget
+        self.dro.connect('focus-out-event', self.on_entry_loses_focus)
+
         self.original_text = self.dro.get_text()
-        widget.connect('focus-out-event', self.on_entry_loses_focus)
 
         if position is not None:
             self.window.move(position[0], position[1])
