@@ -275,10 +275,9 @@ class Keyboard(object):
         self.emulate_key(widget, "Return")
         if not self.persistent:
             self.window.hide()
+
         
-        
-    def on_window_focus_out_event(self, widget, data=None):
-        print "Focus out"
+    def on_entry_loses_focus(self, widget, data=None):
         self.escape()
 
 # ==========================================================
@@ -288,7 +287,8 @@ class Keyboard(object):
     def show(self, entry, pos, persistent=False ):
         self.entry = entry
         self.persistent = persistent
-        self.window.move(pos[0]+105, pos[1]+440) #545, 650)
+        self.entry.connect('focus-out-event', self.on_entry_loses_focus)
+        self.window.move(pos[0]+105, pos[1]+440)
         self.window.show()
 
 
