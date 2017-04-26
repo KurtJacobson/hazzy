@@ -6,6 +6,7 @@
     <property name="width_request">239</property>
     <property name="height_request">292</property>
     <property name="can_focus">False</property>
+    <property name="type">popup</property>
     <property name="resizable">False</property>
     <property name="window_position">center</property>
     <property name="destroy_with_parent">True</property>
