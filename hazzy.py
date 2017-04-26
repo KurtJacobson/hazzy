@@ -174,7 +174,6 @@ class Hazzy(object):
         
         self.dro_actual_pos = self.get_ini_info.get_position_feedback_actual()    
         self.no_force_homing = self.get_ini_info.get_no_force_homing()
-        self.machine_metric = self.get_ini_info.get_machine_metric()
         self.nc_file_path = self.get_ini_info.get_program_prefix()
         self.tool_table = self.get_ini_info.get_tool_table()
         # CYCLE_TIME = time, in ms, that display will sleep between polls
@@ -183,12 +182,14 @@ class Hazzy(object):
         
         # Set the conversions used for changing the DRO units
         # Only want to convert linear axes, hence a list of conversion factors
-        if self.machine_metric: 
+        if self.get_ini_info.get_machine_metric(): 
             # List of factors for converting from mm to inches
             self.conversion = [1.0/25.4]*3+[1]*3+[1.0/25.4]*3
+            self.machine_units = 'mm'
         else:
             # List of factors for converting from inches to mm
             self.conversion = [25.4]*3+[1]*3+[25.4]*3
+            self.machine_units = 'in'
 
         
 # =========================================================
@@ -210,7 +211,7 @@ class Hazzy(object):
         
         self.gremlin_mouse_mode = 2     # Current gremlin mouse btn mode
         
-        self.display_metric = False
+        self.display_units = 'in'
         self.start_line = 0             # Needed for start from line
         self.periodic_cycle_counter = 0 # Determine when to call slow_periodic()
 
@@ -560,9 +561,9 @@ class Hazzy(object):
           
         # self.stat.program_units returns 1 for inch, 2 for mm and 3 for cm  
         if self.stat.program_units != 1:
-            self.display_metric = True
+            self.display_units = 'mm'
         else:
-            self.display_metric = False
+            self.display_units = 'in'
             
         # Update velocity DROs     
         self._update_vel()
@@ -797,7 +798,7 @@ class Hazzy(object):
         self.dro_has_focus = True
         widget.select_region(0, -1)
         if self.keypad_on_dro:
-            self.float_touchpad.show(widget)
+            self.float_touchpad.show(widget, self.display_units)
 
     def on_dro_loses_focus(self, widget, data=None):
         self.dro_has_focus = False
@@ -1289,7 +1290,7 @@ class Hazzy(object):
     # Popup float numpad on float edit
     def on_float_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
-            self.float_touchpad.show(entry)
+            self.float_touchpad.show(entry, self.machine_units)
 
     # Popup keyboard on text edit
     def on_remark_editing_started(self, renderer, entry, row):
@@ -1461,12 +1462,12 @@ class Hazzy(object):
         for axis in self.axis_number_list:
             rel[axis] -= g92_offset[axis]
             
-        if self.display_metric != self.machine_metric: # We need to convert
+        if self.display_units != self.machine_units: # We need to convert
             rel = self.convert_dro_units(rel)
             dtg = self.convert_dro_units(dtg)
             pos = self.convert_dro_units(pos)
         
-        if self.display_metric:
+        if self.display_units == 'mm':
             dec_plc = self.mm_dro_plcs
         else:
             dec_plc = self.in_dro_plcs
@@ -1535,7 +1536,7 @@ class Hazzy(object):
                 feed_dec_plcs = self.in_g95_dec_plcs
             else:
                 feed_dec_plcs = self.in_feed_dec_plcs
-            if self.machine_metric:
+            if self.machine_units == 'mm':
                  act_vel = act_vel / 25.4  # Is this conversion needed??
         else:                                       # Program is metric
             vel_dec_plcs = self.mm_vel_dec_plcs
@@ -1543,7 +1544,7 @@ class Hazzy(object):
                 feed_dec_plcs = self.mm_g95_dec_plcs
             else:
                 feed_dec_plcs = self.mm_feed_dec_plcs
-            if not self.machine_metric:
+            if self.machine_units == 'in':
                 act_vel = act_vel * 25.4  # Is this conversion needed??
         
         self.widgets.current_vel_label.set_text("%.*f" %(vel_dec_plcs, act_vel))
@@ -1765,11 +1766,11 @@ class Hazzy(object):
         data = data.lower()
         if "in" in data or '"' in data:
             data = data.replace("in", "").replace('"', "")
-            if self.machine_metric:
+            if self.machine_units == 'mm':
                 factor = 25.4
         elif "mm" in data:
             data = data.replace("mm", "")
-            if not self.machine_metric:
+            if self.machine_units == 'in':
                 factor = 1/25.4
         return self.s.eval(data) * factor
 

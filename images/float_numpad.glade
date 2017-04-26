@@ -343,13 +343,13 @@
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkButton" id="toggle_units">
+                  <object class="GtkButton" id="change_units">
                     <property name="label" translatable="yes">in/mm</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
                     <property name="use_action_appearance">False</property>
-                    <signal name="clicked" handler="on_backspace_clicked" swapped="no"/>
+                    <signal name="clicked" handler="on_change_units_clicked" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>

@@ -72,7 +72,29 @@ class Touchpad(object):
             if val[0] == '-':
                 self.dro.delete_text(0, 1)
             else:
-                self.dro.insert_text("-", 0)            
+                self.dro.insert_text("-", 0)
+    
+    # Change units
+    # Note: We don't set the cursor to end to keep the user from
+    # being able to backspace and leave a partial units string  
+    def on_change_units_clicked(self, widget):
+        pos = self.dro.get_position()
+        val = self.dro.get_text()
+        if self.units == 'in' and not 'mm' in val:
+            self.dro.set_text(val + 'mm')
+            self.dro.set_position(pos)
+        elif self.units == 'mm' and not 'in' in val:
+            self.dro.set_text(val + 'in')
+            self.dro.set_position(pos)
+        elif 'mm' in val and self.units == 'in':
+            val = val.replace('mm', '')
+            self.dro.set_text(val)
+            self.dro.set_position(pos)
+        elif 'in' in val and self.units == 'mm':
+            val = val.replace('in', '')
+            self.dro.set_text(val)
+            self.dro.set_position(pos)
+
         
     # Left arrow
     def on_arrow_left_clicked(self, widget):
@@ -155,9 +177,10 @@ class Touchpad(object):
         self.escape()
         
         
-    def show(self, widget, position=None):
+    def show(self, widget, units='in', position=None):
         self.dro = widget
         self.dro.connect('focus-out-event', self.on_entry_loses_focus)
+        self.units = units
 
         self.original_text = self.dro.get_text()
 
