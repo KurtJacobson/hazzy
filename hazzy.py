@@ -63,7 +63,6 @@ import hazzy_prefs              # Handles the preferences
 import getiniinfo               # Handles .ini file reading and value validation
 from touchpad import Touchpad   # On screen numpad and keypad for use with touchscreens
 from keyboard import Keyboard   # On screen keyboard emulator for use with touchscreens
-import entry_keyboard
 import dialogs                  # Used for confirmation and error dialogs
 import simpleeval               # Used to evaluate expressions in numeric entries
 
@@ -1044,8 +1043,7 @@ class Hazzy(object):
 
     # TODO Need to make a popup for entering new folder name
     def on_new_folder_btn_clicked(self, widget, data=None):
-        currentdir = self.widgets.filechooser.get_current_folder()
-        entry_keyboard.Keyboard(self.get_win_pos(), currentdir)        
+        currentdir = self.widgets.filechooser.get_current_folder()        
         # os.makedirs(currentdir + '/test')
 
     # Load file on activate in file chooser, better for mouse users
