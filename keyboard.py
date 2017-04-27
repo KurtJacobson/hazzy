@@ -164,7 +164,7 @@ class Keyboard(object):
                 self.wait_counter += 1
             else:
                 try:
-                    self.entry.event(self.event)    # Do an initial event
+                    self.entry.event(self.event)    # Repeat the event
                 except:
                     pass
         return True
