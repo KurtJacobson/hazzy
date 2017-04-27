@@ -215,6 +215,7 @@ class Hazzy(object):
         self.periodic_cycle_counter = 0 # Determine when to call slow_periodic()
 
         self.dro_has_focus = False      # To stop DRO update if user is trying to type into it
+        self.mdi_has_focus = False      # 
         self.zoom_in_pressed = False    # Keep track of continuous zoom IN button on gremlin
         self.zoom_out_pressed = False   # Keep track of continuous zoom OUT button on gremlin
         
@@ -247,7 +248,10 @@ class Hazzy(object):
         
         # [FILE PATHS]
         self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_path, str)
-        
+        print HAZZYDIR
+        path = os.path.join(HAZZYDIR, "sim.hazzy/example_gcode/new file.ngc")
+        self.new_program_template = self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", path, str)
+                
         # [FILE FILTERS]
         self.preview_ext = self.prefs.getpref("FILE FILTERS", "PREVIEW_EXT", [".ngc", ".txt", ".tap", ".nc"], str)
         
@@ -285,7 +289,6 @@ class Hazzy(object):
         # [MACHINE DEFAULTS]
         self.df_feed = self.prefs.getpref("MACHINE DEFAULTS", "DF_SPEED", 10, int)
         self.df_speed = self.prefs.getpref("MACHINE DEFAULTS", "DF_FEED", 300, int)
-        self.new_ngc_file_template = self.prefs.getpref("MACHINE DEFAULTS", "NEW_FILE_TEMPLATE", "(New File)\n\n\n\nM30", str)
         
         
 # =========================================================
@@ -866,7 +869,9 @@ class Hazzy(object):
         # if self.dro_is_locked:
         #   self.window.set_focus(None)
         #   return
-        self.widgets.mdi_entry.set_text("")
+        if not self.mdi_has_focus:  # Keep from clearing entry on cursor placed
+            self.widgets.mdi_entry.set_text("")
+            self.mdi_has_focus = True
         if self.keypad_on_mdi:
             self.keyboard.show(widget, self.get_win_pos())
             
@@ -877,6 +882,7 @@ class Hazzy(object):
     def on_mdi_entry_loses_focus(self, widget, data=None):
         self.widgets.mdi_entry.set_text("MDI:")
         self.window.set_focus(None)
+        self.mdi_has_focus = False
         
     def on_mdi_entry_key_press_event(self, widget, event): 
         if event.keyval == gtk.keysyms.Escape:
@@ -1073,11 +1079,6 @@ class Hazzy(object):
     def on_save_file_clicked(self, widget, data=None):
         self.save(self.current_preview_file)
 
-    def on_gcode_preview_button_press_event(self, widget, data=None):
-        if self.current_preview_file is None:
-            self.preview_buf.set_text(self.new_ngc_file_template)
-        if self.keypad_on_edit:
-            self.keyboard.show(widget, self.get_win_pos(), True)
 
     # G-code preview handlers
     def _init_gcode_preview(self):
@@ -1099,11 +1100,12 @@ class Hazzy(object):
         self.preview_buf.begin_not_undoable_action()
         if not fn or not os.path.splitext(fn)[1] in self.preview_ext:
             self.preview_buf.set_text('\t\t\t\t*** No file to Preview ***')
+            self.preview_buf.end_not_undoable_action()
             self.preview_buf.set_modified(False)
-            return 
-        self.preview_buf.set_text(open(fn).read())
-        self.preview_buf.end_not_undoable_action()
-        self.preview_buf.set_modified(False)
+        else:
+            self.preview_buf.set_text(open(fn).read())
+            self.preview_buf.end_not_undoable_action()
+            self.preview_buf.set_modified(False)
 
     # If no "save as" file name specified save to the current file in preview    
     def save(self, fn=None):
@@ -1118,8 +1120,22 @@ class Hazzy(object):
         self.preview_buf.set_modified(False)
         print("Saved file as: {0}".format(fn))
 
+
+    def on_gcode_preview_button_press_event(self, widget, event):
+        if self.current_preview_file is None:
+            self.load_gcode_preview(self.new_program_template)
+        if self.keypad_on_edit:
+            self.keyboard.show(widget, self.get_win_pos(), True)
+        print event
+
+    # If ctrl+s save the file
+    def on_gcode_preview_key_press_event(self, widget, event):
+        if event.state & gtk.gdk.CONTROL_MASK:
+            if event.keyval == gtk.keysyms.s:
+                self.save()
+
 # =========================================================      
-# BEGIN - [Tool] notebook page button handlers
+# BEGIN - [Tool] notebook page handlers
 # =========================================================
 
     # Parse and load tool table into the treeview
@@ -1127,7 +1143,7 @@ class Hazzy(object):
     def load_tool_table(self, fn = None):
         # If no valid tool table given
         if fn is None:
-            fn = self.tool_table 
+            fn = self.tool_table
         if not os.path.exists(fn):
             print("Tool table does not exist")
             return
@@ -1148,7 +1164,7 @@ class Hazzy(object):
                 line = line[0:index].rstrip()
             array = [False, 1, 1, '0', '0', comment, 'white']
             # search beginning of each word for keyword letters
-            # offset 0 is the checkbutton so ignore it
+            # offset 0 is the checkbox so ignore it
             # if i = ';' that is the comment and we have already added it
             # offset 1 and 2 are integers the rest floats
             for offset, i in enumerate(['S', 'T', 'P', 'D', 'Z', ';']):
@@ -1174,7 +1190,7 @@ class Hazzy(object):
 
             # Add array to liststore
             self.add_tool(array)
-            
+
     # Save tool table
     # More or less copied from Chris Morley's GladeVcp tooledit widget
     def save_tool_table(self, fn=None):
@@ -1197,7 +1213,7 @@ class Hazzy(object):
             # Write line to file
             fn.write(line + "\n")
         # Theses lines make sure the OS doesn't cache the data so that
-        # linuxcnc will actually load the updated tool table below
+        # linuxcnc will actually load the updated tool table
         fn.flush()
         os.fsync(fn.fileno())
         linuxcnc.command().load_tool_table()

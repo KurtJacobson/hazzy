@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <!-- interface-requires gladevcp 0.0 -->
   <!-- interface-requires gtksourceview 0.0 -->
+  <!-- interface-requires gladevcp 0.0 -->
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkAction" id="action1"/>
   <object class="GtkFileFilter" id="nc_file_filter"/>
@@ -484,6 +484,7 @@
                         <property name="auto_indent">True</property>
                         <property name="indent_on_tab">False</property>
                         <signal name="button-press-event" handler="on_gcode_preview_button_press_event" swapped="no"/>
+                        <signal name="key-press-event" handler="on_gcode_preview_key_press_event" swapped="no"/>
                       </object>
                     </child>
                   </object>

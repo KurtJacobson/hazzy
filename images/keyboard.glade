@@ -1025,24 +1025,7 @@
                     <property name="n_columns">4</property>
                     <property name="column_spacing">3</property>
                     <child>
-                      <object class="GtkButton" id="button6">
-                        <property name="label" translatable="yes">Ctrl</property>
-                        <property name="width_request">50</property>
-                        <property name="height_request">50</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="pressed" handler="ctrl_pressed" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="x_options"/>
-                        <property name="y_options"/>
-                      </packing>
-                    </child>
-                    <child>
                       <object class="GtkButton" id="button7">
-                        <property name="label" translatable="yes">Cut</property>
                         <property name="width_request">50</property>
                         <property name="height_request">50</property>
                         <property name="visible">True</property>
@@ -1059,7 +1042,6 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button8">
-                        <property name="label" translatable="yes">Copy</property>
                         <property name="width_request">50</property>
                         <property name="height_request">50</property>
                         <property name="visible">True</property>
@@ -1076,7 +1058,6 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="button9">
-                        <property name="label" translatable="yes">Past</property>
                         <property name="width_request">50</property>
                         <property name="height_request">50</property>
                         <property name="visible">True</property>
@@ -1087,6 +1068,22 @@
                       <packing>
                         <property name="left_attach">3</property>
                         <property name="right_attach">4</property>
+                        <property name="x_options"/>
+                        <property name="y_options"/>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkToggleButton" id="ctrl">
+                        <property name="label" translatable="yes">Ctrl</property>
+                        <property name="width_request">50</property>
+                        <property name="height_request">50</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="use_action_appearance">False</property>
+                        <signal name="toggled" handler="on_ctrl_toggled" swapped="no"/>
+                      </object>
+                      <packing>
                         <property name="x_options"/>
                         <property name="y_options"/>
                       </packing>
