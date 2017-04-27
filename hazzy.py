@@ -108,15 +108,15 @@ def excepthook(exc_type, exc_value, exc_traceback):
     message = traceback.format_exception(exc_type, exc_value, exc_traceback)
     log.error("".join(message))
     dialogs.Dialogs("".join(message), 2).run()
-    
-    
+
+
 # Connect the except hook to the handler
 sys.excepthook = excepthook
 
 
 class Hazzy(object):
 
-    def __init__(self):        
+    def __init__(self):
 
         # Module init
         self.float_touchpad = Touchpad("float")
@@ -139,17 +139,17 @@ class Hazzy(object):
         self.command = linuxcnc.command()
         self.stat = linuxcnc.stat()
         self.error_channel = linuxcnc.error_channel()     
-        
+
         # Norbert's module to get information from the ini file
         self.get_ini_info = getiniinfo.GetIniInfo()
 
         # Module to get/set preferences
         pref_file = self.get_ini_info.get_preference_file_path()
         self.prefs = hazzy_prefs.Preferences(pref_file)
-        
+
         #
         self.s = simpleeval.SimpleEval()
-        
+
         # Get the tool table liststore
         self.tool_liststore = self.builder.get_object("tool_liststore")
 
@@ -178,7 +178,7 @@ class Hazzy(object):
         # CYCLE_TIME = time, in ms, that display will sleep between polls
         # cycle_time = self.get_ini_info.get_cycle_time() # Defaults to 50ms
         gobject.timeout_add(75, self._fast_periodic)
-        
+
         # Set the conversions used for changing the DRO units
         # Only want to convert linear axes, hence a list of conversion factors
         if self.get_ini_info.get_machine_metric(): 
@@ -190,26 +190,31 @@ class Hazzy(object):
             self.conversion = [25.4]*3+[1]*3+[25.4]*3
             self.machine_units = 'in'
 
-        
+
 # =========================================================
 # BEGIN - Set initial toggle button states, and other values
 # =========================================================
-        
+
         # Constants
         self.axis_letters = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W']
-        
+
         # Define default button states 
         self.cycle_start_button_state = 'start'
         self.hold_resume_button_state = 'inactive'
-        
+
         self.style_scheme = None
         self.lang_spec = None
         
+        self.task_state = None
+        self.task_mode = None
+        self.interp_state = None
+        self.motion_mode = None
+
         self.new_error = False          # Used to know when to load error_flash.gif
         self.error_flash_timer = 0      # Slow_periodic cycles since error
-        
+
         self.gremlin_mouse_mode = 2     # Current gremlin mouse btn mode
-        
+
         self.display_units = 'in'
         self.start_line = 0             # Needed for start from line
         self.periodic_cycle_counter = 0 # Determine when to call slow_periodic()
@@ -537,15 +542,15 @@ class Hazzy(object):
             self._update_active_codes()
             
         # Update LCNC state if it has changed
-        if self.state != self.stat.task_state:
+        if self.task_state != self.stat.task_state:
             self._update_machine_state()
         
         # Update LCNC mode if it has changed
-        if self.mode != self.stat.task_mode:
+        if self.task_mode != self.stat.task_mode:
             self._update_machine_mode()
         
         # Update interpreter state if it has changed    
-        if self.interp != self.stat.interp_state:    
+        if self.interp_state != self.stat.interp_state:    
             self._update_interp_state()
             
         if self.motion_mode != self.stat.motion_mode:
@@ -1387,16 +1392,16 @@ class Hazzy(object):
 
     def _update_machine_state(self):
         if self.stat.task_state == linuxcnc.STATE_ESTOP:
-            self.state = linuxcnc.STATE_ESTOP
+            self.task_state = linuxcnc.STATE_ESTOP
             state_str = "ESTOP"
         elif self.stat.task_state == linuxcnc.STATE_ESTOP_RESET:
-            self.state = linuxcnc.STATE_ESTOP_RESET
+            self.task_state = linuxcnc.STATE_ESTOP_RESET
             state_str = "RESET"   
         elif self.stat.task_state == linuxcnc.STATE_ON:
-            self.state = linuxcnc.STATE_ON
+            self.task_state = linuxcnc.STATE_ON
             state_str = "ON" 
         elif self.stat.task_state == linuxcnc.STATE_OFF:
-            self.state = linuxcnc.STATE_OFF
+            self.task_state = linuxcnc.STATE_OFF
             state_str = "OFF"
         else:
             state_str = "Unknown"
@@ -1405,13 +1410,13 @@ class Hazzy(object):
 
     def _update_machine_mode(self):
         if self.stat.task_mode == linuxcnc.MODE_MDI:
-            self.mode = linuxcnc.MODE_MDI
+            self.task_mode = linuxcnc.MODE_MDI
             mode_str = "MDI"
         elif self.stat.task_mode == linuxcnc.MODE_MANUAL:
-            self.mode = linuxcnc.MODE_MANUAL
+            self.task_mode = linuxcnc.MODE_MANUAL
             mode_str = "MAN"    
         elif self.stat.task_mode == linuxcnc.MODE_AUTO:
-            self.mode = linuxcnc.MODE_AUTO
+            self.task_mode = linuxcnc.MODE_AUTO
             mode_str = "AUTO"
         else:
             mode_str = "Unknown"
@@ -1420,16 +1425,16 @@ class Hazzy(object):
 
     def _update_interp_state(self):
         if self.stat.interp_state == linuxcnc.INTERP_IDLE:
-            self.interp = linuxcnc.INTERP_IDLE
+            self.interp_state = linuxcnc.INTERP_IDLE
             state_str = "IDLE"
         elif self.stat.interp_state == linuxcnc.INTERP_READING:
-            self.interp = linuxcnc.INTERP_READING
+            self.interp_state = linuxcnc.INTERP_READING
             state_str = "READ"    
         elif self.stat.interp_state == linuxcnc.INTERP_PAUSED:
-            self.interp = linuxcnc.INTERP_PAUSED
+            self.interp_state = linuxcnc.INTERP_PAUSED
             state_str = "PAUSE"
         elif self.stat.interp_state == linuxcnc.INTERP_WAITING:
-            self.interp = linuxcnc.INTERP_WAITING
+            self.interp_state = linuxcnc.INTERP_WAITING
             state_str = "WAIT" 
         else:
             state_str = "Unknown"
