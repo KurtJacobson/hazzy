@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <!-- interface-requires gtksourceview 0.0 -->
   <!-- interface-requires gladevcp 0.0 -->
+  <!-- interface-requires gtksourceview 0.0 -->
   <!-- interface-naming-policy toplevel-contextual -->
   <object class="GtkAction" id="action1"/>
   <object class="GtkFileFilter" id="nc_file_filter"/>
@@ -565,7 +565,7 @@
                                 <signal name="edited" handler="on_tool_num_edited" swapped="no"/>
                               </object>
                               <attributes>
-                                <attribute name="background">6</attribute>
+                                <attribute name="cell-background">6</attribute>
                                 <attribute name="text">1</attribute>
                               </attributes>
                             </child>
@@ -581,7 +581,7 @@
                                 <signal name="edited" handler="on_tool_pocket_edited" swapped="no"/>
                               </object>
                               <attributes>
-                                <attribute name="background">6</attribute>
+                                <attribute name="cell-background">6</attribute>
                                 <attribute name="text">2</attribute>
                               </attributes>
                             </child>
@@ -597,7 +597,7 @@
                                 <signal name="edited" handler="on_tool_dia_edited" swapped="no"/>
                               </object>
                               <attributes>
-                                <attribute name="background">6</attribute>
+                                <attribute name="cell-background">6</attribute>
                                 <attribute name="text">3</attribute>
                               </attributes>
                             </child>
@@ -613,7 +613,7 @@
                                 <signal name="edited" handler="on_z_offset_edited" swapped="no"/>
                               </object>
                               <attributes>
-                                <attribute name="background">6</attribute>
+                                <attribute name="cell-background">6</attribute>
                                 <attribute name="text">4</attribute>
                               </attributes>
                             </child>
@@ -629,7 +629,7 @@
                                 <signal name="edited" handler="on_tool_remark_edited" swapped="no"/>
                               </object>
                               <attributes>
-                                <attribute name="background">6</attribute>
+                                <attribute name="cell-background">6</attribute>
                                 <attribute name="text">5</attribute>
                               </attributes>
                             </child>
