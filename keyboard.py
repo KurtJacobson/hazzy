@@ -27,7 +27,7 @@ import sys
 import gobject
 
 pydir = os.path.abspath(os.path.dirname(__file__))
-IMAGEDIR = os.path.join(pydir, "images") 
+IMAGEDIR = os.path.join(pydir, "images")
 
 _keymap = gtk.gdk.keymap_get_default()
 
@@ -47,7 +47,8 @@ class Keyboard(object):
         self.builder.connect_signals(self)
         self.window = self.builder.get_object("window")
 
-        gobject.timeout_add(50, self.repeat_event)  # Keypress repeat function
+        # Call keypress repeat function every 50ms
+        gobject.timeout_add(50, self.key_repeat)
 
         # FIXME this is messy
         self.event = None
@@ -58,13 +59,13 @@ class Keyboard(object):
 
         self.letters = 'abcdefghijklmnopqrstuvwxyz ' # Now I've said my abc's
 #                Don't remove the space character ^ It's named ' ' in glade too!
-                                                
+
         self.numbers = '`1234567890-=' # Now I've said my 1 2 3's
 
         # Relate special character to their glade names.
-        self.characters = {'`':'~', '1':'!', '2':'@', '3':'#', '4':'$', 
-                           '5':'%', '6':'^', '7':'&', '8':'*', '9':'(', 
-                           '0':')', '-':'_', '=':'+', '[':'{', ']':'}', 
+        self.characters = {'`':'~', '1':'!', '2':'@', '3':'#', '4':'$',
+                           '5':'%', '6':'^', '7':'&', '8':'*', '9':'(',
+                           '0':')', '-':'_', '=':'+', '[':'{', ']':'}',
                            '\\':'|', ';':':', "'":'"', ',':'<', '.':'>',
                            '/':'?'} # Now I've said my @#$%^%!
 
@@ -81,24 +82,22 @@ class Keyboard(object):
             btn.connect("pressed", self.on_button_pressed)
 
 # =========================================================
-## BEGIN - Keyboard Settings
+# Keyboard Settings
 # =========================================================
 
-    # Caps Lock        
+    # Caps Lock
     def on_caps_lock_toggled(self, widget):
         if widget.get_active():
             self.caps(True)
         else:
             self.caps(False)
 
-
-    # Left shift unshifts after keypress           
+    # Left shift unshifts after keypress
     def on_left_shift_toggled(self, widget):
         if widget.get_active():
             self.shift(True)
         else:
             self.shift(False)
-
 
     # Right shift is "sticky"
     def on_right_shift_toggled(self, widget):
@@ -107,8 +106,7 @@ class Keyboard(object):
         else:
             self.shift(False)
 
-
-    # Caps lock action           
+    # Caps lock action
     def caps(self, data = False):
         if data:
             for l, btn in self.letter_btn_dict.iteritems():
@@ -116,7 +114,6 @@ class Keyboard(object):
         else:
             for l, btn in self.letter_btn_dict.iteritems():
                 btn.set_label(l.lower())
-
 
     # Shift action, inverts caps lock setting 
     def shift(self, data = False):
@@ -138,7 +135,7 @@ class Keyboard(object):
 
 
 # =========================================================
-## BEGIN - Keyboard Emulation
+# Keyboard Emulation
 # =========================================================
 
 
@@ -155,8 +152,7 @@ class Keyboard(object):
         except:
             self.window.hide()
 
-
-    def repeat_event(self):
+    def key_repeat(self):
         if self.widget.get_state() == gtk.STATE_ACTIVE:
             if self.wait_counter < 5:
                 self.wait_counter += 1
@@ -169,19 +165,10 @@ class Keyboard(object):
 
 
 # =========================================================
-## BEGIN - Button Handlers
+# Button Handlers
 # =========================================================
 
-
-#    # This would work for letters but not for the special characters        
-#    def on_button_pressed(self, widget):
-#        self.emulate_key(widget, widget.get_label())
-#        # Unshift if left shift is active, right shift is "sticky" 
-#        if self.builder.get_object('left_shift').get_active():
-#            self.shift(False)
-
-
-    # This handles all the character entry        
+    # This handles all the character entry
     def on_button_pressed(self, widget):
         try: # Needed since the widget may not have focus anymore
             event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
@@ -200,13 +187,12 @@ class Keyboard(object):
             self.window.hide()
             pass
 
-        # Unshift if left shift is active, right shift is "sticky" 
+        # Unshift if left shift is active, right shift is "sticky"
         if self.builder.get_object('left_shift').get_active():
             self.shift(False)
 
-
     # Backspace
-    def on_backspace_pressed(self, widget): 
+    def on_backspace_pressed(self, widget):
         self.emulate_key(widget, "BackSpace")
 
     # Tab
@@ -217,15 +203,19 @@ class Keyboard(object):
     def on_return_pressed(self, widget):
         self.enter(widget)
 
+    # Escape
+    def on_esc_pressed(self, widget, data=None):
+        self.escape()
+
     # Left arrow
     def on_arrow_left_pressed(self, widget):
-        self.emulate_key(widget, "Left")  
+        self.emulate_key(widget, "Left")
 
     # Right arrow
     def on_arrow_right_pressed(self, widget):
         self.emulate_key(widget, "Right")
 
-    # Up Arrow    
+    # Up Arrow
     def on_arrow_up_pressed(self, widget):
         self.emulate_key(widget, "Up")
 
@@ -233,13 +223,12 @@ class Keyboard(object):
     def on_arrow_down_pressed(self, widget):
         self.emulate_key(widget, "Down")
 
-    # TODO add persistencse on double click
+    # TODO add persistence mode on double click
     def on_ctrl_toggled(self, widget):
         pass
 
     # Catch real ESC or ENTER key presses
     def on_window_key_press_event(self, widget, event, data=None):
-        print "got keypress"
         kv = event.keyval
         if kv == gtk.keysyms.Escape:
             self.escape() # Close the keyboard
@@ -247,34 +236,27 @@ class Keyboard(object):
             self.enter(widget)
         else: # Pass other keypresses on to the entry widget
             #print _keymap.get_entries_for_keyval(kv)
-            print "state: ",event.state
             try:
                 self.entry.emit("key-press-event", event)
             except:
                 pass
 
-    def on_esc_pressed(self, widget, data=None):
-        self.escape()
-
     # Escape action
     def escape(self):
         try:
-            event = gtk.gdk.Event(gtk.gdk.KEY_PRESS) 
+            event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
             event.keyval = gtk.keysyms.Escape
             event.window = self.entry.window
             self.entry.event(event)
             self.entry.emit("key-press-event", event)
         except:
             pass
-        #self.window.destroy()
         self.window.hide()
-
 
     def enter(self, widget):
         self.emulate_key(widget, "Return")
         if not self.persistent:
             self.window.hide()
-
 
     def on_entry_loses_focus(self, widget, data=None):
         self.escape()

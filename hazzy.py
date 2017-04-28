@@ -204,7 +204,7 @@ class Hazzy(object):
 
         self.style_scheme = None
         self.lang_spec = None
-        
+
         self.task_state = None
         self.task_mode = None
         self.interp_state = None
@@ -796,14 +796,15 @@ class Hazzy(object):
             log.debug("Setting opskip OFF")
 
     def on_step_clicked(self, widget, data=None):
-        print("STEP was clicked, I don't know by who though.")
+        pass
 
     # =========================================================
     # DRO entry handlers
 
     def on_dro_gets_focus(self, widget, event):
-        self.dro_has_focus = True
-        widget.select_region(0, -1)
+        if not self.dro_has_focus:
+            widget.select_region(0, -1)
+            self.dro_has_focus = True
         if self.keypad_on_dro:
             self.float_touchpad.show(widget, self.display_units)
 
@@ -1131,13 +1132,15 @@ class Hazzy(object):
             self.load_gcode_preview(self.new_program_template)
         if self.keypad_on_edit:
             self.keyboard.show(widget, self.get_win_pos(), True)
-        print event
 
     # If ctrl+s save the file
     def on_gcode_preview_key_press_event(self, widget, event):
+        kv = event.keyval
         if event.state & gtk.gdk.CONTROL_MASK:
-            if event.keyval == gtk.keysyms.s:
+            if kv == gtk.keysyms.s:
                 self.save()
+        elif kv == gtk.keysyms.Escape:
+            self.window.set_focus(None)
 
 # =========================================================      
 # BEGIN - [Tool] notebook page handlers
@@ -1470,22 +1473,22 @@ class Hazzy(object):
         rel = [0]*9
         for axis in self.axis_number_list:
             rel[axis] = pos[axis] - g5x_offset[axis] - tool_offset[axis]
-            
+
         if self.stat.rotation_xy != 0:
             t = math.radians(-self.stat.rotation_xy)
             xr = rel[0] * math.cos(t) - rel[1] * math.sin(t)
             yr = rel[0] * math.sin(t) + rel[1] * math.cos(t)
             rel[0] = xr
             rel[1] = yr
-            
+
         for axis in self.axis_number_list:
             rel[axis] -= g92_offset[axis]
-            
+
         if self.display_units != self.machine_units: # We need to convert
             rel = self.convert_dro_units(rel)
             dtg = self.convert_dro_units(dtg)
             pos = self.convert_dro_units(pos)
-        
+
         if self.display_units == 'mm':
             dec_plc = self.mm_dro_plcs
         else:
@@ -1494,10 +1497,10 @@ class Hazzy(object):
         if not self.dro_has_focus: # Keep from overwriting user input
             for axis, dro in self.rel_dro_dict.iteritems():
                 dro.set_text("%.*f" % (dec_plc, rel[axis]))
-                
+
         for axis, dro in self.dtg_dro_dict.iteritems():
                 dro.set_text("%.*f" % (dec_plc, dtg[axis]))     
-                
+
         for axis, dro in self.abs_dro_dict.iteritems():
                 dro.set_text("%.*f" % (dec_plc, pos[axis]))
 
@@ -1544,7 +1547,7 @@ class Hazzy(object):
         # self.stat.settings[1] returns the feedrate
         # self.stat.feedrate returns the current feedrate override
         # self.stat.current_vel returns the current velocity in Cartesian space in units/s
-    
+
         prog_feed = self.stat.settings[1]           # Programed feed
         act_feed = prog_feed * self.stat.feedrate  # Correct for feed override
         act_vel = self.stat.current_vel * 60.0      # Convert to units per min. Machine units???
@@ -1565,7 +1568,7 @@ class Hazzy(object):
                 feed_dec_plcs = self.mm_feed_dec_plcs
             if self.machine_units == 'in':
                 act_vel = act_vel * 25.4  # Is this conversion needed??
-        
+
         self.widgets.current_vel_label.set_text("%.*f" %(vel_dec_plcs, act_vel))
         self.widgets.active_feed_label.set_label("%.*f" %(feed_dec_plcs, prog_feed))
         self.widgets.actual_feed_label.set_text("%.*f" %(feed_dec_plcs, act_feed))
