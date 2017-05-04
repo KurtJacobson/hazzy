@@ -71,10 +71,10 @@ class Filechooser(gobject.GObject):
         self.bookmark_treeview.set_row_separator_func(self.bookmark_separator)
 
         # Enable DnD TODO DnD is not implemented yet
-        self.file_treeview.enable_model_drag_source(gtk.gdk.BUTTON1_MASK,\
-        [('text/plain', 0, 0)], gtk.gdk.ACTION_MOVE | gtk.gdk.ACTION_COPY)
-        self.file_treeview.enable_model_drag_dest([('text/plain', 0, 0)],\
-        gtk.gdk.ACTION_COPY)
+        self.file_treeview.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, \
+                                                    [('text/plain', 0, 0)], gtk.gdk.ACTION_MOVE | gtk.gdk.ACTION_COPY)
+        self.file_treeview.enable_model_drag_dest([('text/plain', 0, 0)], \
+                                                  gtk.gdk.ACTION_COPY)
 
         # Connect callbacks to VolumeMonitor
         self.mounts = gio.VolumeMonitor()
@@ -105,7 +105,6 @@ class Filechooser(gobject.GObject):
         self._init_bookmarks()
         self._init_nav_buttons()
 
-
     # Have to do this once realized so sizes will have been allocated
     def on_vbox1_realize(self, widget):
         self._update_bookmarks()
@@ -115,8 +114,8 @@ class Filechooser(gobject.GObject):
         try:
             with open(self.data_file) as data:
                 self.places, self.folders = json.load(data)
-        except:
-            pass
+        except Exception as e:
+            print(e)
 
     def _init_nav_buttons(self):
         box = self.nav_box
@@ -209,7 +208,7 @@ class Filechooser(gobject.GObject):
             icon = self._get_place_icon(folder)
             model.append([0, icon, folder, None, None])
 
-        files.sort(key=str.lower, reverse=False) 
+        files.sort(key=str.lower, reverse=False)
         for fname in files:
             fpath = os.path.join(self.cur_dir, fname)
             icon = self._get_file_icon(fname)
@@ -222,7 +221,6 @@ class Filechooser(gobject.GObject):
 
         self._update_nav_buttons()
 
-
     def _get_file_data(self, fpath):
         size = os.path.getsize(fpath)
         if size >= 1E9:
@@ -232,7 +230,7 @@ class Filechooser(gobject.GObject):
         elif size >= 1E3:
             size_str = "{:.1f} KB".format(size / 1E3)
         else:
-             size_str = "{} bytes".format(size)
+            size_str = "{} bytes".format(size)
         tstamp = os.path.getmtime(fpath)
         date_str = datetime.fromtimestamp(tstamp).strftime("%m/%d/%y %X")
         return size_str, date_str
@@ -269,7 +267,7 @@ class Filechooser(gobject.GObject):
             icon_name = 'folder'
         if not theme.has_icon(icon_name):
             icon_name = gtk.STOCK_DIRECTORY
-        return theme.load_icon( icon_name, 16, 0)
+        return theme.load_icon(icon_name, 16, 0)
 
     def on_select_toggled(self, widget, path):
         model = self.file_liststore
@@ -314,9 +312,9 @@ class Filechooser(gobject.GObject):
     def on_file_treeview_button_release_event(self, widget, data=None):
         self.emit('button-release-event')
 
-#=======================================
-#   Methods to be called externally
-#=======================================
+    # =======================================
+    #   Methods to be called externally
+    # =======================================
 
     # Get filechooser object to embed in main window
     def get_filechooser_widget(self):
@@ -328,7 +326,7 @@ class Filechooser(gobject.GObject):
 
     # Delete filter by name
     def remove_filter(self, name):
-        if name in self._filters: 
+        if name in self._filters:
             del self._filters[name]
             return True
         return False
@@ -393,8 +391,8 @@ class Filechooser(gobject.GObject):
             self._fill_file_liststore(fpath)
         for row in range(len(model)):
             if model[row][2] == fname:
-                 tree.set_cursor(row)
-                 return True
+                tree.set_cursor(row)
+                return True
         return False
 
     # Get paths for selected
@@ -420,8 +418,8 @@ class Filechooser(gobject.GObject):
             self._fill_file_liststore(fpath)
         for row in range(len(model)):
             if model[row][2] == fname:
-                 model[row][0] = 1
-                 return True
+                model[row][0] = 1
+                return True
         return False
 
     # Check all checkboxes in current display directory
@@ -468,7 +466,7 @@ class Filechooser(gobject.GObject):
         skiped = []
         for path in paths:
             if not os.path.exists(path) or not os.path.isdir(path) \
-               or path in self.folders or path in self.places:
+                    or path in self.folders or path in self.places:
                 skiped.append(path)
                 continue
             self.folders.append(path)
@@ -550,7 +548,7 @@ class Filechooser(gobject.GObject):
         new_name = self._copy_file(path, fdir)
         for row in range(len(model)):
             if model[row][2] == new_name:
-                 break
+                break
         focus_column = self.builder.get_object('col_file_name')
         model[row][0] = 1
         tree.set_cursor(row, focus_column, True)
@@ -562,30 +560,30 @@ class Filechooser(gobject.GObject):
             self._trash_file(path)
         self._fill_file_liststore()
 
-#=======================================
-#   Drag and Drop TODO
-#=======================================
+    # =======================================
+    #   Drag and Drop TODO
+    # =======================================
 
     def on_file_treeview_drag_begin(self, data, som):
-        print "drag", data, som
+        print("drag {0} {1}".format(data, som))
 
     def on_file_treeview_drag_data_received(self):
-        print "got drag"
+        print("got drag")
 
-    def drag_data_received_cb(treeview, context, x, y, selection, info, timestamp):
-      drop_info = treeview.get_dest_row_at_pos(x, y)
-      print "got drag"
-      if drop_info:
-          model = treeview.get_model()
-          path, position = drop_info
-          data = selection.data
-          # do something with the data and the model
-          print model,path,data
-      return
+    def drag_data_received_cb(self, treeview, context, x, y, selection, info, timestamp):
+        drop_info = treeview.get_dest_row_at_pos(x, y)
+        print("got drag")
+        if drop_info:
+            model = treeview.get_model()
+            path, position = drop_info
+            data = selection.data
+            # do something with the data and the model
+            print("{0} {1} {2}".format(model, path, data))
+        return
 
-#=======================================
-#   Bookmark treeview
-#=======================================
+    # =======================================
+    #   Bookmark treeview
+    # =======================================
 
     def on_mount_added(self, volume, mount):
         path = mount.get_root().get_path()
@@ -603,7 +601,6 @@ class Filechooser(gobject.GObject):
             self.file_liststore.clear()
             self._update_nav_buttons('')
         self._update_bookmarks()
-
 
     def on_bookmark_treeview_cursor_changed(self, widget):
         model = self.bookmark_liststore
@@ -657,8 +654,11 @@ class Filechooser(gobject.GObject):
             model.append([icon, name, path, False])
 
         data = [places, folders]
-        with open(self.data_file, 'w') as file:
-            json.dump(data, file, sort_keys=True, indent=4)
+        try:
+            with open(self.data_file, 'w') as file:
+                json.dump(data, file, sort_keys=True, indent=4)
+        except Exception as e:
+            print(e)
 
     # Generate sort key based on file basename
     def sort(self, path):
@@ -668,22 +668,22 @@ class Filechooser(gobject.GObject):
     def bookmark_separator(self, model, iter):
         return self.bookmark_liststore.get_value(iter, 1) is None
 
-#=======================================
-#   File utility functions
-#=======================================
+    # =======================================
+    #   File utility functions
+    # =======================================
 
     def _copy_file(self, src, dst_dir):
         src_dir, dst_name = os.path.split(src)
         if src_dir == dst_dir:
-            #self.error("COPY ERROR: Source and destination are the same")
-            #return
+            # self.error("COPY ERROR: Source and destination are the same")
+            # return
             name, ext = os.path.splitext(dst_name)
-            dst_name = '{}_copy{}'.format(name, ext)
+            dst_name = '{0}_copy{1}'.format(name, ext)
         dst = os.path.join(dst_dir, dst_name)
         if os.path.exists(dst):
-            self.error("COPY ERROR: Destination file {} already exists".format(dst))
+            self.error("COPY ERROR: Destination file {0} already exists".format(dst))
             return
-        self.info("Copying: {} to {}".format(src, dst))
+        self.info("Copying: {0} to {1}".format(src, dst))
         if os.path.isfile(src):
             shutil.copy2(src, dst)
         else:
@@ -699,24 +699,24 @@ class Filechooser(gobject.GObject):
         dst = os.path.join(dst_dir, src_name)
         if os.path.exists(dst):
             self.error("MOVE ERRPR: Destination file {} already exists".format(dst))
-        self.info("Moving: {} to {}".format(src, dst))
+        self.info("Moving: {0} to {1}".format(src, dst))
         shutil.move(src, dst)
 
 
     # Note:
-        # This trash implementation tries to follow the guidelines set for by 
-        # freedesktop.org, see the specifications here:
-        # https://specifications.freedesktop.org/trash-spec/trashspec-latest.html
+    # This trash implementation tries to follow the guidelines set for by
+    # freedesktop.org, see the specifications here:
+    # https://specifications.freedesktop.org/trash-spec/trashspec-latest.html
 
     # FIXME if you try to trash a symbolic link the folder that is refers to
     #       will be trashed.  Should fix this so only the link file is trashed
     def _trash_file(self, path):
         path = os.path.realpath(path)
         if not os.path.exists(path):
-            print("Can't move file to trash, file does not exist\nFile path: " + path)
+            print("Can't move file to trash, file does not exist\nFile path: {0}".format(path))
             return
         elif not os.access(path, os.W_OK):
-            print("Can't move file to trash, permission denied\nFile path: " + path)
+            print("Can't move file to trash, permission denied\nFile path: {0}".format(path))
             return
 
         file_dev = os.lstat(path).st_dev
@@ -728,12 +728,11 @@ class Filechooser(gobject.GObject):
             file_vol_root = self._get_mount_point(path)
             trash_dev = os.lstat(file_vol_root).st_dev
             if trash_dev != file_dev:
-                print("Could not find mount point for: " + path)
+                print("Could not find mount point for: {0}".format(path))
                 print("The file will not be moved to trash")
                 return
             trash_dir = self._find_ext_vol_trash(file_vol_root)
         self._move_to_trash(path, trash_dir, file_vol_root)
-
 
     def _find_ext_vol_trash(self, vol_root):
         trash_dir = os.path.join(vol_root, '.Trash')
@@ -741,30 +740,28 @@ class Filechooser(gobject.GObject):
             mode = os.lstat(trash_dir).st_mode
             # must be a directory, not a symlink, and have the sticky bit set.
             if os.path.isdir(trash_dir) or not os.path.islink(trash_dir) \
-                or (mode & stat.S_ISVTX):
-                print("Volume topdir trash exists and is valid: " + trash_dir)
+                    or (mode & stat.S_ISVTX):
+                print("Volume topdir trash exists and is valid: {0}".format(trash_dir))
                 return trash_dir
             else:
-                print("Volume topdir trash exists but is not valid: " + trash_dir)
+                print("Volume topdir trash exists but is not valid: {0}".format(trash_dir))
         else:
             print("A topdir trash does not exist on the volume")
         # If we got this far we need to try a UID trash dir
         uid = os.getuid()
         trash_dir = os.path.join(vol_root, '.Trash-{0}'.format(uid))
         if not os.path.exists(trash_dir):
-            print("Creating UID trash dir at volume root: " + trash_dir)
+            print("Creating UID trash dir at volume root: {0}".format(trash_dir))
             os.makedirs(trash_dir, 0o700)
         else:
-            print("UID trash dir exists at volume root: " + trash_dir)
+            print("UID trash dir exists at volume root: {0}".format(trash_dir))
         return trash_dir
-
 
     def _get_mount_point(self, path):
         path = os.path.realpath(path)
         while not os.path.ismount(path):
             path = os.path.split(path)[0]
         return path
-
 
     def _move_to_trash(self, src, dst, ext_vol=None):
         fname = os.path.basename(src)
@@ -779,24 +776,23 @@ class Filechooser(gobject.GObject):
         count = 0
         while os.path.exists(file_dst) or os.path.exists(info_dst):
             count += 1
-            dst_name = '{0} {1}{2}'.format(name, count, ext)
+            dst_name = '{0} {1} {2}'.format(name, count, ext)
             file_dst = os.path.join(file_dst_dir, dst_name)
-            info_dst = os.path.join(info_dst_dir, dst_name + ".trashinfo")
+            info_dst = os.path.join(info_dst_dir, "{0}.trashinfo".format(dst_name))
 
         # Create trash info file
-        if ext_vol == None:
+        if ext_vol is None:
             path = src
         else:
             # Use relative path on volume
             path = os.path.relpath(src, ext_vol)
 
         date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        info  = "[Trash Info]\n"
-        info += "Path={0}\n".format(path)
-        info += "DeletionDate={0}\n".format(date)
+        info = "[Trash Info]\nPath={0}\nDeletionDate={1}\n".format(path, date)
 
-        print("Writing info file: " + info_dst)
+        print("Writing info file: {0}".format(info_dst))
         print(info)
+
         with open(info_dst, 'w') as infofile:
             infofile.write(info)
 
@@ -804,26 +800,24 @@ class Filechooser(gobject.GObject):
         print("Moving the file from {0} to {1}".format(src, file_dst))
         os.rename(src, file_dst)
 
-
     # Shortcut methods to emit errors and print to terminal
     def error(self, text):
         self.emit('error', 'ERROR', text)
-        print text
+        print(text)
 
     def warn(self, text):
         self.emit('error', 'WARN', text)
-        print text
+        print(text)
 
     def info(self, text):
         self.emit('error', 'INFO', text)
-        print text
+        print(text)
 
 
 def main():
     gtk.main()
 
+
 if __name__ == "__main__":
     ui = Filechooser()
     main()
-
-
