@@ -54,7 +54,7 @@ CONFIGDIR = os.path.dirname(INIFILE)                    # Path to config dir
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))  # Path to hazzy.py dir
 print("The hazzy directory is: {0}".format(HAZZYDIR))
 IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade
-sys.path.insert(1 , HAZZYDIR)  # Set system path so we can find our own modules
+sys.path.insert(1, HAZZYDIR)  # Set system path so we can find our own modules
 
 # Now we have the path to our own modules so we can import them
 import tc                       # For highlighting terminal messages.
