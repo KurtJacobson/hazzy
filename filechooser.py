@@ -82,7 +82,7 @@ class Filechooser(gobject.GObject):
         self.mounts.connect('mount-removed', self.on_mount_removed)
 
         # Initialize variables
-        self.data_file = '/home/kurt/Desktop/test.json'
+        self.data_file = os.path.join(DATADIR, '.bookmarks.json')
         self.cur_dir = os.path.expanduser("~/Desktop")
         self.icon_theme = gtk.icon_theme_get_default()
         self.old_dir = " "
