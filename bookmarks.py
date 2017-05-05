@@ -63,9 +63,17 @@ class BookMarks:
 
     def add(self, path):
 
+        # don't add duplicates
+        if path in self.bookmarks:
+            print('Bookmark already exists')
+            return False
+
         name = os.path.basename(os.path.normpath(path))
 
-        line = "file//{0} {1}\n".format(path, name)
+        # must encode spaces in path
+        path = path.replace(" ", "%20")
+
+        line = "file://{0} {1}\n".format(path, name)
 
         with open(self.bookmarks_file, 'a') as f:
             f.write(line)
