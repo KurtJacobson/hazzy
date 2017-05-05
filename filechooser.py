@@ -28,10 +28,14 @@ import mimetypes
 import json
 from datetime import datetime
 
+from bookmarks import BookMarks
+
 DATADIR = os.path.abspath(os.path.dirname(__file__))
 GLADEDIR = os.path.join(DATADIR, 'images')
 XDG_DATA_HOME = os.path.expanduser(os.environ.get('XDG_DATA_HOME', '~/.local/share'))
 HOMETRASH = os.path.join(XDG_DATA_HOME, 'Trash')
+
+GTK_BOOKMARKS = os.path.expanduser("~/.gtk-bookmarks")  # FixMe use XDG env
 
 
 class Filechooser(gobject.GObject):
@@ -81,8 +85,12 @@ class Filechooser(gobject.GObject):
         self.mounts.connect('mount-added', self.on_mount_added)
         self.mounts.connect('mount-removed', self.on_mount_removed)
 
+        # Initialize objects
+        self.bookmarks = BookMarks(GTK_BOOKMARKS)
+        self.bookmarks.read()
+
         # Initialize variables
-        self.data_file = '/home/kurt/Desktop/test.json'
+        self.bookmarks_list = self.bookmarks.get()
         self.cur_dir = os.path.expanduser("~/Desktop")
         self.icon_theme = gtk.icon_theme_get_default()
         self.old_dir = " "
@@ -112,7 +120,7 @@ class Filechooser(gobject.GObject):
 
     def _init_bookmarks(self):
         try:
-            with open(self.data_file) as data:
+            with open(self.bookmarks_list) as data:
                 self.places, self.folders = json.load(data)
         except Exception as e:
             print(e)
@@ -459,6 +467,7 @@ class Filechooser(gobject.GObject):
 
     # Add a single bookmark linking to path
     def add_bookmark(self, path):
+        self.bookmarks.add(path)
         return self.add_bookmarks([path])
 
     # Add multiple bookmarks, one for each path in list
@@ -477,6 +486,7 @@ class Filechooser(gobject.GObject):
 
     # Remove single bookmark linking to path
     def remove_bookmark(self, path):
+        self.bookmarks.remove(path)
         return self.remove_bookmarks([path])
 
     # Remove multiple bookmarks for each path in list
@@ -637,15 +647,19 @@ class Filechooser(gobject.GObject):
         folders = sorted(self.folders, key=self.sort, reverse=False)
         model = self.bookmark_liststore
         model.clear()
+
         for path in places:
             name = os.path.split(path)[1]
             icon = self._get_place_icon(name)
             model.append([icon, name, path, False])
+
         for path in mounts:
             name = os.path.split(path)[1]
             icon = self._get_place_icon('USBdrive')
             model.append([icon, name, path, True])
+
         model.append([None, None, None, False])
+
         for path in folders:
             if not os.path.exists(path):
                 continue
@@ -653,12 +667,16 @@ class Filechooser(gobject.GObject):
             icon = self._get_place_icon(name)
             model.append([icon, name, path, False])
 
+        """
+        
         data = [places, folders]
+
         try:
-            with open(self.data_file, 'w') as file:
+            with open(self.bookmarks_list, 'w') as file:
                 json.dump(data, file, sort_keys=True, indent=4)
         except Exception as e:
             print(e)
+        """
 
     # Generate sort key based on file basename
     def sort(self, path):
@@ -812,12 +830,3 @@ class Filechooser(gobject.GObject):
     def info(self, text):
         self.emit('error', 'INFO', text)
         print(text)
-
-
-def main():
-    gtk.main()
-
-
-if __name__ == "__main__":
-    ui = Filechooser()
-    main()
