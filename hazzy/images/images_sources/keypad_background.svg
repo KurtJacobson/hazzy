@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="575"
+   height="300"
+   id="svg3220"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/keypad_background.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90"
+   sodipodi:docname="keypad_background.svg">
+  <defs
+     id="defs3222" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.4"
+     inkscape:cx="183.56869"
+     inkscape:cy="92.595272"
+     inkscape:document-units="px"
+     inkscape:current-layer="g3037"
+     showgrid="false"
+     inkscape:showpageshadow="false"
+     showborder="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1115"
+     inkscape:window-x="0"
+     inkscape:window-y="26"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata3225">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-752.36218)">
+    <g
+       id="g3003"
+       transform="translate(468.57143,-508.57143)">
+      <rect
+         y="752.36218"
+         x="0"
+         height="300"
+         width="575"
+         id="rect3105-3"
+         style="fill:#615f5f;fill-opacity:1;stroke:none;display:inline" />
+      <rect
+         inkscape:export-ydpi="96"
+         inkscape:export-xdpi="96"
+         inkscape:export-filename="/home/kurt/Desktop/LCNC GUI's/HASSY/rect3844-0.png"
+         ry="6.9999986"
+         rx="7.0000024"
+         y="763.36212"
+         x="381"
+         height="278"
+         width="183"
+         id="rect3844-7-3-6"
+         style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline" />
+      <rect
+         inkscape:export-ydpi="96"
+         inkscape:export-xdpi="96"
+         inkscape:export-filename="/home/kurt/Desktop/LCNC GUI's/HASSY/rect3844-0.png"
+         ry="6.9999986"
+         rx="7.0000029"
+         y="763.36212"
+         x="11.000123"
+         height="278"
+         width="358"
+         id="rect3844-7-3-6-7"
+         style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:1.99999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline" />
+    </g>
+    <rect
+       style="fill:#615f5f;fill-opacity:1;stroke:none;display:inline"
+       id="rect3105-3-5"
+       width="239"
+       height="292"
+       x="561.22101"
+       y="1076.0271"
+       inkscape:export-filename="/home/kurt/Desktop/hazzy/images/numpad_background.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <rect
+       style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:1.99999988;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+       id="rect3844-7-3-6-3"
+       width="217"
+       height="270"
+       x="572.22101"
+       y="1087.0271"
+       rx="7.0000019"
+       ry="6.9999981"
+       inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/numpad_background.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90" />
+    <g
+       id="g3037">
+      <g
+         id="g3041"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy/images/int_numpad_background.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="fill:#615f5f;fill-opacity:1;stroke:none;display:inline"
+           id="rect3105-3-5-67"
+           width="186"
+           height="292"
+           x="-2.1582032e-06"
+           y="760.36218"
+           inkscape:export-filename="/home/kurt/Desktop/hazzy/images/numpad_background.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90" />
+        <rect
+           style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:1.99999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+           id="rect3844-7-3-6-3-5"
+           width="164"
+           height="270"
+           x="10.999983"
+           y="771.36218"
+           rx="7.0000014"
+           ry="6.9999981"
+           inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/numpad_background.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90" />
+      </g>
+    </g>
+    <g
+       id="g2999"
+       transform="translate(1275.2772,-578.8021)">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/yes_no_background.png"
+         y="1178.2783"
+         x="-176.7767"
+         height="149.71098"
+         width="300"
+         id="rect3105-3-5-6"
+         style="fill:#615f5f;fill-opacity:1;stroke:none;display:inline" />
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/yes_no_background.png"
+         ry="6.999999"
+         rx="7.0000029"
+         y="1187.6887"
+         x="-165.7767"
+         height="130.89017"
+         width="278"
+         id="rect3844-7-3-6-3-7"
+         style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline" />
+    </g>
+    <g
+       id="g2991"
+       transform="translate(-440.42651,32.324882)"
+       inkscape:export-filename="/home/kurt/Desktop/hazzy/images/error_background.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/error_background.png"
+         y="1032.5143"
+         x="438.70209"
+         height="350"
+         width="550"
+         id="rect3105-3-5-3"
+         style="fill:#615f5f;fill-opacity:1;stroke:none;display:inline" />
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/error_background.png"
+         ry="6.9999986"
+         rx="7.0000029"
+         y="1043.6821"
+         x="450.41638"
+         height="328"
+         width="528"
+         id="rect3844-7-3-6-3-6"
+         style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:1.99999988;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline" />
+    </g>
+    <g
+       id="g3000"
+       inkscape:export-filename="/home/kurt/Desktop/hazzy/images/keyboard_background.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/error_background.png"
+         y="1434.2355"
+         x="-2.0203061"
+         height="302"
+         width="829"
+         id="rect3105-3-5-3-6"
+         style="fill:#615f5f;fill-opacity:1;stroke:none;display:inline" />
+      <rect
+         inkscape:export-ydpi="90"
+         inkscape:export-xdpi="90"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/error_background.png"
+         ry="6.9999981"
+         rx="7.0000024"
+         y="1445.2355"
+         x="8.9796953"
+         height="280"
+         width="807"
+         id="rect3844-7-3-6-3-6-7"
+         style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:1.99999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline" />
+    </g>
+    <g
+       transform="translate(1090.5917,-1166.0161)"
+       id="g3000-3"
+       inkscape:export-filename="/home/kurt/Desktop/hazzy/images/keyboard_background.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <g
+         id="g3022"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy/images/entry_keyboard_background.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90">
+        <rect
+           style="fill:#615f5f;fill-opacity:1;stroke:none;display:inline"
+           id="rect3105-3-5-3-6-6"
+           width="829"
+           height="352"
+           x="-2.0203061"
+           y="1384.2355"
+           inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/error_background.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90" />
+        <rect
+           style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:1.99999976;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+           id="rect3844-7-3-6-3-6-7-7"
+           width="807"
+           height="330"
+           x="8.9796953"
+           y="1395.2355"
+           rx="7.0000024"
+           ry="6.9999986"
+           inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/error_background.png"
+           inkscape:export-xdpi="90"
+           inkscape:export-ydpi="90" />
+      </g>
+    </g>
+  </g>
+</svg>
