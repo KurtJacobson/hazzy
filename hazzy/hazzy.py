@@ -65,7 +65,7 @@ from touchpad import Touchpad   # On screen numpad and keypad for use with touch
 from keyboard import Keyboard   # On screen keyboard emulator for use with touchscreens
 import dialogs                  # Used for confirmation and error dialogs
 import simpleeval               # Used to evaluate expressions in numeric entries
-from plugins import Filechooser
+from modules import Filechooser
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
