@@ -3,7 +3,10 @@
   <requires lib="gtk+" version="2.24"/>
   <!-- interface-naming-policy project-wide -->
   <object class="GtkWindow" id="window1">
+    <property name="width_request">625</property>
+    <property name="height_request">410</property>
     <property name="can_focus">False</property>
+    <property name="resizable">False</property>
     <signal name="delete-event" handler="on_window1_delete_event" swapped="no"/>
     <child>
       <object class="GtkFixed" id="fixed0">
@@ -11,27 +14,12 @@
         <property name="can_focus">False</property>
         <child>
           <object class="GtkImage" id="image1">
-            <property name="width_request">1008</property>
-            <property name="height_request">413</property>
+            <property name="width_request">625</property>
+            <property name="height_request">410</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">notebook_file_backgound.png</property>
+            <property name="pixbuf">background.svg</property>
           </object>
-        </child>
-        <child>
-          <object class="GtkAlignment" id="alignment1">
-            <property name="width_request">464</property>
-            <property name="height_request">379</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="x">17</property>
-            <property name="y">17</property>
-          </packing>
         </child>
         <child>
           <object class="GtkTable" id="table1">
@@ -45,8 +33,8 @@
               <object class="GtkButton" id="cut">
                 <property name="label" translatable="yes">Cut</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_cut_clicked" swapped="no"/>
               </object>
@@ -55,8 +43,8 @@
               <object class="GtkButton" id="copy">
                 <property name="label" translatable="yes">Copy</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_copy_clicked" swapped="no"/>
               </object>
@@ -69,8 +57,8 @@
               <object class="GtkButton" id="paste">
                 <property name="label" translatable="yes">Paste</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_paste_clicked" swapped="no"/>
               </object>
@@ -83,8 +71,8 @@
               <object class="GtkButton" id="back">
                 <property name="label" translatable="yes">Back</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_back_clicked" swapped="no"/>
               </object>
@@ -97,8 +85,8 @@
               <object class="GtkButton" id="delete">
                 <property name="label" translatable="yes">Delete</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
                 <signal name="clicked" handler="on_delete_clicked" swapped="no"/>
               </object>
@@ -111,8 +99,8 @@
               <object class="GtkButton" id="button6">
                 <property name="label" translatable="yes">button</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
               </object>
               <packing>
@@ -124,8 +112,8 @@
               <object class="GtkButton" id="button7">
                 <property name="label" translatable="yes">button</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
               </object>
               <packing>
@@ -137,8 +125,8 @@
               <object class="GtkButton" id="button8">
                 <property name="label" translatable="yes">button</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
+                <property name="can_focus">False</property>
+                <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
               </object>
               <packing>
@@ -150,7 +138,7 @@
               <object class="GtkCheckButton" id="checkbutton1">
                 <property name="label" translatable="yes">Filter .ngc</property>
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
                 <property name="draw_indicator">True</property>
@@ -162,8 +150,23 @@
             </child>
           </object>
           <packing>
-            <property name="x">507</property>
-            <property name="y">21</property>
+            <property name="x">505</property>
+            <property name="y">19</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHBox" id="hbox1">
+            <property name="width_request">465</property>
+            <property name="height_request">380</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="x">15</property>
+            <property name="y">15</property>
           </packing>
         </child>
       </object>
