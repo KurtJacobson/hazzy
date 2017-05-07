@@ -135,13 +135,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkCheckButton" id="checkbutton1">
+              <object class="GtkCheckButton" id="filter">
                 <property name="label" translatable="yes">Filter .ngc</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="receives_default">False</property>
                 <property name="use_action_appearance">False</property>
                 <property name="draw_indicator">True</property>
+                <signal name="toggled" handler="on_filter_toggled" swapped="no"/>
               </object>
               <packing>
                 <property name="top_attach">8</property>

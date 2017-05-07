@@ -1,10 +1,25 @@
 #!/usr/bin/env python
 
+# For stand-alone testing of the filechooser
+
 import gtk
 import os
+import sys
 import filechooser
 
-# For stand-alone testing of the filechooser
+
+MODULEDIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(1, os.path.dirname(MODULEDIR))
+print MODULEDIR, __file__
+
+try:
+    from touchpads.keyboard import Keyboard
+    KEYBOARD = True
+except:
+    KEYBOARD = False
+    print "cant fine"
+    pass
+
 
 class Filechooser(object):
 
@@ -22,10 +37,14 @@ class Filechooser(object):
         filechooser_widget = self.filechooser.get_filechooser_widget()
         box.add(filechooser_widget)
 
+        # Initialize keyboard if we found it
+        if KEYBOARD:
+            self.keyboard = Keyboard()
+
         # Connect signals emited by filechooser
         self.filechooser.connect('file-activated', self.on_file_activated)
         self.filechooser.connect('selection-changed', self.on_file_selection_changed)
-        self.filechooser.connect('filename-editing-started', self.on_filename_editing_started)
+        self.filechooser.connect('filename-editing-started', self.on_file_name_editing_started)
         self.filechooser.connect('error', self.on_error)
         self.builder.get_object('paste').set_sensitive(False)
 
@@ -65,15 +84,22 @@ class Filechooser(object):
     def on_delete_clicked(self, widget, data=None):
         self.filechooser.delete_selected()
 
+    # Toggle file filter
+    def on_filter_toggled(self, widget, data=None):
+        if self.builder.get_object('filter').get_active():
+            self.filechooser.set_filter('gcode')
+        else:
+            self.filechooser.set_filter('all')
+
     def on_file_activated(self, obj, fpath):
         print("File activated: " + fpath)
 
     def on_file_selection_changed(self, obj, path):
         print("Selection changed: " + path)
 
-    def on_filename_editing_started(self, obj, entry):
-        # Could add popup keyboard here
-        pass
+    def on_file_name_editing_started(self, widget, entry):
+        if KEYBOARD:
+            self.keyboard.show(entry, "", True)
 
     # Delete the window
     def on_window1_delete_event(self, widget, event, data=None):

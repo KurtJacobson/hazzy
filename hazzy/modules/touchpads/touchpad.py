@@ -24,7 +24,7 @@ import gtk
 import os
 
 pydir = os.path.abspath(os.path.dirname(__file__))
-IMAGEDIR = os.path.join(pydir, "images") 
+IMAGEDIR = os.path.join(pydir, "ui") 
 
 _keymap = gtk.gdk.keymap_get_default()  # Needed for keypress emulation
 

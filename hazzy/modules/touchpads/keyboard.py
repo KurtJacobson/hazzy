@@ -27,7 +27,7 @@ import sys
 import gobject
 
 pydir = os.path.abspath(os.path.dirname(__file__))
-IMAGEDIR = os.path.join(pydir, "images")
+IMAGEDIR = os.path.join(pydir, "ui")
 
 _keymap = gtk.gdk.keymap_get_default()
 
@@ -265,11 +265,12 @@ class Keyboard(object):
 # Show the keyboard
 # ==========================================================
 
-    def show(self, entry, pos, persistent=False ):
+    def show(self, entry, pos=None, persistent=False ):
         self.entry = entry
         self.persistent = persistent
         self.entry.connect('focus-out-event', self.on_entry_loses_focus)
-        self.window.move(pos[0]+105, pos[1]+440)
+        if pos:
+            self.window.move(pos[0]+105, pos[1]+440)
         self.window.show()
 
 

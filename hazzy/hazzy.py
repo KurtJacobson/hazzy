@@ -64,13 +64,16 @@ sys.path.insert(2, MODULEDIR)
 # Now we have the path to our own modules so we can import them
 import tc                       # For highlighting terminal messages.
 import widgets                  # Norbert's module for geting objects quickly
-import hazzy_prefs              # Handles the preferences
+import preferences              # Handles the preferences
 import getiniinfo               # Handles .ini file reading and value validation
-from touchpad import Touchpad   # On screen numpad and keypad for use with touchscreens
-from keyboard import Keyboard   # On screen keyboard emulator for use with touchscreens
-import dialogs                  # Used for confirmation and error dialogs
-import simpleeval               # Used to evaluate expressions in numeric entries
-from filechooser.filechooser import Filechooser
+import simpleeval               # Used to evaluate expressions in numeric entrie
+
+# Import modules
+from touchpads.touchpad import Touchpad
+from touchpads.keyboard import Keyboard
+from dialogs.dialogs import Dialogs
+#from filechooser.filechooser import Filechooser
+from modules import Filechooser
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
@@ -113,7 +116,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
         w = None
     message = traceback.format_exception(exc_type, exc_value, exc_traceback)
     log.error("".join(message))
-    dialogs.Dialogs("".join(message), 2).run()
+    Dialogs("".join(message), 2).run()
 
 
 # Connect the except hook to the handler
@@ -143,8 +146,10 @@ class Hazzy(object):
 
         self.filechooser.connect('file-activated', self.on_file_activated)
         self.filechooser.connect('selection-changed', self.on_file_selection_changed)
-        self.filechooser.connect('filename-editing-started', self.on_file_name_editing_started)
-        self.filechooser.connect('button-release-event', self.on_filechooser_button_release_event)
+        self.filechooser.connect('filename-editing-started', 
+                                    self.on_file_name_editing_started)
+        self.filechooser.connect('button-release-event', 
+                                    self.on_filechooser_button_release_event)
         self.filechooser.connect('error', self.on_filechooser_error)
 
         # Retrieve main window
@@ -161,7 +166,7 @@ class Hazzy(object):
 
         # Module to get/set preferences
         pref_file = self.get_ini_info.get_preference_file_path()
-        self.prefs = hazzy_prefs.Preferences(pref_file)
+        self.prefs = preferences.Preferences(pref_file)
 
         #
         self.s = simpleeval.SimpleEval()
@@ -669,7 +674,7 @@ class Hazzy(object):
             message = text[0] + ' near line ' + error_line + ', see log for more info'
             self._show_message(["ERROR", message ])
             print(errortext)
-            # dialogs.dialogs(errortext, 2).run()
+            # Dialogs(errortext, 2).run()
             self.widgets.gcode_view.set_line_number(error_line)
 
      
@@ -1031,7 +1036,7 @@ class Hazzy(object):
             else:
                 name = os.path.split(self.current_preview_file)[1]
                 message = ("Save changes to: \n" + name)
-                if dialogs.Dialogs(message).run():
+                if Dialogs(message).run():
                     self.save(self.current_preview_file)
                 else:
                     self.preview_buf.set_modified(False)
@@ -1389,7 +1394,7 @@ class Hazzy(object):
             p = os.popen("classicladder  &", "w")
         else:
             text = "Classicladder real-time component not detected"
-            dialogs.Dialogs(text, 2).run()
+            Dialogs(text, 2).run()
 
 # =========================================================
 # BEGIN - HAL Status
@@ -1761,7 +1766,7 @@ class Hazzy(object):
             self.homed_joints[joint] = 2
         elif self.stat.homed[joint]:
             message = ("joint {0} is already homed. \n Unhome?".format(joint))
-            if dialogs.Dialogs(message).run():
+            if Dialogs(message).run():
                 self._show_message(["INFO", "Unhoming joint {0}".format(joint)])
                 # self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
@@ -1829,7 +1834,7 @@ class Hazzy(object):
     # Display a dialog to confirm exit
     def close_window(self):
         message = "Are you sure you want \n to close LinuxCNC?"
-        if dialogs.Dialogs(message).run():
+        if Dialogs(message).run():
             print(tc.I + "Turning machine off and E-stoping")
             self.set_state(linuxcnc.STATE_OFF)
             self.set_state(linuxcnc.STATE_ESTOP)
