@@ -35,8 +35,6 @@ GLADEDIR = os.path.join(DATADIR, '')
 XDG_DATA_HOME = os.path.expanduser(os.environ.get('XDG_DATA_HOME', '~/.local/share'))
 HOMETRASH = os.path.join(XDG_DATA_HOME, 'Trash')
 
-GTK_BOOKMARKS = os.path.expanduser("~/.gtk-bookmarks")  # FixMe use XDG env
-
 
 class Filechooser(gobject.GObject):
     __gtype_name__ = 'Filechooser'
@@ -86,12 +84,15 @@ class Filechooser(gobject.GObject):
         self.mounts.connect('mount-removed', self.on_mount_removed)
 
         # Initialize objects
-        self.bookmarks = BookMarks(GTK_BOOKMARKS)
-        self.bookmarks.read()
+        self.bookmarks = BookMarks()
+
+        # Initialize places
+        home = os.environ['HOME']
+        desktop = os.path.expanduser("~/Desktop")
+        self.places = [home, desktop]
 
         # Initialize variables
-        self.bookmarks_list = self.bookmarks.get()
-        self.cur_dir = os.path.expanduser("~/Desktop")
+        self.cur_dir = desktop
         self.icon_theme = gtk.icon_theme_get_default()
         self.old_dir = " "
         self._filters = {}
@@ -104,26 +105,13 @@ class Filechooser(gobject.GObject):
         self.nav_btn_list = []
         self.nav_btn_path_dict = {}
 
-        # Default bookmarks
-        home = os.environ['HOME']
-        self.places = [self.cur_dir, home]
-        self.folders = [os.path.join(home, 'linuxcnc/nc_files')]
-
         # Initialize
-        #self._init_bookmarks()
         self._init_nav_buttons()
 
     # Have to do this once realized so sizes will have been allocated
     def on_vbox1_realize(self, widget):
         self._update_bookmarks()
         self._fill_file_liststore(self.cur_dir)
-
-#    def _init_bookmarks(self):
-#        try:
-#            with open(self.bookmarks_list) as data:
-#                self.places, self.folders = json.load(data)
-#        except Exception as e:
-#            print(e)
 
     def _init_nav_buttons(self):
         box = self.nav_box
@@ -189,6 +177,10 @@ class Filechooser(gobject.GObject):
         if path:
             self.cur_dir = os.path.realpath(path)
 
+            # Reset scrollbars since display has changed
+            self.file_vadj.set_value(0)
+            self.file_hadj.set_value(0)
+
         files = []
         folders = []
         if self._filter in self._filters:
@@ -222,10 +214,6 @@ class Filechooser(gobject.GObject):
             icon = self._get_file_icon(fname)
             size, date = self._get_file_data(fpath)
             model.append([0, icon, fname, size, date])
-
-        # Reset scrollbars
-        self.file_vadj.set_value(0)
-        self.file_hadj.set_value(0)
 
         self._update_nav_buttons()
 
@@ -463,45 +451,23 @@ class Filechooser(gobject.GObject):
 
     # Get list of user bookmarks
     def get_bookmarks(self):
-        return self.folders
+        return self.bookmarks.get()
 
-    # Add a single bookmark linking to path
+    # Add bookmark
     def add_bookmark(self, path):
-        self.bookmarks.add(path)
-        return self.add_bookmarks([path])
+        if not path in self.places:
+            self.bookmarks.add(path)
+            self._update_bookmarks()
 
-    # Add multiple bookmarks, one for each path in list
-    def add_bookmarks(self, paths):
-        skiped = []
-        for path in paths:
-            if not os.path.exists(path) or not os.path.isdir(path) \
-                    or path in self.folders or path in self.places:
-                skiped.append(path)
-                continue
-            self.folders.append(path)
-        self._update_bookmarks()
-        if len(skiped) == 0:
-            return True
-        return skiped
-
-    # Remove single bookmark linking to path
+    # Remove bookmark
     def remove_bookmark(self, path):
-        return self.remove_bookmarks([path])
+        if not path in self.places:
+            self.bookmarks.remove(path)
+            self._update_bookmarks()
 
-    # Remove multiple bookmarks for each path in list
-    def remove_bookmarks(self, paths):
-        skiped = []
-        for path in paths:
-            if not self.bookmarks.remove(path):
-                skiped.append(path)
-        self._update_bookmarks()
-        if len(skiped) == 0:
-            return True
-        return skiped
-
-    # Remove all bookmarks
-    def remove_all_bookmarks(self):
-        self.folders = []
+    # Clear all bookmarks
+    def clear_bookmarks(self):
+        self.bookmarks.clear()
         self._update_bookmarks()
 
     # Display parent of current directory
@@ -641,43 +607,39 @@ class Filechooser(gobject.GObject):
     def _update_bookmarks(self):
         places = sorted(self.places, key=len, reverse=False)
         mounts = sorted(self.get_mounts(), key=self.sort, reverse=False)
-        folders = sorted(self.folders, key=self.sort, reverse=False)
+        bookmarks = sorted(self.bookmarks.get(), key=self.sort, reverse=False)
+        print bookmarks
         model = self.bookmark_liststore
         model.clear()
 
+        # Add the places
         for path in places:
             name = os.path.split(path)[1]
             icon = self._get_place_icon(name)
             model.append([icon, name, path, False])
 
+        # Add the mounts
         for path in mounts:
             name = os.path.split(path)[1]
             icon = self._get_place_icon('USBdrive')
             model.append([icon, name, path, True])
 
+        # Add the seperator
         model.append([None, None, None, False])
 
-        for path in folders:
+        # Add the bookmarks
+        for bookmark in bookmarks:
+            path, name = bookmark
             if not os.path.exists(path):
                 continue
-            name = os.path.split(path)[1]
+            if name == '':
+                name = os.path.split(path)[1]
             icon = self._get_place_icon(name)
             model.append([icon, name, path, False])
 
-        """
-        
-        data = [places, folders]
-
-        try:
-            with open(self.bookmarks_list, 'w') as file:
-                json.dump(data, file, sort_keys=True, indent=4)
-        except Exception as e:
-            print(e)
-        """
-
     # Generate sort key based on file basename
     def sort(self, path):
-        return os.path.basename(path).lower()
+        return os.path.basename(path[0]).lower()
 
     # If name is None row should be a separator
     def bookmark_separator(self, model, iter):

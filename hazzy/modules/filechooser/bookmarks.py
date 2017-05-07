@@ -20,30 +20,31 @@
 
 import os
 
+GTK_BOOKMARKS = os.path.expanduser("~/.gtk-bookmarks")  # FixMe use XDG env
 
 class BookMarks:
 
-    def __init__(self, path):
+    def __init__(self):
 
-        self.bookmarks_file = path
+        self.bookmarks_file = GTK_BOOKMARKS
         self.bookmarks = []
 
 
-    def read(self):
+    def get(self):
 
         try:
             with open(self.bookmarks_file) as f:
-                file_content = f.readlines()
+                lines = f.readlines()
 
-                for line in file_content:
-                    if line[0] != '\n':
-                        bk_dir = line.split()[0]
-                        path = bk_dir[7:].replace("%20", " ")
-                        self.bookmarks.append(path)
-                    else:
-                        print("No Bookmarks")
-
-            print(self.bookmarks)
+            self.bookmarks = []  # clear the list
+            for line in lines:
+                if line[0] != '\n':
+                    bk_dir = line.split()[0]
+                    path = bk_dir[7:].replace("%20", " ")
+                    name = line[len(bk_dir) +1:].rstrip()
+                    self.bookmarks.append([path, name])
+                else:
+                    print("No Bookmarks")
 
         except IOError as e:
             print(e)  # File not found
@@ -51,19 +52,17 @@ class BookMarks:
             with open(self.bookmarks_file, 'w+') as f:
                 f.write('')
 
-    def get(self):
         return self.bookmarks
+
 
     def add(self, path):
 
-        # don't add duplicates
-        if path in self.bookmarks:
-            print('Bookmark already exists')
+        # don't add duplicates, or bookmark to something other than a dir
+        if path in self.bookmarks or not os.path.isdir(path):
+            print('Bookmark is not valid or already exists')
             return False  # indicate failure to add
 
-        # add to our list
         name = os.path.basename(os.path.normpath(path))
-        self.bookmarks.append([path , name])
 
         # must encode spaces in path for GTK-bookmarks
         path = path.replace(" ", "%20")
@@ -72,26 +71,27 @@ class BookMarks:
         with open(self.bookmarks_file, 'a') as f:
             f.write(line)
 
+
     def remove(self, path):
 
-        # can't remove if not here!
-        if not path in self.bookmarks:
-            return False
-
-        # self.bookmarks.remove(path)
-
-        name = os.path.basename(os.path.normpath(path))
         path = path.replace(" ", "%20")
 
-        output = []
+        # read the bookmarks
+        with open(self.bookmarks_file, 'r') as f:
+            lines = f.readlines()
 
-        with open(self.bookmarks_file, 'r+w') as f:
-            bookmarks_read = f.readlines()
+        # open as write to clear file content
+        with open(self.bookmarks_file, 'w') as f:
 
-            for bookmark in bookmarks_read:
-                if path != bookmark.split()[0]:
-                    output.append(bookmark)
+            # put back all the lines except the one we want to remove
+            for line in lines:
+                # path does not have prefix "file://" so take slice of line
+                if path != line.split()[0][7:]:
+                    f.write(line)
 
-            f.writelines(output)
+
+    def clear(self):
+        with open(self.bookmarks_file, 'w') as f:
+            pass
 
 

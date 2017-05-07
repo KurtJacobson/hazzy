@@ -54,7 +54,12 @@ CONFIGDIR = os.path.dirname(INIFILE)                    # Path to config dir
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))  # Path to hazzy.py dir
 print("The hazzy directory is: {0}".format(HAZZYDIR))
 IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade
-sys.path.insert(1, HAZZYDIR)  # Set system path so we can find our own modules
+MODULEDIR = os.path.join(HAZZYDIR, 'modules')           #
+MAINDIR = os.path.dirname(HAZZYDIR)
+
+# Set system path so we can find our own modules
+sys.path.insert(1, HAZZYDIR)
+sys.path.insert(2, MODULEDIR)
 
 # Now we have the path to our own modules so we can import them
 import tc                       # For highlighting terminal messages.
@@ -65,7 +70,7 @@ from touchpad import Touchpad   # On screen numpad and keypad for use with touch
 from keyboard import Keyboard   # On screen keyboard emulator for use with touchscreens
 import dialogs                  # Used for confirmation and error dialogs
 import simpleeval               # Used to evaluate expressions in numeric entries
-from modules import Filechooser
+from filechooser.filechooser import Filechooser
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
@@ -265,7 +270,7 @@ class Hazzy(object):
         # [FILE PATHS]
         self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_path, str)
         print HAZZYDIR
-        path = os.path.join(HAZZYDIR, "sim.hazzy/example_gcode/new file.ngc")
+        path = os.path.join(MAINDIR, "sim.hazzy/example_gcode/new file.ngc")
         self.new_program_template = self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", path, str)
                 
         # [FILE FILTERS]
