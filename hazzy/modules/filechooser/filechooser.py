@@ -27,11 +27,11 @@ import shutil
 import mimetypes
 import json
 from datetime import datetime
-
 from bookmarks import BookMarks
 
-DATADIR = os.path.abspath(os.path.dirname(__file__))
-GLADEDIR = os.path.join(DATADIR, '')
+pydir = os.path.abspath(os.path.dirname(__file__))
+UIDIR = os.path.join(pydir, 'ui')
+
 XDG_DATA_HOME = os.path.expanduser(os.environ.get('XDG_DATA_HOME', '~/.local/share'))
 HOMETRASH = os.path.join(XDG_DATA_HOME, 'Trash')
 
@@ -52,7 +52,7 @@ class Filechooser(gobject.GObject):
 
         # Glade setup
         self.builder = gtk.Builder()
-        self.builder.add_from_file(os.path.join(GLADEDIR, "filechooser.glade"))
+        self.builder.add_from_file(os.path.join(UIDIR, "filechooser.glade"))
         self.builder.connect_signals(self)
 
         # Retrieve frequently used objects
@@ -608,7 +608,6 @@ class Filechooser(gobject.GObject):
         places = sorted(self.places, key=len, reverse=False)
         mounts = sorted(self.get_mounts(), key=self.sort, reverse=False)
         bookmarks = sorted(self.bookmarks.get(), key=self.sort, reverse=False)
-        print bookmarks
         model = self.bookmark_liststore
         model.clear()
 

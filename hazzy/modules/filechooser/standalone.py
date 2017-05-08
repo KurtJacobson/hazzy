@@ -10,7 +10,6 @@ import filechooser
 
 MODULEDIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(1, os.path.dirname(MODULEDIR))
-print MODULEDIR, __file__
 
 try:
     from touchpads.keyboard import Keyboard
@@ -27,7 +26,7 @@ class Filechooser(object):
 
         # Glade setup
         self.builder = gtk.Builder()
-        self.builder.add_from_file("standalone.glade")
+        self.builder.add_from_file("ui/standalone.glade")
         self.window = self.builder.get_object("window1")
         self.builder.connect_signals(self)
 
