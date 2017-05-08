@@ -35,19 +35,14 @@ The UI is very much under development, so I don't recommend running a machine wi
 If you have GIT installed the easiest way to try hazzy is to clone this repository and place a symbolic link to hazzy.py in your usr/bin directory. If you don't have git you can download and extract the zip and continue from step two. 
 
 1. To clone this repository open a terminal at any convenient location (e.g. Desktop) and say
-```
-    git clone https://github.com/KurtJacobson/hazzy
-```
+```    git clone https://github.com/KurtJacobson/hazzy```
 
 2. Enter the hazzy folder in the newly cloned hazzy directory by saying
-```
-    cd hazzy/hazzy
-```
+```    cd hazzy/hazzy```
 
 3. Then add a link to hazzy.py to your usr/bin directory by saying  
-```
-    sudo ln -sf $(pwd)/hazzy.py /usr/bin/hazzy
-```
+```    sudo ln -sf $(pwd)/hazzy.py /usr/bin/hazzy```
+
 4. The last step is to tell LinuxCNC to use hazzy as the UI. In your machine's ini file under the [DISPLAY] section set DISPLAY = hazzy
 
 **Note:** If you prefer not to add a link to usr/bin you could skip step 3 and and enter the full path to hazzy.py in the INI file. Ex. ```DISPLAY = /home/kurt/Desktop/hazzy/hazzy/hazzy.py```
@@ -62,8 +57,6 @@ I will be updating this repo frequently. To get the latest version enter your ha
 git pull origin master
 ```
 ### Notes
-I started working on this project some time in 2015 with the intention of trying to learn some basic programing (I am a mechanical/nuclear engineer) while also learning about Linux and LinuxCNC. My idea was to make a Haas like interface, hence the name hazzy, but it has morphed into something more like Mach3 or PathPilot.
-
-Hazzy is greatly influenced by Norbert's excellent LinuxCNC UI Gmoccapy, and uses several of the same modules with minor modifications. Also, much of the status updating and tooltable code is more or less modified code from the HAL VCP widgets, mostly the work of Chris M.
+I started working on this project some time in 2015 with the intention of trying to learn some basic programing (I am a mechanical/nuclear engineer, with litte if any programing experience) while also learning about Linux and LinuxCNC. My idea was to make a Haas like interface, hence the name hazzy, but it has morphed into something more like Mach3 or PathPilot.
 
 Feedback of all types would be appreciated: kurtcjacobson at gmail
