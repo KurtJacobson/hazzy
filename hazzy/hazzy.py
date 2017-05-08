@@ -69,11 +69,10 @@ import getiniinfo               # Handles .ini file reading and value validation
 import simpleeval               # Used to evaluate expressions in numeric entrie
 
 # Import modules
-from touchpads.touchpad import Touchpad
-from touchpads.keyboard import Keyboard
-from dialogs.dialogs import Dialogs
-#from filechooser.filechooser import Filechooser
-from modules import Filechooser
+from modules.touchpads.keyboard import Keyboard
+from modules.touchpads.touchpad import Touchpad
+from modules.filechooser.filechooser import Filechooser
+from modules.dialogs.dialogs import Dialogs
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
