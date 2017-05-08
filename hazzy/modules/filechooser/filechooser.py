@@ -25,14 +25,12 @@ import sys
 import os
 import shutil
 from datetime import datetime
+from move2trash import move2trash
 from bookmarks import BookMarks
 from icons import Icons
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, 'ui')
-
-XDG_DATA_HOME = os.path.expanduser(os.environ.get('XDG_DATA_HOME', '~/.local/share'))
-HOMETRASH = os.path.join(XDG_DATA_HOME, 'Trash')
 
 
 class Filechooser(gobject.GObject):
@@ -492,9 +490,11 @@ class Filechooser(gobject.GObject):
     # Move selected files to trash (see file_util code at end)
     def delete_selected(self):
         paths = self.get_selected()
+        num = len(paths)
         for path in paths:
-            self._trash_file(path)
+            info = move2trash(path)
         self._fill_file_liststore()
+        self.emit('error', info[0], info[1])
 
     # =======================================
     #   Drag and Drop TODO
@@ -640,104 +640,6 @@ class Filechooser(gobject.GObject):
             self.error("MOVE ERRPR: Destination file {} already exists".format(dst))
         self.info("Moving: {0} to {1}".format(src, dst))
         shutil.move(src, dst)
-
-
-    # Note:
-    # This trash implementation tries to follow the guidelines set for by
-    # freedesktop.org, see the specifications here:
-    # https://specifications.freedesktop.org/trash-spec/trashspec-latest.html
-
-    # FIXME if you try to trash a symbolic link the folder that is refers to
-    #       will be trashed.  Should fix this so only the link file is trashed
-    def _trash_file(self, path):
-        path = os.path.realpath(path)
-        if not os.path.exists(path):
-            print("Can't move file to trash, file does not exist\nFile path: {0}".format(path))
-            return
-        elif not os.access(path, os.W_OK):
-            print("Can't move file to trash, permission denied\nFile path: {0}".format(path))
-            return
-
-        file_dev = os.lstat(path).st_dev
-        trash_dev = os.lstat(os.path.expanduser('~')).st_dev
-        if file_dev == trash_dev:
-            file_vol_root = None
-            trash_dir = HOMETRASH
-        else:
-            file_vol_root = self._get_mount_point(path)
-            trash_dev = os.lstat(file_vol_root).st_dev
-            if trash_dev != file_dev:
-                print("Could not find mount point for: {0}".format(path))
-                print("The file will not be moved to trash")
-                return
-            trash_dir = self._find_ext_vol_trash(file_vol_root)
-        self._move_to_trash(path, trash_dir, file_vol_root)
-
-    def _find_ext_vol_trash(self, vol_root):
-        trash_dir = os.path.join(vol_root, '.Trash')
-        if os.path.exists(trash_dir):
-            mode = os.lstat(trash_dir).st_mode
-            # must be a directory, not a symlink, and have the sticky bit set.
-            if os.path.isdir(trash_dir) or not os.path.islink(trash_dir) \
-                    or (mode & stat.S_ISVTX):
-                print("Volume topdir trash exists and is valid: {0}".format(trash_dir))
-                return trash_dir
-            else:
-                print("Volume topdir trash exists but is not valid: {0}".format(trash_dir))
-        else:
-            print("A topdir trash does not exist on the volume")
-        # If we got this far we need to try a UID trash dir
-        uid = os.getuid()
-        trash_dir = os.path.join(vol_root, '.Trash-{0}'.format(uid))
-        if not os.path.exists(trash_dir):
-            print("Creating UID trash dir at volume root: {0}".format(trash_dir))
-            os.makedirs(trash_dir, 0o700)
-        else:
-            print("UID trash dir exists at volume root: {0}".format(trash_dir))
-        return trash_dir
-
-    def _get_mount_point(self, path):
-        path = os.path.realpath(path)
-        while not os.path.ismount(path):
-            path = os.path.split(path)[0]
-        return path
-
-    def _move_to_trash(self, src, dst, ext_vol=None):
-        fname = os.path.basename(src)
-        name, ext = os.path.splitext(fname)
-
-        file_dst_dir = os.path.join(dst, 'files')
-        info_dst_dir = os.path.join(dst, 'info')
-
-        file_dst = os.path.join(file_dst_dir, fname)
-        info_dst = os.path.join(info_dst_dir, fname + ".trashinfo")
-
-        count = 0
-        while os.path.exists(file_dst) or os.path.exists(info_dst):
-            count += 1
-            dst_name = '{0} {1} {2}'.format(name, count, ext)
-            file_dst = os.path.join(file_dst_dir, dst_name)
-            info_dst = os.path.join(info_dst_dir, "{0}.trashinfo".format(dst_name))
-
-        # Create trash info file
-        if ext_vol is None:
-            path = src
-        else:
-            # Use relative path on volume
-            path = os.path.relpath(src, ext_vol)
-
-        date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-        info = "[Trash Info]\nPath={0}\nDeletionDate={1}\n".format(path, date)
-
-        print("Writing info file: {0}".format(info_dst))
-        print(info)
-
-        with open(info_dst, 'w') as infofile:
-            infofile.write(info)
-
-        # Finally, lets move the file
-        print("Moving the file from {0} to {1}".format(src, file_dst))
-        os.rename(src, file_dst)
 
     # Shortcut methods to emit errors and print to terminal
     def error(self, text):
