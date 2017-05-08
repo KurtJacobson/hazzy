@@ -311,23 +311,6 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkFileChooserWidget" id="filechooser">
-                    <property name="width_request">463</property>
-                    <property name="height_request">380</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="orientation">vertical</property>
-                    <property name="filter">nc_file_filter</property>
-                    <signal name="file-activated" handler="on_filechooser_file_activated" swapped="no"/>
-                    <signal name="selection-changed" handler="on_filechooser_selection_changed" swapped="no"/>
-                    <signal name="button-release-event" handler="on_filechooser_button_release_event" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="x">15</property>
-                    <property name="y">15</property>
-                  </packing>
-                </child>
-                <child>
                   <object class="GtkTable" id="table2">
                     <property name="width_request">100</property>
                     <property name="height_request">335</property>
@@ -341,20 +324,20 @@
                       <object class="GtkButton" id="load_gcode">
                         <property name="label" translatable="yes">Load Gcode</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_load_gcode_clicked" swapped="no"/>
                       </object>
                     </child>
                     <child>
-                      <object class="GtkButton" id="copy_past">
-                        <property name="label" translatable="yes">Copy / Past</property>
+                      <object class="GtkButton" id="save_as">
+                        <property name="label" translatable="yes">Save As</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_open_usb_folder_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_save_as_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="top_attach">2</property>
@@ -362,13 +345,13 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="eject_us">
-                        <property name="label" translatable="yes">Eject USB</property>
+                      <object class="GtkButton" id="save">
+                        <property name="label" translatable="yes">Save</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_open_gcode_folder_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_save_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="top_attach">1</property>
@@ -376,13 +359,13 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="rename">
-                        <property name="label" translatable="yes">Rename</property>
+                      <object class="GtkButton" id="cut">
+                        <property name="label" translatable="yes">Cut</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_eject_usb_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_cut_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="top_attach">3</property>
@@ -390,13 +373,13 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="new_file_folder">
-                        <property name="label" translatable="yes">New</property>
+                      <object class="GtkButton" id="copy">
+                        <property name="label" translatable="yes">Copy</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_new_folder_btn_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_copy_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="top_attach">4</property>
@@ -404,13 +387,13 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="save_file">
-                        <property name="label" translatable="yes">Save</property>
+                      <object class="GtkButton" id="paste">
+                        <property name="label" translatable="yes">Paste</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="on_save_file_clicked" swapped="no"/>
+                        <signal name="clicked" handler="on_paste_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="top_attach">5</property>
@@ -418,12 +401,13 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="save_as">
-                        <property name="label" translatable="yes">Save As</property>
+                      <object class="GtkButton" id="delete">
+                        <property name="label" translatable="yes">Delete</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_action_appearance">False</property>
+                        <signal name="clicked" handler="on_delete_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="top_attach">6</property>
@@ -431,12 +415,13 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkButton" id="button3">
-                        <property name="label" translatable="yes">Delete</property>
+                      <object class="GtkButton" id="new_folder">
+                        <property name="label" translatable="yes">New Folder</property>
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="receives_default">False</property>
                         <property name="use_action_appearance">False</property>
+                        <signal name="clicked" handler="on_new_folder_clicked" swapped="no"/>
                       </object>
                       <packing>
                         <property name="top_attach">7</property>
@@ -473,6 +458,8 @@
                     <property name="height_request">380</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="hscrollbar_policy">automatic</property>
+                    <property name="vscrollbar_policy">automatic</property>
                     <child>
                       <object class="GtkSourceView" id="gcode_preview">
                         <property name="visible">True</property>
@@ -490,6 +477,21 @@
                   </object>
                   <packing>
                     <property name="x">630</property>
+                    <property name="y">15</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkHBox" id="filechooser_box">
+                    <property name="width_request">465</property>
+                    <property name="height_request">380</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="x">15</property>
                     <property name="y">15</property>
                   </packing>
                 </child>

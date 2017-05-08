@@ -54,17 +54,26 @@ CONFIGDIR = os.path.dirname(INIFILE)                    # Path to config dir
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))  # Path to hazzy.py dir
 print("The hazzy directory is: {0}".format(HAZZYDIR))
 IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade
-sys.path.insert(1 , HAZZYDIR)  # Set system path so we can find our own modules
+MODULEDIR = os.path.join(HAZZYDIR, 'modules')           #
+MAINDIR = os.path.dirname(HAZZYDIR)
+
+# Set system path so we can find our own modules
+sys.path.insert(1, HAZZYDIR)
+sys.path.insert(2, MODULEDIR)
 
 # Now we have the path to our own modules so we can import them
 import tc                       # For highlighting terminal messages.
 import widgets                  # Norbert's module for geting objects quickly
-import hazzy_prefs              # Handles the preferences
+import preferences              # Handles the preferences
 import getiniinfo               # Handles .ini file reading and value validation
-from touchpad import Touchpad   # On screen numpad and keypad for use with touchscreens
-from keyboard import Keyboard   # On screen keyboard emulator for use with touchscreens
-import dialogs                  # Used for confirmation and error dialogs
-import simpleeval               # Used to evaluate expressions in numeric entries
+import simpleeval               # Used to evaluate expressions in numeric entrie
+
+# Import modules
+from touchpads.touchpad import Touchpad
+from touchpads.keyboard import Keyboard
+from dialogs.dialogs import Dialogs
+#from filechooser.filechooser import Filechooser
+from modules import Filechooser
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
@@ -107,7 +116,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
         w = None
     message = traceback.format_exception(exc_type, exc_value, exc_traceback)
     log.error("".join(message))
-    dialogs.Dialogs("".join(message), 2).run()
+    Dialogs("".join(message), 2).run()
 
 
 # Connect the except hook to the handler
@@ -121,8 +130,8 @@ class Hazzy(object):
         # Module init
         self.float_touchpad = Touchpad("float")
         self.int_touchpad = Touchpad("int")
-
         self.keyboard = Keyboard()
+        self.filechooser = Filechooser()
 
         # Glade setup
         gladefile = os.path.join(IMAGEDIR, 'hazzy.glade')
@@ -130,6 +139,18 @@ class Hazzy(object):
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
         self.widgets = widgets.Widgets(self.builder)
+
+        # Add filechooser
+        filechooser_widget = self.filechooser.get_filechooser_widget()
+        self.widgets['filechooser_box'].add(filechooser_widget)
+
+        self.filechooser.connect('file-activated', self.on_file_activated)
+        self.filechooser.connect('selection-changed', self.on_file_selection_changed)
+        self.filechooser.connect('filename-editing-started', 
+                                    self.on_file_name_editing_started)
+        self.filechooser.connect('button-release-event', 
+                                    self.on_filechooser_button_release_event)
+        self.filechooser.connect('error', self.on_filechooser_error)
 
         # Retrieve main window
         self.window = self.widgets.window
@@ -145,7 +166,7 @@ class Hazzy(object):
 
         # Module to get/set preferences
         pref_file = self.get_ini_info.get_preference_file_path()
-        self.prefs = hazzy_prefs.Preferences(pref_file)
+        self.prefs = preferences.Preferences(pref_file)
 
         #
         self.s = simpleeval.SimpleEval()
@@ -254,7 +275,7 @@ class Hazzy(object):
         # [FILE PATHS]
         self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_path, str)
         print HAZZYDIR
-        path = os.path.join(HAZZYDIR, "sim.hazzy/example_gcode/new file.ngc")
+        path = os.path.join(MAINDIR, "sim.hazzy/example_gcode/new file.ngc")
         self.new_program_template = self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", path, str)
                 
         # [FILE FILTERS]
@@ -605,7 +626,6 @@ class Hazzy(object):
 
     # Format Info & Error messages and display at bottom of screen, terminal
     def _show_message(self, message):
-        
         kind, text = message # Unpack
 
         if "joint" in text:
@@ -614,39 +634,35 @@ class Hazzy(object):
                 joint = 'XYZABCUVWS'.index(axis)
                 text = text.replace("joint {0}".format(joint), "{0} axis".format(axis))
             text = text.replace("joint -1", "all axes")
-                
-        if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR):
-            kind = "ERROR"
-            self.hal["error"] = True
-        elif kind in (linuxcnc.NML_TEXT, linuxcnc.OPERATOR_TEXT):
-            kind = "INFO"
-        elif kind in (linuxcnc.NML_DISPLAY, linuxcnc.OPERATOR_DISPLAY):
-            kind = "MSG"
-        elif kind == "INFO" or kind == "ERROR":
-            pass
-        else:
-            kind = "ERROR"
-            
+
         if text == "" or text is None:
             text = "Unknown error!"
-            
+
         # Print to terminal and display at bottom of screen
-        if kind == "INFO":
-            print(tc.I + text)
-            message = '<span size=\"11000\" weight=\"bold\" foreground=\"blue\">INFO:</span> {0}'.format(text)
-        elif kind == "MSG":
-            print(tc.I + text)
-            message = '<span size=\"11000\" weight=\"bold\" foreground=\"blue\">MSG:</span> {0}'.format(text)
-        elif kind == "WARN":
-            print(tc.W + text)
-            message = '<span size=\"11000\" weight=\"bold\" foreground=\"orange\">WARNING:</span> {0}'.format(text)
-        else:
+        if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR, 'ERROR'):
+            kind = "ERROR"
+            color = 'red'
             print(tc.E + text)
-            message = '<span size=\"11000\" weight=\"bold\" foreground=\"red\">ERROR:</span> {0}'.format(text)
-            self.set_animation('error_image', 'error_flash.gif')
-            self.new_error = True
-                        
-        self.widgets.message_label.set_markup(message)
+            self.hal['error'] = True
+        elif kind in (linuxcnc.NML_TEXT, linuxcnc.OPERATOR_TEXT, 'INFO'):
+            kind = "INFO"
+            color = 'blue'
+            print(tc.I + text)
+        elif kind in (linuxcnc.NML_DISPLAY, linuxcnc.OPERATOR_DISPLAY, 'MSG'):
+            kind = "MSG"
+            color = 'blue'
+            print(tc.I + text)
+        elif kind == 'WARN':
+            kind = "WARNING"
+            print(tc.W + text)
+            color = 'orange'
+        else:
+            kind == "ERROR"
+
+        msg = '<span size=\"11000\" weight=\"bold\" foreground=\"{0}\">{1}:' \
+        '</span> {2}'.format(color, kind, text)
+        self.widgets.message_label.set_markup(msg)
+
 
     def on_gremlin_gcode_error(self, widget, errortext):
         if self.gcodeerror == errortext:
@@ -658,7 +674,7 @@ class Hazzy(object):
             message = text[0] + ' near line ' + error_line + ', see log for more info'
             self._show_message(["ERROR", message ])
             print(errortext)
-            # dialogs.dialogs(errortext, 2).run()
+            # Dialogs(errortext, 2).run()
             self.widgets.gcode_view.set_line_number(error_line)
 
      
@@ -971,120 +987,115 @@ class Hazzy(object):
 # BEGIN - [File] notebook page button handlers
 # ========================================================= 
 
-    # File chooser handlers
     def _init_file_chooser(self):
-        self.widgets.filechooser.set_current_folder(self.nc_file_path)
-        
-        # Set filter for only .ngc files
-        self.widgets.ngc_file_filter.add_pattern('*.ngc')
-        self.widgets.filechooser.set_filter(self.widgets.ngc_file_filter)
-        
-        # Set filter for all .ext listed in INI file
-        self.widgets.nc_file_filter.add_pattern('*.ngc')
-        file_ext = self.get_ini_info.get_file_ext()
-        for ext in file_ext:
-            self.widgets.nc_file_filter.add_pattern(ext)
+        path = os.path.expanduser(self.nc_file_path)
+        if not os.path.isdir(path):
+            text = "Path given in [DISPLAY] PROGRAM_PREFIX in INI is not valid ..."
+            self._show_message(['MSG', text])
+            path = os.path.expanduser('~/linuxcnc/nc_files')  # Good guess!!
+
+        self.filechooser.add_bookmark(path)
+        self.filechooser.set_current_folder(path)
+
+        # Add file filters
+        self.filechooser.add_filter('all', ['*'])
+        exts = self.get_ini_info.get_file_ext()
+        self.filechooser.add_filter('gcode', exts)
+        self.filechooser.set_filter('gcode')
+
+    # Connect main message system to filechooser error signal
+    def on_filechooser_error(self, widget, kind, text):
+        self._show_message([kind, text])
+        print kind, text
 
     # To filter or not to filter, that is the question
     def on_filter_ngc_chk_toggled(self, widget, data=None):
         if self.widgets.filter_ngc_chk.get_active():
-            self.widgets.filechooser.set_filter(self.widgets.ngc_file_filter)
+            self.filechooser.set_filter('gcode')
         else:
-            self.widgets.filechooser.set_filter(self.widgets.nc_file_filter)
+            self.filechooser.set_filter('all')
 
     # Change button label if a file or folder is selected
-    def on_filechooser_selection_changed(self, widget, data=None):
-        fname = str(self.widgets.filechooser.get_filename())
-        if os.path.isfile(fname):
+    def on_file_selection_changed(self, widget, fpath):
+        if os.path.isfile(fpath):
             self.widgets.load_gcode.set_label("Load Gcode")
             if not self.preview_buf.get_modified():  # If not modified we can load file
-                self.load_gcode_preview(fname)    # Preview/edit in sourceview
-        elif os.path.isdir(fname):
+                self.load_gcode_preview(fpath)    # Preview/edit in sourceview
+        elif os.path.isdir(fpath):
             self.widgets.load_gcode.set_label("Open Folder")
             if not self.preview_buf.get_modified():
-                self.load_gcode_preview(None)     # Clear sourceview
+                self.load_gcode_preview(None)     # Clear the preview
 
     # If file has been edited ask if should save before reloading preview        
     # Need to do this on release or the popup gets the mouse up and we are stuck in drag
     def on_filechooser_button_release_event(self, widget, data=None):
-        fname = str(self.widgets.filechooser.get_filename())
+        fname = self.filechooser.get_path_at_cursor()
         if self.preview_buf.get_modified():
             if self.current_preview_file is None:
                 pass  # TODO Add save-as pop-up here
             else:
                 name = os.path.split(self.current_preview_file)[1]
                 message = ("Save changes to: \n" + name)
-                if dialogs.Dialogs(message).run():
+                if Dialogs(message).run():
                     self.save(self.current_preview_file)
                 else:
-                    self.preview_buf.set_modified(False) 
-        if os.path.isfile(fname):
-            self.load_gcode_preview(fname)    # Preview/edit in sourceview
-        elif os.path.isdir(fname):
-            self.load_gcode_preview()         # Clear sourceview
-
-    # Jump to folder specified in .prefs, defaults to program prefix in INI file    
-    def on_open_gcode_folder_clicked(self, widget, data=None):
-        self.widgets.filechooser.set_current_folder(self.nc_file_path)
-
-    # Jump to USB drive, if more than one list them all
-    def on_open_usb_folder_clicked(self, widget, data=None):
-        usbdirs = os.listdir('/media/')
-        # If only one dir assume it's the USB drive and set it to current
-        if len(usbdirs) == 1:
-            self.usb_dir = os.path.join(path, usbdirs[0])
-            self.widgets.filechooser.set_current_folder(self.usb_dir)
-            print("Only one USB device: {0}".format(self.usb_dir))
-        else:
-            self.widgets.filechooser.set_current_folder('/media/')
-            print("More then one USB device: {0}".format(usbdirs))
-
-    # Eject the USB drive FIXME this needs some work
-    def on_eject_usb_clicked(self, widget, data=None):
-        if self.usb_dir != "":
-            usb_name = self.usb_dir
-        else:
-            usb_name = self.widgets.filechooser.get_current_folder()
-        
-        print("USB name: {0}".format(usb_name))
-        self.widgets.filechooser.set_current_folder(self.nc_file_path)
-        if usb_name != '':
-            # FIXME The quotes are need as there may be spaces in the drive name,
-            #       is there a neater way to keep the path intact?
-            os.system('eject "{0}"'.format(usb_name))
-
-    # TODO Need to make a popup for entering new folder name
-    def on_new_folder_btn_clicked(self, widget, data=None):
-        currentdir = self.widgets.filechooser.get_current_folder()        
-        # os.makedirs(currentdir + '/test')
+                    self.preview_buf.set_modified(False)
+        if fname is not None:
+            if os.path.isfile(fname):
+                self.load_gcode_preview(fname)    # Preview/edit in sourceview
+            elif os.path.isdir(fname):
+                self.load_gcode_preview()         # Clear sourceview
 
     # Load file on activate in file chooser, better for mouse users
-    def on_filechooser_file_activated(self, widget, data=None): 
-        self.load_gcode_file(str(self.widgets.filechooser.get_filename()))
+    def on_file_activated(self, widget, fpath): 
+        self.load_gcode_file(fpath)
 
     # Load file on "Load Gcode" button clicked, better for touchscreen users
     def on_load_gcode_clicked(self, widget, data=None):
-        self.load_gcode_file(str(self.widgets.filechooser.get_filename()))
+        fpath = self.filechooser.get_path_at_cursor()
+        if fpath is not None:
+            if os.path.isfile(fpath):
+                self.load_gcode_file(fpath)
+            elif os.path.isdir(fpath):
+                self.filechooser.set_current_folder(fpath)
 
     def load_gcode_file(self, fname):
-        if os.path.isfile(fname):
-            self.set_mode(linuxcnc.MODE_AUTO)
-            # If a file is already loaded clear the interpreter
-            if self.stat.file != "":
-                self.command.reset_interpreter()
-                self.command.wait_complete()
-            self.gcodeerror = ""  # Clear any previous errors messages
-            self.command.program_open(fname)
-            self.widgets.notebook.set_current_page(0)
-            self.widgets.gcode_file_label.set_text(fname)
-            # self.widgets.gremlin.reloadfile(fname)
-            print("NGC file loaded: {0}".format(fname))
-        elif os.path.isdir(fname):
-            self.widgets.filechooser.set_current_folder(fname)
+        self.set_mode(linuxcnc.MODE_AUTO)
+        # If a file is already loaded clear the interpreter
+        if self.stat.file != "":
+            self.command.reset_interpreter()
+            self.command.wait_complete()
+        self.gcodeerror = ""  # Clear any previous errors messages
+        self.command.program_open(fname)
+        self.widgets.notebook.set_current_page(0)
+        self.widgets.gcode_file_label.set_text(fname)
+        # self.widgets.gremlin.reloadfile(fname)
+        print("NGC file loaded: {0}".format(fname))
+
+    def on_file_name_editing_started(self, widget, entry):
+        if self.keypad_on_edit:
+            self.keyboard.show(entry, self.get_win_pos(), True)
+
+    def on_cut_clicked(self, widget, data=None):
+        if self.filechooser.cut_selected():
+            self.builder.get_object('paste').set_sensitive(True)
+
+    def on_copy_clicked(self, widget, data=None):
+        if self.filechooser.copy_selected():
+            self.builder.get_object('paste').set_sensitive(True)
+
+    def on_paste_clicked(self, widget, data=None):
+        if self.filechooser.paste():
+            self.builder.get_object('paste').set_sensitive(False)
+
+    def on_delete_clicked(self, widget, data=None):
+        self.filechooser.delete_selected()
+
+    def on_save_as_clicked(self, widget, data=None):
+        self.filechooser.save_as()
 
     def on_save_file_clicked(self, widget, data=None):
         self.save(self.current_preview_file)
-
 
     # G-code preview handlers
     def _init_gcode_preview(self):
@@ -1383,7 +1394,7 @@ class Hazzy(object):
             p = os.popen("classicladder  &", "w")
         else:
             text = "Classicladder real-time component not detected"
-            dialogs.Dialogs(text, 2).run()
+            Dialogs(text, 2).run()
 
 # =========================================================
 # BEGIN - HAL Status
@@ -1755,7 +1766,7 @@ class Hazzy(object):
             self.homed_joints[joint] = 2
         elif self.stat.homed[joint]:
             message = ("joint {0} is already homed. \n Unhome?".format(joint))
-            if dialogs.Dialogs(message).run():
+            if Dialogs(message).run():
                 self._show_message(["INFO", "Unhoming joint {0}".format(joint)])
                 # self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
@@ -1823,7 +1834,7 @@ class Hazzy(object):
     # Display a dialog to confirm exit
     def close_window(self):
         message = "Are you sure you want \n to close LinuxCNC?"
-        if dialogs.Dialogs(message).run():
+        if Dialogs(message).run():
             print(tc.I + "Turning machine off and E-stoping")
             self.set_state(linuxcnc.STATE_OFF)
             self.set_state(linuxcnc.STATE_ESTOP)
