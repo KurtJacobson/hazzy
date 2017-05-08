@@ -20,14 +20,13 @@
 
 import gobject
 import gtk
-import sys
 import gio
+import sys
 import os
 import shutil
-import mimetypes
-import json
 from datetime import datetime
 from bookmarks import BookMarks
+from icons import Icons
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, 'ui')
@@ -85,6 +84,7 @@ class Filechooser(gobject.GObject):
 
         # Initialize objects
         self.bookmarks = BookMarks()
+        self.icons = Icons(gtk.icon_theme_get_default())
 
         # Initialize places
         home = os.environ['HOME']
@@ -93,7 +93,6 @@ class Filechooser(gobject.GObject):
 
         # Initialize variables
         self.cur_dir = desktop
-        self.icon_theme = gtk.icon_theme_get_default()
         self.old_dir = " "
         self._filters = {}
         self._filter = ''
@@ -107,6 +106,7 @@ class Filechooser(gobject.GObject):
 
         # Initialize
         self._init_nav_buttons()
+
 
     # Have to do this once realized so sizes will have been allocated
     def on_vbox1_realize(self, widget):
@@ -204,14 +204,15 @@ class Filechooser(gobject.GObject):
                     files.append(obj)
 
         folders.sort(key=str.lower, reverse=False)
-        for folder in folders:
-            icon = self._get_place_icon(folder)
-            model.append([0, icon, folder, None, None])
+        for fname in folders:
+            fpath = os.path.join(self.cur_dir, fname)
+            icon = self.icons.get_for_directory(fpath)
+            model.append([0, icon, fname, None, None])
 
         files.sort(key=str.lower, reverse=False)
         for fname in files:
             fpath = os.path.join(self.cur_dir, fname)
-            icon = self._get_file_icon(fname)
+            icon = self.icons.get_for_file(fname)
             size, date = self._get_file_data(fpath)
             model.append([0, icon, fname, size, date])
 
@@ -230,40 +231,6 @@ class Filechooser(gobject.GObject):
         tstamp = os.path.getmtime(fpath)
         date_str = datetime.fromtimestamp(tstamp).strftime("%m/%d/%y %X")
         return size_str, date_str
-
-    def _get_file_icon(self, fname):
-        theme = self.icon_theme
-        mime = gio.content_type_guess(fname)
-        if mime:
-            icon_name = gio.content_type_get_icon(mime)
-            icon = theme.choose_icon(icon_name.get_names(), 16, 0)
-            if icon:
-                return gtk.IconInfo.load_icon(icon)
-            else:
-                name = gtk.STOCK_FILE
-        else:
-            name = gtk.STOCK_FILE
-        return theme.load_icon(name, 16, 0)
-
-    def _get_place_icon(self, place):
-        theme = self.icon_theme
-        if place == os.environ['USER']:
-            icon_name = 'user-home'
-        elif place == 'Desktop':
-            icon_name = 'user-desktop'
-        elif place == 'Documents':
-            icon_name = 'folder-documents'
-        elif place == 'Downloads':
-            icon_name = 'folder-download'
-        elif place == 'Templates':
-            icon_name = 'folder-templates'
-        elif place == 'USBdrive':
-            icon_name = 'drive-removable-media'
-        else:
-            icon_name = 'folder'
-        if not theme.has_icon(icon_name):
-            icon_name = gtk.STOCK_DIRECTORY
-        return theme.load_icon(icon_name, 16, 0)
 
     def on_select_toggled(self, widget, path):
         model = self.file_liststore
@@ -445,10 +412,6 @@ class Filechooser(gobject.GObject):
             paths.append(path)
         return paths
 
-    # Get list of place bookmarks
-    def get_places(self):
-        return self.places
-
     # Get list of user bookmarks
     def get_bookmarks(self):
         return self.bookmarks.get()
@@ -614,13 +577,13 @@ class Filechooser(gobject.GObject):
         # Add the places
         for path in places:
             name = os.path.split(path)[1]
-            icon = self._get_place_icon(name)
+            icon = self.icons.get_for_directory(path)
             model.append([icon, name, path, False])
 
         # Add the mounts
         for path in mounts:
             name = os.path.split(path)[1]
-            icon = self._get_place_icon('USBdrive')
+            icon = self.icons.get_for_device('USBdrive')
             model.append([icon, name, path, True])
 
         # Add the seperator
@@ -633,7 +596,7 @@ class Filechooser(gobject.GObject):
                 continue
             if name == '':
                 name = os.path.split(path)[1]
-            icon = self._get_place_icon(name)
+            icon = self.icons.get_for_directory(path)
             model.append([icon, name, path, False])
 
     # Generate sort key based on file basename
