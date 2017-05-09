@@ -72,7 +72,7 @@ import simpleeval               # Used to evaluate expressions in numeric entrie
 from modules.touchpads.keyboard import Keyboard
 from modules.touchpads.touchpad import Touchpad
 from modules.filechooser.filechooser import Filechooser
-from modules.dialogs.dialogs import Dialogs
+from modules.dialogs.dialogs import Dialogs, DialogTypes
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
@@ -104,11 +104,10 @@ ch.setFormatter(cf)
 log.addHandler(fh)
 log.addHandler(ch)
 
+error_dialog = Dialogs(DialogTypes.ERROR)
 
 # Throw up a dialog with debug info when an error is encountered
 def excepthook(exc_type, exc_value, exc_traceback):
-
-    error_dialog = Dialogs(2)
 
     try:
         w = app.widgets.window
@@ -145,8 +144,8 @@ class Hazzy:
         self.int_touchpad = Touchpad("int")
         self.keyboard = Keyboard()
         self.filechooser = Filechooser()
-        self.dialog = Dialogs(0)
-        self.error_dialog = Dialogs(2)
+        self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
+        self.error_dialog = Dialogs(DialogTypes.ERROR)
 
         # Add filechooser
         filechooser_widget = self.filechooser.get_filechooser_widget()
@@ -180,24 +179,24 @@ class Hazzy:
         # Get the tool table liststore
         self.tool_liststore = self.builder.get_object("tool_liststore")
 
-       
+
 # =========================================================
 # BEGIN - HAL setup  
 # =========================================================
-            
+
         # Note: Pins/signals must be connected in the POSTGUI halfile
 
         self.hal.newpin('coolant', hal.HAL_BIT, hal.HAL_OUT)
         self.hal.newpin('error', hal.HAL_BIT, hal.HAL_OUT)
         panel = gladevcp.makepins.GladePanel(self.hal, gladefile, self.builder, None)
-        
+
         self.hal.ready()
 
 
 # =========================================================
 # BEGIN - Get machine settings
 # =========================================================
-        
+
         self.dro_actual_pos = self.get_ini_info.get_position_feedback_actual()    
         self.no_force_homing = self.get_ini_info.get_no_force_homing()
         self.nc_file_path = self.get_ini_info.get_program_prefix()
@@ -795,7 +794,7 @@ class Hazzy:
 
     def on_exit_program_clicked(self, widget, data=None):
         message = "Are you sure you want \n to close LinuxCNC?"
-        exit_hazzy = self.dialog.run(message)
+        exit_hazzy = self.yes_no_dialog.run(message)
         if exit_hazzy:
             self.close_window()
 
@@ -1045,7 +1044,7 @@ class Hazzy:
             else:
                 name = os.path.split(self.current_preview_file)[1]
                 message = ("Save changes to: \n" + name)
-                save_changes = self.dialog.run(message)
+                save_changes = self.yes_no_dialog.run(message)
                 if save_changes:
                     self.save(self.current_preview_file)
                 else:
@@ -1779,7 +1778,7 @@ class Hazzy:
             self.homed_joints[joint] = 2
         elif self.stat.homed[joint]:
             message = ("joint {0} is already homed. \n Unhome?".format(joint))
-            unhome_joint = self.dialog.run(message)
+            unhome_joint = self.yes_no_dialog.run(message)
             if unhome_joint:
                 self._show_message(["INFO", "Unhoming joint {0}".format(joint)])
                 # self.set_mode(linuxcnc.MODE_MANUAL)
@@ -1843,7 +1842,7 @@ class Hazzy:
     # Handle window exit button press
     def on_window_delete_event(self, widget, data=None):
         message = "Are you sure you want \n to close LinuxCNC?"
-        exit_hazzy = self.dialog.run(message)
+        exit_hazzy = self.yes_no_dialog.run(message)
         if exit_hazzy:
             self.close_window()
 
