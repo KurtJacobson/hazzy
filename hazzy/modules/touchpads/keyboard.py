@@ -75,11 +75,11 @@ class Keyboard(object):
 
         # Connect letter button press events
         for l, btn in self.letter_btn_dict.iteritems():
-            btn.connect("pressed", self.on_button_pressed)
+            btn.connect("pressed", self.emulate_key) #self.on_button_pressed)
 
         # Connect number button press events
         for l, btn in self.number_btn_dict.iteritems():
-            btn.connect("pressed", self.on_button_pressed)
+            btn.connect("pressed", self.emulate_key) #self.on_button_pressed)
 
 # =========================================================
 # Keyboard Settings
@@ -138,19 +138,27 @@ class Keyboard(object):
 # Keyboard Emulation
 # =========================================================
 
-
-    def emulate_key(self, widget, key):
+    def emulate_key(self, widget, key=None):
         try:
             event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
-            event.keyval = int(gtk.gdk.keyval_from_name(key))
+            if key:
+                event.keyval = int(gtk.gdk.keyval_from_name(key))
+            else:
+                event.keyval = ord(widget.get_label())
             event.hardware_keycode = _keymap.get_entries_for_keyval(event.keyval)[0][0]
             event.window = self.entry.window
             self.event = event
             self.widget = widget
             self.wait_counter = 0           # Set counter for repeat timeout
             self.entry.event(self.event)    # Do the initial event
-        except:
+        except Exception as e:
+            print e
+            print("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
             self.window.hide()
+
+        # Unshift if left shift is active, right shift is "sticky"
+        if self.builder.get_object('left_shift').get_active():
+            self.shift(False)
 
     def key_repeat(self):
         if self.widget.get_state() == gtk.STATE_ACTIVE:
@@ -167,29 +175,6 @@ class Keyboard(object):
 # =========================================================
 # Button Handlers
 # =========================================================
-
-    # This handles all the character entry
-    def on_button_pressed(self, widget):
-        try: # Needed since the widget may not have focus anymore
-            event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
-            event.keyval = ord(widget.get_label())
-            event.hardware_keycode = _keymap.get_entries_for_keyval(event.keyval)[0][0]
-            if self.builder.get_object('ctrl').get_active():
-                event.state = gtk.gdk.CONTROL_MASK
-                self.builder.get_object('ctrl').set_active(False)
-            event.window = self.entry.window
-            self.event = event
-            self.widget = widget
-            self.wait_counter = 0           # Set counter for repeat timout
-            self.entry.event(self.event)    # Do the initial event
-        except:
-            print("HAZZY KEYBOARD ERROR: keypress event emulation error")
-            self.window.hide()
-            pass
-
-        # Unshift if left shift is active, right shift is "sticky"
-        if self.builder.get_object('left_shift').get_active():
-            self.shift(False)
 
     # Backspace
     def on_backspace_pressed(self, widget):
@@ -274,10 +259,26 @@ class Keyboard(object):
         self.window.show()
 
 
+# ==========================================================
+# For stand alone testing
+# ==========================================================
+
+def show(widget, event):
+    keyboard.show(entry)
+
+def destroy(widget):
+    gtk.main_quit()
+
 def main():
     gtk.main()
 
-
 if __name__ == "__main__":
-    ui = Keyboard()
+    keyboard = Keyboard()
+    entry = gtk.Entry()
+    window = gtk.Window()
+    window.add(entry)
+    window.connect('destroy', destroy)
+    entry.connect('button-press-event', show)
+    window.show_all()
+    keyboard.show(entry)
     main()
