@@ -107,15 +107,19 @@ log.addHandler(ch)
 
 # Throw up a dialog with debug info when an error is encountered
 def excepthook(exc_type, exc_value, exc_traceback):
+
+    error_dialog = Dialogs(2)
+
     try:
         w = app.widgets.window
     except KeyboardInterrupt:
         sys.exit(0)
     except NameError:
         w = None
+
     message = traceback.format_exception(exc_type, exc_value, exc_traceback)
     log.error("".join(message))
-    Dialogs("".join(message), 2).show()
+    error_dialog.run("".join(message))
 
 
 # Connect the except hook to the handler
@@ -142,6 +146,7 @@ class Hazzy:
         self.keyboard = Keyboard()
         self.filechooser = Filechooser()
         self.dialog = Dialogs(0)
+        self.error_dialog = Dialogs(2)
 
         # Add filechooser
         filechooser_widget = self.filechooser.get_filechooser_widget()
@@ -1040,7 +1045,8 @@ class Hazzy:
             else:
                 name = os.path.split(self.current_preview_file)[1]
                 message = ("Save changes to: \n" + name)
-                if Dialogs(message).show():
+                save_changes = self.dialog.run(message)
+                if save_changes:
                     self.save(self.current_preview_file)
                 else:
                     self.preview_buf.set_modified(False)
@@ -1401,7 +1407,7 @@ class Hazzy:
             p = os.popen("classicladder  &", "w")
         else:
             text = "Classicladder real-time component not detected"
-            Dialogs(text, 2).show()
+            self.error_dialog.run(text)
 
 # =========================================================
 # BEGIN - HAL Status
@@ -1773,7 +1779,8 @@ class Hazzy:
             self.homed_joints[joint] = 2
         elif self.stat.homed[joint]:
             message = ("joint {0} is already homed. \n Unhome?".format(joint))
-            if Dialogs(message).show():
+            unhome_joint = self.dialog.run(message)
+            if unhome_joint:
                 self._show_message(["INFO", "Unhoming joint {0}".format(joint)])
                 # self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
@@ -1836,13 +1843,13 @@ class Hazzy:
     # Handle window exit button press
     def on_window_delete_event(self, widget, data=None):
         message = "Are you sure you want \n to close LinuxCNC?"
-        exit_hazzy = self.dialog.show(message)
+        exit_hazzy = self.dialog.run(message)
         if exit_hazzy:
             self.close_window()
 
         return True  # If does not return True will close window without popup!
 
-    # Display a dialog to confirm exit
+    # Exit steps
     def close_window(self):
 
         print(tc.I + "Turning machine off and E-stoping")

@@ -34,13 +34,11 @@ class Dialogs(gtk.Dialog):
     """ A object that creates various kinds of dialogs """
 
     def __init__(self, dialog_type=0):
-        """
-            0 = yes/no,
+        """ 0 = yes/no,
             1 = ok/cancel,
-            2 = error
-        """
+            2 = error """
 
-        super(Dialogs, self).__init__(None)
+        super(Dialogs, self).__init__()  # Initialize the gtk.Dialog super class
 
         # Glade setup
         if dialog_type == 0 or dialog_type == 1:
@@ -56,7 +54,8 @@ class Dialogs(gtk.Dialog):
 
         self.message_label = self.builder.get_object("mesage_label")
 
-        self.result = None
+        self.running = False
+        self.result = False
 
         if dialog_type == 0:
             # We want a YES/NO dialog
@@ -68,7 +67,7 @@ class Dialogs(gtk.Dialog):
             self.builder.get_object("button2").set_label("CANCEL")
 
     def on_button1_clicked(self, widget, data=None):
-        """ YES/OK """
+        """ YES/OK Buttons"""
 
         self.result = True
 
@@ -76,18 +75,19 @@ class Dialogs(gtk.Dialog):
         gtk.main_quit()
 
     def on_button2_clicked(self, widget, data=None):
-        """ NO/CANCEL """
-
-        self.result = False
+        """ NO/CANCEL Buttons"""
 
         self.dialog_window.hide()
         gtk.main_quit()
 
     def run(self, message):
-        """ Show the Dialog """
+        """ Show the Dialog only if not already running """
 
-        self.message_label.set_text(message)
-        self.dialog_window.show()
-        gtk.main()
+        if not self.running:
+            self.running = True
+            self.message_label.set_text(message)
+            self.dialog_window.show()
+            gtk.main()
+            self.running = False
 
         return self.result
