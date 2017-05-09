@@ -27,7 +27,8 @@ import gtk
 import os
 
 pydir = os.path.abspath(os.path.dirname(__file__))
-UIDIR = os.path.join(pydir, "ui") 
+UIDIR = os.path.join(pydir, "ui")
+
 
 class Dialogs(object):
 
