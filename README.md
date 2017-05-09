@@ -41,23 +41,19 @@ If you have GIT installed the easiest way to try hazzy is to clone this reposito
 
 1. To clone this repository open a terminal at any convenient location (e.g. Desktop) and say
 
-	```git clone https://github.com/KurtJacobson/hazzy```
+    ```git clone https://github.com/KurtJacobson/hazzy```
 
 2. Enter the hazzy folder in the newly cloned hazzy directory by saying
 
-	```cd hazzy/hazzy```
+    ```cd hazzy/hazzy```
 
 3. Then add a link to hazzy.py to your usr/bin directory by saying
 
-	```sudo ln -sf $(pwd)/hazzy.py /usr/bin/hazzy```
+    ```sudo ln -sf $(pwd)/hazzy.py /usr/bin/hazzy```
 
 4. The last step is to tell LinuxCNC to use hazzy as the UI. In your machine's ini file under the [DISPLAY] section set DISPLAY = hazzy
 
-**Note:** If you prefer not to add a link to usr/bin you could skip step 3 and and enter the full path to hazzy.py in the INI file.
-
-Ex. ```DISPLAY = /home/kurt/Desktop/hazzy/hazzy/hazzy.py```
-
-This is fine but keep in mind that you will have to change the DISPLAY entries in all the example configurations before they will run.
+**Note:** If you prefer not to add a link to usr/bin you could skip step 3 and and enter the full path to hazzy.py in the INI file.  **Ex.** ```DISPLAY = /home/kurt/Desktop/hazzy/hazzy/hazzy.py```  This is fine but keep in mind that you will have to change the DISPLAY entries in all the example configurations before they will run.
 
 
 If all went well that is it!  Start LinuxCNC however you normally would and click the Reset button. If the machine starts up in E-stop clicking Reset the first time puts the machine in E-stop Reset, click Reset again to turn the machine ON.  Home the machine by clicking on the ABS DROs.  If you click on the ABS DRO label all axes will be homed (assuming the ini file is configured correctly).
@@ -65,7 +61,7 @@ If all went well that is it!  Start LinuxCNC however you normally would and clic
 
 I will be updating this repository frequently. To get the latest version enter your hazzy directory and say
 
-	```git pull origin master```
+    ```git pull origin master```
 
 If you have any problems, questions or suggestions, however minor, do not hesitate to open an issue, or better yet, a pull request!
 
