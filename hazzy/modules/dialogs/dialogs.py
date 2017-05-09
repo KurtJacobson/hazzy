@@ -57,11 +57,11 @@ class Dialogs(object):
             self.builder.get_object("button1").set_label("OK")
             self.builder.get_object("button2").set_label("CANCEL")
 
-    def on_button1_clicked(self, widget, data = None):
+    def on_button1_clicked(self, widget, data=None):
         self.result = True
         gtk.main_quit()
 
-    def on_button2_clicked(self, widget, data = None):
+    def on_button2_clicked(self, widget, data=None):
         self.result = False
         gtk.main_quit()
 
@@ -69,5 +69,5 @@ class Dialogs(object):
         self.window.show()
         #self.builder.get_object("button1").grab_focus()
         gtk.main()
-        self.window.destroy()
+        self.window.hide()
         return self.result
