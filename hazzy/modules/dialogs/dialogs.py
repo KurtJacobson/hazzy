@@ -27,15 +27,21 @@ import gtk
 import os
 
 pydir = os.path.abspath(os.path.dirname(__file__))
-UIDIR = os.path.join(pydir, "ui") 
+UIDIR = os.path.join(pydir, "ui")
 
 
-class Dialogs(object):
+class Dialogs(gtk.Dialog):
+    """ A object that creates various kinds of dialogs """
 
-    def __init__(self, message, type = 0):
+    def __init__(self, dialog_type=0):
+        """ 0 = yes/no,
+            1 = ok/cancel,
+            2 = error """
+
+        super(Dialogs, self).__init__()  # Initialize the gtk.Dialog super class
 
         # Glade setup
-        if type == 0 or type == 1:
+        if dialog_type == 0 or dialog_type == 1:
             gladefile = os.path.join(UIDIR, 'dialog.glade')
         else:
             gladefile = os.path.join(UIDIR, 'error_dialog.glade')
@@ -43,40 +49,45 @@ class Dialogs(object):
         self.builder = gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
-        self.window = self.builder.get_object("window")
-        self.message = message
+
+        self.dialog_window = self.builder.get_object("window")
+
+        self.message_label = self.builder.get_object("mesage_label")
+
+        self.running = False
         self.result = False
 
-        self.builder.get_object("mesage_label").set_text(message)
-
-        if type == 0:
+        if dialog_type == 0:
             # We want a YES/NO dialog
             self.builder.get_object("button1").set_label("YES")
             self.builder.get_object("button2").set_label("NO")
-        elif type == 1:
+        elif dialog_type == 1:
             # We want an OK/CANCEL dialog
             self.builder.get_object("button1").set_label("OK")
             self.builder.get_object("button2").set_label("CANCEL")
 
+    def on_button1_clicked(self, widget, data=None):
+        """ YES/OK Buttons"""
 
-    def on_button1_clicked(self, widget, data = None):
         self.result = True
+
+        self.dialog_window.hide()
         gtk.main_quit()
 
+    def on_button2_clicked(self, widget, data=None):
+        """ NO/CANCEL Buttons"""
 
-    def on_button2_clicked(self, widget, data = None):
-        self.result = False
+        self.dialog_window.hide()
         gtk.main_quit()
 
+    def run(self, message):
+        """ Show the Dialog only if not already running """
 
-    def run(self):
-        self.window.show()
-        #self.builder.get_object("button1").grab_focus()
-        gtk.main()
-        self.window.destroy()
+        if not self.running:
+            self.running = True
+            self.message_label.set_text(message)
+            self.dialog_window.show()
+            gtk.main()
+            self.running = False
+
         return self.result
-
-
-if __name__ == "__main__":
-    text = "This is an example YES/NO Dialog \n Do you like it?"
-    dialog = Dialogs(text, 0).run()
