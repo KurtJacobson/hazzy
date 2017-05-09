@@ -131,6 +131,7 @@ class Hazzy(object):
         self.int_touchpad = Touchpad("int")
         self.keyboard = Keyboard()
         self.filechooser = Filechooser()
+        self.dialog = Dialogs()
 
         # Glade setup
         gladefile = os.path.join(IMAGEDIR, 'hazzy.glade')
@@ -787,7 +788,8 @@ class Hazzy(object):
         self.home_joint(jnum)
 
     def on_exit_program_clicked(self, widget, data=None):
-        self.close_window() # This function displays a popup
+        message = "Are you sure you want \n to close LinuxCNC?"
+        self.dialog.show(self.close_window, message)
 
     # =========================================================      
     # Main panel CheckBox handlers
@@ -1830,18 +1832,19 @@ class Hazzy(object):
 
     # Handle window exit button press
     def on_window_delete_event(self, widget, data=None):
-        self.close_window()
-        return True # If does not return True will close window without popup! 
+        message = "Are you sure you want \n to close LinuxCNC?"
+        self.dialog.show(self.close_window, message)
+
+        return True  # If does not return True will close window without popup!
 
     # Display a dialog to confirm exit
     def close_window(self):
-        message = "Are you sure you want \n to close LinuxCNC?"
-        if Dialogs(message).show():
-            print(tc.I + "Turning machine off and E-stoping")
-            self.set_state(linuxcnc.STATE_OFF)
-            self.set_state(linuxcnc.STATE_ESTOP)
-            print(tc.I + "Hazzy will now quit...")
-            gtk.main_quit()
+
+        print(tc.I + "Turning machine off and E-stoping")
+        self.set_state(linuxcnc.STATE_OFF)
+        self.set_state(linuxcnc.STATE_ESTOP)
+        print(tc.I + "Hazzy will now quit...")
+        gtk.main_quit()
 
 # =========================================================
 # BEGIN - init functions

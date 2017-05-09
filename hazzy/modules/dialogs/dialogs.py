@@ -30,9 +30,9 @@ pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, "ui")
 
 
-class Dialogs(object):
+class Dialogs:
 
-    def __init__(self, message, dialog_type=0):
+    def __init__(self, dialog_type=0):
 
         # Glade setup
         if dialog_type == 0 or dialog_type == 1:
@@ -44,10 +44,6 @@ class Dialogs(object):
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
         self.window = self.builder.get_object("window")
-        self.message = message
-        self.result = False
-
-        self.builder.get_object("mesage_label").set_text(message)
 
         if dialog_type == 0:
             # We want a YES/NO dialog
@@ -58,17 +54,16 @@ class Dialogs(object):
             self.builder.get_object("button1").set_label("OK")
             self.builder.get_object("button2").set_label("CANCEL")
 
+        self.callback = None
+
     def on_button1_clicked(self, widget, data=None):
-        self.result = True
-        gtk.main_quit()
+        self.window.hide()
+        self.callback()
 
     def on_button2_clicked(self, widget, data=None):
-        self.result = False
-        gtk.main_quit()
-
-    def show(self):
-        self.window.show()
-        #self.builder.get_object("button1").grab_focus()
-        gtk.main()
         self.window.hide()
-        return self.result
+
+    def show(self, callback, message):
+        self.window.show()
+        self.builder.get_object("mesage_label").set_text(message)
+        self.callback = callback
