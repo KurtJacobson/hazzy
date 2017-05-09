@@ -31,8 +31,14 @@ UIDIR = os.path.join(pydir, "ui")
 
 
 class Dialogs:
+    """ A object that creates various kinds of dialogs """
 
     def __init__(self, dialog_type=0):
+        """
+            0 = yes/no,
+            1 = ok/cancel,
+            2 = error
+        """
 
         # Glade setup
         if dialog_type == 0 or dialog_type == 1:
@@ -44,6 +50,7 @@ class Dialogs:
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
         self.window = self.builder.get_object("window")
+        self.message_label = self.builder.get_object("mesage_label")
 
         if dialog_type == 0:
             # We want a YES/NO dialog
@@ -54,16 +61,18 @@ class Dialogs:
             self.builder.get_object("button1").set_label("OK")
             self.builder.get_object("button2").set_label("CANCEL")
 
-        self.callback = None
-
     def on_button1_clicked(self, widget, data=None):
+        """ YES/ON """
+
         self.window.hide()
-        self.callback()
 
     def on_button2_clicked(self, widget, data=None):
+        """ OK/CANCEL """
+
         self.window.hide()
 
-    def show(self, callback, message):
+    def show(self, message):
+        """ Show the Dialog """
+
+        self.message_label.set_text(message)
         self.window.show()
-        self.builder.get_object("mesage_label").set_text(message)
-        self.callback = callback
