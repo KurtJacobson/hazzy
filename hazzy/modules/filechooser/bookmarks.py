@@ -29,6 +29,9 @@ class BookMarks:
         self.bookmarks_file = GTK_BOOKMARKS
         self.bookmarks = []
 
+        # Initial read so we can prevent adding duplicates on start-up
+        self.get()
+
 
     def get(self):
 
@@ -57,10 +60,16 @@ class BookMarks:
 
     def add(self, path):
 
-        # don't add duplicates, or bookmark to something other than a dir
-        if path in self.bookmarks or not os.path.isdir(path):
-            print('Bookmark is not valid or already exists')
+        # don't add bookmark to something other than a directory
+        if not os.path.isdir(path):
+            print("Bookmark is not valid")
             return False  # indicate failure to add
+
+        # don't add any duplicates
+        for existing_path, existing_name in self.bookmarks:
+            if path == existing_path:
+                print("Bookmark already exists")
+                return False  # indicate failure to add
 
         name = os.path.basename(os.path.normpath(path))
 

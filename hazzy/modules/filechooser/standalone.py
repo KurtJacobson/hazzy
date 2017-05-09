@@ -8,16 +8,15 @@ import sys
 import filechooser
 
 
-MODULEDIR = os.path.dirname(os.path.realpath(__file__))
-sys.path.insert(1, os.path.dirname(MODULEDIR))
+MODULEDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(1, MODULEDIR)
 
 try:
     from touchpads.keyboard import Keyboard
     KEYBOARD = True
 except:
     KEYBOARD = False
-    print "cant fine"
-    pass
+    print("Keyboard not available for testing")
 
 
 class Filechooser(object):
