@@ -30,7 +30,7 @@ pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, "ui")
 
 
-class Dialogs:
+class Dialogs(gtk.Dialog):
     """ A object that creates various kinds of dialogs """
 
     def __init__(self, dialog_type=0):
@@ -39,6 +39,8 @@ class Dialogs:
             1 = ok/cancel,
             2 = error
         """
+
+        super(Dialogs, self).__init__(None)
 
         # Glade setup
         if dialog_type == 0 or dialog_type == 1:
@@ -49,8 +51,12 @@ class Dialogs:
         self.builder = gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
-        self.window = self.builder.get_object("window")
+
+        self.dialog_window = self.builder.get_object("window")
+
         self.message_label = self.builder.get_object("mesage_label")
+
+        self.result = None
 
         if dialog_type == 0:
             # We want a YES/NO dialog
@@ -62,17 +68,26 @@ class Dialogs:
             self.builder.get_object("button2").set_label("CANCEL")
 
     def on_button1_clicked(self, widget, data=None):
-        """ YES/ON """
+        """ YES/OK """
 
-        self.window.hide()
+        self.result = True
+
+        self.dialog_window.hide()
+        gtk.main_quit()
 
     def on_button2_clicked(self, widget, data=None):
-        """ OK/CANCEL """
+        """ NO/CANCEL """
 
-        self.window.hide()
+        self.result = False
 
-    def show(self, message):
+        self.dialog_window.hide()
+        gtk.main_quit()
+
+    def run(self, message):
         """ Show the Dialog """
 
         self.message_label.set_text(message)
-        self.window.show()
+        self.dialog_window.show()
+        gtk.main()
+
+        return self.result

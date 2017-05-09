@@ -122,16 +122,9 @@ def excepthook(exc_type, exc_value, exc_traceback):
 sys.excepthook = excepthook
 
 
-class Hazzy(object):
+class Hazzy:
 
     def __init__(self):
-
-        # Module init
-        self.float_touchpad = Touchpad("float")
-        self.int_touchpad = Touchpad("int")
-        self.keyboard = Keyboard()
-        self.filechooser = Filechooser()
-        self.dialog = Dialogs()
 
         # Glade setup
         gladefile = os.path.join(IMAGEDIR, 'hazzy.glade')
@@ -139,6 +132,16 @@ class Hazzy(object):
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
         self.widgets = widgets.Widgets(self.builder)
+
+        # Retrieve main window
+        self.window = self.widgets.window
+
+        # Module init
+        self.float_touchpad = Touchpad("float")
+        self.int_touchpad = Touchpad("int")
+        self.keyboard = Keyboard()
+        self.filechooser = Filechooser()
+        self.dialog = Dialogs(0)
 
         # Add filechooser
         filechooser_widget = self.filechooser.get_filechooser_widget()
@@ -152,8 +155,6 @@ class Hazzy(object):
                                     self.on_filechooser_button_release_event)
         self.filechooser.connect('error', self.on_filechooser_error)
 
-        # Retrieve main window
-        self.window = self.widgets.window
 
         # Components needed to communicate with hal and linuxcnc
         self.hal = hal.component('hazzy')
@@ -789,7 +790,9 @@ class Hazzy(object):
 
     def on_exit_program_clicked(self, widget, data=None):
         message = "Are you sure you want \n to close LinuxCNC?"
-        self.dialog.show(self.close_window, message)
+        exit_hazzy = self.dialog.run(message)
+        if exit_hazzy:
+            self.close_window()
 
     # =========================================================      
     # Main panel CheckBox handlers
@@ -1833,7 +1836,9 @@ class Hazzy(object):
     # Handle window exit button press
     def on_window_delete_event(self, widget, data=None):
         message = "Are you sure you want \n to close LinuxCNC?"
-        self.dialog.show(self.close_window, message)
+        exit_hazzy = self.dialog.show(message)
+        if exit_hazzy:
+            self.close_window()
 
         return True  # If does not return True will close window without popup!
 
