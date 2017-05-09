@@ -29,13 +29,12 @@ import os
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, "ui") 
 
-
 class Dialogs(object):
 
-    def __init__(self, message, type = 0):
+    def __init__(self, message, dialog_type=0):
 
         # Glade setup
-        if type == 0 or type == 1:
+        if dialog_type == 0 or dialog_type == 1:
             gladefile = os.path.join(UIDIR, 'dialog.glade')
         else:
             gladefile = os.path.join(UIDIR, 'error_dialog.glade')
@@ -49,34 +48,26 @@ class Dialogs(object):
 
         self.builder.get_object("mesage_label").set_text(message)
 
-        if type == 0:
+        if dialog_type == 0:
             # We want a YES/NO dialog
             self.builder.get_object("button1").set_label("YES")
             self.builder.get_object("button2").set_label("NO")
-        elif type == 1:
+        elif dialog_type == 1:
             # We want an OK/CANCEL dialog
             self.builder.get_object("button1").set_label("OK")
             self.builder.get_object("button2").set_label("CANCEL")
-
 
     def on_button1_clicked(self, widget, data = None):
         self.result = True
         gtk.main_quit()
 
-
     def on_button2_clicked(self, widget, data = None):
         self.result = False
         gtk.main_quit()
 
-
-    def run(self):
+    def show(self):
         self.window.show()
         #self.builder.get_object("button1").grab_focus()
         gtk.main()
         self.window.destroy()
         return self.result
-
-
-if __name__ == "__main__":
-    text = "This is an example YES/NO Dialog \n Do you like it?"
-    dialog = Dialogs(text, 0).run()

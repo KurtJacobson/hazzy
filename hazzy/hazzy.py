@@ -115,7 +115,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
         w = None
     message = traceback.format_exception(exc_type, exc_value, exc_traceback)
     log.error("".join(message))
-    Dialogs("".join(message), 2).run()
+    Dialogs("".join(message), 2).show()
 
 
 # Connect the except hook to the handler
@@ -1035,7 +1035,7 @@ class Hazzy(object):
             else:
                 name = os.path.split(self.current_preview_file)[1]
                 message = ("Save changes to: \n" + name)
-                if Dialogs(message).run():
+                if Dialogs(message).show():
                     self.save(self.current_preview_file)
                 else:
                     self.preview_buf.set_modified(False)
@@ -1396,7 +1396,7 @@ class Hazzy(object):
             p = os.popen("classicladder  &", "w")
         else:
             text = "Classicladder real-time component not detected"
-            Dialogs(text, 2).run()
+            Dialogs(text, 2).show()
 
 # =========================================================
 # BEGIN - HAL Status
@@ -1768,7 +1768,7 @@ class Hazzy(object):
             self.homed_joints[joint] = 2
         elif self.stat.homed[joint]:
             message = ("joint {0} is already homed. \n Unhome?".format(joint))
-            if Dialogs(message).run():
+            if Dialogs(message).show():
                 self._show_message(["INFO", "Unhoming joint {0}".format(joint)])
                 # self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
@@ -1836,7 +1836,7 @@ class Hazzy(object):
     # Display a dialog to confirm exit
     def close_window(self):
         message = "Are you sure you want \n to close LinuxCNC?"
-        if Dialogs(message).run():
+        if Dialogs(message).show():
             print(tc.I + "Turning machine off and E-stoping")
             self.set_state(linuxcnc.STATE_OFF)
             self.set_state(linuxcnc.STATE_ESTOP)
