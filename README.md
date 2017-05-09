@@ -24,7 +24,12 @@ Hazzy is an attempt at a UI for LinuxCNC that is uncompromised when used exclusi
     * Ex. entering 1in --> 25.4 if the machine is metric or G21 is active
     * Ex. entering 6 + .35mm --> .25 if the machine is imperial or G20 is active 
     * Works in all unit specific entries
-    
+* Full touchscreen friendly file manager
+    * Cut, Copy and Paste files and folders
+    * Rename files and folders
+    * Move files and folders to trash
+    * Bookmark frequently used folders
+
 ### Limitations
 Hazzy does not support keyboard or on-screen jogging, because it is not indented for use with a keyboard and jogging with a touchscreen is *dangerous* (don't ask how I know!). Instead I use a simple MPG with axis and increment selector switches, which is both a very safe and convenient way to move the machine during setup or manual operations. I will probably add very basic keyboard jogging in the future for convenience when putting the machine together.
 
@@ -51,17 +56,21 @@ If you have GIT installed the easiest way to try hazzy is to clone this reposito
 **Note:** If you prefer not to add a link to usr/bin you could skip step 3 and and enter the full path to hazzy.py in the INI file.
 
 Ex. ```DISPLAY = /home/kurt/Desktop/hazzy/hazzy/hazzy.py```
+
 This is fine but keep in mind that you will have to change the DISPLAY entries in all the example configurations before they will run.
 
 
 If all went well that is it!  Start LinuxCNC however you normally would and click the Reset button. If the machine starts up in E-stop clicking Reset the first time puts the machine in E-stop Reset, click Reset again to turn the machine ON.  Home the machine by clicking on the ABS DROs.  If you click on the ABS DRO label all axes will be homed (assuming the ini file is configured correctly).
 
 
-I will be updating this repo frequently. To get the latest version enter your hazzy directory and say
-```
-git pull origin master
-```
+I will be updating this repository frequently. To get the latest version enter your hazzy directory and say
+
+	```git pull origin master```
+
+If you have any problems, questions or suggestions, however minor, do not hesitate to open an issue, or better yet, a pull request!
+
 ### Notes
-I started working on this project some time in 2015 with the intention of trying to learn some basic programing (I am a mechanical/nuclear engineer, with litte if any programing experience) while also learning about Linux and LinuxCNC. My idea was to make a Haas like interface, hence the name hazzy, but it has morphed into something more like Mach3 or PathPilot.
+I started working on this project some time in 2015 with the intention of trying to learn some basic programing (I am a mechanical/nuclear engineer by training, with little if any programing experience) while also learning about Linux and LinuxCNC.  My idea was to make a Haas like interface for LinuxCNC, hence the name hazzy, but it has morphed into something more like Mach3 or PathPilot.  It has been a great learning experience and I have had a lot of fun working on it the project.  I hope you enjoy!
+
 
 Feedback of all types would be appreciated: kurtcjacobson at gmail
