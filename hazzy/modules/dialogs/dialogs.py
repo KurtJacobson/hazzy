@@ -29,11 +29,17 @@ import os
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, "ui")
 
+class DialogTypes():
+
+    YES_NO = 0
+    OK_CANCEL = 1
+    ERROR = 2
+
 
 class Dialogs(gtk.Dialog):
     """ A object that creates various kinds of dialogs """
 
-    def __init__(self, dialog_type=0):
+    def __init__(self, dialog_type=DialogTypes.YES_NO):
         """ 0 = yes/no,
             1 = ok/cancel,
             2 = error """
@@ -41,7 +47,7 @@ class Dialogs(gtk.Dialog):
         super(Dialogs, self).__init__()  # Initialize the gtk.Dialog super class
 
         # Glade setup
-        if dialog_type == 0 or dialog_type == 1:
+        if dialog_type == DialogTypes.YES_NO or dialog_type == DialogTypes.OK_CANCEL:
             gladefile = os.path.join(UIDIR, 'dialog.glade')
         else:
             gladefile = os.path.join(UIDIR, 'error_dialog.glade')
@@ -57,12 +63,10 @@ class Dialogs(gtk.Dialog):
         self.running = False
         self.result = False
 
-        if dialog_type == 0:
-            # We want a YES/NO dialog
+        if dialog_type == DialogTypes.YES_NO:
             self.builder.get_object("button1").set_label("YES")
             self.builder.get_object("button2").set_label("NO")
-        elif dialog_type == 1:
-            # We want an OK/CANCEL dialog
+        elif dialog_type == DialogTypes.OK_CANCEL:
             self.builder.get_object("button1").set_label("OK")
             self.builder.get_object("button2").set_label("CANCEL")
 
