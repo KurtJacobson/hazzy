@@ -279,7 +279,6 @@ class Hazzy:
         
         # [FILE PATHS]
         self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_path, str)
-        print HAZZYDIR
         path = os.path.join(MAINDIR, "sim.hazzy/example_gcode/new file.ngc")
         self.new_program_template = self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", path, str)
                 
@@ -314,8 +313,8 @@ class Hazzy:
         # [GCODE VIEW]
         self.style_scheme_file = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_FILE", 'GCode.xml', str)
         self.style_scheme_name = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_NAME", 'gcode', str)
-        self.lang_spec_file = self.prefs.getpref("GCODE VIEW", "LANG_SPEC_FILE", 'hngc.lang', str)
-        self.lang_spec_name = self.prefs.getpref("GCODE VIEW", "LANG_SPEC_NAME", 'hngc', str)
+        self.lang_spec_file = self.prefs.getpref("GCODE VIEW", "LANG_SPEC_FILE", 'GCode.lang', str)
+        self.lang_spec_name = self.prefs.getpref("GCODE VIEW", "LANG_SPEC_NAME", 'gcode', str)
         
         # [MACHINE DEFAULTS]
         self.df_feed = self.prefs.getpref("MACHINE DEFAULTS", "DF_SPEED", 10, int)
@@ -342,13 +341,13 @@ class Hazzy:
 # =========================================================
 # BEGIN - Appearance initialize
 # =========================================================
-        
+
         # Set the gcode sourceview style scheme if it is present, elif use Kate, else nothing   
         if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', self.style_scheme_file)):
-            print("{0}{1} style scheme found!".format(tc.I, self.style_scheme_name))
+            print("{0}{1} style scheme found!".format(tc.I, self.style_scheme_file))
             self.style_scheme = self.style_scheme_name
         elif os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', 'kate.xml')):
-            print("{0}Gcode style not found, using Kate instead".format(tc.I))
+            print("{0}Gcode style scheme not found, using Kate instead".format(tc.I))
             self.style_scheme = 'kate'  # Use Kate instead
         else:
             print("{0}{1} style not found".format(tc.I, self.style_scheme_file))
@@ -357,10 +356,10 @@ class Hazzy:
 
         # Set the gcode sourceview language highlighting if it is present, else nothing
         if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs', self.lang_spec_file)):
-            print("{0}{1} found!".format(tc.I, self.lang_spec_file))
+            print("{0}{1} language spec found!".format(tc.I, self.lang_spec_file))
             self.lang_spec = self.lang_spec_name
         else:
-            print("{0}{1} not found".format(tc.I, self.lang_spec_file))
+            print("{0}{1} language spec was not found".format(tc.I, self.lang_spec_file))
             print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs')))
 
         if self.style_scheme is not None:
@@ -391,7 +390,7 @@ class Hazzy:
                             'active_feed_label',
                             'actual_feed_label',
                             'current_vel_label']
-        
+
         '''
         for i in spindle_dro_list:
             label = self.widgets[i]
@@ -415,51 +414,51 @@ class Hazzy:
             self.widgets['abs_{0}'.format(count)].hide()
             self.widgets['dro_label_{0}'.format(count)].hide()
             count -= 1
-        
+
         # Dict of DRO GtkEntry objects and there corresponding axes
         self.rel_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
             self.rel_dro_dict[axis] = self.widgets['dro_{0}'.format(i)]
-            
+
         # Set DRO fonts/colors
         for axis, dro in self.rel_dro_dict.iteritems():
             dro.modify_font(self.dro_font)
             dro.modify_text(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
-        
+
         self.dtg_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
             self.dtg_dro_dict[axis] = self.widgets['dtg_{0}'.format(i)]
-            
+
         # Set DTG DRO fonts/colors.
         for axis, dro in self.dtg_dro_dict.iteritems():
             dro.modify_font(self.dro_font)
             dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
-        
+
         self.abs_dro_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
             self.abs_dro_dict[axis] = self.widgets['abs_{0}'.format(i)]
-        
+
         # Set ABS DRO fonts/colors 
         for axis, dro in self.abs_dro_dict.iteritems():
             dro.modify_font(self.abs_font)
             if not self.no_force_homing:
                 dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
-            
+
         self.abs_dro_eventboxes_dict = {}
         for i in range(self.num_axes):
             axis = self.axis_number_list[i]
             self.abs_dro_eventboxes_dict[axis] = self.widgets['abs_eventbox_{0}'.format(i)]
-                
+
         # Set DRO axis labels
         for i in range(self.num_axes):
             label = self.widgets['dro_label_{0}'.format(i)]
             label.modify_font(self.mdi_font)
             label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
             label.set_text(self.axis_letter_list[i])
-            
+
         for i in ['rel_dro_label', 'dtg_dro_label', 'abs_dro_label', 'spindle_rpm_label']:
             label = self.widgets[i]
             label.modify_font(pango.FontDescription('dejavusans condensed 12'))
@@ -473,23 +472,23 @@ class Hazzy:
             self.widgets['joint_pos_{0}'.format(count)].hide()
             self.widgets['joint_status_{0}'.format(count)].hide()
             self.widgets['joint_home_btn_{0}'.format(count)].hide()
-            count -= 1    
-            
+            count -= 1
+
         for joint in range(self.num_joints):
             axis = self.jnum_aletter_dict[joint]
             label = self.widgets['joint_label_{0}'.format(joint)]
             label.set_text("{0} ({1})".format(joint, axis))
-            
+
         self.joint_pos_dro_list = []
         for joint in range(self.num_joints):
             dro = self.widgets['joint_pos_{0}'.format(joint)]
             self.joint_pos_dro_list.append(dro)
-            
+
         self.joint_status_label_list = []
         for joint in range(self.num_joints):
             label = self.widgets['joint_status_{0}'.format(joint)]
             self.joint_status_label_list.append(label)
-        
+
         self.home_joint_btn_list = []
         for joint in range(self.num_joints):
             btn = self.widgets['joint_home_btn_{0}'.format(joint)]
@@ -504,7 +503,7 @@ class Hazzy:
         self._init_gremlin()
         self._init_gcode_preview()
         self.load_tool_table(self.tool_table)
-        
+
         # Finally, show the window 
         self.window.show()
         self._init_gremlin()
@@ -512,16 +511,16 @@ class Hazzy:
 # =========================================================
 # BEGIN - Periodic status checking and updating
 # =========================================================
-    
+
     # Called at ini [DISPLAY] CYCLE_TIME to update readouts     
     def _fast_periodic(self): # Called at 50ms default
         # Check for messages
         message = self.error_channel.poll()
         if message:
             self._show_message(message)
-        
+
         self.stat.poll()
-        
+
         if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
             self._update_joint_dros()
             self.widgets.dro_notebook.set_current_page(1)
@@ -532,33 +531,33 @@ class Hazzy:
         self._update_override_labels()
         self._update_spindle_speed_label()
         self._updade_dro_status()
-        
+
         # Use this periodic to repeatedly zoom gremlin, better then
         # using a while loop with sleep() as that would block the thread
         if self.zoom_in_pressed:
             self.widgets.gremlin.zoom_in()
-            
+
         if self.zoom_out_pressed:
             self.widgets.gremlin.zoom_out()
-        
+
         # Call _slow_periodic() every 5 cycles of _fast_periodic()  
         self.periodic_cycle_counter += 1
         if self.periodic_cycle_counter >= 5:
             self._slow_periodic()
             self.periodic_cycle_counter = 0
- 
+
         # Keep the timer running
         # If there is an error in here the timer will stop
         return True
-    
+
     # Called every 5 fast_periodic cycles to update slower moving readouts and button states
     def _slow_periodic(self):
-        
+
         # Check for messages
         # message = self.error_channel.poll()
         # if message:
         #   self._show_message(message)
-        
+
         # Update work cord if it has changed
         if self.current_work_cord != self.stat.g5x_index:
             self._update_work_cord()
@@ -566,56 +565,56 @@ class Hazzy:
         # Update G/M codes if they have changed    
         if self.codes != self.stat.gcodes + self.stat.mcodes:
             self._update_active_codes()
-            
+
         # Update LCNC state if it has changed
         if self.task_state != self.stat.task_state:
             self._update_machine_state()
-        
+
         # Update LCNC mode if it has changed
         if self.task_mode != self.stat.task_mode:
             self._update_machine_mode()
-        
+
         # Update interpreter state if it has changed    
         if self.interp_state != self.stat.interp_state:    
             self._update_interp_state()
-            
+
         if self.motion_mode != self.stat.motion_mode:
             self._update_motion_mode()
-            
+
         # Update homed joints
         if tuple(self.homed_joints) != self.stat.homed:
             self._update_homing_status()
-            
+
         # print self.stat.homed
-            
+
         # Update current tool data if it has changed
         if self.current_tool != self.stat.tool_in_spindle:
             self._update_current_tool_data()
-          
+
         # self.stat.program_units returns 1 for inch, 2 for mm and 3 for cm  
         if self.stat.program_units != 1:
             self.display_units = 'mm'
         else:
             self.display_units = 'in'
-            
+
         # Update velocity DROs     
         self._update_vel()
-        
+
         # Update cutting parameter labels
         self._update_cutting_parameters()
-        
+
         # Update button states
         self._update_cycle_start_stop_button_state()
         self._update_hold_resume_button_state()
-        
+
         # Update opstop status
         if self.stat.optional_stop != self.widgets.opstop.get_active():
             self.widgets.opstop.set_active(self.stat.optional_stop)
-            
+
         # Update opskip status
         if self.stat.block_delete != self.widgets.opskip.get_active() :
             self.widgets.opskip.set_active(self.stat.block_delete)
-        
+
         # If new error flash message border red for 2s
         if self.new_error:
             self.error_flash_timer += 1
@@ -904,20 +903,20 @@ class Hazzy:
             self.mdi_has_focus = True
         if self.keypad_on_mdi:
             self.keyboard.show(widget, self.get_win_pos())
-            
+
     def on_mdi_entry_changed(self, widget, data=None):
         # Convert MDI entry text to UPPERCASE
         self.widgets.mdi_entry.set_text(widget.get_text().upper())
-            
+
     def on_mdi_entry_loses_focus(self, widget, data=None):
         self.widgets.mdi_entry.set_text("MDI:")
         self.window.set_focus(None)
         self.mdi_has_focus = False
-        
+
     def on_mdi_entry_key_press_event(self, widget, event): 
         if event.keyval == gtk.keysyms.Escape:
             self.window.set_focus(None)
-            
+
     def on_mdi_entry_activate(self, widget):
         cmd = self.widgets.mdi_entry.get_text()
         if len(cmd) == 0:
@@ -930,39 +929,39 @@ class Hazzy:
 
     def on_button1_clicked(self, widget, data=None):
         pass
-        
+
     def on_redraw_clicked(self, widget, data=None):
         self.set_selected_tool(3)
 
 # =========================================================      
 # BEGIN - [Main] notebook page button handlers
 # ========================================================= 
-                
+
     # HAL_Gremlin preview buttons
     def on_zoom_in_button_press_event(self, widget, data=None):
         self.zoom_in_pressed = True
 
     def on_zoom_in_button_release_event(self, widget, data=None):
         self.zoom_in_pressed = False
-        
+
     def on_zoom_out_button_press_event(self, widget, data=None):
         self.zoom_out_pressed = True
-        
+
     def on_zoom_out_button_release_event(self, widget, data=None):
         self.zoom_out_pressed = False
-        
+
     def on_view_x_button_press_event(self, widget, data=None):
         self.widgets.gremlin.set_property('view', 'x') 
 
     def on_view_y_button_press_event(self, widget, data=None):
         self.widgets.gremlin.set_property('view', 'y')         
-        
+
     def on_view_z_button_press_event(self, widget, data=None):
         self.widgets.gremlin.set_property('view', 'z')         
-        
+
     def on_view_p_button_press_event(self, widget, data=None):
         self.widgets.gremlin.set_property('view', 'p')
-        
+
     def on_mouse_mode_button_press_event(self, widget, data=None):
         if self.gremlin_mouse_mode == 0:
             self.widgets.gremlin.set_property("mouse_btn_mode", 2)
@@ -972,16 +971,16 @@ class Hazzy:
             self.widgets.gremlin.set_property("mouse_btn_mode", 0)
             self.set_image('mouse_mode_image', 'view_rotate.png')
             self.gremlin_mouse_mode = 0
-            
+
     # Highlight code line for selected line in gremlin
     def on_gremlin_line_clicked(self, widget, line):
         self.widgets.gcode_view.set_line_number(line)
-        
+
     # Double click gremlin to clear live plot
     def on_gremlin_button_press_event(self, widget, event):
         if event.type == gtk.gdk._2BUTTON_PRESS:
             self.widgets.gremlin.clear_live_plotter()
-    
+
     # Toggle "show line numbers" in gcode view when double clicked
     def on_gcode_view_button_press_event(self, widget, event, data=None):
         if event.type == gtk.gdk._2BUTTON_PRESS:
@@ -989,8 +988,8 @@ class Hazzy:
                 widget.set_show_line_numbers(False)
             else:
                 widget.set_show_line_numbers(True)
-                
-        
+
+
 # =========================================================      
 # BEGIN - [File] notebook page button handlers
 # ========================================================= 
@@ -1114,7 +1113,7 @@ class Hazzy:
         self.preview_buf = gtksourceview.Buffer()
         self.preview_buf.set_max_undo_levels(20)
         self.widgets.gcode_preview.set_buffer(self.preview_buf)
-        
+
         # Set style scheme and language 
         self.lm = gtksourceview.LanguageManager()
         self.sm = gtksourceview.StyleSchemeManager()

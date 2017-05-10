@@ -1,0 +1,259 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ GtkSourceView language spec for use with hazzy LinuxCNC user Interface
+
+ Copyright 2017. Kurt Jacobson (kurtcjacobson@gmail.com)
+ Copyright 2016. Fernand Veilleux (fernveilleux@gmail.com)
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation; either
+ version 2.1 of the License, or (at your option) any later version.
+
+ GtkSourceView is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+-->
+
+<language id="gcode" _name="Gcode" version="2.0" _section="Others">
+
+  <metadata>
+    <property name="mimetypes">text/ngc</property>
+    <property name="globs">*.ngc</property>
+    <property name="line-comment-start">;</property>
+  </metadata>
+
+  <styles>
+    <style _name="Error"            id="err"             map-to="def:error"/>
+    <style _name="Normal Text"      id="normal"          map-to="def:string"/>
+    <style _name="Brackets"         id="brackets"        map-to="def:operator"/>
+    <style _name="Comment"          id="comment"         map-to="def:comment"/>
+    <style _name="Coordinate"       id="coords_"         map-to="def:complex"/>
+    <style _name="Function"         id="function"        map-to="def:function"/>
+    <style _name="G-options"        id="g_opts"          map-to="def:constant"/>
+    <style _name="G-word"           id="g_code"          map-to="def:reserved"/>
+    <style _name="Keyword"          id="keyword"         map-to="def:keyword"/>
+    <style _name="Line Number"      id="line-num"        map-to="def:comment"/>
+    <style _name="Message"          id="msg"             map-to="def:note"/>
+    <style _name="M-word"           id="m_word"          map-to="def:type"/>
+    <style _name="M-word (user)"    id="m_word_u"        map-to="def:type"/>
+    <style _name="Number"           id="number"          map-to="def:number"/>
+    <style _name="Operator"         id="operator"        map-to="def:operator"/>
+    <style _name="O-word"           id="o_word"          map-to="def:statement"/>
+    <style _name="Param (global)"   id="p-global"        map-to="def:character"/>
+    <style _name="Param (local)"    id="p-local"         map-to="def:decimal"/>
+    <style _name="Sub-program"      id="sub_"            map-to="def:builtin"/>
+    <style _name="Tool"             id="tool_"           map-to="def:special-constant"/>
+  </styles>
+
+  <default-regex-options case-sensitive="false" dupnames="false"/>
+
+  <definitions>
+    <context id="gcode">
+      <include>
+
+        <context id="spaces" >
+          <match>[ \t]*</match>
+        </context>
+
+        <context id="operators" style-ref="operator">
+          <keyword>and</keyword>
+          <keyword>or</keyword>
+          <keyword>xor</keyword>
+          <keyword>eq</keyword>
+          <keyword>ne</keyword>
+          <keyword>gt</keyword>
+          <keyword>ge</keyword>
+          <keyword>lt</keyword>
+          <keyword>le</keyword>
+          <keyword>mod</keyword>
+        </context>
+
+        <context id="math-functions" style-ref="function">
+          <keyword>sin</keyword>
+          <keyword>cos</keyword>
+          <keyword>tan</keyword>
+          <keyword>asin</keyword>
+          <keyword>acos</keyword>
+          <keyword>atan</keyword>
+          <keyword>exp</keyword>
+          <keyword>ln</keyword>
+          <keyword>sqrt</keyword>
+          <keyword>fup</keyword>
+          <keyword>fix</keyword>
+          <keyword>abs</keyword>
+          <keyword>round</keyword>
+          <keyword>exists</keyword>
+        </context>
+
+        <context id="keywordO" style-ref="keyword">
+          <keyword>do</keyword>
+          <keyword>while</keyword>
+          <keyword>endwhile</keyword>
+          <keyword>repeat</keyword>
+          <keyword>endrepeat</keyword>
+          <keyword>break</keyword>
+          <keyword>continue</keyword>
+          <keyword>if</keyword>
+          <keyword>elseif</keyword>
+          <keyword>else</keyword>
+          <keyword>endif</keyword>
+        </context>
+
+        <context id = "o-keyword" style-ref="keyword">
+          <keyword>while</keyword>
+          <keyword>endwhile</keyword>
+          <keyword>if</keyword>
+          <keyword>else</keyword>
+          <keyword>endif</keyword>
+          <keyword>do</keyword>
+          <keyword>break</keyword>
+          <keyword>continue</keyword>
+          <keyword>repeat</keyword>
+          <keyword>endrepeat</keyword>
+          <keyword>end</keyword>
+        </context>
+
+        <context id = "o-sub" style-ref="sub_">
+          <keyword>sub</keyword>
+          <keyword>endsub</keyword>
+          <keyword>call</keyword>
+          <keyword>return</keyword>
+        </context>
+
+        <context id="no-num-exp" style-ref="err">
+          <match>[a-z][\s\t]*[a-z\(\)].*$</match>
+        </context>
+
+        <context style-ref="err">
+          <match>[#][\s\t]*[#][\s\t]*[#]+.*$</match>
+        </context>
+
+        <context style-ref="err">
+          <match>[\*][\s\t]*[\*][\s\t]*[\*]+.*$</match>
+        </context>
+
+        <context id="opts" style-ref="g_opts">
+          <match>[deh-lpqr@^]</match>
+        </context>
+
+        <context id="coords" style-ref="coords_">
+          <match>[abcu-z]</match>
+        </context>
+
+        <context id="line-comment" end-at-line-end="true" style-ref="comment">
+          <start>;</start>
+        </context>
+
+        <context id="line-number" style-ref="line-num">
+          <match>^[\s\t]*n[\s\t]*[\d]{1,5}</match>
+        </context>
+
+        <context id="param-unnamed" style-ref="err">
+          <match>#[\s\t]*&lt;[\s\t_]*&gt;</match>
+        </context>
+
+        <context id="o-code-unnamed" style-ref="err">
+          <match>o[\s\t]*&lt;[\s\t]*&gt;</match>
+        </context>
+
+        <context id="param-global" style-ref="p-global">
+          <match>#[\s\t]*([\d]{1,4}|&lt;[\s\t]*_[^>]*&gt;)</match>
+        </context>
+
+        <context id="param-local" style-ref="p-local">
+          <match>#[\s\t]*&lt;[^>]*&gt;</match>
+        </context>
+
+        <context style-ref="p-local">
+          <match>#[\s\t]*#?</match>
+        </context>
+
+        <context id="o-code" style-ref="o_word">
+          <match>(o[\s\t]*([\d]+|&lt;[\s\t]*[^>]*&gt;))</match>
+        </context>
+
+        <context style-ref="g_code">
+          <match>g[\s\t]*[\d]+[\s\t]*[.]?[\s\t]*[\d]*</match>
+        </context>
+
+        <context style-ref="g_code">
+          <match>g</match>
+        </context>
+
+        <context id="m" style-ref="m_word_u">
+          <match>m[\s\t]*1[\s\t]*[\d][\s\t]*[\d]</match>
+        </context>
+
+        <context id="m1" style-ref="m_word">
+          <match>m[\s\t]*[\d]+[\s\t]*[\d]?</match>
+        </context>
+
+        <context id="m2" style-ref="m_word">
+          <match>m</match>
+        </context>
+
+        <context style-ref="tool_">
+          <match>t[\s\t]*[\d]+[\s\t]*[\d]?</match>
+        </context>
+
+        <context style-ref="tool_">
+          <match>f[\d\s\t]*[.]?[\d\s\t]*</match>
+        </context>
+
+        <context style-ref="tool_">
+          <match>s[\s\t]*[\d]+[\s\t\d]*</match>
+        </context>
+
+        <context style-ref="tool_">
+          <match>[stf]</match>
+        </context>
+
+        <context id="bad-num" style-ref="err">
+          <match>[+\-]?[\d\s\t]*[.][\d\s\t]*[.].*$</match>
+        </context>
+
+        <context id="good-num" style-ref="number">
+          <match>[+\-]?[\d\s\t]*[.]?[\d\s\t]*</match>
+        </context>
+
+        <context id="ops" style-ref="operator">
+          <match>[+\-*/=]</match>
+        </context>
+
+        <context id="brackets" style-ref="operator">
+          <match>[\[\]]</match>
+        </context>
+
+        <context id="print-and-func"  style-ref="msg">
+          <match>\([\s\t]*(PRINT|DEBUG|MSG|AXIS|(PROBE(CLOSE|OPEN))|(LOG(OPEN|CLOSE|APPEND|[\s]|[\,])))[^\)]*\)</match>
+        </context>
+
+        <context id="block-comment" end-at-line-end="true" style-ref="comment">
+          <start>\(</start>
+          <end>\)</end>
+          <include>
+            <context id="bc1" style-ref="err">
+              <match>\(.*$</match>
+            </context>
+          </include>
+        </context>
+
+        <context style-ref="sub_">
+          <match>%</match>
+        </context>
+
+        <context id="err" style-ref="err">
+          <match>.*$</match>
+        </context>
+
+      </include>
+    </context>
+  </definitions>
+</language>
