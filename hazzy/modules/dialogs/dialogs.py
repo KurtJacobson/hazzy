@@ -74,13 +74,13 @@ class Dialogs(gtk.Dialog):
         """ YES/OK Buttons"""
 
         self.result = True
-
         self.dialog_window.hide()
         gtk.main_quit()
 
     def on_button2_clicked(self, widget, data=None):
         """ NO/CANCEL Buttons"""
 
+        self.result = False
         self.dialog_window.hide()
         gtk.main_quit()
 
