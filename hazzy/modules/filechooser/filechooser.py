@@ -28,6 +28,7 @@ from datetime import datetime
 from move2trash import move2trash
 from bookmarks import BookMarks
 from icons import Icons
+from modules.dialogs.dialogs import Dialogs, DialogTypes
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, 'ui')
@@ -81,6 +82,7 @@ class Filechooser(gobject.GObject):
         self.mounts.connect('mount-removed', self.on_mount_removed)
 
         # Initialize objects
+        self.ok_cancel_dialog = Dialogs(DialogTypes.OK_CANCEL)
         self.bookmarks = BookMarks()
         self.icons = Icons(gtk.icon_theme_get_default())
 
@@ -90,8 +92,8 @@ class Filechooser(gobject.GObject):
         self.places = [home, desktop]
 
         # Initialize variables
-        self.cur_dir = desktop
-        self.old_dir = " "
+        self._cur_dir = desktop
+        self._old_dir = " "
         self._filters = {}
         self._filter = ''
         self._files = []
@@ -109,7 +111,7 @@ class Filechooser(gobject.GObject):
     # Have to do this once realized so sizes will have been allocated
     def on_vbox1_realize(self, widget):
         self._update_bookmarks()
-        self._fill_file_liststore(self.cur_dir)
+        self._fill_file_liststore(self._cur_dir)
 
     def _init_nav_buttons(self):
         box = self.nav_box
@@ -125,7 +127,7 @@ class Filechooser(gobject.GObject):
 
     def _update_nav_buttons(self, path=None):
         if path is None:
-            path = self.cur_dir
+            path = self._cur_dir
         places = path.split('/')[1:]
         path = '/'
         for btn in self.nav_btn_list:
@@ -154,7 +156,7 @@ class Filechooser(gobject.GObject):
 
     def on_nav_btn_clicked(self, widget, data=None):
         path = self.nav_btn_path_dict[widget]
-        if path != self.cur_dir:
+        if path != self._cur_dir:
             self._fill_file_liststore(path)
 
     def on_goto_root_clicked(self, widget, data=None):
@@ -173,7 +175,7 @@ class Filechooser(gobject.GObject):
         self.current_selection = None
 
         if path:
-            self.cur_dir = os.path.realpath(path)
+            self._cur_dir = os.path.realpath(path)
 
             # Reset scrollbars since display has changed
             self.file_vadj.set_value(0)
@@ -185,11 +187,11 @@ class Filechooser(gobject.GObject):
             exts = self._filters[self._filter]
         else:
             exts = ''
-        dirs = os.listdir(self.cur_dir)
+        dirs = os.listdir(self._cur_dir)
         for obj in dirs:
             if obj[0] == '.' and not self._show_hidden:
                 continue
-            path = os.path.join(self.cur_dir, obj)
+            path = os.path.join(self._cur_dir, obj)
             if os.path.islink(path):
                 path = os.readlink(path)
             if os.path.isdir(path):
@@ -203,13 +205,13 @@ class Filechooser(gobject.GObject):
 
         folders.sort(key=str.lower, reverse=False)
         for fname in folders:
-            fpath = os.path.join(self.cur_dir, fname)
+            fpath = os.path.join(self._cur_dir, fname)
             icon = self.icons.get_for_directory(fpath)
             model.append([0, icon, fname, None, None])
 
         files.sort(key=str.lower, reverse=False)
         for fname in files:
-            fpath = os.path.join(self.cur_dir, fname)
+            fpath = os.path.join(self._cur_dir, fname)
             icon = self.icons.get_for_file(fname)
             size, date = self._get_file_data(fpath)
             model.append([0, icon, fname, size, date])
@@ -241,12 +243,12 @@ class Filechooser(gobject.GObject):
             return
         self.current_selection = path
         fname = self.file_liststore[path][2]
-        fpath = os.path.join(self.cur_dir, fname)
+        fpath = os.path.join(self._cur_dir, fname)
         self.emit('selection-changed', fpath)
 
     def on_filechooser_treeview_row_activated(self, widget, path, colobj):
         fname = self.file_liststore[path][2]
-        fpath = os.path.join(self.cur_dir, fname)
+        fpath = os.path.join(self._cur_dir, fname)
         if os.path.isfile(fpath):
             self.emit('file-activated', fpath)
         elif os.path.isdir(fpath):
@@ -258,12 +260,12 @@ class Filechooser(gobject.GObject):
     def on_file_name_edited(self, widget, row, new_name):
         model = self.file_liststore
         old_name = model[row][2]
-        old_path = os.path.join(self.cur_dir, old_name)
-        new_path = os.path.join(self.cur_dir, new_name)
+        old_path = os.path.join(self._cur_dir, old_name)
+        new_path = os.path.join(self._cur_dir, new_name)
         if old_name == new_name:
             return
         if not os.path.exists(new_path):
-            self.info("Renaming: {} to {}".format(old_path, new_path))
+            self.info("Renamed {} to {}".format(old_name, new_name))
             os.rename(old_path, new_path)
             model[row][2] = new_name
         else:
@@ -323,7 +325,7 @@ class Filechooser(gobject.GObject):
 
     # Get the path of the current display directory
     def get_current_folder(self):
-        return self.cur_dir
+        return self._cur_dir
 
     # Set current display directory to path
     def set_current_folder(self, fpath):
@@ -337,7 +339,7 @@ class Filechooser(gobject.GObject):
         path = self.file_treeview.get_cursor()[0]
         if path is not None:
             fname = self.file_liststore[path][2]
-            fpath = os.path.join(self.cur_dir, fname)
+            fpath = os.path.join(self._cur_dir, fname)
             return fpath
         return None
 
@@ -348,7 +350,7 @@ class Filechooser(gobject.GObject):
         if not os.path.exists(fpath):
             return False
         fpath, fname = os.path.split(fpath)
-        if fpath != self.cur_dir:
+        if fpath != self._cur_dir:
             self._fill_file_liststore(fpath)
         for row in range(len(model)):
             if model[row][2] == fname:
@@ -362,7 +364,7 @@ class Filechooser(gobject.GObject):
         paths = []
         for row in range(len(model)):
             if model[row][0] == 1:
-                fpath = os.path.join(self.cur_dir, model[row][2])
+                fpath = os.path.join(self._cur_dir, model[row][2])
                 paths.append(fpath)
         if len(paths) == 0:
             return None
@@ -375,7 +377,7 @@ class Filechooser(gobject.GObject):
         if not os.path.exists(fpath):
             return False
         fpath, fname = os.path.split(fpath)
-        if fpath != self.cur_dir:
+        if fpath != self._cur_dir:
             self._fill_file_liststore(fpath)
         for row in range(len(model)):
             if model[row][2] == fname:
@@ -433,7 +435,7 @@ class Filechooser(gobject.GObject):
 
     # Display parent of current directory
     def up_one_dir(self):
-        path = os.path.dirname(self.cur_dir)
+        path = os.path.dirname(self._cur_dir)
         self._fill_file_liststore(path)
 
     # Cut selected files
@@ -459,7 +461,7 @@ class Filechooser(gobject.GObject):
         src_list = self._files
         if src_list is None:
             return False
-        dst_dir = self.cur_dir
+        dst_dir = self._cur_dir
         if self._copy:
             for src in self._files:
                 self._copy_file(src, dst_dir)
@@ -533,7 +535,7 @@ class Filechooser(gobject.GObject):
         name = os.path.split(path)[1]
         text = "External storage device removed - " + name
         self.info(text)
-        if self.cur_dir.startswith(path):
+        if self._cur_dir.startswith(path):
             self.file_liststore.clear()
             self._update_nav_buttons('')
         self._update_bookmarks()
@@ -544,7 +546,7 @@ class Filechooser(gobject.GObject):
         fpath = model[path][2]
         if column == self.eject_column and model[path][3] == True:
             os.system('eject "{0}"'.format(fpath))
-            if fpath == self.cur_dir:
+            if fpath == self._cur_dir:
                 self.file_liststore.clear()
             return
         self._fill_file_liststore(fpath)
@@ -552,10 +554,10 @@ class Filechooser(gobject.GObject):
     def on_add_bookmark_button_release_event(self, widget, data=None):
         path = self.file_treeview.get_cursor()[0]
         if path is None:
-            fpath = self.cur_dir
+            fpath = self._cur_dir
         else:
             fname = self.file_liststore[path][2]
-            fpath = os.path.join(self.cur_dir, fname)
+            fpath = os.path.join(self._cur_dir, fname)
         if not os.path.isdir(fpath):
             return
         self.add_bookmark(fpath)
@@ -608,37 +610,62 @@ class Filechooser(gobject.GObject):
         return self.bookmark_liststore.get_value(iter, 1) is None
 
     # =======================================
-    #   File utility functions
+    #   File utilities
     # =======================================
 
     def _copy_file(self, src, dst_dir):
-        src_dir, dst_name = os.path.split(src)
+        src_dir, src_name = os.path.split(src)
+        dst_name = src_name
+
+        # find a unique copy name
         if src_dir == dst_dir:
-            # self.error("COPY ERROR: Source and destination are the same")
-            # return
             name, ext = os.path.splitext(dst_name)
-            dst_name = '{0}_copy{1}'.format(name, ext)
+            if '_copy' in name:
+                name = name.rpartition('_copy')[0]
+
+            count = 1
+            while os.path.exists(os.path.join(dst_dir, dst_name)):
+                dst_name = '{0}_copy{1}{2}'.format(name, count, ext)
+                count += 1
+
         dst = os.path.join(dst_dir, dst_name)
+
         if os.path.exists(dst):
-            self.error("COPY ERROR: Destination file {0} already exists".format(dst))
-            return
-        self.info("Copying: {0} to {1}".format(src, dst))
+            text = "Destination already exists! \n Overwrite {}?".format(dst_name)
+            overwrite = self.ok_cancel_dialog.run(text)
+            if not overwrite:
+                self.info("User selected not to overwrite {}".format(dst_name))
+                return
+
+        self.info("Copying: {0} to {1}".format(src_name, dst_dir))
+
         if os.path.isfile(src):
             shutil.copy2(src, dst)
+
         else:
             shutil.copytree(src, dst)
+
         self._fill_file_liststore()
         return dst_name
 
+
     def _move_file(self, src, dst_dir):
         src_dir, src_name = os.path.split(src)
+
         if src_dir == dst_dir:
             self.error("MOVE ERROR: Source and destination are the same")
             return
+
         dst = os.path.join(dst_dir, src_name)
+
         if os.path.exists(dst):
-            self.error("MOVE ERRPR: Destination file {} already exists".format(dst))
-        self.info("Moving: {0} to {1}".format(src, dst))
+            text = "Destination already exists! \n Overwrite {}?".format(src_name)
+            overwrite = self.ok_cancel_dialog.run(text)
+            if not overwrite:
+                self.info("User selected not to overwrite {}".format(src_name))
+                return
+
+        self.info("Moving: {0} to {1}".format(src_name, dst_dir))
         shutil.move(src, dst)
 
     # Shortcut methods to emit errors and print to terminal
