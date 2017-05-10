@@ -36,15 +36,15 @@ class UserDirectories:
     def __init__(self):
 
         self.default = {
-                        DESKTOP: '~/Desktop',
-                        DOWNLOADS: '~/Downloads',
-                        TEMPLATES: '~/Templates',
-                        PUBLIC: '~/Public',
-                        DOCUMENTS: '~/Documents',
-                        MUSIC: '~/Music',
-                        PICTURES: '~/Pictures',
-                        VIDEOS: '~/Videos'
-                        }
+            DESKTOP: '~/Desktop',
+            DOWNLOADS: '~/Downloads',
+            TEMPLATES: '~/Templates',
+            PUBLIC: '~/Public',
+            DOCUMENTS: '~/Documents',
+            MUSIC: '~/Music',
+            PICTURES: '~/Pictures',
+            VIDEOS: '~/Videos'
+        }
 
         self.XDG_directories = {}
 

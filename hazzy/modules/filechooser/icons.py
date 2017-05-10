@@ -53,7 +53,7 @@ class Icons():
                         userdirectories.MUSIC: 'folder-music',
                         userdirectories.PICTURES: 'folder-pictures',
                         userdirectories.VIDEOS: 'folder-videos'
-                     }
+                      }
 
         # get paths
         for directory in icon_names.keys():
@@ -100,6 +100,3 @@ class Icons():
         if name == "USBdrive":
             if self.theme.has_icon('drive-removable-media'):
                 return self.theme.load_icon('drive-removable-media', 16, 0)
-
-
-

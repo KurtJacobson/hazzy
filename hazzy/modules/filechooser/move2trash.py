@@ -19,9 +19,9 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 # Note:
-# This trash implementation tries to follow the guidelines set for by
-# freedesktop.org here:
-# https://specifications.freedesktop.org/trash-spec/trashspec-latest.html
+#   This trash implementation tries to follow the guidelines set for by
+#   freedesktop.org here:
+#   https://specifications.freedesktop.org/trash-spec/trashspec-latest.html
 
 import os
 import shutil
