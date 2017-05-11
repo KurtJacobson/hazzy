@@ -648,6 +648,9 @@ class Hazzy:
             color = 'red'
             print(tc.E + text)
             self.hal['error'] = True
+            # flash the border in the message area
+            self.set_animation('error_image', 'error_flash.gif')
+            self.new_error = True
         elif kind in (linuxcnc.NML_TEXT, linuxcnc.OPERATOR_TEXT, 'INFO'):
             kind = "INFO"
             color = 'blue'
