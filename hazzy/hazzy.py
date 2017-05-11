@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-#   An attempt at a basic UI for LinuxCNC that can be used
+#   An attempt at a new UI for LinuxCNC that can be used
 #   on a touch screen without any lost of functionality.
-#   The code is almost a complete rewrite, but was influenced
-#   mainly by Gmoccapy and Touchy, with some code adapted from 
-#   the HAL vcp widgets.
+#   The code is written in python and glade and is almost a
+#   complete rewrite, but was influenced mainly by Gmoccapy
+#   and Touchy, with some code adapted from the HAL VCP widgets.
 
 #   Copyright (c) 2017 Kurt Jacobson
 #       <kurtcjacobson@gmail.com>
@@ -1885,7 +1885,7 @@ class Hazzy:
     def get_win_pos(self):
         pos = self.window.get_position()
         return pos
-        
+
 
 def main():
     gtk.main()
