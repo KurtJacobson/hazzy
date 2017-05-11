@@ -131,6 +131,7 @@ class Keyboard(object):
                 self.caps(True)
             else:
                 self.caps(False)
+
             self.builder.get_object('left_shift').set_active(False)
 
 
@@ -141,20 +142,30 @@ class Keyboard(object):
     def emulate_key(self, widget, key=None):
         try:
             event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
+
             if key:
                 event.keyval = int(gtk.gdk.keyval_from_name(key))
             else:
                 event.keyval = ord(widget.get_label())
+
             event.hardware_keycode = _keymap.get_entries_for_keyval(event.keyval)[0][0]
+
+            # add control mask is ctrl is active
+            if self.builder.get_object('ctrl').get_active():
+                event.state = gtk.gdk.CONTROL_MASK
+                self.builder.get_object('ctrl').set_active(False)
+
             event.window = self.entry.window
             self.event = event
             self.widget = widget
             self.wait_counter = 0           # Set counter for repeat timeout
             self.entry.event(self.event)    # Do the initial event
+
         except Exception as e:
             print e
             print("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
             self.window.hide()
+
 
         # Unshift if left shift is active, right shift is "sticky"
         if self.builder.get_object('left_shift').get_active():
@@ -162,6 +173,7 @@ class Keyboard(object):
 
     def key_repeat(self):
         if self.widget.get_state() == gtk.STATE_ACTIVE:
+
             if self.wait_counter < 5:
                 self.wait_counter += 1
             else:
