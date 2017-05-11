@@ -515,6 +515,8 @@ class Filechooser(gobject.GObject):
     # Move selected files to trash (see file_util code at end)
     def delete_selected(self):
         paths = self.get_selected()
+        if paths is None:
+            return
         num = len(paths)
         for path in paths:
             info = move2trash(path)
