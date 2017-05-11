@@ -480,7 +480,7 @@ class Filechooser(gobject.GObject):
             path = self.get_selected()[0]
         if not os.path.exists(path) or path is None:
             return False
-        fdir, fname = os.path.split(path)
+        fpath, fname = os.path.split(path)
         new_name = self._copy_file(path, fdir)
         for row in range(len(model)):
             if model[row][2] == new_name:
@@ -488,6 +488,29 @@ class Filechooser(gobject.GObject):
         focus_column = self.builder.get_object('col_file_name')
         model[row][0] = 1
         tree.set_cursor(row, focus_column, True)
+
+    # Create a new folder in the current directory
+    def new_folder(self):
+        model = self.file_liststore
+        tree = self.file_treeview
+
+        name = "New Folder"
+        count = 1
+        while os.path.exists(os.path.join(self._cur_dir, name)):
+            name = 'New Folder {0}'.format(count)
+            count += 1
+
+        path = os.path.join(self._cur_dir, name)
+        os.makedirs(path)
+        self._fill_file_liststore()
+
+        for row in range(len(model)):
+            if model[row][2] == name:
+                break
+        focus_column = self.builder.get_object('col_file_name')
+        model[row][0] = 1
+        tree.set_cursor(row, focus_column, True)
+
 
     # Move selected files to trash (see file_util code at end)
     def delete_selected(self):
