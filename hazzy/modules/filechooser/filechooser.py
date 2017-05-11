@@ -519,6 +519,8 @@ class Filechooser(gobject.GObject):
         for path in paths:
             info = move2trash(path)
         self._fill_file_liststore()
+
+        # Show ERROR/INFO message at bottom of screen
         self.emit('error', info[0], info[1])
 
     # =======================================
