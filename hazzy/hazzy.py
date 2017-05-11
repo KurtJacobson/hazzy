@@ -1103,7 +1103,6 @@ class Hazzy:
         self.filechooser.save_as()
 
     def on_new_folder_clicked(self, widget, data=None):
-        self._show_message(["INFO", "Not implemeted yet!"])
         self.filechooser.new_folder()
 
     def on_save_file_clicked(self, widget, data=None):
