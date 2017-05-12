@@ -13,7 +13,7 @@ img = cv.QueryFrame(capture)
 cameraQuality = 75
 
 
-class MyHandler(BaseHTTPRequestHandler):
+class VideoHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         global cameraQuality
         try:
@@ -89,11 +89,11 @@ class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
 def main():
     server = None
     try:
-        server = ThreadedHTTPServer(('0.0.0.0', 8080), MyHandler)
-        print 'started httpserver...'
+        server = ThreadedHTTPServer(('0.0.0.0', 8080), VideoHandler)
+        print('started httpserver...')
         server.serve_forever()
     except KeyboardInterrupt:
-        print '^C received, shutting down server'
+        print('\nshutting down server')
         server.socket.close()
 
 
