@@ -73,7 +73,7 @@ class CamView(gtk.VBox):
     v4l2-ctl --list-formats-ext
     will list all supported frame sizes and frame rates for your camera
     """
-    
+
     __gtype_name__ = 'CamView'
     __gproperties__ = {
         'camera': (gobject.TYPE_INT, 'Camera Number', 'if you have several cameras, select the one to use',
@@ -692,8 +692,7 @@ class CamProperties():
 #        os.kill(self.v4l2ucp.pid, signal.SIGKILL)
 #        print("kill signal emitted",self.v4l2ucp.pid)
 
-
-if __name__ == '__main__':
+def main():
     window = gtk.Window(gtk.WINDOW_TOPLEVEL)
     window.set_title("CamView Window")
     camv = CamView(videodevice=0, frame_width=640, frame_height=480)
@@ -706,3 +705,7 @@ if __name__ == '__main__':
     window.show_all()
     window.connect("destroy", camv.quit)
     gtk.main()
+
+
+if __name__ == '__main__':
+    main()
