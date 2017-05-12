@@ -75,6 +75,12 @@ class VideoDev:
         self.cam_properties.get_devices()
          # self.cam_properties.get_resolution(self.videodevice)
 
+    def run(self):
+        cv2.startWindowThread()
+        result, frame = self.cam.read()
+        if result:
+            cv2.imshow("test", frame)
+
 
 class CamProperties():
     def __init__(self):
@@ -139,3 +145,12 @@ class CamProperties():
     def _run_command(self, command):
         if command:
             result = subprocess.Popen(command, stderr=None, shell=True)
+
+
+def main():
+    video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
+    video_device.run()
+
+
+if __name__ == '__main__':
+    main()
