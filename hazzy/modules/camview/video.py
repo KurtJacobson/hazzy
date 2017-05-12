@@ -1,4 +1,3 @@
-
 import cv2
 import threading
 import subprocess
@@ -9,8 +8,21 @@ from pkg_resources import parse_version
 OPCV3 = parse_version(cv2.__version__) >= parse_version('3')
 
 
-class VideoDev:
+class VideoThread(threading.Thread):
+    def __init__(self, thread_id, name, counter, callback):
+        threading.Thread.__init__(self)
+        self.thread_id = thread_id
+        self.name = name
+        self.counter = counter
+        self.callback = callback
 
+    def run(self):
+        print "Starting " + self.name
+        self.callback()
+        print "Exiting " + self.name
+
+
+class VideoDev:
     def __init__(self, videodevice=0, frame_width=640, frame_height=480):
         # set the selected camera as video device
         self.videodevice = videodevice
@@ -74,18 +86,19 @@ class VideoDev:
 
         self.cam_properties = CamProperties()
         self.cam_properties.get_devices()
-         # self.cam_properties.get_resolution(self.videodevice)
+        # self.cam_properties.get_resolution(self.videodevice)
 
     def run(self):
         cv2.namedWindow('RGB')
         running = True
-        while running:
-            result, frame = self.cam.read()
-            if result:
-                cv2.imshow('RGB', frame)
-                self.frame = frame
-                if cv2.waitKey(10) == 27:
-                    running = False
+        try:
+            while running:
+                result, frame = self.cam.read()
+                if result:
+                    cv2.imshow('RGB', frame)
+                    self.frame = frame
+        except Exception as e:
+            print(e)
 
 
 class CamProperties():
@@ -155,8 +168,11 @@ class CamProperties():
 
 
 def main():
+
     video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
-    video_device.run()
+
+    video_thread = VideoThread(1, "Thread-1", 1, video_device.run)
+    video_thread.start()
 
 
 if __name__ == '__main__':
