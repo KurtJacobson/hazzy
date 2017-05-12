@@ -22,6 +22,8 @@ import gobject
 import threading
 import subprocess
 
+import cv2
+
 # import time
 
 gtk.gdk.threads_init()
@@ -32,6 +34,47 @@ import gettext
 _ = gettext.gettext
 
 from video import VideoDev
+from stream import HttpServer
+
+
+class ControlThread(threading.Thread):
+    def __init__(self, thread_id, name, counter, callback, args=None):
+        threading.Thread.__init__(self)
+        self.thread_id = thread_id
+        self.name = name
+        self.counter = counter
+        self.callback = callback
+        self.args = args
+
+    def run(self):
+        print("Starting {0}".format(self.name))
+
+        if self.args is None:
+            self.callback()
+        else:
+            self.callback(self.args)
+
+        print("Exiting {0}".format(self.name))
+
+
+class CamViewWindow:
+
+    def __init__(self, callback):
+        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window.set_title("CamView Window")
+        self.camv = CamView(callback)
+        self.window.add(self.camv)
+        self.camv.set_property("draw_color", gtk.gdk.Color("yellow"))
+        self.camv.set_property("circle_size", 150)
+        self.camv.set_property("number_of_circles", 5)
+        self.command = 'v4l2-ctl -d0 --set-ctrl=power_line_frequency=1'
+        self.camv.set_property("cam_settings", self.command)
+        self.window.show_all()
+        self.window.connect("destroy", self.camv.quit)
+
+    def run(self):
+        gtk.main()
+
 
 class CamView(gtk.VBox):
     """
@@ -99,10 +142,33 @@ class CamView(gtk.VBox):
         'exit': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ()),
     }
 
-    def __init__(self, video_device):
+    def __init__(self, callback):
         super(CamView, self).__init__()
 
         self.__version__ = "0.1.1"
+
+        self.get_frame = callback
+
+        # set other default values or initialize them
+        self.color = (0, 0, 255)
+        self.radius = 150
+        self.radius_difference = 10
+        self.circles = 5
+        self.autosize = False
+        self.full_info = False
+        self.linewidth = 1
+        # self.frame = None
+        self.img_gtk = None
+        self.paused = False
+        self.thrd = None
+        self.initialized = False
+
+        self.img_width = self.frame_width
+        self.img_height = self.frame_height
+        self.img_ratio = float(self.img_width) / float(self.img_height)
+
+        self.colorseldlg = None
+        self.old_frames = 0
 
         # make the main GUI
         self.image_box = gtk.EventBox()
@@ -164,14 +230,14 @@ class CamView(gtk.VBox):
         self.btn_stop.connect("clicked", self.on_btn_stop_clicked)
         self.btbx_lower_buttons.add(self.btn_stop)
 
-        self.adj_videodevice = gtk.Adjustment(0, 0, len(self.cam_properties.devices) - 1, 1, 1, 0)
-        self.adj_videodevice.connect("value_changed", self.adj_videodevice_value_changed)
-        self.spn_videodevice = gtk.SpinButton(self.adj_videodevice, 0, 0)
+        # self.adj_videodevice = gtk.Adjustment(0, 0, len(self.cam_properties.devices) - 1, 1, 1, 0)
+        # self.adj_videodevice.connect("value_changed", self.adj_videodevice_value_changed)
+        # self.spn_videodevice = gtk.SpinButton(self.adj_videodevice, 0, 0)
 
-        if len(self.cam_properties.devices) == 1:
-            self.spn_videodevice.set_sensitive(False)
+        # if len(self.cam_properties.devices) == 1:
+        #     self.spn_videodevice.set_sensitive(False)
 
-        self.btbx_lower_buttons.add(self.spn_videodevice)
+        # self.btbx_lower_buttons.add(self.spn_videodevice)
 
         store = gtk.ListStore(str)
         store.append(["None"])
@@ -231,34 +297,30 @@ class CamView(gtk.VBox):
     def run(self):
         self.btn_run.set_sensitive(False)
         self.captured_frames = 0
-        while True:
+        running = True
+        while running:
             with self.condition:
                 if self.paused:
                     self.condition.wait()
                     self.captured_frames = 0
             try:
-                result, frame = self.cam.read()
-                if result:
-                    # convert the image to RGB before displaying it
-                    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    frame = self._draw_lines(frame)
-                    if self.circles != 0:
-                        frame = self._draw_circles(frame)
-                        frame = self._draw_text(frame)
-                    elif self.full_info:
-                        frame = self._draw_text(frame)
-                    self.show_image(frame)
-                    # we put that in a try, to avoid an error if the user
-                    # use the App 24/7 and get to large numbers
-                    try:
-                        self.captured_frames += 1
-                    except:
-                        self.captured_frames = 0
-                else:
-                    pass
+                frame = self.get_frame()
+                frame = self._draw_lines(frame)
+                if self.circles != 0:
+                    frame = self._draw_circles(frame)
+                    frame = self._draw_text(frame)
+                elif self.full_info:
+                    frame = self._draw_text(frame)
+                self.show_image(frame)
+                # we put that in a try, to avoid an error if the user
+                # use the App 24/7 and get to large numbers
+                try:
+                    self.captured_frames += 1
+                except:
+                    self.captured_frames = 0
+
             except KeyboardInterrupt:
-                self.quit()
-                break
+                running = False
 
     def resume(self):
         self.btn_stop.set_sensitive(True)
@@ -564,21 +626,21 @@ class CamView(gtk.VBox):
 #        os.kill(self.v4l2ucp.pid, signal.SIGKILL)
 #        print("kill signal emitted",self.v4l2ucp.pid)
 
-def main():
-    window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-    window.set_title("CamView Window")
-    video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
-    camv = CamView(video_device)
-    window.add(camv)
-    camv.set_property("draw_color", gtk.gdk.Color("yellow"))
-    camv.set_property("circle_size", 150)
-    camv.set_property("number_of_circles", 5)
-    command = 'v4l2-ctl -d0 --set-ctrl=power_line_frequency=1'
-    camv.set_property("cam_settings", command)
-    window.show_all()
-    window.connect("destroy", camv.quit)
-    gtk.main()
 
+def main():
+
+    video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
+    video_streamer = HttpServer("test server", '0.0.0.0', 8080, video_device.get_jpeg_frame)
+    video_gui = CamViewWindow(video_device.get_frame)
+
+    video_thread = ControlThread(1, "VideoThread", 1, video_device.run)
+    stream_thread = ControlThread(1, "StreamThread", 1, video_streamer.run)
+    gui_thread = ControlThread(1, "GuiThread", 1, video_gui.run)
+
+    video_thread.start()
+    stream_thread.start()
+    gui_thread.start()
 
 if __name__ == '__main__':
     main()
+

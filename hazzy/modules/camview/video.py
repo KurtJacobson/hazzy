@@ -5,29 +5,7 @@ import subprocess
 # check if opencv3 is used, so we will have to change attribut naming
 from pkg_resources import parse_version
 
-from stream import HttpServer
-
 OPCV3 = parse_version(cv2.__version__) >= parse_version('3')
-
-
-class ControlThread(threading.Thread):
-    def __init__(self, thread_id, name, counter, callback, args=None):
-        threading.Thread.__init__(self)
-        self.thread_id = thread_id
-        self.name = name
-        self.counter = counter
-        self.callback = callback
-        self.args = args
-
-    def run(self):
-        print("Starting {0}".format(self.name))
-
-        if self.args is None:
-            self.callback()
-        else:
-            self.callback(self.args)
-
-        print("Exiting {0}".format(self.name))
 
 
 class VideoDev:
@@ -35,34 +13,13 @@ class VideoDev:
         # set the selected camera as video device
         self.videodevice = videodevice
 
+        # set the correct camera as video device
+        self.cam = cv2.VideoCapture(self.videodevice)
+
         # set the capture size
         self.frame_width = frame_width
         self.frame_height = frame_height
-        self.frame = None
-
-        # set other default values or initialize them
-        self.color = (0, 0, 255)
-        self.radius = 150
-        self.radius_difference = 10
-        self.circles = 5
-        self.autosize = False
-        self.full_info = False
-        self.linewidth = 1
-        # self.frame = None
-        self.img_gtk = None
-        self.paused = False
-        self.thrd = None
-        self.initialized = False
-
-        self.img_width = self.frame_width
-        self.img_height = self.frame_height
-        self.img_ratio = float(self.img_width) / float(self.img_height)
-
-        self.colorseldlg = None
-        self.old_frames = 0
-
-        # set the correct camera as video device
-        self.cam = cv2.VideoCapture(self.videodevice)
+        _, self.frame = self.cam.read()
 
         # 0  = CAP_PROP_POS_MSEC        Current position of the video file in milliseconds.
         # 1  = CAP_PROP_POS_FRAMES      0-based index of the frame to be decoded/captured next.
@@ -97,14 +54,11 @@ class VideoDev:
         # self.cam_properties.get_resolution(self.videodevice)
 
     def run(self):
-        cv2.namedWindow('RGB')
         running = True
         try:
             while running:
                 result, frame = self.cam.read()
                 if result:
-                    cv2.imshow('RGB', frame)
-                    cv2.waitKey(60)
                     self.frame = frame
         except Exception as e:
             print(e)
@@ -112,6 +66,10 @@ class VideoDev:
     def get_jpeg_frame(self):
         jpeg_data = cv2.imencode('.jpg', self.frame)[1].tostring()
         return jpeg_data
+
+    def get_frame(self):
+        return self.frame
+
 
 class CamProperties():
     def __init__(self):
@@ -178,18 +136,3 @@ class CamProperties():
         if command:
             result = subprocess.Popen(command, stderr=None, shell=True)
 
-
-def main():
-
-    video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
-    video_server = HttpServer("test server", '0.0.0.0', 8080, video_device.get_jpeg_frame)
-
-    video_thread = ControlThread(1, "VideoThread", 1, video_device.run)
-    stream_thread = ControlThread(1, "StreamThread", 1, video_server.run)
-
-    video_thread.start()
-    stream_thread.start()
-
-
-if __name__ == '__main__':
-    main()
