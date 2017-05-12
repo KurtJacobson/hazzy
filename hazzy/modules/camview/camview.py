@@ -399,12 +399,15 @@ class CamView(gtk.VBox):
 
     def show_image(self, frame):
 
+        jpeg_data = cv2.imencode('.jpg', frame)[1]
+
         self.img_pixbuf = gtk.gdk.pixbuf_new_from_array(frame, gtk.gdk.COLORSPACE_RGB, 8)
         if self.autosize:
             self.img_pixbuf = self.img_pixbuf.scale_simple(self.img_width, self.img_height, gtk.gdk.INTERP_BILINEAR)
-        self.img_gtk.set_from_pixbuf(self.img_pixbuf)
-        self.img_gtk.show()
-        self.show_all()
+        if self.img_pixbuf is not None:
+            self.img_gtk.set_from_pixbuf(self.img_pixbuf)
+            self.img_gtk.show()
+            self.show_all()
 
     def _on_size_allocate(self, widget, data=None):
         if not self.autosize:
@@ -630,7 +633,7 @@ class CamView(gtk.VBox):
 def main():
 
     video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
-    video_streamer = HttpServer("test server", '0.0.0.0', 8080, video_device.get_jpeg_frame)
+    video_streamer = HttpServer("HAZZY stream", '0.0.0.0', 8080, video_device.get_jpeg_frame)
     video_gui = CamViewWindow(video_device)
 
     video_thread = ControlThread(1, "VideoThread", 1, video_device.run)

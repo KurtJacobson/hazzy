@@ -15,7 +15,7 @@ class HttpServerHandler(BaseHTTPRequestHandler):
             if self.path == "" or self.path is None or self.path[:1] == ".":
                 return
 
-            if self.path.endswith(".html"):
+            if self.path.endswith("index.html"):
                 file_path = os.path.join(os.curdir, self.path)
                 with open(file_path) as f:
                     self.send_response(200)
@@ -24,7 +24,7 @@ class HttpServerHandler(BaseHTTPRequestHandler):
                     self.wfile.write(f.read())
                 return
 
-            if self.path.endswith(".mjpeg"):
+            if self.path.endswith("stream.mjpeg"):
                 self.send_response(200)
                 self.wfile.write("Content-Type: multipart/x-mixed-replace; boundary=--aaboundary")
                 self.wfile.write("\r\n\r\n")
@@ -38,16 +38,6 @@ class HttpServerHandler(BaseHTTPRequestHandler):
                     time.sleep(0.05)
 
                 return
-
-            if self.path.endswith(".jpeg"):
-                file_path = os.path.join(os.curdir, self.path)
-                with open(file_path) as f:
-                    self.send_response(200)
-                    self.send_header('Content-type', 'image/jpeg')
-                    self.end_headers()
-                    self.wfile.write(f.read())
-                return
-            return
 
         except IOError:
             self.send_error(404, 'File Not Found: %s' % self.path)
