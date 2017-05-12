@@ -5,21 +5,29 @@ import subprocess
 # check if opencv3 is used, so we will have to change attribut naming
 from pkg_resources import parse_version
 
+from stream import HttpServer
+
 OPCV3 = parse_version(cv2.__version__) >= parse_version('3')
 
 
-class VideoThread(threading.Thread):
-    def __init__(self, thread_id, name, counter, callback):
+class ControlThread(threading.Thread):
+    def __init__(self, thread_id, name, counter, callback, args=None):
         threading.Thread.__init__(self)
         self.thread_id = thread_id
         self.name = name
         self.counter = counter
         self.callback = callback
+        self.args = args
 
     def run(self):
-        print "Starting " + self.name
-        self.callback()
-        print "Exiting " + self.name
+        print("Starting {0}".format(self.name))
+
+        if self.args is None:
+            self.callback()
+        else:
+            self.callback(self.args)
+
+        print("Exiting {0}".format(self.name))
 
 
 class VideoDev:
@@ -96,10 +104,14 @@ class VideoDev:
                 result, frame = self.cam.read()
                 if result:
                     cv2.imshow('RGB', frame)
+                    cv2.waitKey(60)
                     self.frame = frame
         except Exception as e:
             print(e)
 
+    def get_jpeg_frame(self):
+        jpeg_data = cv2.imencode('.jpg', self.frame)[1].tostring()
+        return jpeg_data
 
 class CamProperties():
     def __init__(self):
@@ -170,9 +182,13 @@ class CamProperties():
 def main():
 
     video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
+    video_server = HttpServer("test server", '0.0.0.0', 8080, video_device.get_jpeg_frame)
 
-    video_thread = VideoThread(1, "Thread-1", 1, video_device.run)
+    video_thread = ControlThread(1, "VideoThread", 1, video_device.run)
+    stream_thread = ControlThread(1, "StreamThread", 1, video_server.run)
+
     video_thread.start()
+    stream_thread.start()
 
 
 if __name__ == '__main__':

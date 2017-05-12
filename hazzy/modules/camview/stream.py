@@ -1,58 +1,51 @@
-# edited by Norbert (mjpeg part) from a file from Copyright Jon Berg , turtlemeat.com,
-# MJPEG Server for the webcam
+# !/usr/bin/env python
 
-import string, cgi, time
-from os import curdir, sep
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-from SocketServer import ThreadingMixIn
-import cv
+import os
 import re
+import time
+import cgi
 
-capture = cv.CaptureFromCAM(-1)
-img = cv.QueryFrame(capture)
-cameraQuality = 75
+from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 
-class VideoHandler(BaseHTTPRequestHandler):
+class HttpServerHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        global cameraQuality
         try:
             self.path = re.sub('[^.a-zA-Z0-9]', "", str(self.path))
             if self.path == "" or self.path is None or self.path[:1] == ".":
                 return
 
             if self.path.endswith(".html"):
-                f = open(curdir + sep + self.path)
-                self.send_response(200)
-                self.send_header('Content-type', 'text/html')
-                self.end_headers()
-                self.wfile.write(f.read())
-                f.close()
+                file_path = os.path.join(os.curdir, self.path)
+                with open(file_path) as f:
+                    self.send_response(200)
+                    self.send_header('Content-type', 'text/html')
+                    self.end_headers()
+                    self.wfile.write(f.read())
                 return
 
             if self.path.endswith(".mjpeg"):
                 self.send_response(200)
                 self.wfile.write("Content-Type: multipart/x-mixed-replace; boundary=--aaboundary")
                 self.wfile.write("\r\n\r\n")
-                while 1:
-                    img = cv.QueryFrame(capture)
-                    cv2mat = cv.EncodeImage(".jpeg", img, (cv.CV_IMWRITE_JPEG_QUALITY, cameraQuality))
-                    JpegData = cv2mat.tostring()
+                while True:
+                    img = self.server.handler()
                     self.wfile.write("--aaboundary\r\n")
                     self.wfile.write("Content-Type: image/jpeg\r\n")
-                    self.wfile.write("Content-length: " + str(len(JpegData)) + "\r\n\r\n")
-                    self.wfile.write(JpegData)
+                    self.wfile.write("Content-length: " + str(len(img)) + "\r\n\r\n")
+                    self.wfile.write(img)
                     self.wfile.write("\r\n\r\n\r\n")
                     time.sleep(0.05)
+
                 return
 
             if self.path.endswith(".jpeg"):
-                f = open(curdir + sep + self.path)
-                self.send_response(200)
-                self.send_header('Content-type', 'image/jpeg')
-                self.end_headers()
-                self.wfile.write(f.read())
-                f.close()
+                file_path = os.path.join(os.curdir, self.path)
+                with open(file_path) as f:
+                    self.send_response(200)
+                    self.send_header('Content-type', 'image/jpeg')
+                    self.end_headers()
+                    self.wfile.write(f.read())
                 return
             return
 
@@ -60,7 +53,6 @@ class VideoHandler(BaseHTTPRequestHandler):
             self.send_error(404, 'File Not Found: %s' % self.path)
 
     def do_POST(self):
-        global rootnode, cameraQuality
         try:
             query = None
 
@@ -73,29 +65,37 @@ class VideoHandler(BaseHTTPRequestHandler):
             upfilecontent = query.get('upfile')
             print "filecontent", upfilecontent[0]
             value = int(upfilecontent[0])
-            cameraQuality = max(2, min(99, value))
+            camera_quality = max(2, min(99, value))
             self.wfile.write("<HTML>POST OK. Camera Set to<BR><BR>")
-            self.wfile.write(str(cameraQuality))
+            self.wfile.write(str(camera_quality))
 
         except Exception as e:
             print(e)
 
 
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    # class ThreadedHTTPServer(HTTPServer):
-    """Handle requests in a separate thread."""
+class MyHTTPServer(HTTPServer):
+    """this class is necessary to allow passing custom request handler into
+       the RequestHandlerClass"""
+
+    def __init__(self, server_address, RequestHandlerClass, handler):
+        HTTPServer.__init__(self, server_address, RequestHandlerClass)
+        self.handler = handler
 
 
-def main():
-    server = None
-    try:
-        server = ThreadedHTTPServer(('0.0.0.0', 8080), VideoHandler)
-        print('started httpserver...')
-        server.serve_forever()
-    except KeyboardInterrupt:
-        print('\nshutting down server')
-        server.socket.close()
+class HttpServer:
+    def __init__(self, name, host, port, handler):
+        self.name = name
+        self.host = host
+        self.port = port
+        self.handler = handler
+        self.server = None
 
+    def run(self):
+        self.server = MyHTTPServer((self.host, self.port), HttpServerHandler,
+                                   self.handler)
+        self.server.serve_forever()
 
-if __name__ == '__main__':
-    main()
+    def stop(self):
+        if self.server:
+            self.server.shutdown()
+
