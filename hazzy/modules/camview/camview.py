@@ -620,8 +620,6 @@ class CamView(gtk.VBox):
         except:
             pass
 
-
-
 # def close_child(self):
 #        os.kill(self.v4l2ucp.pid, signal.SIGKILL)
 #        print("kill signal emitted",self.v4l2ucp.pid)
