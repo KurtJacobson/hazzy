@@ -288,11 +288,11 @@ class CamView(gtk.VBox):
         self.thrd.start()
 
     def _periodic(self):
-        FPS = (self.captured_frames - self.old_frames) / 2
-        if FPS < 0:
-            FPS = 0
+        fps = (self.captured_frames - self.old_frames) / 2
+        if fps < 0:
+            fps = 0
         self.old_frames = self.captured_frames
-        self.lbl_frames.set_text("FPS\n" + str(FPS))
+        self.lbl_frames.set_text("FPS\n{0}".format(fps))
         return True
 
     def run(self):
@@ -382,18 +382,18 @@ class CamView(gtk.VBox):
         return frame
 
     def _draw_text(self, frame):
-        cv2.putText(frame, _("Radius = {}".format(self.radius)),
+        cv2.putText(frame, _("Radius = {0}".format(self.radius)),
                     (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.color, 1)
-        cv2.putText(frame, _("Circles = {}".format(self.circles)),
+        cv2.putText(frame, _("Circles = {0}".format(self.circles)),
                     (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.color, 1)
         if self.full_info:
-            cv2.putText(frame, _("Frame Width = {}".format(self.frame_width)),
+            cv2.putText(frame, _("Frame Width = {0}".format(self.frame_width)),
                         (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.color, 1)
-            cv2.putText(frame, _("Frame Height = {}".format(self.frame_height)),
+            cv2.putText(frame, _("Frame Height = {0}".format(self.frame_height)),
                         (10, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.color, 1)
-            cv2.putText(frame, _("Image Width = {}".format(self.img_width)),
+            cv2.putText(frame, _("Image Width = {0}".format(self.img_width)),
                         (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.color, 1)
-            cv2.putText(frame, _("Image Height = {}".format(self.img_height)),
+            cv2.putText(frame, _("Image Height = {0}".format(self.img_height)),
                         (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.color, 1)
         return frame
 
@@ -581,7 +581,7 @@ class CamView(gtk.VBox):
         r = temp[0:4]
         g = temp[4:8]
         b = temp[8:]
-        return (int(r, 16), int(g, 16), int(b, 16))
+        return int(r, 16), int(g, 16), int(b, 16)
 
     def _convert_to_gtk_color(self, spec):
         def clamp(x):

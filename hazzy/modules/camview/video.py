@@ -1,6 +1,7 @@
 import cv2
 import threading
 import subprocess
+from time import sleep
 
 # check if opencv3 is used, so we will have to change attribut naming
 from pkg_resources import parse_version
@@ -60,6 +61,7 @@ class VideoDev:
                 result, frame = self.cam.read()
                 if result:
                     self.frame = frame
+                sleep(1)
         except Exception as e:
             print(e)
 
@@ -86,7 +88,7 @@ class CamProperties():
                 continue
             info = info.strip(' \t\n\r')
             if "/dev/video" in info:
-                device = str(info + " = " + infos[item - 1])
+                device = "{0} = {1}".format(info, infos[item - 1])
                 self.devices.append(device)
 
         return self.devices
@@ -125,11 +127,12 @@ class CamProperties():
     #        return self.resolutions
 
     def set_powerline_frequeny(self, videodevice, value):
-        command = 'v4l2-ctl -d' + str(videodevice) + ' --set-ctrl=power_line_frequency=' + str(value)
+        command = 'v4l2-ctl -d{0} --set-ctrl=power_line_frequency={1}'\
+            .format(videodevice, value)
         self._run_command(command)
 
     def open_settings(self, videodevice=0):
-        command = "v4l2ucp /dev/video" + str(videodevice)
+        command = "v4l2ucp /dev/video{0}".format(videodevice)
         self._run_command(command)
 
     def _run_command(self, command):

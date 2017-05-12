@@ -28,11 +28,12 @@ class HttpServerHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.wfile.write("Content-Type: multipart/x-mixed-replace; boundary=--aaboundary")
                 self.wfile.write("\r\n\r\n")
-                while True:
+                running = True
+                while running:
                     img = self.server.handler()
                     self.wfile.write("--aaboundary\r\n")
                     self.wfile.write("Content-Type: image/jpeg\r\n")
-                    self.wfile.write("Content-length: " + str(len(img)) + "\r\n\r\n")
+                    self.wfile.write("Content-length: {0}\r\n\r\n".format(len(img)))
                     self.wfile.write(img)
                     self.wfile.write("\r\n\r\n\r\n")
                     time.sleep(0.1)
@@ -53,7 +54,7 @@ class HttpServerHandler(BaseHTTPRequestHandler):
 
             self.end_headers()
             upfilecontent = query.get('upfile')
-            print "filecontent", upfilecontent[0]
+            print("filecontent {0}".format(upfilecontent[0]))
             value = int(upfilecontent[0])
             camera_quality = max(2, min(99, value))
             self.wfile.write("<HTML>POST OK. Camera Set to<BR><BR>")
