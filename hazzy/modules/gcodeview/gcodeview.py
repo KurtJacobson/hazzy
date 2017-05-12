@@ -52,7 +52,6 @@ class GcodeView(object):
 
         self.buf = gtksourceview.Buffer()
         self.buf.set_max_undo_levels(20)
-        self.buf.set_data('languages-manager', self.lm)
         self.buf.set_style_scheme(self.sm.get_scheme('gcode'))
         self.buf.set_language(self.lm.get_language('.ngc'))
 
