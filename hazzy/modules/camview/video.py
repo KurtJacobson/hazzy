@@ -19,7 +19,7 @@ class VideoDev:
         # set the capture size
         self.frame_width = frame_width
         self.frame_height = frame_height
-        _, self.frame = self.cam.read()
+        self.frame = self.cam.read()[1]
 
         # 0  = CAP_PROP_POS_MSEC        Current position of the video file in milliseconds.
         # 1  = CAP_PROP_POS_FRAMES      0-based index of the frame to be decoded/captured next.

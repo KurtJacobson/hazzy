@@ -26,15 +26,15 @@ import cv2
 
 # import time
 
-gtk.gdk.threads_init()
-
 # prepared for localization
 import gettext
 
-_ = gettext.gettext
-
 from video import VideoDev
 from stream import HttpServer
+
+gtk.gdk.threads_init()
+
+_ = gettext.gettext
 
 
 class ControlThread(threading.Thread):
@@ -59,10 +59,10 @@ class ControlThread(threading.Thread):
 
 class CamViewWindow:
 
-    def __init__(self, callback):
+    def __init__(self, video_device):
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
         self.window.set_title("CamView Window")
-        self.camv = CamView(callback)
+        self.camv = CamView(video_device)
         self.window.add(self.camv)
         self.camv.set_property("draw_color", gtk.gdk.Color("yellow"))
         self.camv.set_property("circle_size", 150)
@@ -142,12 +142,13 @@ class CamView(gtk.VBox):
         'exit': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ()),
     }
 
-    def __init__(self, callback):
+    def __init__(self, video_device):
         super(CamView, self).__init__()
 
         self.__version__ = "0.1.1"
 
-        self.get_frame = callback
+        self.get_frame = video_device.get_frame
+        self.cam_properties = video_device.cam_properties
 
         # set other default values or initialize them
         self.color = (0, 0, 255)
@@ -397,6 +398,7 @@ class CamView(gtk.VBox):
         return frame
 
     def show_image(self, frame):
+
         self.img_pixbuf = gtk.gdk.pixbuf_new_from_array(frame, gtk.gdk.COLORSPACE_RGB, 8)
         if self.autosize:
             self.img_pixbuf = self.img_pixbuf.scale_simple(self.img_width, self.img_height, gtk.gdk.INTERP_BILINEAR)
@@ -629,7 +631,7 @@ def main():
 
     video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
     video_streamer = HttpServer("test server", '0.0.0.0', 8080, video_device.get_jpeg_frame)
-    video_gui = CamViewWindow(video_device.get_frame)
+    video_gui = CamViewWindow(video_device)
 
     video_thread = ControlThread(1, "VideoThread", 1, video_device.run)
     stream_thread = ControlThread(1, "StreamThread", 1, video_streamer.run)
