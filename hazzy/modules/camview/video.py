@@ -18,6 +18,7 @@ class VideoDev:
         # set the capture size
         self.frame_width = frame_width
         self.frame_height = frame_height
+        self.frame = None
 
         # set other default values or initialize them
         self.color = (0, 0, 255)
@@ -76,10 +77,15 @@ class VideoDev:
          # self.cam_properties.get_resolution(self.videodevice)
 
     def run(self):
-        cv2.startWindowThread()
-        result, frame = self.cam.read()
-        if result:
-            cv2.imshow("test", frame)
+        cv2.namedWindow('RGB')
+        running = True
+        while running:
+            result, frame = self.cam.read()
+            if result:
+                cv2.imshow('RGB', frame)
+                self.frame = frame
+                if cv2.waitKey(10) == 27:
+                    running = False
 
 
 class CamProperties():
@@ -99,6 +105,7 @@ class CamProperties():
             if "/dev/video" in info:
                 device = str(info + " = " + infos[item - 1])
                 self.devices.append(device)
+
         return self.devices
 
     #    def get_resolution(self, videodevice=0):
