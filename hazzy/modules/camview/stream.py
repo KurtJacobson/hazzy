@@ -35,7 +35,7 @@ class HttpServerHandler(BaseHTTPRequestHandler):
                     self.wfile.write("Content-length: " + str(len(img)) + "\r\n\r\n")
                     self.wfile.write(img)
                     self.wfile.write("\r\n\r\n\r\n")
-                    time.sleep(0.05)
+                    time.sleep(0.1)
 
                 return
 
