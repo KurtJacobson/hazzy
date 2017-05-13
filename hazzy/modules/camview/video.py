@@ -53,20 +53,13 @@ class VideoDev:
         self.cam_properties.get_devices()
         # self.cam_properties.get_resolution(self.videodevice)
 
-    def get_jpeg_frame(self):
-        result, frame = self.cam.read()
-        if result:
-            self.frame = frame
-
-        jpeg_data = cv2.imencode('.jpg', self.frame)[1].tostring()
-        return jpeg_data
-
     def get_frame(self):
         result, frame = self.cam.read()
         if result:
             self.frame = frame
+            jpeg_data = cv2.imencode('.jpg', self.frame)[1].tostring()
 
-        return self.frame
+        return self.frame, jpeg_data
 
 
 class CamProperties():

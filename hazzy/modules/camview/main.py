@@ -30,7 +30,7 @@ class ControlThread(threading.Thread):
 def main():
 
     video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
-    video_streamer = HttpServer("HAZZY stream", '0.0.0.0', 8080, video_device.get_jpeg_frame)
+    video_streamer = HttpServer("HAZZY stream", '0.0.0.0', 8080, video_device.get_frame)
     video_gui = CamViewWindow(video_device)
 
     stream_thread = ControlThread(1, "StreamThread", 1, video_streamer.run)

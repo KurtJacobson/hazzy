@@ -33,7 +33,7 @@ class HttpServerHandler(BaseHTTPRequestHandler):
                 running = True
                 while running:
 
-                        img = self.server.handler()
+                        img = self.server.handler()[1]
                         self.wfile.write("--aaboundary\r\n")
                         self.wfile.write("Content-Type: image/jpeg\r\n")
                         self.wfile.write("Content-length: {0}\r\n\r\n".format(len(img)))

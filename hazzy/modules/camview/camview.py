@@ -310,7 +310,7 @@ class CamView(gtk.VBox):
                     self.condition.wait()
                     self.captured_frames = 0
             try:
-                frame = self.get_frame()
+                frame = self.get_frame()[0]
                 frame = self._draw_lines(frame)
                 if self.circles != 0:
                     frame = self._draw_circles(frame)
@@ -633,21 +633,3 @@ class CamView(gtk.VBox):
 # def close_child(self):
 #        os.kill(self.v4l2ucp.pid, signal.SIGKILL)
 #        print("kill signal emitted",self.v4l2ucp.pid)
-
-
-def main():
-
-    video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
-    video_streamer = HttpServer("HAZZY stream", '0.0.0.0', 8080, video_device.get_jpeg_frame)
-    video_gui = CamViewWindow(video_device)
-
-    video_thread = ControlThread(1, "VideoThread", 1, video_device.run)
-    stream_thread = ControlThread(1, "StreamThread", 1, video_streamer.run)
-    gui_thread = ControlThread(1, "GuiThread", 1, video_gui.run)
-
-    video_thread.start()
-    stream_thread.start()
-    gui_thread.start()
-
-if __name__ == '__main__':
-    main()
