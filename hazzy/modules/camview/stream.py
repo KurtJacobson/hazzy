@@ -7,6 +7,7 @@ import cgi
 import socket
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from SocketServer import ThreadingMixIn
 
 
 class HttpServerHandler(BaseHTTPRequestHandler):
@@ -79,7 +80,7 @@ class HttpServerHandler(BaseHTTPRequestHandler):
             pass
 
 
-class StreamHTTPServer(HTTPServer):
+class StreamHTTPServer(ThreadingMixIn, HTTPServer):
     """this class is necessary to allow passing custom request handler into
        the RequestHandlerClass"""
 
