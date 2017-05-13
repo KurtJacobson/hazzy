@@ -282,7 +282,7 @@ class CamView(gtk.VBox):
 
         self.thread_gtk()
 
-        gobject.timeout_add(2000, self._periodic)
+        gobject.timeout_add(200, self._periodic)
 
     def thread_gtk(self):
         # without this threading function camera speed was realy poor
@@ -305,12 +305,8 @@ class CamView(gtk.VBox):
         self.captured_frames = 0
         running = True
         while running:
-            with self.condition:
-                if self.paused:
-                    self.condition.wait()
-                    self.captured_frames = 0
             try:
-                frame = self.get_frame()[0]
+                frame = self.get_frame()
                 frame = self._draw_lines(frame)
                 if self.circles != 0:
                     frame = self._draw_circles(frame)
@@ -403,8 +399,6 @@ class CamView(gtk.VBox):
         return frame
 
     def show_image(self, frame):
-
-        jpeg_data = cv2.imencode('.jpg', frame)[1]
 
         self.img_pixbuf = gtk.gdk.pixbuf_new_from_array(frame, gtk.gdk.COLORSPACE_RGB, 8)
         if self.autosize:

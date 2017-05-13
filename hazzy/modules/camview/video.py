@@ -20,6 +20,7 @@ class VideoDev:
         self.frame_width = frame_width
         self.frame_height = frame_height
         self.frame = self.cam.read()[1]
+        self.jpeg_frame = cv2.imencode('.jpg', self.frame)[1].tostring()
 
         # 0  = CAP_PROP_POS_MSEC        Current position of the video file in milliseconds.
         # 1  = CAP_PROP_POS_FRAMES      0-based index of the frame to be decoded/captured next.
@@ -53,13 +54,27 @@ class VideoDev:
         self.cam_properties.get_devices()
         # self.cam_properties.get_resolution(self.videodevice)
 
-    def get_frame(self):
-        result, frame = self.cam.read()
-        if result:
-            self.frame = frame
-            jpeg_data = cv2.imencode('.jpg', self.frame)[1].tostring()
+        self.current_millis = time.time() * 1000
+        self.previous_millis = 0
+        self.interval = 60
 
-        return self.frame, jpeg_data
+    def run(self):
+        running = True
+        while running:
+            self.current_millis = time.time() * 1000
+
+            if self.current_millis - self.previous_millis >= self.interval:
+                self.previous_millis = self.current_millis
+                result, frame = self.cam.read()
+                if result:
+                    self.frame = frame
+                    self.jpeg_frame = cv2.imencode('.jpg', self.frame)[1].tostring()
+
+    def get_frame(self):
+        return self.frame
+
+    def get_jpeg_frame(self):
+        return self.jpeg_frame
 
 
 class CamProperties():

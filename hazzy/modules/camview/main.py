@@ -20,9 +20,9 @@ class ControlThread(threading.Thread):
         print("Starting {0}".format(self.name))
 
         if self.args is None:
-            self.callback()
+            self.callback.run()
         else:
-            self.callback(self.args)
+            self.callback.run(self.args)
 
         print("Exiting {0}".format(self.name))
 
@@ -30,12 +30,14 @@ class ControlThread(threading.Thread):
 def main():
 
     video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
-    video_streamer = HttpServer("HAZZY stream", '0.0.0.0', 8080, video_device.get_frame)
+    video_streamer = HttpServer("HAZZY stream", '0.0.0.0', 8080, video_device.get_jpeg_frame)
     video_gui = CamViewWindow(video_device)
 
-    stream_thread = ControlThread(1, "StreamThread", 1, video_streamer.run)
-    gui_thread = ControlThread(1, "GuiThread", 1, video_gui.run)
+    video_thread = ControlThread(1, "VideoThread", 1, video_device)
+    stream_thread = ControlThread(1, "StreamThread", 1, video_streamer)
+    gui_thread = ControlThread(1, "GuiThread", 1, video_gui)
 
+    video_thread.start()
     stream_thread.start()
     gui_thread.start()
 
