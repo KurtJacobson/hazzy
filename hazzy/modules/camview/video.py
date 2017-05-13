@@ -1,7 +1,6 @@
 import cv2
-import threading
+import time
 import subprocess
-from time import sleep
 
 # check if opencv3 is used, so we will have to change attribut naming
 from pkg_resources import parse_version
@@ -54,22 +53,19 @@ class VideoDev:
         self.cam_properties.get_devices()
         # self.cam_properties.get_resolution(self.videodevice)
 
-    def run(self):
-        running = True
-        try:
-            while running:
-                result, frame = self.cam.read()
-                if result:
-                    self.frame = frame
-                sleep(1)
-        except Exception as e:
-            print(e)
-
     def get_jpeg_frame(self):
+        result, frame = self.cam.read()
+        if result:
+            self.frame = frame
+
         jpeg_data = cv2.imencode('.jpg', self.frame)[1].tostring()
         return jpeg_data
 
     def get_frame(self):
+        result, frame = self.cam.read()
+        if result:
+            self.frame = frame
+
         return self.frame
 
 

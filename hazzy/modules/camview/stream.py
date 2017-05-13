@@ -9,6 +9,7 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 
 class HttpServerHandler(BaseHTTPRequestHandler):
+
     def do_GET(self):
         try:
             self.path = re.sub('[^.a-zA-Z0-9]', "", str(self.path))
@@ -28,15 +29,16 @@ class HttpServerHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.wfile.write("Content-Type: multipart/x-mixed-replace; boundary=--aaboundary")
                 self.wfile.write("\r\n\r\n")
+
                 running = True
                 while running:
-                    img = self.server.handler()
-                    self.wfile.write("--aaboundary\r\n")
-                    self.wfile.write("Content-Type: image/jpeg\r\n")
-                    self.wfile.write("Content-length: {0}\r\n\r\n".format(len(img)))
-                    self.wfile.write(img)
-                    self.wfile.write("\r\n\r\n\r\n")
-                    time.sleep(0.1)
+
+                        img = self.server.handler()
+                        self.wfile.write("--aaboundary\r\n")
+                        self.wfile.write("Content-Type: image/jpeg\r\n")
+                        self.wfile.write("Content-length: {0}\r\n\r\n".format(len(img)))
+                        self.wfile.write(img)
+                        self.wfile.write("\r\n\r\n\r\n")
 
                 return
 

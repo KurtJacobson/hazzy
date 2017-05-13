@@ -60,17 +60,22 @@ class ControlThread(threading.Thread):
 class CamViewWindow:
 
     def __init__(self, video_device):
-        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
-        self.window.set_title("CamView Window")
+
+        self.command = 'v4l2-ctl -d0 --set-ctrl=power_line_frequency=1'
+
         self.camv = CamView(video_device)
-        self.window.add(self.camv)
+
         self.camv.set_property("draw_color", gtk.gdk.Color("yellow"))
         self.camv.set_property("circle_size", 150)
         self.camv.set_property("number_of_circles", 5)
-        self.command = 'v4l2-ctl -d0 --set-ctrl=power_line_frequency=1'
         self.camv.set_property("cam_settings", self.command)
-        self.window.show_all()
+
+        self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+
+        self.window.set_title("CamView Window")
         self.window.connect("destroy", self.camv.quit)
+        self.window.add(self.camv)
+        self.window.show_all()
 
     def run(self):
         gtk.main()
@@ -257,12 +262,12 @@ class CamView(gtk.VBox):
         self.btn_settings.connect("clicked", self.on_btn_settings_clicked)
         self.btbx_lower_buttons.add(self.btn_settings)
 
-        #        self.cmb_resolutions = gtk.combo_box_new_text()
-        #        self.fill_combo(self.cmb_resolutions)
-        #        active_res = str(int(self.frame_width)) +"x" + str(int(self.frame_height))
-        #        self.set_value(self.cmb_resolutions, active_res)
-        #        self.cmb_resolutions.connect("changed", self.cmb_resolutions_changed)
-        #        self.btbx_upper_buttons.add(self.cmb_resolutions)
+        # self.cmb_resolutions = gtk.combo_box_new_text()
+        # self.fill_combo(self.cmb_resolutions)
+        # active_res = str(int(self.frame_width)) +"x" + str(int(self.frame_height))
+        # self.set_value(self.cmb_resolutions, active_res)
+        # self.cmb_resolutions.connect("changed", self.cmb_resolutions_changed)
+        # self.btbx_upper_buttons.add(self.cmb_resolutions)
 
         self.btn_debug = gtk.Button("Debug\nButton")
         self.btn_debug.set_tooltip_text(_("Push to senf debug command"))
