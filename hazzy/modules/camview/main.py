@@ -19,10 +19,7 @@ class ControlThread(threading.Thread):
     def run(self):
         print("Starting {0}".format(self.name))
 
-        if self.args is None:
-            self.callback.run()
-        else:
-            self.callback.run(self.args)
+        self.callback.run()
 
         print("Exiting {0}".format(self.name))
 

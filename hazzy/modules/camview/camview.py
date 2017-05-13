@@ -29,32 +29,9 @@ import cv2
 # prepared for localization
 import gettext
 
-from video import VideoDev
-from stream import HttpServer
-
 gtk.gdk.threads_init()
 
 _ = gettext.gettext
-
-
-class ControlThread(threading.Thread):
-    def __init__(self, thread_id, name, counter, callback, args=None):
-        threading.Thread.__init__(self)
-        self.thread_id = thread_id
-        self.name = name
-        self.counter = counter
-        self.callback = callback
-        self.args = args
-
-    def run(self):
-        print("Starting {0}".format(self.name))
-
-        if self.args is None:
-            self.callback()
-        else:
-            self.callback(self.args)
-
-        print("Exiting {0}".format(self.name))
 
 
 class CamViewWindow:
