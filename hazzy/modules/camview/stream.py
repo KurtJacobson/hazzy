@@ -54,6 +54,7 @@ class HttpServerHandler(BaseHTTPRequestHandler):
             ctype, pdict = cgi.parse_header(self.headers.getheader('content-type'))
             if ctype == 'multipart/form-data':
                 query = cgi.parse_multipart(self.rfile, pdict)
+
             self.send_response(301)
 
             self.end_headers()
@@ -64,8 +65,8 @@ class HttpServerHandler(BaseHTTPRequestHandler):
             self.wfile.write("<HTML>POST OK. Camera Set to<BR><BR>")
             self.wfile.write(str(camera_quality))
 
-        except Exception as e:
-            print(e)
+        except IOError:
+            return
 
     def finish(self):
         try:
