@@ -19,15 +19,14 @@
 
 import gtk
 import gobject
-
 import cv2
-
 import time
-
-# prepared for localization
 import gettext
+import threading
 
 _ = gettext.gettext
+
+gtk.gdk.threads_init()
 
 
 class CamViewWindow:
@@ -49,10 +48,6 @@ class CamViewWindow:
         self.window.connect("destroy", self.camv.quit)
         self.window.add(self.camv)
         self.window.show_all()
-
-    def run(self):
-        self.camv.run()
-
 
 class CamView(gtk.VBox):
     """
@@ -254,27 +249,54 @@ class CamView(gtk.VBox):
 
         self.initialized = True
 
+        self.thread_gtk()
+
+        gobject.timeout_add(2000, self._periodic)
+
+    def thread_gtk(self):
+        # without this threading function camera speed was realy poor
+        self.condition = threading.Condition()
+        self.thrd = threading.Thread(target=self.run, name="CamView thread")
+        self.thrd.daemon = True
+        self.thrd.start()
+
+    def _periodic(self):
+        fps = (self.captured_frames - self.old_frames) / 2
+        if fps < 0:
+            fps = 0
+        self.old_frames = self.captured_frames
+        self.lbl_frames.set_text("FPS\n{0}".format(fps))
+        return True
+
     def run(self):
         self.btn_run.set_sensitive(False)
         self.captured_frames = 0
         running = True
         while running:
-            frame = self.get_frame()
-            frame = self._draw_lines(frame)
-            if self.circles != 0:
-                frame = self._draw_circles(frame)
-                frame = self._draw_text(frame)
-            elif self.full_info:
-                frame = self._draw_text(frame)
-            self.show_image(frame)
-            # we put that in a try, to avoid an error if the user
-            # use the App 24/7 and get to large numbers
-
             try:
-                self.captured_frames += 1
-            except:
-                self.captured_frames = 0
-            time.sleep(0.1)
+                with self.condition:
+                    if self.paused:
+                        self.condition.wait()
+                        self.captured_frames = 0
+
+                frame = self.get_frame()
+                frame = self._draw_lines(frame)
+                if self.circles != 0:
+                    frame = self._draw_circles(frame)
+                    frame = self._draw_text(frame)
+                elif self.full_info:
+                    frame = self._draw_text(frame)
+                self.show_image(frame)
+                # we put that in a try, to avoid an error if the user
+                # use the App 24/7 and get to large numbers
+
+                try:
+                    self.captured_frames += 1
+                except:
+                    self.captured_frames = 0
+
+            except KeyboardInterrupt:
+                break
 
     def resume(self):
         self.btn_stop.set_sensitive(True)
@@ -380,7 +402,6 @@ class CamView(gtk.VBox):
     def quit(self, data=None):
         self.paused = True
         self.destroy()
-        gtk.main_quit()
 
     #    def fill_combo(self, combobox):
     #        store = combobox.get_model()

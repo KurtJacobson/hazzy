@@ -25,7 +25,7 @@ class ControlThread(threading.Thread):
 def main():
 
     http = True
-    gui = False
+    gui = True
 
     video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
     video_thread = ControlThread(1, "VideoThread", 1, video_device)
@@ -38,8 +38,6 @@ def main():
 
     if gui:
         video_gui = CamViewWindow(video_device)
-        gui_thread = ControlThread(1, "GuiThread", 1, video_gui)
-        gui_thread.start()
 
 if __name__ == '__main__':
     main()
