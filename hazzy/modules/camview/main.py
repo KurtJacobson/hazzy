@@ -1,5 +1,4 @@
 import threading
-import time
 
 from video import VideoDev
 from stream import HttpServer

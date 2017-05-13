@@ -4,8 +4,6 @@ import os
 import re
 import time
 import cgi
-
-import errno
 import socket
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
@@ -15,6 +13,7 @@ class HttpServerHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         self.path = re.sub('[^.a-zA-Z0-9]', "", str(self.path))
+
         if self.path == "" or self.path is None or self.path[:1] == ".":
             return
 
@@ -28,16 +27,14 @@ class HttpServerHandler(BaseHTTPRequestHandler):
             return
 
         if self.path.endswith("stream.mjpeg"):
-            print("init")
 
             self.send_response(200)
             self.wfile.write("Content-Type: multipart/x-mixed-replace; boundary=--aaboundary")
             self.wfile.write("\r\n\r\n")
 
             running = True
-            while running:
-                print("running")
-                try:
+            try:
+                while running:
                     img = self.server.handler()
                     self.wfile.write("--aaboundary\r\n")
                     self.wfile.write("Content-Type: image/jpeg\r\n")
@@ -45,11 +42,9 @@ class HttpServerHandler(BaseHTTPRequestHandler):
                     self.wfile.write(img)
                     self.wfile.write("\r\n\r\n\r\n")
                     time.sleep(0.1)
-
-                except Exception as e:
-                    print("Error: {0}".format(e))
-                    running = False
-            return
+            except IOError:
+                return
+        return
 
     def do_POST(self):
         try:
@@ -70,6 +65,18 @@ class HttpServerHandler(BaseHTTPRequestHandler):
 
         except Exception as e:
             print(e)
+
+    def finish(self):
+        try:
+            BaseHTTPRequestHandler.finish(self)
+        except socket.error:
+            pass
+
+    def handle(self):
+        try:
+            BaseHTTPRequestHandler.handle(self)
+        except socket.error:
+            pass
 
 
 class StreamHTTPServer(HTTPServer):
