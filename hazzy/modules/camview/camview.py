@@ -19,17 +19,13 @@
 
 import gtk
 import gobject
-import threading
-import subprocess
 
 import cv2
 
-# import time
+import time
 
 # prepared for localization
 import gettext
-
-gtk.gdk.threads_init()
 
 _ = gettext.gettext
 
@@ -55,7 +51,7 @@ class CamViewWindow:
         self.window.show_all()
 
     def run(self):
-        gtk.main()
+        self.camv.run()
 
 
 class CamView(gtk.VBox):
@@ -129,6 +125,7 @@ class CamView(gtk.VBox):
 
         self.__version__ = "0.1.1"
 
+        self.captured_frames = 0
         self.get_frame = video_device.get_frame
         self.cam_properties = video_device.cam_properties
 
@@ -257,49 +254,27 @@ class CamView(gtk.VBox):
 
         self.initialized = True
 
-        self.thread_gtk()
-
-        gobject.timeout_add(200, self._periodic)
-
-    def thread_gtk(self):
-        # without this threading function camera speed was realy poor
-
-        self.condition = threading.Condition()
-        self.thrd = threading.Thread(target=self.run, name="CamView thread")
-        self.thrd.daemon = True
-        self.thrd.start()
-
-    def _periodic(self):
-        fps = (self.captured_frames - self.old_frames) / 2
-        if fps < 0:
-            fps = 0
-        self.old_frames = self.captured_frames
-        self.lbl_frames.set_text("FPS\n{0}".format(fps))
-        return True
-
     def run(self):
         self.btn_run.set_sensitive(False)
         self.captured_frames = 0
         running = True
         while running:
-            try:
-                frame = self.get_frame()
-                frame = self._draw_lines(frame)
-                if self.circles != 0:
-                    frame = self._draw_circles(frame)
-                    frame = self._draw_text(frame)
-                elif self.full_info:
-                    frame = self._draw_text(frame)
-                self.show_image(frame)
-                # we put that in a try, to avoid an error if the user
-                # use the App 24/7 and get to large numbers
-                try:
-                    self.captured_frames += 1
-                except:
-                    self.captured_frames = 0
+            frame = self.get_frame()
+            frame = self._draw_lines(frame)
+            if self.circles != 0:
+                frame = self._draw_circles(frame)
+                frame = self._draw_text(frame)
+            elif self.full_info:
+                frame = self._draw_text(frame)
+            self.show_image(frame)
+            # we put that in a try, to avoid an error if the user
+            # use the App 24/7 and get to large numbers
 
-            except KeyboardInterrupt:
-                running = False
+            try:
+                self.captured_frames += 1
+            except:
+                self.captured_frames = 0
+            time.sleep(0.1)
 
     def resume(self):
         self.btn_stop.set_sensitive(True)
@@ -355,8 +330,8 @@ class CamView(gtk.VBox):
                 if circles == self.circles:
                     break
                 cv2.circle(frame, (int(pos[0]), int(pos[1])), int(r), self.color, self.linewidth)
-            except:
-                pass
+            except Exception as e:
+                print(e)
         return frame
 
     def _draw_text(self, frame):

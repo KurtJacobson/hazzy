@@ -1,5 +1,4 @@
 import cv2
-import time
 import subprocess
 
 # check if opencv3 is used, so we will have to change attribut naming
@@ -19,7 +18,9 @@ class VideoDev:
         # set the capture size
         self.frame_width = frame_width
         self.frame_height = frame_height
+
         self.frame = self.cam.read()[1]
+
         self.jpeg_frame = cv2.imencode('.jpg', self.frame)[1].tostring()
 
         # 0  = CAP_PROP_POS_MSEC        Current position of the video file in milliseconds.
@@ -54,26 +55,21 @@ class VideoDev:
         self.cam_properties.get_devices()
         # self.cam_properties.get_resolution(self.videodevice)
 
-        self.current_millis = time.time() * 1000
-        self.previous_millis = 0
-        self.interval = 60
-
     def run(self):
         running = True
         while running:
-            self.current_millis = time.time() * 1000
 
-            if self.current_millis - self.previous_millis >= self.interval:
-                self.previous_millis = self.current_millis
-                result, frame = self.cam.read()
-                if result:
-                    self.frame = frame
-                    self.jpeg_frame = cv2.imencode('.jpg', self.frame)[1].tostring()
+            success, frame = self.cam.read()
+            if success:
+                self.frame = frame
+
+            cv2.waitKey(50)
 
     def get_frame(self):
         return self.frame
 
     def get_jpeg_frame(self):
+        self.jpeg_frame = cv2.imencode('.jpg', self.frame)[1].tostring()
         return self.jpeg_frame
 
 
