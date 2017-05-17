@@ -43,9 +43,7 @@ import logging            # Needed for logging errors
 from gladevcp.gladebuilder import GladeBuilder
 import gtksourceview2 as gtksourceview
 import math
-import json
 import logging
-import logging.config
 
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
@@ -54,7 +52,6 @@ CONFIGDIR = os.path.dirname(INIFILE)                    # Path to config dir
 
 # We use __file__ to get the file dir so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))  # Path to hazzy.py dir
-print("The hazzy directory is: {0}".format(HAZZYDIR))
 IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade
 MODULEDIR = os.path.join(HAZZYDIR, 'modules')           #
 MAINDIR = os.path.dirname(HAZZYDIR)
@@ -85,6 +82,7 @@ logger = logging.getLogger('HAZZY')
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
+logger.info("The hazzy directory is: {0}".format(HAZZYDIR))
 logger.info("The config dir is: {0}".format(CONFIGDIR))
 
 error_dialog = Dialogs(DialogTypes.ERROR)
