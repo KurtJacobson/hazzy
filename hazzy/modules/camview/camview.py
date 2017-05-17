@@ -20,7 +20,6 @@
 import gtk
 import gobject
 import cv2
-import time
 import gettext
 import threading
 
