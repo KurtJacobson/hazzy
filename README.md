@@ -61,7 +61,7 @@ If all went well that is it!  Start LinuxCNC however you normally would and clic
 
 I will be updating this repository frequently. To get the latest version enter your hazzy directory and say
 
-    ```git pull origin master```
+   ```git pull origin master```
 
 If you have any problems, questions or suggestions, however minor, do not hesitate to open an issue, or better yet, a pull request!
 
