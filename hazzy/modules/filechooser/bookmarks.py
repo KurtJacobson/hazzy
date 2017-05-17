@@ -19,19 +19,22 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import logging
 
 GTK_BOOKMARKS = os.path.expanduser("~/.gtk-bookmarks")  # FixMe use XDG env
+
 
 class BookMarks:
 
     def __init__(self):
+
+        self.logger = logging.getLogger('HAZZY - FILECHOOSER')
 
         self.bookmarks_file = GTK_BOOKMARKS
         self.bookmarks = []
 
         # Initial read so we can prevent adding duplicates on start-up
         self.get()
-
 
     def get(self):
 
@@ -47,28 +50,27 @@ class BookMarks:
                     name = line[len(bk_dir) +1:].rstrip()
                     self.bookmarks.append([path, name])
                 else:
-                    print("No Bookmarks")
+                    self.logger.info("No Bookmarks")
 
         except IOError as e:
-            print(e)  # File not found
-            print("Creating a new one")
+            self.logger.error(e)  # File not found
+            self.logger.info("Creating a new one")
             with open(self.bookmarks_file, 'w+') as f:
                 f.write('')
 
         return self.bookmarks
 
-
     def add(self, path):
 
         # don't add bookmark to something other than a directory
         if not os.path.isdir(path):
-            print("Bookmark is not valid")
+            self.logger.error("Bookmark is not valid")
             return False  # indicate failure to add
 
         # don't add any duplicates
         for existing_path, existing_name in self.bookmarks:
             if path == existing_path:
-                print("Bookmark already exists")
+                self.logger.info("Bookmark already exists")
                 return False  # indicate failure to add
 
         name = os.path.basename(os.path.normpath(path))
@@ -79,7 +81,6 @@ class BookMarks:
 
         with open(self.bookmarks_file, 'a') as f:
             f.write(line)
-
 
     def remove(self, path):
 
@@ -97,7 +98,6 @@ class BookMarks:
                 # path does not have prefix "file://" so take slice of line
                 if path != line.split()[0][7:]:
                     f.write(line)
-
 
     def clear(self):
         with open(self.bookmarks_file, 'w') as f:

@@ -76,7 +76,7 @@ from modules.dialogs.dialogs import Dialogs, DialogTypes
 
 
 logging.setLoggerClass(ColoredLogger)
-logger = logging.getLogger('HAZZY')
+logger = logging.getLogger('HAZZY - MAIN')
 
 
 # Path to TCL for external programs eg. halshow

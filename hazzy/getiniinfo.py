@@ -41,7 +41,7 @@ class GetIniInfo:
 
     def __init__(self):
 
-        self.logger = logging.getLogger('HAZZY.GETTINIINFO')
+        self.logger = logging.getLogger('HAZZY - GETTINIINFO')
 
         inipath = os.environ["INI_FILE_NAME"]
         self.inifile = ini(inipath)
