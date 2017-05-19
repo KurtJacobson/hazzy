@@ -43,7 +43,7 @@ import logging            # Needed for logging errors
 from gladevcp.gladebuilder import GladeBuilder
 import gtksourceview2 as gtksourceview
 import math
-
+import logging
 
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
@@ -52,7 +52,6 @@ CONFIGDIR = os.path.dirname(INIFILE)                    # Path to config dir
 
 # We use __file__ to get the file dir so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))  # Path to hazzy.py dir
-print("The hazzy directory is: {0}".format(HAZZYDIR))
 IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade
 MODULEDIR = os.path.join(HAZZYDIR, 'modules')           #
 MAINDIR = os.path.dirname(HAZZYDIR)
@@ -69,46 +68,28 @@ import getiniinfo               # Handles .ini file reading and value validation
 import simpleeval               # Used to evaluate expressions in numeric entrie
 
 # Import modules
+from modules.customlog.customlog import ColoredLogger
 from modules.touchpads.keyboard import Keyboard
 from modules.touchpads.touchpad import Touchpad
 from modules.filechooser.filechooser import Filechooser
 from modules.dialogs.dialogs import Dialogs, DialogTypes
 
+
+logging.setLoggerClass(ColoredLogger)
+logger = logging.getLogger('HAZZY - MAIN')
+
+
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
-# Have some fun with our Terminal Colors module.
-# tc.I will print "HAZZY INFO" in gray, tc.W is for WARNINGS, tc.E for ERRORS
-print("{0}The config dir is: {1}".format(tc.I, CONFIGDIR))
-
-
-# Create a logger
-log = logging.getLogger(__name__)
-log.setLevel(logging.DEBUG)
-
-# Create file handler
-fh = logging.FileHandler('hazzy.log')
-fh.setLevel(logging.DEBUG)
-
-# Create console handler
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-
-# Create formatter and add it to the handlers
-ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-cf = logging.Formatter('HAZZY %(levelname)s - %(message)s')
-fh.setFormatter(ff)
-ch.setFormatter(cf)
-
-# Add handlers to the logger
-log.addHandler(fh)
-log.addHandler(ch)
+logger.info("The hazzy directory is: {0}".format(HAZZYDIR))
+logger.info("The config dir is: {0}".format(CONFIGDIR))
 
 error_dialog = Dialogs(DialogTypes.ERROR)
 
-# Throw up a dialog with debug info when an error is encountered
-def excepthook(exc_type, exc_value, exc_traceback):
 
+def excepthook(exc_type, exc_value, exc_traceback):
+    """ Throw up a dialog with debug info when an error is encountered """
     try:
         w = app.widgets.window
     except KeyboardInterrupt:
@@ -117,7 +98,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
         w = None
 
     message = traceback.format_exception(exc_type, exc_value, exc_traceback)
-    log.error("".join(message))
+    logger.warning("".join(message))
     error_dialog.run("".join(message))
 
 
@@ -128,6 +109,8 @@ sys.excepthook = excepthook
 class Hazzy:
 
     def __init__(self):
+
+        self.logger = logger
 
         # Glade setup
         gladefile = os.path.join(IMAGEDIR, 'hazzy.glade')
@@ -344,37 +327,37 @@ class Hazzy:
 
         # Set the gcode sourceview style scheme if it is present, elif use Kate, else nothing   
         if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', self.style_scheme_file)):
-            print("{0}{1} style scheme found!".format(tc.I, self.style_scheme_file))
+            self.logger.info("{0} style scheme found!".format(self.style_scheme_file))
             self.style_scheme = self.style_scheme_name
         elif os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', 'kate.xml')):
-            print("{0}Gcode style scheme not found, using Kate instead".format(tc.I))
+            self.logger.info("Gcode style scheme not found, using Kate instead")
             self.style_scheme = 'kate'  # Use Kate instead
         else:
-            print("{0}{1} style not found".format(tc.I, self.style_scheme_file))
-            print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles')))
-            print("Verify that the style scheme file and name are entered correctly")
+            self.logger.warning("{0} style not found".format(self.style_scheme_file))
+            self.logger.warning("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles')))
+            self.logger.warning("Verify that the style scheme file and name are entered correctly")
 
         # Set the gcode sourceview language highlighting if it is present, else nothing
         if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs', self.lang_spec_file)):
-            print("{0}{1} language spec found!".format(tc.I, self.lang_spec_file))
+            self.logger.info("{0} language spec found!".format(self.lang_spec_file))
             self.lang_spec = self.lang_spec_name
         else:
-            print("{0}{1} language spec was not found".format(tc.I, self.lang_spec_file))
-            print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs')))
+            self.logger.warning("{0} language spec was not found".format(self.lang_spec_file))
+            self.logger.warning("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs')))
 
         if self.style_scheme is not None:
             try:
                 self.widgets.gcode_view.set_style_scheme(self.style_scheme)
             except:
-                print("{0}Could not set {1} style scheme!".format(tc.E, self.style_scheme))
-                print("Verify that the style scheme file and name are correct")
+                self.logger.warning("Could not set {0} style scheme!".format(self.style_scheme))
+                self.logger.warning("Verify that the style scheme file and name are correct")
                 
         if self.lang_spec is not None:
             try:
                 self.widgets.gcode_view.set_language(self.lang_spec)
             except:
-                print("{0}Could not set {1} language spec!".format(tc.E, self.lang_spec))
-                print("Verify that the lang spec file and name are correct")
+                self.logger.warning("Could not set {0} language spec!".format(self.lang_spec))
+                self.logger.warning("Verify that the lang spec file and name are correct")
 
         # Set the fonts for the labels in the spindle display area
         '''
@@ -642,11 +625,13 @@ class Hazzy:
         if text == "" or text is None:
             text = "Unknown error!"
 
+        color = None
+
         # Print to terminal and display at bottom of screen
         if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR, 'ERROR'):
             kind = "ERROR"
             color = 'red'
-            print(tc.E + text)
+            self.logger.error(text)
             self.hal['error'] = True
             # flash the border in the message area
             self.set_animation('error_image', 'error_flash.gif')
@@ -654,15 +639,15 @@ class Hazzy:
         elif kind in (linuxcnc.NML_TEXT, linuxcnc.OPERATOR_TEXT, 'INFO'):
             kind = "INFO"
             color = 'blue'
-            print(tc.I + text)
+            self.logger.info(text)
         elif kind in (linuxcnc.NML_DISPLAY, linuxcnc.OPERATOR_DISPLAY, 'MSG'):
             kind = "MSG"
             color = 'blue'
-            print(tc.I + text)
+            self.logger.info(text)
         elif kind == 'WARN':
             kind = "WARNING"
-            print(tc.W + text)
             color = 'orange'
+            self.logger.warning(text)
         else:
             kind == "ERROR"
 
@@ -680,7 +665,7 @@ class Hazzy:
             error_line = text[1].replace("Near line ", "").replace(" of", "")
             message = text[0] + ' near line ' + error_line + ', see log for more info'
             self._show_message(["ERROR", message ])
-            print(errortext)
+            self.logger.error(errortext)
             # Dialogs(errortext, 2).run()
             self.widgets.gcode_view.set_line_number(error_line)
 
@@ -751,17 +736,17 @@ class Hazzy:
     # Toggle the reset button state and set the corresponding image
     def on_reset_pressed(self, widget, data=None):
         if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET:
-            print("Reseting E-stop")
+            self.logger.info("Reseting E-stop")
             self.set_state(linuxcnc.STATE_ESTOP_RESET)
             self.stat.poll()
         # Check if the machine actually reset
         self.stat.poll()
         if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET and self.stat.task_state != linuxcnc.STATE_ON :
-            print("Failed to bring machine out of E-stop")
+            self.logger.error("Failed to bring machine out of E-stop")
             return
         # Turn on after reset
         if self.stat.task_state != linuxcnc.STATE_ON:
-            print("Turning machine on")
+            self.logger.info("Turning machine on")
             self.set_state(linuxcnc.STATE_ON)
             self.set_image('reset_image', 'reset.png')
 
@@ -783,7 +768,7 @@ class Hazzy:
         else:
             aletter += "0" 
             jnum = self.aletter_jnum_dict[aletter]
-        print("Attempting to home Axis {0} --> Joint {1}".format(aletter, jnum))
+        self.logger.info("Attempting to home Axis {0} --> Joint {1}".format(aletter, jnum))
         self.home_joint(jnum)
 
     # New handlers for btns in Joint DRO page, might get rid of above handlers  
@@ -808,18 +793,18 @@ class Hazzy:
     def on_opstop_pressed(self, widget, data= None):
         if self.stat.optional_stop == 0:
             self.command.set_optional_stop(1)
-            log.debug("Setting opstop ON")
+            self.logger.info("Setting opstop ON")
         else:
             self.command.set_optional_stop(0)
-            log.debug("Setting opstop OFF")
+            self.logger.info("Setting opstop OFF")
 
     def on_opskip_pressed(self, widget, data= None):
         if self.stat.block_delete == 0:
             self.command.set_block_delete(1)
-            log.debug("Setting opskip ON")
+            self.logger.info("Setting opskip ON")
         else:
             self.command.set_block_delete(0)
-            log.debug("Setting opskip OFF")
+            self.logger.info("Setting opskip OFF")
 
     def on_step_clicked(self, widget, data=None):
         pass
@@ -1016,7 +1001,7 @@ class Hazzy:
     # Connect main message system to filechooser error signal
     def on_filechooser_error(self, widget, kind, text):
         self._show_message([kind, text])
-        print kind, text
+        self.logger.error("{0} {1}".format(kind, text))
 
     # To filter or not to filter, that is the question
     def on_filter_ngc_chk_toggled(self, widget, data=None):
@@ -1081,7 +1066,7 @@ class Hazzy:
         self.widgets.notebook.set_current_page(0)
         self.widgets.gcode_file_label.set_text(fname)
         # self.widgets.gremlin.reloadfile(fname)
-        print("NGC file loaded: {0}".format(fname))
+        self.logger.info("NGC file loaded: {0}".format(fname))
 
     def on_file_name_editing_started(self, widget, entry):
         if self.keypad_on_edit:
@@ -1149,7 +1134,7 @@ class Hazzy:
             openfile.write(text)
 
         self.preview_buf.set_modified(False)
-        print("Saved file as: {0}".format(fn))
+        self.logger.info("Saved file as: {0}".format(fn))
 
 
     def on_gcode_preview_button_press_event(self, widget, event):
@@ -1178,10 +1163,10 @@ class Hazzy:
         if fn is None:
             fn = self.tool_table
         if not os.path.exists(fn):
-            print("Tool table does not exist")
+            self.logger.warning("Tool table does not exist")
             return
         self.tool_liststore.clear()  # Clear any existing data
-        print("Loading tool table: {0}".format(fn))
+        self.logger.info("Loading tool table: {0}".format(fn))
         with open(fn, "r") as tf:
             tool_table = tf.readlines()
 
@@ -1231,7 +1216,7 @@ class Hazzy:
             fn = self.tool_table
         if fn is None:
             return
-        print("Saving tool table as: {0}".format(fn))
+        self.logger.info("Saving tool table as: {0}".format(fn))
         fn = open(fn, "w")
         for row in self.tool_liststore:
             values = [value for value in row]
@@ -1380,7 +1365,7 @@ class Hazzy:
             model[row][0] = 1 # Check the box
             self.widgets.tooltable_treeview.set_cursor(row)
         else:
-            print("Did not find tool {0} in the tool table".format(toolnum))
+            self.logger.warning("Did not find tool {0} in the tool table".format(toolnum))
 
 # =========================================================      
 # BEGIN - [Status] notebook page button handlers
@@ -1433,7 +1418,7 @@ class Hazzy:
             state_str = "OFF"
         else:
             state_str = "Unknown"
-        print("Machine is in state: {0}".format(state_str))
+        self.logger.info("Machine is in state: {0}".format(state_str))
         self.widgets.emc_state_label.set_text("State: {0}".format(state_str))
 
     def _update_machine_mode(self):
@@ -1448,7 +1433,7 @@ class Hazzy:
             mode_str = "AUTO"
         else:
             mode_str = "Unknown"
-        print("Machine is in mode: {0}".format(mode_str))
+        self.logger.info("Machine is in mode: {0}".format(mode_str))
         self.widgets.emc_mode_label.set_text("Mode: {0}".format(mode_str))
 
     def _update_interp_state(self):
@@ -1466,7 +1451,7 @@ class Hazzy:
             state_str = "WAIT" 
         else:
             state_str = "Unknown"
-        print("Interpreter is in state: {0}".format(state_str))
+        self.logger.info("Interpreter is in state: {0}".format(state_str))
         self.widgets.emc_interp_label.set_text("Interp: {0}".format(state_str))
 
     def _update_motion_mode(self):
@@ -1481,7 +1466,7 @@ class Hazzy:
             motion_str = "TELEOP"
         else:
             motion_str = "Unknown"
-        print("Motion mode is: {0}".format(motion_str))
+        self.logger.info("Motion mode is: {0}".format(motion_str))
         self.widgets.emc_motion_label.set_text("Motion: {0}".format(motion_str))
 
     def _update_axis_dros(self):
@@ -1668,14 +1653,14 @@ class Hazzy:
             if coordinates.count(aletter) > 1:
                 double_aletter += aletter
         if double_aletter != "":
-            print("\nMachine appearers to be a gantry config having a double {0} axis"
+            self.logger.info("Machine appearers to be a gantry config having a double {0} axis"
                   .format(double_aletter))
         
         self.aletter_jnum_dict = {}
         self.jnum_aletter_dict = {}
         if self.num_joints == len(coordinates):
-            print("\nThe machine has {0} axes and {1} joints".format(self.num_axes, self.num_joints))
-            print("The Axis/Joint mapping is:")
+            self.logger.info("The machine has {0} axes and {1} joints".format(self.num_axes, self.num_joints))
+            self.logger.info("The Axis/Joint mapping is:")
             count = 0
             for jnum, aletter in enumerate(coordinates):
                 if aletter in double_aletter:
@@ -1683,17 +1668,17 @@ class Hazzy:
                     count += 1
                 self.aletter_jnum_dict[aletter] = jnum
                 self.jnum_aletter_dict[jnum] = aletter
-                print("Axis {0} --> Joint {1}".format(aletter, jnum))
+                self.logger.info("Axis {0} --> Joint {1}".format(aletter, jnum))
         else:
-            print("The number of joints ({0}) is not equal to the number of coordinates ({1})"
+            self.logger.info("The number of joints ({0}) is not equal to the number of coordinates ({1})"
                   .format(self.num_joints, len(coordinates)))
-            print("It is highly recommended that you update your config.")
-            print("Reverting to old style. This could result in incorrect behavior...")
-            print("\nGuessing the Axes/Joints mapping is:")
+            self.logger.info("It is highly recommended that you update your config.")
+            self.logger.info("Reverting to old style. This could result in incorrect behavior...")
+            self.logger.info("Guessing the Axes/Joints mapping is:")
             for jnum, aletter in enumerate(self.axis_letters):
                 if aletter in coordinates:
                     self.aletter_jnum_dict[aletter] = jnum
-                    print("Axis {0} --> Joint {1}".format(aletter, jnum))
+                    self.logger.info("Axis {0} --> Joint {1}".format(aletter, jnum))
 
     def _update_homing_status(self):
         homed_joints = [0]*9
@@ -1760,7 +1745,7 @@ class Hazzy:
 
     def issue_mdi(self, mdi_command):
         if self.set_mode(linuxcnc.MODE_MDI):
-            print("Issuing MDI command: " + mdi_command)
+            self.logger.info("Issuing MDI command: {0}".format(mdi_command))
             self.command.mdi(mdi_command)
             # Can't have a wait_complete() here or it locks up the UI
 
@@ -1853,10 +1838,11 @@ class Hazzy:
     # Exit steps
     def close_window(self):
 
-        print(tc.I + "Turning machine off and E-stoping")
+        self.logger.info("Turning machine off and E-stoping")
         self.set_state(linuxcnc.STATE_OFF)
         self.set_state(linuxcnc.STATE_ESTOP)
-        print(tc.I + "Hazzy will now quit...")
+        self.logger.info("Hazzy will now quit...")
+
         gtk.main_quit()
 
 # =========================================================
@@ -1868,12 +1854,12 @@ class Hazzy:
         screen_w = gtk.gdk.Screen().get_width()
         screen_h = gtk.gdk.Screen().get_height()
         if screen_w > 1024 and screen_h > 768:
-            print("{0}Screen size: {1}x{2} Decorating the window!"
-                  .format(tc.I, str(screen_w), str(screen_h)))
+            self.logger.info("Screen size: {0}x{1} Decorating the window!"
+                  .format(str(screen_w), str(screen_h)))
             self.window.set_decorated(True)
         else:
-            print("{0}Screen size: {1}x{2} Screen too small to decorate window"
-                  .format(tc.I, str(screen_w), str(screen_h)))
+            self.logger.info("Screen size: {0}x{1} Screen too small to decorate window"
+                  .format(str(screen_w), str(screen_h)))
 
     def _init_gremlin(self):
         self.widgets.gremlin.set_property('view', 'z')
