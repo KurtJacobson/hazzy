@@ -1,3 +1,24 @@
+#!/usr/bin/env python
+# -*- coding: UTF-8 -*-
+
+#   Copyright (c) 2017 Kurt Jacobson
+#     <kurtjacobson@bellsouth.net>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
 import threading
 
 from video import VideoDev
@@ -15,11 +36,7 @@ class ControlThread(threading.Thread):
         self.args = args
 
     def run(self):
-        print("Starting {0}\n".format(self.name))
-
         self.callback.run()
-
-        print("Exiting {0}\n".format(self.name))
 
 
 def main():
