@@ -53,10 +53,6 @@ class VideoDev:
             self.cam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, self.frame_width)
             self.cam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.frame_height)
 
-        self.cam_properties = CamProperties()
-        self.cam_properties.get_devices()
-        # self.cam_properties.get_resolution(self.videodevice)
-
     def run(self):
         running = True
         while running:
@@ -67,76 +63,6 @@ class VideoDev:
 
             cv2.waitKey(30)
 
-    def get_frame(self):
-        return self.frame
-
     def get_jpeg_frame(self):
         self.jpeg_frame = cv2.imencode('.jpg', self.frame)[1].tostring()
         return self.jpeg_frame
-
-
-class CamProperties():
-    def __init__(self):
-        # get all availible devices
-        self.devices = []
-        self.resolutions = []
-
-    def get_devices(self):
-        result = subprocess.Popen(['v4l2-ctl', '--list-devices'], stdout=subprocess.PIPE).communicate()[0]
-        result = str(result)
-        infos = result.split('\n')
-        for item, info in enumerate(infos):
-            if info == "":
-                continue
-            info = info.strip(' \t\n\r')
-            if "/dev/video" in info:
-                device = "{0} = {1}".format(info, infos[item - 1])
-                self.devices.append(device)
-
-        return self.devices
-
-    #    def get_resolution(self, videodevice=0):
-    #        self.resolutions = []
-    #
-    #        # get all availible resolutions
-    #        result = subprocess.Popen(['v4l2-ctl', '-d' + str(videodevice), '--list-formats-ext'], stdout=subprocess.PIPE)#.communicate()[0]
-    #        line = ""
-    #        res =""
-    #        rate = ""
-    #        for letter in result.stdout.read():
-    #            if letter == "\n":
-    #                #print line.strip(" \t\n\r")
-    #                info = line.split(":")
-    #                if "Size" in info[0]:
-    #                    res = info[1].split()
-    #                    #width,height = res[1].split("x")
-    ##                if "Interval" in info[0]:
-    ##                    rate = info[1].split("(")
-    ##                    rate = rate[1]
-    ##                    rate = rate.strip(" fps)")
-    #                    self.resolutions.append(str(res[1]))
-    #                line = ""
-    #            else:
-    #                line += letter
-    #
-    ##        # check for doble entries, not order preserving
-    #        checked = []
-    #        for element in self.resolutions:
-    #            if element not in checked:
-    #                checked.append(element)
-    #
-    #        self.resolutions = sorted(checked)
-    #        return self.resolutions
-
-    def set_powerline_frequeny(self, videodevice, value):
-        command = 'v4l2-ctl -d{0} --set-ctrl=power_line_frequency={1}'\
-            .format(videodevice, value)
-        self._run_command(command)
-
-    def open_settings(self, videodevice=0):
-        command = "v4l2ucp /dev/video{0}".format(videodevice)
-        self._run_command(command)
-
-    def _run_command(self, command):
-        if command:
-            result = subprocess.Popen(command, stderr=None, shell=True)

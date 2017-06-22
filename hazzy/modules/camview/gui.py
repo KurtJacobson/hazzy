@@ -42,7 +42,7 @@ class CamViewer:
         self.window = self.builder.get_object("window1")
         self.video_frame = self.builder.get_object("image1")
 
-        self.get_frame = video_device.get_frame
+        self.get_frame = video_device.get_jpeg_frame
         self.img_pixbuf = None
 
         self.running = False
@@ -51,11 +51,15 @@ class CamViewer:
     def show_image(self, frame):
 
         try:
-            self.img_pixbuf = gtk.gdk.pixbuf_new_from_array(frame, gtk.gdk.COLORSPACE_RGB, 8)
 
-            if self.img_pixbuf is not None:
-                self.video_frame.set_from_pixbuf(self.img_pixbuf)
-                self.video_frame.show()
+            loader = gtk.gdk.PixbufLoader('jpeg')
+            loader.write(frame)
+            loader.close()
+
+            self.img_pixbuf = loader.get_pixbuf()
+
+            self.video_frame.set_from_pixbuf(self.img_pixbuf)
+            self.video_frame.show()
 
         except Exception as e:
             print(e)
@@ -69,6 +73,5 @@ class CamViewer:
             while self.running:
                 frame = self.get_frame()
                 self.show_image(frame)
-                time.sleep(0.1)
 
             self.running = False
