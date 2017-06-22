@@ -3,6 +3,7 @@ import threading
 from video import VideoDev
 from stream import HttpServer
 from camview import CamViewWindow
+from gui import CamViewer
 
 
 class ControlThread(threading.Thread):
@@ -25,7 +26,8 @@ class ControlThread(threading.Thread):
 def main():
 
     http = True
-    gui = True
+    gui = False
+    new_gui = True
 
     video_device = VideoDev(videodevice=0, frame_width=640, frame_height=480)
     video_thread = ControlThread(1, "VideoThread", 1, video_device)
@@ -38,6 +40,10 @@ def main():
 
     if gui:
         video_gui = CamViewWindow(video_device)
+
+    if new_gui:
+        video_new_gui = CamViewer(video_device)
+        video_new_gui.run()
 
 if __name__ == '__main__':
     main()

@@ -13,6 +13,7 @@ class VideoDev:
         self.videodevice = videodevice
 
         # set the correct camera as video device
+
         self.cam = cv2.VideoCapture(self.videodevice)
 
         # set the capture size
@@ -47,6 +48,7 @@ class VideoDev:
         if OPCV3:
             self.cam.set(cv2.CAP_PROP_FRAME_WIDTH, self.frame_width)
             self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT, self.frame_height)
+            self.cam.set(cv2.CAP_PROP_FPS, 30)
         else:
             self.cam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, self.frame_width)
             self.cam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, self.frame_height)
@@ -63,7 +65,7 @@ class VideoDev:
             if success:
                 self.frame = frame
 
-            cv2.waitKey(50)
+            cv2.waitKey(30)
 
     def get_frame(self):
         return self.frame
@@ -138,4 +140,3 @@ class CamProperties():
     def _run_command(self, command):
         if command:
             result = subprocess.Popen(command, stderr=None, shell=True)
-
