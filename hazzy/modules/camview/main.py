@@ -2,7 +2,6 @@ import threading
 
 from video import VideoDev
 from stream import HttpServer
-from camview import CamViewWindow
 from gui import CamViewer
 
 

@@ -61,7 +61,7 @@ class VideoDev:
             if success:
                 self.frame = frame
 
-            cv2.waitKey(30)
+            cv2.waitKey(60)
 
     def get_jpeg_frame(self):
         self.jpeg_frame = cv2.imencode('.jpg', self.frame)[1].tostring()
