@@ -50,20 +50,33 @@ class GcodeView(object):
         self.lm.set_search_path([LANGDIR])
         self.sm.set_search_path([STYLEDIR])
 
+        #print self.lm.get_search_path()
+        #print self.sm.get_search_path()
+
         self.buf = gtksourceview.Buffer()
         self.buf.set_max_undo_levels(20)
+
         self.buf.set_style_scheme(self.sm.get_scheme('gcode'))
-        self.buf.set_language(self.lm.get_language('.ngc'))
+        self.buf.set_language(self.lm.get_language('gcode'))
 
         self.gtksourceview.set_buffer(self.buf)
         self.gtksourceview.set_show_line_numbers(True)
         self.gtksourceview.set_show_line_marks(True)
-        self.gtksourceview.set_highlight_current_line(True)
-        self.gtksourceview.set_mark_category_icon_from_icon_name('motion', 'gtk-forward')
-        self.gtksourceview.set_mark_category_background('motion', gtk.gdk.Color('#ff0'))
-        self.gtksourceview.found_text_tag = self.buf.create_tag(background="yellow")
+        self.gtksourceview.set_highlight_current_line(False)
 
-        self.buf.set_text('(DOES THE HIGHLIGHTING WORK HERE??)\n\nG0 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0 \n\nM3\n')
+
+        # Some sampe code
+        self.buf.set_text(
+
+'''(DOES THE HIGHLIGHTING WORK HERE??)
+
+#102 = 2
+#103 = #102 + atan(45)
+G1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0
+
+M3'''
+
+)
 
         self.window1.show_all()
 
