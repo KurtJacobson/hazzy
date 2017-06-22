@@ -21,7 +21,6 @@
 
 import gtk
 import os
-import time
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, "ui")
@@ -50,23 +49,16 @@ class CamViewer:
 
     def show_image(self, frame):
 
-        try:
+        loader = gtk.gdk.PixbufLoader('jpeg')
+        loader.write(frame)
+        loader.close()
 
-            loader = gtk.gdk.PixbufLoader('jpeg')
-            loader.write(frame)
-            loader.close()
+        self.img_pixbuf = loader.get_pixbuf()
 
-            self.img_pixbuf = loader.get_pixbuf()
-
-            self.video_frame.set_from_pixbuf(self.img_pixbuf)
-            self.video_frame.show()
-
-        except Exception as e:
-            print(e)
+        self.video_frame.set_from_pixbuf(self.img_pixbuf)
+        self.video_frame.show()
 
     def run(self):
-        """ Show the Dialog only if not already running """
-
         if not self.running:
             self.running = True
             self.window.show()
