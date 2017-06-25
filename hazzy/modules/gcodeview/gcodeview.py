@@ -71,7 +71,7 @@ class GcodeView(gobject.GObject,):
         # Only allow edit if gcode preview
         self.gtksourceview.set_editable(self.is_preview)
 
-        # Only highlight current line it not preview
+        # Only highlight motion line if not preview
         if not self.is_preview:
             self.gstat = GStat()
             self.gstat.connect('line-changed', self.highlight_motion_line)
@@ -81,11 +81,12 @@ class GcodeView(gobject.GObject,):
         self.gtksourceview.connect('button-press-event', self.on_button_press)
         self.gtksourceview.connect('key-press-event', self.on_key_press)
 
-        self.gtksourceview.set_mark_category_background('motion', gtk.gdk.Color('#babdb6'))
-        self.gtksourceview.set_mark_category_background('error', gtk.gdk.Color('#a40000'))
+        self.gtksourceview.set_mark_category_background('motion', gtk.gdk.Color('#c5c5c5'))
+        self.gtksourceview.set_mark_category_background('error', gtk.gdk.Color('#ff7373'))
 
         self.mark = None
         self.current_file = None
+        self.error_line =None
 
         self.gtksourceview.show()
 
@@ -100,6 +101,12 @@ class GcodeView(gobject.GObject,):
                 self.buf.set_text(f.read())
         self.buf.end_not_undoable_action()
         self.buf.set_modified(False)
+
+        if self.error_line:
+            self.highlight_line(self.error_line, 'error')
+            self.error_line = None
+        else:
+            self.highlight_line(None)
 
 
     def highlight_line(self, lnum, style='motion'):
@@ -121,6 +128,9 @@ class GcodeView(gobject.GObject,):
 
     def highlight_motion_line(self, gobject, lnum):
         self.highlight_line(lnum, 'motion')
+
+    def highlight_error_line(self, lnum):
+        self.error_line = lnum
 
     def get_modified(self):
         return self.buf.get_modified()
