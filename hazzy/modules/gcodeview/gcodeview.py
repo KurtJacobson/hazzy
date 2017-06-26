@@ -87,6 +87,7 @@ class GcodeView(gobject.GObject,):
         self.mark = None
         self.current_file = None
         self.error_line =None
+        self.keyboard = None
 
         self.gtksourceview.show()
 
@@ -129,6 +130,9 @@ class GcodeView(gobject.GObject,):
     def highlight_motion_line(self, gobject, lnum):
         self.highlight_line(lnum, 'motion')
 
+    # Since Gremlin reports any errors before GStat emits the 'file-loaded'
+    # signal, we have to save the error line here and then do the actual 
+    # highlighting after we have loaded the sourceview in 'self.load_file'
     def highlight_error_line(self, lnum):
         self.error_line = lnum
 
@@ -158,8 +162,8 @@ class GcodeView(gobject.GObject,):
         if self.is_preview:
             if self.current_file is None:
                 pass #self.load_(self.new_program_template)
-#            if self.keypad_on_edit:
-#                self.keyboard.show(widget, None, True)
+            if self.keyboard:
+                self.keyboard.show(widget, None, True)
 
 
     # If no "save as" file name specified save to the current file in preview
@@ -182,9 +186,11 @@ class GcodeView(gobject.GObject,):
             if kv == gtk.keysyms.s:
                 self.save()
         elif kv == gtk.keysyms.Escape:
-            # FIXME this is OK??
-            self.gtksourceview.parent.parent.set_focus(None)
-            pass
+            widget.get_toplevel().set_focus(None)
+
+
+    def set_keyboard(self, keyboard):
+        self.keyboard = keyboard
 
 
 # ==========================================================
@@ -212,5 +218,5 @@ G1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0
 
 M3''')
     window.show_all()
-    gcodeview.highlight_line(2, 'error')
+    gcodeview.highlight_line(3, 'error')
     main()
