@@ -26,6 +26,7 @@ import sys
 import gtksourceview2 as gtksourceview
 import gobject
 from hal_glib import GStat
+from modules.touchpads.keyboard import Keyboard
 
 # Set up paths
 PYDIR = os.path.dirname(os.path.realpath(__file__))
@@ -87,7 +88,7 @@ class GcodeView(gobject.GObject,):
         self.mark = None
         self.current_file = None
         self.error_line =None
-        self.keyboard = None
+        self.keyboard = Keyboard
 
         self.gtksourceview.show()
 
@@ -189,8 +190,8 @@ class GcodeView(gobject.GObject,):
             widget.get_toplevel().set_focus(None)
 
 
-    def set_keyboard(self, keyboard):
-        self.keyboard = keyboard
+#    def set_keyboard(self, keyboard):
+#        self.keyboard = keyboard
 
 
 # ==========================================================

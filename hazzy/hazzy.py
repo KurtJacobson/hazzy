@@ -145,7 +145,7 @@ class Hazzy:
         self.gcode_preview = GcodeView(preview=True)
         self.float_touchpad = Touchpad("float")
         self.int_touchpad = Touchpad("int")
-        self.keyboard = Keyboard()
+        self.keyboard = Keyboard
         self.filechooser = Filechooser()
         self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
         self.error_dialog = Dialogs(DialogTypes.ERROR)
@@ -252,8 +252,7 @@ class Hazzy:
         self.mdi_has_focus = False      # 
         self.zoom_in_pressed = False    # Keep track of continuous zoom IN button on gremlin
         self.zoom_out_pressed = False   # Keep track of continuous zoom OUT button on gremlin
-        
-        self.gcodeerror = ""            # Needed to avoid printing multiple identical messages
+
         self.usb_dir = ""
         self.current_preview_file = None
         self.surface_speed = ""
@@ -342,42 +341,8 @@ class Hazzy:
         
         
 # =========================================================
-# BEGIN - Appearance initialize
+# BEGIN - Appearance initialization
 # =========================================================
-
-        # Set the gcode sourceview style scheme if it is present, elif use Kate, else nothing   
-        if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', self.style_scheme_file)):
-            print("{0}{1} style scheme found!".format(tc.I, self.style_scheme_file))
-            self.style_scheme = self.style_scheme_name
-        elif os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', 'kate.xml')):
-            print("{0}Gcode style scheme not found, using Kate instead".format(tc.I))
-            self.style_scheme = 'kate'  # Use Kate instead
-        else:
-            print("{0}{1} style not found".format(tc.I, self.style_scheme_file))
-            print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles')))
-            print("Verify that the style scheme file and name are entered correctly")
-
-        # Set the gcode sourceview language highlighting if it is present, else nothing
-        if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs', self.lang_spec_file)):
-            print("{0}{1} language spec found!".format(tc.I, self.lang_spec_file))
-            self.lang_spec = self.lang_spec_name
-        else:
-            print("{0}{1} language spec was not found".format(tc.I, self.lang_spec_file))
-            print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs')))
-
-        if self.style_scheme is not None:
-            try:
-                self.widgets.gcode_view.set_style_scheme(self.style_scheme)
-            except:
-                print("{0}Could not set {1} style scheme!".format(tc.E, self.style_scheme))
-                print("Verify that the style scheme file and name are correct")
-                
-        if self.lang_spec is not None:
-            try:
-                self.widgets.gcode_view.set_language(self.lang_spec)
-            except:
-                print("{0}Could not set {1} language spec!".format(tc.E, self.lang_spec))
-                print("Verify that the lang spec file and name are correct")
 
         # Set the fonts for the labels in the spindle display area
         '''
@@ -516,8 +481,9 @@ class Hazzy:
 # BEGIN - Periodic status checking and updating
 # =========================================================
 
-    # Called at ini [DISPLAY] CYCLE_TIME to update readouts     
+    # Called at ini [DISPLAY] CYCLE_TIME to update readouts
     def _fast_periodic(self): # Called at 50ms default
+
         # Check for messages
         message = self.error_channel.poll()
         if message:
@@ -527,10 +493,14 @@ class Hazzy:
 
         if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
             self._update_joint_dros()
-            self.widgets.dro_notebook.set_current_page(1)
+            if self.widgets.dro_notebook.get_current_page() != 0:
+                self.widgets.dro_notebook.set_current_page(0)
+                self.window.set_focus(None)
         else:
             self._update_axis_dros()
-            self.widgets.dro_notebook.set_current_page(0)
+            if self.widgets.dro_notebook.get_current_page() != 1:
+                self.widgets.dro_notebook.set_current_page(1)
+                self.window.set_focus(None)
 
         self._update_override_labels()
         self._update_spindle_speed_label()
@@ -676,7 +646,6 @@ class Hazzy:
 
 
     def on_gremlin_gcode_error(self, widget, errortext):
-        self.gcodeerror = errortext
         text = errortext.splitlines()
         temp = text[1].replace("Near line ", "").replace(" of", "")
         lnum = int(temp) - 1
@@ -686,7 +655,7 @@ class Hazzy:
         print(errortext)
         self.gcode_view.highlight_error_line(lnum)
 
-     
+
 # =========================================================
 # BEGIN - Main control panel button handlers
 # =========================================================
@@ -1073,7 +1042,6 @@ class Hazzy:
         if self.stat.file != "":
             self.command.reset_interpreter()
             self.command.wait_complete()
-        self.gcodeerror = ""  # Clear any previous errors messages
         self.command.program_open(fname)
         self.widgets.notebook.set_current_page(0)
         self.widgets.gcode_file_label.set_text(fname)
@@ -1111,7 +1079,9 @@ class Hazzy:
     # G-code preview
     def _init_gcode_preview(self):
         self.widgets['gcode_preview'].add(self.gcode_preview.gtksourceview)
-        self.gcode_preview.connect('button-press-event', self.on_gcode_preview_button_press_event)
+        #self.gcode_preview.connect('button-press-event', self.on_gcode_preview_button_press_event)
+        #self.gcode_preview.set_keyboard(self.keyboard)
+        #print self.window
 
     def load_gcode_preview(self, fn=None):
         self.current_preview_file = fn
