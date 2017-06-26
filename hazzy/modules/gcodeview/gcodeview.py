@@ -186,12 +186,6 @@ class GcodeView(gobject.GObject,):
         if event.state & gtk.gdk.CONTROL_MASK:
             if kv == gtk.keysyms.s:
                 self.save()
-        elif kv == gtk.keysyms.Escape:
-            widget.get_toplevel().set_focus(None)
-
-
-#    def set_keyboard(self, keyboard):
-#        self.keyboard = keyboard
 
 
 # ==========================================================

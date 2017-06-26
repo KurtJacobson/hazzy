@@ -50,12 +50,6 @@ class Keyboard():
         self.builder.connect_signals(self)
         self.window = self.builder.get_object("window")
 
-        # Call keypress repeat function every 50ms
-        gobject.timeout_add(50, self.key_repeat)
-
-        # FIXME this is messy
-        self.event = None
-        self.widget = self.builder.get_object('a')
         self.wait_counter = 0
 
         self.window.set_keep_above(True)
@@ -153,38 +147,40 @@ class Keyboard():
 
             event.hardware_keycode = _keymap.get_entries_for_keyval(event.keyval)[0][0]
 
-            # add control mask is ctrl is active
+            # add control mask if ctrl is active
             if self.builder.get_object('ctrl').get_active():
                 event.state = gtk.gdk.CONTROL_MASK
                 self.builder.get_object('ctrl').set_active(False)
 
             event.window = self.entry.window
-            self.event = event
-            self.widget = widget
-            self.wait_counter = 0           # Set counter for repeat timeout
-            self.entry.event(self.event)    # Do the initial event
+            self.entry.event(event)    # Do the initial event
+
+            # Call key repeat function every 50ms
+            self.wait_counter = 0      # Set counter for repeat timeout
+            gobject.timeout_add(50, self.key_repeat, widget, event)
 
         except Exception as e:
             print e
             print("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
             self.window.hide()
 
-
         # Unshift if left shift is active, right shift is "sticky"
         if self.builder.get_object('left_shift').get_active():
             self.shift(False)
 
-    def key_repeat(self):
-        if self.widget.get_state() == gtk.STATE_ACTIVE:
 
+    def key_repeat(self, widget, event):
+        if widget.get_state() == gtk.STATE_ACTIVE:
+            # 250ms initial repeat delay
             if self.wait_counter < 5:
                 self.wait_counter += 1
             else:
                 try:
-                    self.entry.event(self.event)    # Repeat the event
+                    self.entry.event(event)    # Repeat the event
                 except:
                     pass
-        return True
+            return True
+        return False
 
 
 # =========================================================
@@ -261,6 +257,11 @@ class Keyboard():
     def on_entry_loses_focus(self, widget, data=None):
         self.escape()
 
+    def on_entry_key_press(self, widget, event, data=None):
+        kv = event.keyval
+        if kv == gtk.keysyms.Escape:
+            self.window.hide() # Close the keyboard
+
 # ==========================================================
 # Show the keyboard
 # ==========================================================
@@ -269,6 +270,7 @@ class Keyboard():
         self.entry = entry
         self.persistent = persistent
         self.entry.connect('focus-out-event', self.on_entry_loses_focus)
+        self.entry.connect('key-press-event', self.on_entry_key_press)
         if pos:
             self.window.move(pos[0]+105, pos[1]+440)
         self.window.show()
@@ -288,7 +290,7 @@ def main():
     gtk.main()
 
 if __name__ == "__main__":
-    keyboard = Keyboard()
+    keyboard = Keyboard
     entry = gtk.Entry()
     window = gtk.Window()
     window.add(entry)
