@@ -38,7 +38,10 @@ import ConfigParser
 cp = ConfigParser.RawConfigParser
 cp.optionxform = str  # Needed to maintain option case
 
+def singleton(cls):
+    return cls()
 
+@singleton
 class Preferences(cp):
     types = {
         bool: cp.getboolean,
@@ -50,6 +53,8 @@ class Preferences(cp):
 
     def __init__(self, path = None):
         cp.__init__(self)
+
+    def set_file_path(self, path):
         if not path:
             path = "~/.hazzy_preferences"
         self.fn = os.path.expanduser(path)    
@@ -57,8 +62,8 @@ class Preferences(cp):
             print(Tc.W + "No preference file found, creating one...")
             print("Preference file: " + self.fn)
         self.read(self.fn)
-        
-    
+
+
     # Get the pref form the section
     def getpref(self, section, option, default_val = False, opt_type = bool):
         rtn_type = self.types.get(opt_type)
@@ -83,10 +88,10 @@ class Preferences(cp):
             if type in(bool, float, int):
                 value = type(default_val)
             else:
-                value = default_val       
+                value = default_val
         return value
-        
-        
+
+
     # Set the pref in the specified section, if not section add it
     def setpref(self, section, option, value, opt_type = bool):
         try:
@@ -98,8 +103,8 @@ class Preferences(cp):
             self.set(section, option, opt_type(value))
             self.write(open(self.fn, "w"))
 
-            
-            
+
+
 class Tc(): #Small class to hold the terminal message prefixes
 
     ## Hazzy preferances messages
