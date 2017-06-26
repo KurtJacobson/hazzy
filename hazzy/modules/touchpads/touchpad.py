@@ -24,20 +24,20 @@ import gtk
 import os
 
 pydir = os.path.abspath(os.path.dirname(__file__))
-IMAGEDIR = os.path.join(pydir, "ui") 
+IMAGEDIR = os.path.join(pydir, "ui")
 
 _keymap = gtk.gdk.keymap_get_default()  # Needed for keypress emulation
 
 
-class Touchpad(object):
+class Touchpad():
 
     def __init__(self, kind='float'):
 
         self.dro = None
         self.original_text = None
-        
+
         # Glade setup
-        if kind == 'float': 
+        if kind == 'float':
             gladefile = os.path.join(IMAGEDIR, 'float_numpad.glade')
         else:
             gladefile = os.path.join(IMAGEDIR, 'int_numpad.glade')
@@ -51,17 +51,17 @@ class Touchpad(object):
     # Handles all the character buttons
     def on_button_clicked(self, widget):
         self.dro.delete_selection() 
-        pos = self.dro.get_position()                  # Get current cursor pos 
+        pos = self.dro.get_position()                  # Get current cursor pos
         self.dro.insert_text(widget.get_label(), pos)  # Insert text at cursor pos
         self.dro.set_position(pos + 1)                 # Move cursor one space right
-        
+
     # Backspace
     def on_backspace_clicked(self, widget):
         pos = self.dro.get_position()       # Get current cursor pos
         self.dro.delete_text(pos - 1, pos)  # Delete one space to left
         self.dro.set_position(pos - 1)      # Move cursor one space to left
 
-    # Change sign 
+    # Change sign
     def on_change_sign_clicked(self, widget):
         val = self.dro.get_text()
         pos = self.dro.get_position()
@@ -73,10 +73,10 @@ class Touchpad(object):
                 self.dro.delete_text(0, 1)
             else:
                 self.dro.insert_text("-", 0)
-    
+
     # Change units
     # Note: We don't set the cursor to end to keep the user from
-    # being able to backspace and leave a partial units string  
+    # being able to backspace and leave a partial units string
     def on_change_units_clicked(self, widget):
         pos = self.dro.get_position()
         val = self.dro.get_text()
@@ -95,44 +95,44 @@ class Touchpad(object):
             self.dro.set_text(val)
             self.dro.set_position(pos)
 
-        
+
     # Left arrow
     def on_arrow_left_clicked(self, widget):
         pos = self.dro.get_position()
         if pos > 0: # Can't have -1 or we'd loop to the right
             self.dro.set_position(pos - 1)
-            
-    # Right arrow    
+
+    # Right arrow
     def on_arrow_right_clicked(self, widget):
-        pos = self.dro.get_position()  
+        pos = self.dro.get_position()
         self.dro.set_position(pos + 1)
-        
-    # Up arrow   
+
+    # Up arrow
     def on_arrow_up_clicked(self, widget):
         event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
         event.keyval = gtk.keysyms.Up
         self.dro.emit("key-press-event", event)
-        
+
     # Down arrow
     def on_arrow_down_clicked(self, widget):
         event = gtk.gdk.Event(gtk.gdk.KEY_PRESS)
         event.keyval = gtk.keysyms.Down
-        self.dro.emit("key-press-event", event)   
-         
+        self.dro.emit("key-press-event", event)
+
     # Space    
     def on_space_clicked(self, widget, data=None):
-        pos = self.dro.get_position()       # Get current cursor pos 
+        pos = self.dro.get_position()       # Get current cursor pos
         self.dro.insert_text("\t", pos)     # Insert tab at cursor pos
         self.dro.set_position(pos + 1)      # Move cursor one tab right
-        
+
     # Escape
     def on_esc_clicked(self, widget, data=None):
         self.escape() 
-        
+
     # Enter
     def on_enter_clicked(self, widget):
         self.enter()
-        
+
     # Catch real ESC or ENTER keypresses, send the rest on to the DRO
     def on_window_key_press_event(self, widget, event, data=None):
         kv = event.keyval
@@ -145,7 +145,7 @@ class Touchpad(object):
                 self.dro.emit("key-press-event", event)
             except:
                 self.window.hide()
-            
+
     # Enter action
     def enter(self):
         try:
@@ -157,7 +157,7 @@ class Touchpad(object):
         except:
             pass
         self.window.hide()
-            
+
     # Escape action
     def escape(self):
         self.dro.set_text(self.original_text)
@@ -170,13 +170,13 @@ class Touchpad(object):
         except:
             pass
         self.window.hide()
-        
-        
+
+
     # Escape on entry focus out 
     def on_entry_loses_focus(self, widget, data=None):
         self.escape()
-        
-        
+
+
     def show(self, widget, units='in', position=None):
         self.dro = widget
         self.dro.connect('focus-out-event', self.on_entry_loses_focus)
@@ -192,7 +192,6 @@ class Touchpad(object):
 
 def main():
     gtk.main()
-    
 
 if __name__ == "__main__":
     ui = Touchpad()

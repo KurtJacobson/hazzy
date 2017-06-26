@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-#   An attempt at a basic UI for LinuxCNC that can be used
+#   An attempt at a new UI for LinuxCNC that can be used
 #   on a touch screen without any lost of functionality.
-#   The code is almost a complete rewrite, but was influenced
-#   mainly by Gmoccapy and Touchy, with some code adapted from 
-#   the HAL vcp widgets.
+#   The code is written in python and glade and is almost a
+#   complete rewrite, but was influenced mainly by Gmoccapy
+#   and Touchy, with some code adapted from the HAL VCP widgets.
 
 #   Copyright (c) 2017 Kurt Jacobson
 #       <kurtcjacobson@gmail.com>
@@ -73,6 +73,7 @@ from modules.touchpads.keyboard import Keyboard
 from modules.touchpads.touchpad import Touchpad
 from modules.filechooser.filechooser import Filechooser
 from modules.dialogs.dialogs import Dialogs, DialogTypes
+from modules.gcodeview.gcodeview import GcodeView
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
@@ -140,9 +141,12 @@ class Hazzy:
         self.window = self.widgets.window
 
         # Module init
+        self.gcode_view = GcodeView(preview=False)
+        self.gcode_preview = GcodeView(preview=True)
         self.float_touchpad = Touchpad("float")
         self.int_touchpad = Touchpad("int")
-        self.keyboard = Keyboard()
+        self.keyboard = Keyboard
+        self.keyboard.set_parent(self.window)
         self.filechooser = Filechooser()
         self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
         self.error_dialog = Dialogs(DialogTypes.ERROR)
@@ -171,7 +175,8 @@ class Hazzy:
 
         # Module to get/set preferences
         pref_file = self.get_ini_info.get_preference_file_path()
-        self.prefs = preferences.Preferences(pref_file)
+        self.prefs = preferences.Preferences
+        self.prefs.set_file_path(pref_file)
 
         #
         self.s = simpleeval.SimpleEval()
@@ -249,8 +254,7 @@ class Hazzy:
         self.mdi_has_focus = False      # 
         self.zoom_in_pressed = False    # Keep track of continuous zoom IN button on gremlin
         self.zoom_out_pressed = False   # Keep track of continuous zoom OUT button on gremlin
-        
-        self.gcodeerror = ""            # Needed to avoid printing multiple identical messages
+
         self.usb_dir = ""
         self.current_preview_file = None
         self.surface_speed = ""
@@ -339,42 +343,8 @@ class Hazzy:
         
         
 # =========================================================
-# BEGIN - Appearance initialize
+# BEGIN - Appearance initialization
 # =========================================================
-
-        # Set the gcode sourceview style scheme if it is present, elif use Kate, else nothing   
-        if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', self.style_scheme_file)):
-            print("{0}{1} style scheme found!".format(tc.I, self.style_scheme_file))
-            self.style_scheme = self.style_scheme_name
-        elif os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles', 'kate.xml')):
-            print("{0}Gcode style scheme not found, using Kate instead".format(tc.I))
-            self.style_scheme = 'kate'  # Use Kate instead
-        else:
-            print("{0}{1} style not found".format(tc.I, self.style_scheme_file))
-            print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'styles')))
-            print("Verify that the style scheme file and name are entered correctly")
-
-        # Set the gcode sourceview language highlighting if it is present, else nothing
-        if os.path.isfile(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs', self.lang_spec_file)):
-            print("{0}{1} language spec found!".format(tc.I, self.lang_spec_file))
-            self.lang_spec = self.lang_spec_name
-        else:
-            print("{0}{1} language spec was not found".format(tc.I, self.lang_spec_file))
-            print("Looked in: {0}".format(os.path.join(BASE, 'share', 'gtksourceview-2.0', 'language-specs')))
-
-        if self.style_scheme is not None:
-            try:
-                self.widgets.gcode_view.set_style_scheme(self.style_scheme)
-            except:
-                print("{0}Could not set {1} style scheme!".format(tc.E, self.style_scheme))
-                print("Verify that the style scheme file and name are correct")
-                
-        if self.lang_spec is not None:
-            try:
-                self.widgets.gcode_view.set_language(self.lang_spec)
-            except:
-                print("{0}Could not set {1} language spec!".format(tc.E, self.lang_spec))
-                print("Verify that the lang spec file and name are correct")
 
         # Set the fonts for the labels in the spindle display area
         '''
@@ -501,6 +471,7 @@ class Hazzy:
         # Last things to init
         self._init_file_chooser()
         self._init_gremlin()
+        self._init_gcode_view()
         self._init_gcode_preview()
         self.load_tool_table(self.tool_table)
 
@@ -512,8 +483,9 @@ class Hazzy:
 # BEGIN - Periodic status checking and updating
 # =========================================================
 
-    # Called at ini [DISPLAY] CYCLE_TIME to update readouts     
+    # Called at ini [DISPLAY] CYCLE_TIME to update readouts
     def _fast_periodic(self): # Called at 50ms default
+
         # Check for messages
         message = self.error_channel.poll()
         if message:
@@ -523,10 +495,14 @@ class Hazzy:
 
         if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
             self._update_joint_dros()
-            self.widgets.dro_notebook.set_current_page(1)
+            if self.widgets.dro_notebook.get_current_page() != 0:
+                self.widgets.dro_notebook.set_current_page(0)
+                self.window.set_focus(None)
         else:
             self._update_axis_dros()
-            self.widgets.dro_notebook.set_current_page(0)
+            if self.widgets.dro_notebook.get_current_page() != 1:
+                self.widgets.dro_notebook.set_current_page(1)
+                self.window.set_focus(None)
 
         self._update_override_labels()
         self._update_spindle_speed_label()
@@ -672,19 +648,16 @@ class Hazzy:
 
 
     def on_gremlin_gcode_error(self, widget, errortext):
-        if self.gcodeerror == errortext:
-            return
-        else:
-            self.gcodeerror = errortext
-            text = errortext.splitlines()
-            error_line = text[1].replace("Near line ", "").replace(" of", "")
-            message = text[0] + ' near line ' + error_line + ', see log for more info'
-            self._show_message(["ERROR", message ])
-            print(errortext)
-            # Dialogs(errortext, 2).run()
-            self.widgets.gcode_view.set_line_number(error_line)
+        text = errortext.splitlines()
+        temp = text[1].replace("Near line ", "").replace(" of", "")
+        lnum = int(temp) - 1
+        fname = text[0].replace("G-Code error in ", "")
+        message = "near line {0}, ".format(lnum) + text[3]
+        self._show_message(["ERROR", message ])
+        print(errortext)
+        self.gcode_view.highlight_error_line(lnum)
 
-     
+
 # =========================================================
 # BEGIN - Main control panel button handlers
 # =========================================================
@@ -905,7 +878,7 @@ class Hazzy:
             self.widgets.mdi_entry.set_text("")
             self.mdi_has_focus = True
         if self.keypad_on_mdi:
-            self.keyboard.show(widget, self.get_win_pos())
+            self.keyboard.show(widget)
 
     def on_mdi_entry_changed(self, widget, data=None):
         # Convert MDI entry text to UPPERCASE
@@ -939,6 +912,9 @@ class Hazzy:
 # =========================================================      
 # BEGIN - [Main] notebook page button handlers
 # ========================================================= 
+
+    def _init_gcode_view(self):
+        self.widgets['gcode_view'].add(self.gcode_view.gtksourceview)
 
     # HAL_Gremlin preview buttons
     def on_zoom_in_button_press_event(self, widget, data=None):
@@ -977,20 +953,12 @@ class Hazzy:
 
     # Highlight code line for selected line in gremlin
     def on_gremlin_line_clicked(self, widget, line):
-        self.widgets.gcode_view.set_line_number(line)
+        self.gcode_view.highlight_line(line, 'selected')
 
     # Double click gremlin to clear live plot
     def on_gremlin_button_press_event(self, widget, event):
         if event.type == gtk.gdk._2BUTTON_PRESS:
             self.widgets.gremlin.clear_live_plotter()
-
-    # Toggle "show line numbers" in gcode view when double clicked
-    def on_gcode_view_button_press_event(self, widget, event, data=None):
-        if event.type == gtk.gdk._2BUTTON_PRESS:
-            if widget.get_show_line_numbers():
-                widget.set_show_line_numbers(False)
-            else:
-                widget.set_show_line_numbers(True)
 
 
 # =========================================================      
@@ -1029,18 +997,18 @@ class Hazzy:
     def on_file_selection_changed(self, widget, fpath):
         if os.path.isfile(fpath):
             self.widgets.load_gcode.set_label("Load Gcode")
-            if not self.preview_buf.get_modified():  # If not modified we can load file
+            if not self.gcode_preview.buf.get_modified():  # If not modified we can load file
                 self.load_gcode_preview(fpath)    # Preview/edit in sourceview
         elif os.path.isdir(fpath):
             self.widgets.load_gcode.set_label("Open Folder")
-            if not self.preview_buf.get_modified():
+            if not self.gcode_preview.buf.get_modified():
                 self.load_gcode_preview(None)     # Clear the preview
 
     # If file has been edited ask if should save before reloading preview        
     # Need to do this on release or the popup gets the mouse up and we are stuck in drag
     def on_filechooser_button_release_event(self, widget, data=None):
         fname = self.filechooser.get_path_at_cursor()
-        if self.preview_buf.get_modified():
+        if self.gcode_preview.get_modified():
             if self.current_preview_file is None:
                 pass  # TODO Add save-as pop-up here
             else:
@@ -1050,7 +1018,7 @@ class Hazzy:
                 if save_changes:
                     self.save(self.current_preview_file)
                 else:
-                    self.preview_buf.set_modified(False)
+                    self.gcode_preview.set_modified(False)
         if fname is not None:
             if os.path.isfile(fname):
                 self.load_gcode_preview(fname)    # Preview/edit in sourceview
@@ -1076,7 +1044,6 @@ class Hazzy:
         if self.stat.file != "":
             self.command.reset_interpreter()
             self.command.wait_complete()
-        self.gcodeerror = ""  # Clear any previous errors messages
         self.command.program_open(fname)
         self.widgets.notebook.set_current_page(0)
         self.widgets.gcode_file_label.set_text(fname)
@@ -1085,7 +1052,7 @@ class Hazzy:
 
     def on_file_name_editing_started(self, widget, entry):
         if self.keypad_on_edit:
-            self.keyboard.show(entry, self.get_win_pos(), True)
+            self.keyboard.show(entry, True)
 
     def on_cut_clicked(self, widget, data=None):
         if self.filechooser.cut_selected():
@@ -1109,63 +1076,16 @@ class Hazzy:
         self.filechooser.new_folder()
 
     def on_save_file_clicked(self, widget, data=None):
-        self.save(self.current_preview_file)
+        self.gcode_preview.save(self.current_preview_file)
 
-    # G-code preview handlers
+    # G-code preview
     def _init_gcode_preview(self):
-        self.preview_buf = gtksourceview.Buffer()
-        self.preview_buf.set_max_undo_levels(20)
-        self.widgets.gcode_preview.set_buffer(self.preview_buf)
-
-        # Set style scheme and language 
-        self.lm = gtksourceview.LanguageManager()
-        self.sm = gtksourceview.StyleSchemeManager()
-        if self.lang_spec is not None:
-            self.preview_buf.set_language(self.lm.get_language(self.lang_spec))
-        if self.style_scheme is not None:
-            self.preview_buf.set_style_scheme(self.sm.get_scheme(self.style_scheme))
-        self.load_gcode_preview(None)
+        self.widgets['gcode_preview'].add(self.gcode_preview.gtksourceview)
 
     def load_gcode_preview(self, fn=None):
         self.current_preview_file = fn
-        self.preview_buf.begin_not_undoable_action()
-        if not fn or not os.path.splitext(fn)[1] in self.preview_ext:
-            self.preview_buf.set_text('\t\t\t\t*** No file to Preview ***')
-            self.preview_buf.end_not_undoable_action()
-            self.preview_buf.set_modified(False)
-        else:
-            self.preview_buf.set_text(open(fn).read())
-            self.preview_buf.end_not_undoable_action()
-            self.preview_buf.set_modified(False)
+        self.gcode_preview.load_file(fn)
 
-    # If no "save as" file name specified save to the current file in preview    
-    def save(self, fn=None):
-        if fn is None:
-            fn = self.current_preview_file
-        buf = self.preview_buf
-        text = self.preview_buf.get_text(buf.get_start_iter(), buf.get_end_iter())
-
-        with open(fn, "w") as openfile:
-            openfile.write(text)
-
-        self.preview_buf.set_modified(False)
-        print("Saved file as: {0}".format(fn))
-
-
-    def on_gcode_preview_button_press_event(self, widget, event):
-        if self.current_preview_file is None:
-            self.load_gcode_preview(self.new_program_template)
-        if self.keypad_on_edit:
-            self.keyboard.show(widget, self.get_win_pos(), True)
-
-    # If ctrl+s save the file
-    def on_gcode_preview_key_press_event(self, widget, event):
-        kv = event.keyval
-        if event.state & gtk.gdk.CONTROL_MASK:
-            if kv == gtk.keysyms.s:
-                self.save()
-        elif kv == gtk.keysyms.Escape:
-            self.window.set_focus(None)
 
 # =========================================================      
 # BEGIN - [Tool] notebook page handlers
@@ -1342,7 +1262,7 @@ class Hazzy:
     # Popup keyboard on text edit
     def on_remark_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
-            self.keyboard.show(entry, self.get_win_pos())
+            self.keyboard.show(entry)
 
     # Toggle selection checkbox value
     def on_select_toggled(self, widget, row):
@@ -1882,10 +1802,6 @@ class Hazzy:
         self.widgets.gremlin.set_property("metric_units", int(self.stat.linear_units))
         self.widgets.gremlin.set_property("use_commanded", not self.dro_actual_pos)
 
-    def get_win_pos(self):
-        pos = self.window.get_position()
-        return pos
-        
 
 def main():
     gtk.main()

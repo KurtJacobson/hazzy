@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- GtkSourceView language spec for use with hazzy LinuxCNC user Interface
+ Author: Fernand Veilleux <fernveilleux@gmail.com>
 
- Copyright 2017. Kurt Jacobson (kurtcjacobson@gmail.com)
- Copyright 2016. Fernand Veilleux (fernveilleux@gmail.com)
-
- This library is free software; you can redistribute it and/or
+ This library is free software; you you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
  License as published by the Free Software Foundation; either
  version 2.1 of the License, or (at your option) any later version.
@@ -21,11 +18,10 @@
  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 -->
 
-<language id="gcode" _name="Gcode" version="2.0" _section="Others">
-
+<language id="gcode" _name="G-Code" version="2.0" _section="Others">
   <metadata>
     <property name="mimetypes">text/ngc</property>
-    <property name="globs">*.ngc</property>
+    <property name="globs">*ngc</property>
     <property name="line-comment-start">;</property>
   </metadata>
 
@@ -152,7 +148,7 @@
         </context>
 
         <context id="line-number" style-ref="line-num">
-          <match>^[\s\t]*n[\s\t]*[\d]{1,5}</match>
+          <match>^[\s\t]*n[\s\t]*[\d]{1,10}</match>
         </context>
 
         <context id="param-unnamed" style-ref="err">
