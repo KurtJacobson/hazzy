@@ -146,6 +146,7 @@ class Hazzy:
         self.float_touchpad = Touchpad("float")
         self.int_touchpad = Touchpad("int")
         self.keyboard = Keyboard
+        self.keyboard.set_parent(self.window)
         self.filechooser = Filechooser()
         self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
         self.error_dialog = Dialogs(DialogTypes.ERROR)
@@ -174,7 +175,8 @@ class Hazzy:
 
         # Module to get/set preferences
         pref_file = self.get_ini_info.get_preference_file_path()
-        self.prefs = preferences.Preferences(pref_file)
+        self.prefs = preferences.Preferences
+        self.prefs.set_file_path(pref_file)
 
         #
         self.s = simpleeval.SimpleEval()
@@ -876,7 +878,7 @@ class Hazzy:
             self.widgets.mdi_entry.set_text("")
             self.mdi_has_focus = True
         if self.keypad_on_mdi:
-            self.keyboard.show(widget, self.get_win_pos())
+            self.keyboard.show(widget)
 
     def on_mdi_entry_changed(self, widget, data=None):
         # Convert MDI entry text to UPPERCASE
@@ -951,7 +953,7 @@ class Hazzy:
 
     # Highlight code line for selected line in gremlin
     def on_gremlin_line_clicked(self, widget, line):
-        self.gcode_view.highlight_line(line, 'motion')
+        self.gcode_view.highlight_line(line, 'selected')
 
     # Double click gremlin to clear live plot
     def on_gremlin_button_press_event(self, widget, event):
@@ -1050,7 +1052,7 @@ class Hazzy:
 
     def on_file_name_editing_started(self, widget, entry):
         if self.keypad_on_edit:
-            self.keyboard.show(entry, self.get_win_pos(), True)
+            self.keyboard.show(entry, True)
 
     def on_cut_clicked(self, widget, data=None):
         if self.filechooser.cut_selected():
@@ -1079,19 +1081,11 @@ class Hazzy:
     # G-code preview
     def _init_gcode_preview(self):
         self.widgets['gcode_preview'].add(self.gcode_preview.gtksourceview)
-        #self.gcode_preview.connect('button-press-event', self.on_gcode_preview_button_press_event)
-        #self.gcode_preview.set_keyboard(self.keyboard)
-        #print self.window
 
     def load_gcode_preview(self, fn=None):
         self.current_preview_file = fn
-        self.gcode_preview.load_file(None, fn)
+        self.gcode_preview.load_file(fn)
 
-    def on_gcode_preview_button_press_event(self, widget, event):
-        if self.current_preview_file is None:
-            self.load_gcode_preview(self.new_program_template)
-        if self.keypad_on_edit:
-            self.keyboard.show(widget, self.get_win_pos(), True)
 
 # =========================================================      
 # BEGIN - [Tool] notebook page handlers
@@ -1268,7 +1262,7 @@ class Hazzy:
     # Popup keyboard on text edit
     def on_remark_editing_started(self, renderer, entry, row):
         if self.keypad_on_offsets:
-            self.keyboard.show(entry, self.get_win_pos())
+            self.keyboard.show(entry)
 
     # Toggle selection checkbox value
     def on_select_toggled(self, widget, row):
@@ -1807,10 +1801,6 @@ class Hazzy:
         self.widgets.gremlin.grid_size = 1.0
         self.widgets.gremlin.set_property("metric_units", int(self.stat.linear_units))
         self.widgets.gremlin.set_property("use_commanded", not self.dro_actual_pos)
-
-    def get_win_pos(self):
-        pos = self.window.get_position()
-        return pos
 
 
 def main():

@@ -26,7 +26,9 @@ import sys
 import gtksourceview2 as gtksourceview
 import gobject
 from hal_glib import GStat
+from preferences import Preferences
 from modules.touchpads.keyboard import Keyboard
+
 
 # Set up paths
 PYDIR = os.path.dirname(os.path.realpath(__file__))
@@ -46,8 +48,11 @@ class GcodeView(gobject.GObject,):
     def __init__(self, preview=False):
 
         gobject.GObject.__init__(self)
-
         self.is_preview = preview
+
+        # Module init
+        self.prefs = Preferences
+        self.keyboard = Keyboard
 
         # create buffer
         self.buf = gtksourceview.Buffer()
@@ -72,32 +77,36 @@ class GcodeView(gobject.GObject,):
         # Only allow edit if gcode preview
         self.gtksourceview.set_editable(self.is_preview)
 
+        self.holder_text = "\t\t\t****No file to preview****"
+
         # Only highlight motion line if not preview
         if not self.is_preview:
             self.gstat = GStat()
-            self.gstat.connect('line-changed', self.highlight_motion_line)
-            self.gstat.connect('file-loaded', self.load_file)
+            self.gstat.connect('line-changed', self.on_line_changed)
+            self.gstat.connect('file-loaded', self.on_file_loaded)
             self.gtksourceview.set_can_focus(False)
+            self.holder_text = ""
 
         self.gtksourceview.connect('button-press-event', self.on_button_press)
         self.gtksourceview.connect('key-press-event', self.on_key_press)
 
+        # Set line highlight styles
         self.gtksourceview.set_mark_category_background('motion', gtk.gdk.Color('#c5c5c5'))
+        self.gtksourceview.set_mark_category_background('selected', gtk.gdk.Color('#96fef6'))
         self.gtksourceview.set_mark_category_background('error', gtk.gdk.Color('#ff7373'))
 
         self.mark = None
         self.current_file = None
         self.error_line =None
-        self.keyboard = Keyboard
 
         self.gtksourceview.show()
 
 
-    def load_file(self, widget, fn=None):
+    def load_file(self, fn=None):
         self.current_file = fn
         self.buf.begin_not_undoable_action()
         if not fn:
-            self.buf.set_text('')
+            self.buf.set_text(self.holder_text)
         else:
             with open(fn, 'r') as f:
                 self.buf.set_text(f.read())
@@ -127,9 +136,12 @@ class GcodeView(gobject.GObject,):
             self.buf.move_mark(self.mark, iter)
         self.gtksourceview.scroll_to_mark(self.mark, 0, True, 0, 0.5)
 
-
-    def highlight_motion_line(self, gobject, lnum):
+    # GStat callbacks
+    def on_line_changed(self, gobject, lnum):
         self.highlight_line(lnum, 'motion')
+
+    def on_file_loaded(self, widget, fn):
+        self.load_file(fn)
 
     # Since Gremlin reports any errors before GStat emits the 'file-loaded'
     # signal, we have to save the error line here and then do the actual 
@@ -162,9 +174,9 @@ class GcodeView(gobject.GObject,):
 
         if self.is_preview:
             if self.current_file is None:
-                pass #self.load_(self.new_program_template)
-            if self.keyboard:
-                self.keyboard.show(widget, None, True)
+                self.load_file(self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", "", str))
+            if self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES"):
+                self.keyboard.show(widget, True)
 
 
     # If no "save as" file name specified save to the current file in preview

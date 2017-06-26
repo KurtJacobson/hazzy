@@ -40,6 +40,7 @@ class Keyboard():
     def __init__(self):
 
         self.entry = None
+        self.parent = None
         self.persistent = False
 
         # Glade setup
@@ -266,14 +267,18 @@ class Keyboard():
 # Show the keyboard
 # ==========================================================
 
-    def show(self, entry, pos=None, persistent=False ):
+    def show(self, entry, persistent=False ):
         self.entry = entry
         self.persistent = persistent
         self.entry.connect('focus-out-event', self.on_entry_loses_focus)
         self.entry.connect('key-press-event', self.on_entry_key_press)
-        if pos:
+        if self.parent:
+            pos = self.parent.get_position()
             self.window.move(pos[0]+105, pos[1]+440)
         self.window.show()
+
+    def set_parent(self, parent):
+        self.parent = parent
 
 
 # ==========================================================
