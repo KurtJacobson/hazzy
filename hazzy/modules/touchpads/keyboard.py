@@ -31,8 +31,11 @@ IMAGEDIR = os.path.join(pydir, "ui")
 
 _keymap = gtk.gdk.keymap_get_default()
 
+def singleton(cls):
+    return cls()
 
-class Keyboard(object):
+@singleton
+class Keyboard():
 
     def __init__(self):
 
