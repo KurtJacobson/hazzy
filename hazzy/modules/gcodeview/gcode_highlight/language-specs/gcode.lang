@@ -148,7 +148,7 @@
         </context>
 
         <context id="line-number" style-ref="line-num">
-          <match>^[\s\t]*n[\s\t]*[\d]{1,5}</match>
+          <match>^[\s\t]*n[\s\t]*[\d]{1,10}</match>
         </context>
 
         <context id="param-unnamed" style-ref="err">
