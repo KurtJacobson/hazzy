@@ -24,11 +24,13 @@ import gio
 import sys
 import os
 import shutil
+
 from datetime import datetime
 from move2trash import move2trash
 from bookmarks import BookMarks
 from icons import Icons
-from modules.dialogs.dialogs import Dialogs, DialogTypes
+
+from ..dialogs.dialogs import Dialogs, DialogTypes
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, 'ui')
