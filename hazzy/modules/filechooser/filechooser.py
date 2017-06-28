@@ -24,11 +24,14 @@ import gio
 import sys
 import os
 import shutil
+import logging
 from datetime import datetime
 from move2trash import move2trash
 from bookmarks import BookMarks
 from icons import Icons
 from modules.dialogs.dialogs import Dialogs, DialogTypes
+
+log = logging.getLogger("HAZZY.FILECHOOSER")
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, 'ui')
@@ -265,11 +268,15 @@ class Filechooser(gobject.GObject):
         if old_name == new_name:
             return
         if not os.path.exists(new_path):
-            self.info("Renamed {} to {}".format(old_name, new_name))
+            msg = "Renamed {} to {}".format(old_name, new_name)
+            log.info(msg)
+            self.info(msg)
             os.rename(old_path, new_path)
             model[row][2] = new_name
         else:
-            self.warn("Destination file already exists, won't rename")
+            msg = "Destination file already exists, won't rename"
+            log.warning(msg)
+            self.warn(msg)
             # TODO add overwrite confirmation dialog
 
     def on_file_treeview_button_release_event(self, widget, data=None):
@@ -442,18 +449,22 @@ class Filechooser(gobject.GObject):
     def cut_selected(self):
         files = self.get_selected()
         if files is None:
+            log.error("No files selected to cut")
             return False
         self._files = files
         self._copy = False
+        log.debug("Files to cut: {}".format(files))
         return True
 
     # Copy selected files
     def copy_selected(self):
         files = self.get_selected()
         if files is None:
+            log.error("No files selected to copy")
             return False
         self._files = files
         self._copy = True
+        log.debug("Files to copy: {}".format(files))
         return True
 
     # Paste previously cut/copied files to current directory
@@ -530,20 +541,20 @@ class Filechooser(gobject.GObject):
     # =======================================
 
     def on_file_treeview_drag_begin(self, data, som):
-        print("drag {0} {1}".format(data, som))
+        log.debug("drag {0} {1}".format(data, som))
 
     def on_file_treeview_drag_data_received(self):
-        print("got drag")
+        log.debug("got drag")
 
     def drag_data_received_cb(self, treeview, context, x, y, selection, info, timestamp):
         drop_info = treeview.get_dest_row_at_pos(x, y)
-        print("got drag")
+        log.debug("got drag")
         if drop_info:
             model = treeview.get_model()
             path, position = drop_info
             data = selection.data
             # do something with the data and the model
-            print("{0} {1} {2}".format(model, path, data))
+            log.debug("{0} {1} {2}".format(model, path, data))
         return
 
     # =======================================
@@ -553,15 +564,17 @@ class Filechooser(gobject.GObject):
     def on_mount_added(self, volume, mount):
         path = mount.get_root().get_path()
         name = os.path.split(path)[1]
-        text = "External storage device mounted - " + name
-        self.info(text)
+        msg = 'External storage device "{}" mounted'.format(name)
+        log.info(msg)
+        self.info(msg)
         self._update_bookmarks()
 
     def on_mount_removed(self, volume, mount):
         path = mount.get_root().get_path()
         name = os.path.split(path)[1]
-        text = "External storage device removed - " + name
-        self.info(text)
+        msg = 'External storage device "{}" removed'.format(name)
+        log.info(msg)
+        self.info(msg)
         if self._cur_dir.startswith(path):
             self.file_liststore.clear()
             self._update_nav_buttons('')
@@ -661,10 +674,14 @@ class Filechooser(gobject.GObject):
             text = "Destination already exists! \n Overwrite {}?".format(dst_name)
             overwrite = self.ok_cancel_dialog.run(text)
             if not overwrite:
-                self.info("User selected not to overwrite {}".format(dst_name))
+                msg = "User selected not to overwrite {}".format(dst_name)
+                log.info(msg)
+                self.info(msg)
                 return
 
-        self.info("Copying: {0} to {1}".format(src_name, dst_dir))
+        msg = 'Copying "{0}" to "{1}"'.format(src_name, dst_dir)
+        log.info(msg)
+        self.info(msg)
 
         if os.path.isfile(src):
             shutil.copy2(src, dst)
@@ -680,7 +697,9 @@ class Filechooser(gobject.GObject):
         src_dir, src_name = os.path.split(src)
 
         if src_dir == dst_dir:
-            self.error("MOVE ERROR: Source and destination are the same")
+            msg = "MOVE ERROR: Source and destination are the same"
+            log.error(msg)
+            self.error(msg)
             return
 
         dst = os.path.join(dst_dir, src_name)
@@ -689,21 +708,22 @@ class Filechooser(gobject.GObject):
             text = "Destination already exists! \n Overwrite {}?".format(src_name)
             overwrite = self.ok_cancel_dialog.run(text)
             if not overwrite:
-                self.info("User selected not to overwrite {}".format(src_name))
+                msg = 'User selected not to overwrite "{}"'.format(src_name)
+                log.info(msg)
+                self.info(msg)
                 return
 
-        self.info("Moving: {0} to {1}".format(src_name, dst_dir))
+        msg = 'Moving "{0}" to "{1}"'.format(src_name, dst_dir)
+        log.info(msg)
+        self.info(msg)
         shutil.move(src, dst)
 
     # Shortcut methods to emit errors and print to terminal
     def error(self, text):
         self.emit('error', 'ERROR', text)
-        print(text)
 
     def warn(self, text):
         self.emit('error', 'WARN', text)
-        print(text)
 
     def info(self, text):
         self.emit('error', 'INFO', text)
-        print(text)

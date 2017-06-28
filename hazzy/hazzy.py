@@ -89,7 +89,6 @@ log.info("The config dir is: ".format(CONFIGDIR))
 
 
 # Now we have the path to our own modules so we can import them
-import tc                       # For highlighting terminal messages
 import widgets                  # Norbert's module for geting objects quickly
 import preferences              # Handles the preferences
 import getiniinfo               # Handles .ini file reading and value validation
@@ -623,27 +622,30 @@ class Hazzy:
 
         # Print to terminal and display at bottom of screen
         if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR, 'ERROR'):
+            if kind != "ERROR":
+                log.error(text)
             kind = "ERROR"
             color = 'red'
-            log.error(text)
             self.hal['error'] = True
             # flash the border in the message area
             self.set_animation('error_image', 'error_flash.gif')
             self.new_error = True
         elif kind in (linuxcnc.NML_TEXT, linuxcnc.OPERATOR_TEXT, 'INFO'):
+            if kind != "INFO":
+                log.info(text)
             kind = "INFO"
             color = 'blue'
-            log.info(text)
         elif kind in (linuxcnc.NML_DISPLAY, linuxcnc.OPERATOR_DISPLAY, 'MSG'):
+            if kind != "MSG":
+                log.info(text)
             kind = "MSG"
             color = 'blue'
-            log.info(text)
         elif kind == 'WARN':
             kind = "WARNING"
-            log.warning(text)
             color = 'orange'
         else:
             kind == "ERROR"
+            color = 'red'
             log.error(text)
 
         msg = '<span size=\"11000\" weight=\"bold\" foreground=\"{0}\">{1}:' \
@@ -676,11 +678,14 @@ class Hazzy:
                 self.set_cycle_start_button_state('stop')
                 # self.widgets.notebook.set_current_page(0)
             elif not self.is_homed():
+                log.error("Can't run program when not homed")
                 self._show_message(["ERROR", "Can't run program when not homed"])
             elif self.stat.file == "":
-                self._show_message(["ERROR", "No gcode file loaded"])
+                log.error("Can't run program, no gcode file loaded")
+                self._show_message(["ERROR", "Can't run program, no gcode file loaded"])
             elif self.widgets.notebook.get_current_page() != 0:
-                self._show_message(["ERROR", "Must be on main page to run a program"])
+                log.error("Must be on main page to run program")
+                self._show_message(["ERROR", "Must be on main page to run program"])
 
         elif self.cycle_start_button_state == 'stop':
             self.command.abort()
@@ -841,8 +846,10 @@ class Hazzy:
         try:
             val = self.s.eval(entry) * factor
             self.set_work_offset(aletter, val)
-        except: 
-            self._show_message(["ERROR", "{0} axis DRO entry '{1}' is not valid".format(aletter, entry)])
+        except:
+            msg = "{0} axis DRO entry '{1}' is not valid".format(aletter, entry)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
 
         self.window.set_focus(None)
 
@@ -857,7 +864,9 @@ class Hazzy:
             tnum = int(tnum)        
             self.issue_mdi("M6 T%s G43" % tnum)
         except:
-            self._show_message(["ERROR", '"{0}" is not a valid tool number'.format(tnum)])
+            msg = '"{0}" is not a valid tool number'.format(tnum)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
 
         widget.set_text(str(self.current_tool))
         self.window.set_focus(None)
@@ -868,7 +877,9 @@ class Hazzy:
             speed = float(speed) 
             self.issue_mdi("S%s" % speed)
         except:
-            self._show_message(["ERROR", '"%s" is not a valid spindle speed' % speed])
+            msg = '"{}" is not a valid spindle speed'.format(speed)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
         self.window.set_focus(None)
 
     # =========================================================
@@ -972,8 +983,9 @@ class Hazzy:
     def _init_file_chooser(self):
         path = os.path.expanduser(self.nc_file_path)
         if not os.path.isdir(path):
-            text = "Path given in [DISPLAY] PROGRAM_PREFIX in INI is not valid ..."
-            self._show_message(['MSG', text])
+            msg = "Path given in [DISPLAY] PROGRAM_PREFIX in INI is not valid"
+            log.warning(msg)
+            self._show_message(['WARN', msg])
             path = os.path.expanduser('~/linuxcnc/nc_files')  # Good guess!!
 
         self.filechooser.add_bookmark(path)
@@ -1132,16 +1144,18 @@ class Hazzy:
                             try:
                                 array[offset] = int(word.lstrip(i))
                             except ValueError:
-                                text = 'Error reading tool table, can\'t convert "{0}" to integer in {1}' \
+                                msg = 'Error reading tool table, can\'t convert "{0}" to integer in {1}' \
                                     .format(word.lstrip(i), line)
-                                self._show_message(["ERROR", text])
+                                log.error(msg)
+                                self._show_message(["ERROR", msg])
                         else:
                             try:
                                 array[offset] = "%.4f" % float(word.lstrip(i))
                             except ValueError:
-                                text = 'Error reading tool table, can\'t convert "{0}" to float in {1}' \
+                                msg = 'Error reading tool table, can\'t convert "{0}" to float in {1}' \
                                     .format(word.lstrip(i), line)
-                                self._show_message(["ERROR", text])
+                                log.error(msg)
+                                self._show_message(["ERROR", msg])
                         break
 
             # Add array to liststore
@@ -1202,8 +1216,9 @@ class Hazzy:
             self.issue_mdi('M6 T{0} G43'.format(tool_num))
         else:
             num = len(selected)
-            text = "{0} tools selected, you must select exactly one".format(num)
-            self._show_message(["ERROR", text])
+            msg = "{0} tools selected, you must select exactly one".format(num)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
 
     def on_add_tool_clicked(self, widget, data=None):
         num = len(self.tool_liststore) + 1
@@ -1222,32 +1237,36 @@ class Hazzy:
             self.tool_liststore[path][1] = new_int
             self.tool_liststore[path][2] = new_int
         except ValueError:
-            text = '"{0}" is not a valid tool number'.format(new_text)
-            self._show_message(["ERROR", text])
+            msg = '"{0}" is not a valid tool number'.format(new_text)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
 
     def on_tool_pocket_edited(self, widget, path, new_text):
         try:
             new_int = int(new_text)
             self.tool_liststore[path][2] = new_int
         except ValueError:
-            text = '"{0}" is not a valid tool pocket'.format(new_text)
-            self._show_message(["ERROR", text])
+            msg = '"{0}" is not a valid tool pocket'.format(new_text)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
 
     def on_tool_dia_edited(self, widget, path, new_text):
         try:
             num = self.eval(new_text)
             self.tool_liststore[path][3] = "{:.4f}".format(float(num))
         except:
-            text = '"{0}" does not evaluate to a valid tool diameter'.format(new_text)
-            self._show_message(["ERROR", text])
+            msg = '"{0}" does not evaluate to a valid tool diameter'.format(new_text)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
 
     def on_z_offset_edited(self, widget, path, new_text):
         try:
             num = self.eval(new_text)
             self.tool_liststore[path][4] = "{:.4f}".format(float(num))
         except:
-            text = '"{0}" does not evaluate to a valid tool length'.format(new_text)
-            self._show_message(["ERROR", text])
+            msg = '"{0}" does not evaluate to a valid tool length'.format(new_text)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
 
     def on_tool_remark_edited(self, widget, path, new_text):
         self.tool_liststore[path][5] =  new_text
@@ -1696,7 +1715,9 @@ class Hazzy:
 
     def home_joint(self, joint):
         if self.stat.joint[joint]['homed'] == 0 and not self.stat.estop and self.stat.joint[joint]['homing'] == 0:
-            self._show_message(["INFO", "Homing joint {0}".format(joint)])
+            msg = "Homing joint {0}".format(joint)
+            log.info(msg)
+            self._show_message(["INFO", msg])
             # self.set_mode(linuxcnc.MODE_MANUAL)
             self.command.home(joint)
             # Indicate homing in process, needed to cause update of joint status
@@ -1705,15 +1726,20 @@ class Hazzy:
             message = ("joint {0} is already homed. \n Unhome?".format(joint))
             unhome_joint = self.yes_no_dialog.run(message)
             if unhome_joint:
-                self._show_message(["INFO", "Unhoming joint {0}".format(joint)])
+                msg = "Unhoming joint {0}".format(joint)
+                log.info(msg)
+                self._show_message(["INFO", msg])
                 # self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
                 self.command.unhome(joint)
         elif self.stat.joint[joint]['homing'] != 0:
-            self._show_message(["ERROR", "Homing sequence already in progress"])
+            msg = "Homing sequence already in progress"
+            log.error(msg)
+            self._show_message(["ERROR", msg])
         else:
-            self._show_message(["ERROR", "Can't home joint {0}, check E-stop and machine power"
-                               .format(joint)])
+            msg = "Can't home joint {0}, check E-stop and machine power".format(joint)
+            log.error(msg)
+            self._show_message(["ERROR", msg])
 
     # Check if all joints are homed  
     def is_homed(self):
