@@ -60,26 +60,12 @@ MAINDIR = os.path.dirname(HAZZYDIR)
 sys.path.insert(1, HAZZYDIR)
 sys.path.insert(2, MODULEDIR)
 
-# Now we have the path to our own modules so we can import them
-import tc                       # For highlighting terminal messages
-import widgets                  # Norbert's module for geting objects quickly
-import preferences              # Handles the preferences
-import getiniinfo               # Handles .ini file reading and value validation
-import simpleeval               # Used to evaluate expressions in numeric entries
+
+# Set up logging
 from colored_log import ColoredFormatter
 
-# Import modules
-from modules.touchpads.keyboard import Keyboard
-from modules.touchpads.touchpad import Touchpad
-from modules.filechooser.filechooser import Filechooser
-from modules.dialogs.dialogs import Dialogs, DialogTypes
-from modules.gcodeview.gcodeview import GcodeView
-
-# Path to TCL for external programs eg. halshow
-TCLPATH = os.environ['LINUXCNC_TCL_DIR']
-
 # Create logger
-log = logging.getLogger(__name__)
+log = logging.getLogger("HAZZY")
 log.setLevel(logging.DEBUG)
 
 # Add console handler
@@ -99,6 +85,26 @@ log.addHandler(fh)
 
 log.info("The hazzy directory is: ".format(HAZZYDIR))
 log.info("The config dir is: ".format(CONFIGDIR))
+
+
+
+# Now we have the path to our own modules so we can import them
+import tc                       # For highlighting terminal messages
+import widgets                  # Norbert's module for geting objects quickly
+import preferences              # Handles the preferences
+import getiniinfo               # Handles .ini file reading and value validation
+import simpleeval               # Used to evaluate expressions in numeric entries
+
+
+# Import modules
+from modules.touchpads.keyboard import Keyboard
+from modules.touchpads.touchpad import Touchpad
+from modules.filechooser.filechooser import Filechooser
+from modules.dialogs.dialogs import Dialogs, DialogTypes
+from modules.gcodeview.gcodeview import GcodeView
+
+# Path to TCL for external programs eg. halshow
+TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
 
 # Init error dialog
