@@ -25,6 +25,9 @@ import gtk
 import os
 import sys
 import gobject
+import logging
+
+log = logging.getLogger("HAZZY.KEYBOARD")
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 IMAGEDIR = os.path.join(pydir, "ui")
@@ -161,8 +164,8 @@ class Keyboard():
             gobject.timeout_add(50, self.key_repeat, widget, event)
 
         except Exception as e:
-            print e
-            print("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
+            log.exception(e)
+            #log.error("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
             self.window.hide()
 
         # Unshift if left shift is active, right shift is "sticky"
