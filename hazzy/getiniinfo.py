@@ -29,9 +29,10 @@
 
 from linuxcnc import ini
 import os
-import tc
 import sys
+import logging
 
+log = logging.getLogger("HAZZY.GETINI")
 
 CONFIGPATH = os.environ['CONFIG_DIR']
 
@@ -41,7 +42,7 @@ class GetIniInfo:
         inipath = os.environ["INI_FILE_NAME"]
         self.inifile = ini(inipath)
         if not self.inifile:
-            print( tc.GE + "No INI File given!")
+            log.error("No INI File given!")
             sys.exit()
 
     def get_cycle_time(self):
@@ -49,7 +50,7 @@ class GetIniInfo:
         try:
             return int(temp)
         except:
-            print(tc.GI + "Missing entry [DISPLAY] CYCLE_TIME in INI file. Using 50ms")
+            log.info("Missing entry [DISPLAY] CYCLE_TIME in INI file. Using 50ms")
             return 50
 
     def get_postgui_halfile(self):
@@ -69,9 +70,9 @@ class GetIniInfo:
             else:
                 machinename = machinename.replace(" ", "_")
                 temp = os.path.join(CONFIGPATH, "%s.pref" % machinename)
-        print tc.GI + "Preference file path: %s" % temp
+        log.info("Preference file path: %s" % temp)
         return temp
-        
+
     def get_log_file_path(self):
         # we get the log file, if there is none given in the INI
         # we use hazzy.pref in the config dir
@@ -83,29 +84,26 @@ class GetIniInfo:
             else:
                 machinename = machinename.replace(" ", "_")
                 temp = os.path.join(CONFIGPATH, "%s.log" % machinename)
-        print tc.GI + "Log file path: %s" % temp
+        log.info("Log file path: %s" % temp)
         return temp
-        
-        
+
     def get_coordinates(self):
         temp = self.inifile.find("TRAJ", "COORDINATES")
         # Get rid of any spaces
         temp = temp.replace(' ','')
 
         if not temp:
-            print(tc.I + "No coordinates entry found in [TRAJ] of INI file, using XYZ")
+            log.warning("No coordinates entry found in [TRAJ] of INI file, using XYZ")
             temp = "XYZ"
         return temp.upper()
 
-    
     def get_joints(self):
         temp = self.inifile.find("KINS", "JOINTS")
         if not temp:
-            print(tc.I + "No JOINTS entry found in [KINS] of INI file, using 3")
+            log.warning("No JOINTS entry found in [KINS] of INI file, using 3")
             return (3)
         return int(temp)
-        
-        
+
     def get_axis_list(self):
         axis_list = []
         coordinates = self.get_coordinates()
@@ -114,7 +112,7 @@ class GetIniInfo:
                 continue
             axis_list.append(axisletter)
         return axis_list
-        
+
     def get_machine_metric(self):
         temp = self.inifile.find("TRAJ", "LINEAR_UNITS")
         if not temp:
@@ -174,7 +172,7 @@ class GetIniInfo:
         # This is the maximum velocity of the machine
         temp = self.inifile.find("TRAJ", "MAX_VELOCITY")
         if  temp == None:
-            print tc.GW + "No MAX_VELOCITY found in [TRAJ] of INI file. Using 15ipm"
+            log.warning("No MAX_VELOCITY found in [TRAJ] of INI file. Using 15ipm")
             temp = 15.0
         return float(temp) * 60
 
@@ -183,7 +181,7 @@ class GetIniInfo:
         temp = self.inifile.find("DISPLAY", "DEFAULT_SPINDLE_SPEED")
         if not temp:
             temp = 300
-            print tc.GW + "No DEFAULT_SPINDLE_SPEED entry found in [DISPLAY] of INI file. Using 300rpm"
+            log.warning("No DEFAULT_SPINDLE_SPEED entry found in [DISPLAY] of INI file. Using 300rpm")
         return float(temp)
 
     def get_max_spindle_override(self):
@@ -191,21 +189,21 @@ class GetIniInfo:
         temp = self.inifile.find("DISPLAY", "MAX_SPINDLE_OVERRIDE")
         if not temp:
             temp = 1.0
-            print tc.GW + "No MAX_SPINDLE_OVERRIDE entry found in [DISPLAY] of INI file. Using 1.0"
+            log.warning("No MAX_SPINDLE_OVERRIDE entry found in [DISPLAY] of INI file. Using 1.0")
         return float(temp)
 
     def get_min_spindle_override(self):
         temp = self.inifile.find("DISPLAY", "MIN_SPINDLE_OVERRIDE")
         if not temp:
             temp = 0.1
-            print tc.GW + "No MIN_SPINDLE_OVERRIDE entry found in [DISPLAY] of INI file. Using 0.1"
+            log.warning("No MIN_SPINDLE_OVERRIDE entry found in [DISPLAY] of INI file. Using 0.1")
         return float(temp)
 
     def get_max_feed_override(self):
         temp = self.inifile.find("DISPLAY", "MAX_FEED_OVERRIDE")
         if not temp:
             temp = 1.0
-            print rc.GW + "No MAX_FEED_OVERRIDE entry found in [DISPLAY] of INI file. Using 1.0"
+            log.warning("No MAX_FEED_OVERRIDE entry found in [DISPLAY] of INI file. Using 1.0")
         return float(temp)
 
     def get_embedded_tabs(self):
@@ -240,12 +238,12 @@ class GetIniInfo:
         # and we want to set the default path
         default_path = self.inifile.find("DISPLAY", "PROGRAM_PREFIX")
         if not default_path:
-            print tc.GW + "Path %s from DISPLAY , PROGRAM_PREFIX does not exist" % default_path
-            print tc.GI + "Trying default path..."
+            log.warning("Path %s from DISPLAY , PROGRAM_PREFIX does not exist" % default_path)
+            log.info("Trying default path...")
             default_path = "~/linuxcnc/nc_files/"
             if not os.path.exists(os.path.expanduser(default_path)):
-                print tc.GW + "Default path to ~/linuxcnc/nc_files does not exist"
-                print tc.GI +"setting home as path"
+                log.warning("Default path to ~/linuxcnc/nc_files does not exist")
+                log.info("setting home as path")
                 default_path = os.path.expanduser("~/")
         return default_path
 
@@ -259,7 +257,7 @@ class GetIniInfo:
                     ext = extension.split()
                     ext_list.append(ext[0].replace(".", "*."))
         else:
-            print tc.GI + "Error converting file extensions from [FILTER] PROGRAMM_PREFIX, using default '*.ngc'"
+            log.error("Error converting file extensions from [FILTER] PROGRAMM_PREFIX, using default '*.ngc'")
             ext_list = ["*.ngc"]
         return ext_list
 
@@ -275,7 +273,7 @@ class GetIniInfo:
             jog_increments.insert(0, 0)
         else:
             jog_increments = [ "0", "1.000", "0.100", "0.010", "0.001" ]
-            print tc.GI + "No default jog increments entry found in [DISPLAY] of INI file"
+            log.warning("No default jog increments entry found in [DISPLAY] of INI file")
         return jog_increments
 
     def get_tool_table(self):
@@ -324,7 +322,7 @@ class GetIniInfo:
     def get_subroutine_paths(self):
         subroutines_paths = self.inifile.find("RS274NGC", "SUBROUTINE_PATH")
         if not subroutines_paths:
-            print(tc.GI + "No subroutine folder or program prefix given in ini file")
+            log.info("No subroutine folder or program prefix given in ini file")
             subroutines_paths = self.get_program_prefix()
         if not subroutines_paths:
             return False
@@ -341,19 +339,3 @@ class GetIniInfo:
         if not temp:
             return False
         return  temp
-
-    def get_user_messages(self):
-        message_text = self.inifile.findall("DISPLAY", "MESSAGE_TEXT")
-        message_type = self.inifile.findall("DISPLAY", "MESSAGE_TYPE")
-        message_pinname = self.inifile.findall("DISPLAY", "MESSAGE_PINNAME")
-        if len(message_text) != len(message_type) or len(message_text) != len(message_pinname):
-            print("**** GMOCCAPY GETINIINFO **** \n ERROR in user message setup")
-            return None
-        else:
-            for element in message_pinname:
-                if " " in element:
-                    print("**** GMOCCAPY GETINIINFO **** \n ERROR in user message setup \n Pinname should not contain spaces")
-                    return None
-            messages = zip(message_text, message_type, message_pinname)
-            return messages
-

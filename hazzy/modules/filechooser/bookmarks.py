@@ -19,8 +19,11 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import logging
 
-GTK_BOOKMARKS = os.path.expanduser("~/.gtk-bookmarks")  # FixMe use XDG env
+log = logging.getLogger("HAZZY.FILECHOOSER.BOOKMARKS")
+
+GTK_BOOKMARKS = os.path.expanduser("~/.gtk-bookmarks")  #FIXME use XDG env
 
 class BookMarks:
 
@@ -47,11 +50,10 @@ class BookMarks:
                     name = line[len(bk_dir) +1:].rstrip()
                     self.bookmarks.append([path, name])
                 else:
-                    print("No Bookmarks")
+                    log.debug("No Bookmarks")
 
         except IOError as e:
-            print(e)  # File not found
-            print("Creating a new one")
+            log.exception(e)
             with open(self.bookmarks_file, 'w+') as f:
                 f.write('')
 
@@ -62,13 +64,13 @@ class BookMarks:
 
         # don't add bookmark to something other than a directory
         if not os.path.isdir(path):
-            print("Bookmark is not valid")
+            log.error('Bookmark "{}" is not valid'.format(path))
             return False  # indicate failure to add
 
         # don't add any duplicates
         for existing_path, existing_name in self.bookmarks:
             if path == existing_path:
-                print("Bookmark already exists")
+                log.debug('Bookmark to "{}" already exists'.format(path))
                 return False  # indicate failure to add
 
         name = os.path.basename(os.path.normpath(path))
@@ -77,11 +79,14 @@ class BookMarks:
         path = path.replace(" ", "%20")
         line = "file://{0} {1}\n".format(path, name)
 
+        log.debug('Adding bookmark "{}"'.format(path))
         with open(self.bookmarks_file, 'a') as f:
             f.write(line)
 
 
     def remove(self, path):
+
+        log.debug('Removing bookmark "{}"'.format(path))
 
         path = path.replace(" ", "%20")
 
@@ -99,8 +104,9 @@ class BookMarks:
                     f.write(line)
 
 
+    # Clear all bookmarks
     def clear(self):
+        log.debug("Removing all bookmarks")
         with open(self.bookmarks_file, 'w') as f:
             pass
-
 

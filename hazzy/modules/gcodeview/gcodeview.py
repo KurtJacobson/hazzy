@@ -25,10 +25,12 @@ import os
 import sys
 import gtksourceview2 as gtksourceview
 import gobject
+import logging
 from hal_glib import GStat
 from preferences import Preferences
 from modules.touchpads.keyboard import Keyboard
 
+log = logging.getLogger("HAZZY.GCODEVIEW")
 
 # Set up paths
 PYDIR = os.path.dirname(os.path.realpath(__file__))
@@ -189,7 +191,7 @@ class GcodeView(gobject.GObject,):
             openfile.write(text)
 
         self.buf.set_modified(False)
-        print("Saved file as: {0}".format(fn))
+        log.info('Saved file as "{0}"'.format(fn))
 
 
     # ctrl+s to save the file

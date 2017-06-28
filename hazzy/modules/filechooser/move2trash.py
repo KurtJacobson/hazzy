@@ -25,7 +25,10 @@
 
 import os
 import shutil
+import logging
 from datetime import datetime
+
+log = logging.getLogger("HAZZY.FILCHOOSER.MOVE2TRASH")
 
 XDG_DATA_HOME = os.path.expanduser(os.environ.get('XDG_DATA_HOME', '~/.local/share'))
 HOMETRASH = os.path.join(XDG_DATA_HOME, 'Trash')
@@ -35,12 +38,13 @@ HOMETRASH = os.path.join(XDG_DATA_HOME, 'Trash')
 def move2trash(path):
     path = os.path.realpath(path)
     if not os.path.exists(path):
-        text = "TRASH ERROR: file does not exist: {0}".format(path)
-        print(text)
-        return ['ERROR', text]
+        msg = "TRASH ERROR: file does not exist: {0}".format(path)
+        log.error(msg)
+        return ['ERROR', msg]
     elif not os.access(path, os.W_OK):
-        text = "TRASH ERROR: permission denied: {0}".format(path)
-        return ['ERROR', text]
+        msg = "TRASH ERROR: permission denied: {0}".format(path)
+        log.error(msg)
+        return ['ERROR', msg]
 
     file_dev = os.lstat(path).st_dev
     trash_dev = os.lstat(os.path.expanduser('~')).st_dev
@@ -51,9 +55,9 @@ def move2trash(path):
         file_vol_root = _get_mount_point(path)
         trash_dev = os.lstat(file_vol_root).st_dev
         if trash_dev != file_dev:
-            text = "TRASH ERROR: Could not find mount point for: {0}".format(path)
-            print(text)
-            return ['ERROR', text]
+            msg = "TRASH ERROR: Could not find mount point for: {0}".format(path)
+            log.error(msg)
+            return ['ERROR', msg]
         trash_dir = _find_ext_vol_trash(file_vol_root)
     return _move_to_trash(path, trash_dir, file_vol_root)
 
@@ -68,20 +72,20 @@ def _find_ext_vol_trash(vol_root):
         # must be a directory, not a symlink, and have the sticky bit set.
         if os.path.isdir(trash_dir) or not os.path.islink(trash_dir) \
                 or (mode & stat.S_ISVTX):
-            print("Volume topdir trash exists and is valid: {0}".format(trash_dir))
+            log.debug("Volume topdir trash exists and is valid: {0}".format(trash_dir))
             return trash_dir
         else:
-            print("Volume topdir trash exists but is not valid: {0}".format(trash_dir))
+            log.debug("Volume topdir trash exists but is not valid: {0}".format(trash_dir))
     else:
-        print("A topdir trash does not exist on the volume")
+        log.debug("A topdir trash does not exist on the volume")
     # If we got this far we need to try a UID trash dir
     uid = os.getuid()
     trash_dir = os.path.join(vol_root, '.Trash-{0}'.format(uid))
     if not os.path.exists(trash_dir):
-        print("Creating UID trash dir at volume root: {0}".format(trash_dir))
+        log.debug("Creating UID trash dir at volume root: {0}".format(trash_dir))
         os.makedirs(trash_dir, 0o700)
     else:
-        print("UID trash dir exists at volume root: {0}".format(trash_dir))
+        log.debug("UID trash dir exists at volume root: {0}".format(trash_dir))
     return trash_dir
 
 def _get_mount_point(path):
@@ -120,14 +124,15 @@ def _move_to_trash(src, dst, ext_vol=None):
     date = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     info = "[Trash Info]\nPath={0}\nDeletionDate={1}\n".format(path, date)
 
-    print("Writing info file: {0}".format(info_dst))
-    print(info)
+    log.debug("Writing info file: {0}".format(info_dst))
+    #log.debug(info)
 
     with open(info_dst, 'w') as infofile:
         infofile.write(info)
 
     # Actually move file to trash dir
-    print("Moving the file from {0} to {1}".format(src, file_dst))
+    log.info('Moving file from "{0}" to "{1}"'.format(src, file_dst))
     os.rename(src, file_dst)
-    text = "{0} successfully moved to trash".format(fname)
-    return ['INFO', text]
+    msg = '"{0}" successfully moved to trash'.format(fname)
+    return ['INFO', msg]
+
