@@ -22,9 +22,7 @@
 
 import gtk
 import os
-import random
-import threading
-import time
+import gobject
 
 
 pydir = os.path.abspath(os.path.dirname(__file__))
@@ -32,13 +30,12 @@ UIDIR = os.path.join(pydir, "ui")
 IMGDIR = os.path.join(pydir, "images")
 
 
-class Spinner:
+class ProgressBar:
 
     def __init__(self):
 
         # Glade setup
-
-        gladefile = os.path.join(UIDIR, 'spinner.glade')
+        gladefile = os.path.join(UIDIR, 'progressbar.glade')
 
         self.builder = gtk.Builder()
         self.builder.add_from_file(gladefile)
@@ -47,15 +44,17 @@ class Spinner:
         self.window.connect('destroy', self.destroy)
         self.window.set_keep_above(True)
 
-        self.spinner = self.builder.get_object("spinner")
+        self.progressbar = self.builder.get_object("progressbar")
 
     def show(self):
-        self.spinner.start()
         self.window.show()
 
     def hide(self):
-        self.spinner.stop()
         self.window.hide()
+
+    def update(self, percentage):
+        fraction = float(percentage) / 100
+        self.progressbar.set_fraction(fraction)
 
     def destroy(self):
         gtk.main_quit()
@@ -64,10 +63,19 @@ class Spinner:
 # For standalone testing
 # ==========================================================
 
+def update(progressbar):
+    value = progressbar.progressbar.get_fraction() + .01
+    if value > 1:
+        value = 0
+    progressbar.progressbar.set_fraction(value)
+    return True
+
+
 def main():
     gtk.main()
 
 if __name__ == "__main__":
-    spinner = Spinner()
-    spinner.show()
+    progressbar = ProgressBar()
+    progressbar.show()
+    gobject.timeout_add(50, update, progressbar)
     main()

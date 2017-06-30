@@ -285,7 +285,7 @@ class Keyboard():
 
 
 # ==========================================================
-# For stand alone testing
+# For standalone testing
 # ==========================================================
 
 def show(widget, event):
