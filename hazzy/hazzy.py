@@ -101,6 +101,7 @@ from modules.touchpads.touchpad import Touchpad
 from modules.filechooser.filechooser import Filechooser
 from modules.dialogs.dialogs import Dialogs, DialogTypes
 from modules.gcodeview.gcodeview import GcodeView
+from modules.hazzygremlin.hazzygremlin import HazzyGremlin
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
@@ -120,7 +121,7 @@ def excepthook(exc_type, exc_value, exc_traceback):
         w = None
 
     message = traceback.format_exception(exc_type, exc_value, exc_traceback)
-    log.error("".join(message))
+    log.critical("".join(message))
     error_dialog.run("".join(message))
 
 
@@ -230,6 +231,7 @@ class Hazzy:
 
         # Constants
         self.axis_letters = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W']
+        self.inifile = INIFILE
 
         # Define default button states 
         self.cycle_start_button_state = 'start'
@@ -343,6 +345,7 @@ class Hazzy:
         self._update_motion_mode()
         self._get_axis_list()
         
+        self.gremlin = HazzyGremlin(self,680,410)
         
 # =========================================================
 # BEGIN - Appearance initialization
