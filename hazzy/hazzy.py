@@ -931,6 +931,16 @@ class Hazzy:
     def _init_gcode_view(self):
         self.widgets['gcode_view'].add(self.gcode_view.gtksourceview)
 
+    def _init_gremlin(self):
+        self.widgets.gremlin.set_property('view', 'z')
+        self.widgets.gremlin.set_property("mouse_btn_mode", 2)
+        self.widgets.gremlin.grid_size = 1.0
+        self.widgets.gremlin.set_property("metric_units", int(self.stat.linear_units))
+        self.widgets.gremlin.set_property("use_commanded", not self.dro_actual_pos)
+        self.widgets.gremlin.connect('loading_progress', self.on_gremlin_loading_progress_changed)
+
+
+
     # HAL_Gremlin preview buttons
     def on_zoom_in_button_press_event(self, widget, data=None):
         self.zoom_in_pressed = True
@@ -968,12 +978,16 @@ class Hazzy:
 
     # Highlight code line for selected line in gremlin
     def on_gremlin_line_clicked(self, widget, line):
-        self.gcode_view.highlight_line(line, 'selected')
+        if line != -1:
+            self.gcode_view.highlight_line(line, 'selected')
 
     # Double click gremlin to clear live plot
     def on_gremlin_button_press_event(self, widget, event):
         if event.type == gtk.gdk._2BUTTON_PRESS:
             self.widgets.gremlin.clear_live_plotter()
+
+    def on_gremlin_loading_progress_changed(self, widget, percentage):
+        print "Generating preview: {}%".format(percentage)
 
 
 # =========================================================      
@@ -1023,6 +1037,8 @@ class Hazzy:
     # Need to do this on release or the popup gets the mouse up and we are stuck in drag
     def on_filechooser_button_release_event(self, widget, data=None):
         fname = self.filechooser.get_path_at_cursor()
+        if self.current_preview_file == fname:
+            return
         if self.gcode_preview.get_modified():
             if self.current_preview_file is None:
                 pass  # TODO Add save-as pop-up here
@@ -1031,7 +1047,7 @@ class Hazzy:
                 message = ("Save changes to: \n" + name)
                 save_changes = self.yes_no_dialog.run(message)
                 if save_changes:
-                    self.save(self.current_preview_file)
+                    self.gcode_preview.save(self.current_preview_file)
                 else:
                     self.gcode_preview.set_modified(False)
         if fname is not None:
@@ -1823,13 +1839,6 @@ class Hazzy:
         else:
             log.debug("Screen size: {0}x{1} Screen too small to decorate window"
                   .format(str(screen_w), str(screen_h)))
-
-    def _init_gremlin(self):
-        self.widgets.gremlin.set_property('view', 'z')
-        self.widgets.gremlin.set_property("mouse_btn_mode", 2)
-        self.widgets.gremlin.grid_size = 1.0
-        self.widgets.gremlin.set_property("metric_units", int(self.stat.linear_units))
-        self.widgets.gremlin.set_property("use_commanded", not self.dro_actual_pos)
 
 
 def main():

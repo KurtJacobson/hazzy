@@ -120,7 +120,6 @@ class GcodeView(gobject.GObject,):
             self.error_line = None
         else:
             self.highlight_line(None)
-        print self.get_program_length()
 
 
     def highlight_line(self, lnum, style='motion'):
