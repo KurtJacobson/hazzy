@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 #   An attempt at a new UI for LinuxCNC that can be used
 #   on a touch screen without any lost of functionality.
 #   The code is written in python and glade and is almost a
@@ -43,6 +44,8 @@ import logging            # Needed for logging errors
 from gladevcp.gladebuilder import GladeBuilder
 import gtksourceview2 as gtksourceview
 import math
+
+gobject.threads_init()
 
 
 # Setup paths to files

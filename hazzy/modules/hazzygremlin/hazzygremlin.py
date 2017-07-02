@@ -23,6 +23,7 @@ import os
 import gtk
 import gobject
 import threading
+gobject.threads_init()
 
 import gcode
 import gremlin
@@ -32,15 +33,17 @@ pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, "ui")
 
 log = logging.getLogger("HAZZY.GREMLIN")
+#log.setLevel(logging.INFO)
 log.setLevel(logging.DEBUG)
 
-class HazzyGremlin(gremlin.Gremlin, threading.Thread):
+class HazzyGremlin(gremlin.Gremlin):
     __gtype_name__ = "HazzyGremlin"
     __gsignals__ = {
         'line-clicked': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
         'gcode-error': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, 
             (gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING,)),
         'loading-progress': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
+        'completed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_INT,)),
     }
 
 
@@ -78,20 +81,19 @@ class HazzyGremlin(gremlin.Gremlin, threading.Thread):
         self.gremlin_view.add(controls)
 
         # Add progress bar
-        progressbar = gtk.ProgressBar()
-        progressbar.set_size_request(300, 25)
-        progressbar.set_text("Generating preview ...")
-        fixed.put(progressbar, 0, self.height - 25)
-
-        self.thread = ProgressThread(progressbar, self.percent, self)
+        self.progressbar = gtk.ProgressBar()
+        self.progressbar.set_size_request(300, 25)
+        self.progressbar.set_text("Generating preview ...")
+        fixed.put(self.progressbar, 0, self.height - 25)
 
 
     def fileloading(self, current_line):
         percent = current_line * 100 / self.line_count
         if self.percent != percent:
             self.percent = percent
-            self.thread.run(percent)
+            self.progressbar.set_fraction(self.percent / 100)
             msg = "Generating preview {}%".format(self.percent)
+            self.progressbar.set_text(msg)
             log.debug(msg)
             self.emit('loading_progress', percent)
 
@@ -209,24 +211,4 @@ class HazzyGremlin(gremlin.Gremlin, threading.Thread):
     def on_gremlin_clicked(self, widget, event, data=None):
         if event.type == gtk.gdk._2BUTTON_PRESS:
             self.clear_live_plotter()
-
-
-class ProgressThread(threading.Thread):
-    def __init__(self, progressbar, percent, callback):
-        threading.Thread.__init__(self)
-
-        self.progressbar = progressbar
-        self.percent = percent
-        self.callback = callback
-
-        self.stopthread = threading.Event()
-
-    def run(self, percent):
-        msg = "Generating preview {}%".format(percent)
-        self.progressbar.set_text(msg)
-        self.progressbar.set_fraction(float(percent) / 100)
-
-    def stop(self):
-        self.callback.stop()
-        self.stopthread.set()
 
