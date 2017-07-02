@@ -1808,7 +1808,7 @@ class GlCanonDraw:
         self.set_canon(canon)
         print "####################### START LOADING #############################"
         result, seq = gcode.parse(f, canon, *args)
-        print "####################### DONE LOADING Teastin #############################"
+        print "####################### DONE LOADING #############################"
 
         self.emit('completed', result, seq)
 
@@ -1819,7 +1819,6 @@ class GlCanonDraw:
             self.stale_dlist('program_norapids')
             self.stale_dlist('select_rapids')
             self.stale_dlist('select_norapids')
-
 
 
     def from_internal_units(self, pos, unit=None):

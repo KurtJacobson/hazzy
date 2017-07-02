@@ -49,7 +49,7 @@ import glnav
 import gobject
 import pango
 
-import rs274.glcanon
+import glcanon
 import rs274.interpret
 import linuxcnc
 import gcode
@@ -71,9 +71,9 @@ class DummyProgress:
     def nextphase(self, unused): pass
     def progress(self): pass
 
-class StatCanon(rs274.glcanon.GLCanon, rs274.interpret.StatMixin):
+class StatCanon(glcanon.GLCanon, rs274.interpret.StatMixin):
     def __init__(self, colors, geometry, lathe_view_option, stat, random, Gremlin_instance):
-        rs274.glcanon.GLCanon.__init__(self, colors, geometry)
+        glcanon.GLCanon.__init__(self, colors, geometry)
         rs274.interpret.StatMixin.__init__(self, stat, random)
         self.progress = DummyProgress()
         self.Gremlin_instance = Gremlin_instance
@@ -83,7 +83,7 @@ class StatCanon(rs274.glcanon.GLCanon, rs274.interpret.StatMixin):
         return self.lathe_view_option
 
     def change_tool(self, pocket):
-        rs274.glcanon.GLCanon.change_tool(self,pocket)
+        glcanon.GLCanon.change_tool(self,pocket)
         rs274.interpret.StatMixin.change_tool(self,pocket)
 
     def next_line(self, st):
@@ -93,7 +93,7 @@ class StatCanon(rs274.glcanon.GLCanon, rs274.interpret.StatMixin):
 
 
 class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
-              rs274.glcanon.GlCanonDraw):
+              glcanon.GlCanonDraw):
     rotation_vectors = [(1.,0.,0.), (0., 0., 1.)]
 
     def __init__(self, inifile):
@@ -120,7 +120,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         )
         thread.start_new_thread(self.logger.start, (.01,))
 
-        rs274.glcanon.GlCanonDraw.__init__(self, linuxcnc.stat(), self.logger)
+        glcanon.GlCanonDraw.__init__(self, linuxcnc.stat(), self.logger)
 
         self.current_view = 'z'
 
@@ -242,7 +242,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         # return self.visible
         return True
 
-    @rs274.glcanon.with_context
+    @glcanon.with_context
     def realize(self, widget):
         self.set_current_view()
         s = self.stat
@@ -256,7 +256,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         glnav.use_pango_font('courier bold 16', 0, 128)
         self.font_linespace = linespace
         self.font_charwidth = width
-        rs274.glcanon.GlCanonDraw.realize(self)
+        glcanon.GlCanonDraw.realize(self)
 
         if s.file: 
             self.load()
@@ -290,10 +290,11 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
 
             unitcode = "G%d" % (20 + (s.linear_units == 1))
             initcode = self.inifile.find("RS274NGC", "RS274NGC_STARTUP_CODE") or ""
-            #result, seq = self.load_preview(filename, canon, unitcode, initcode)
+#            self.load_preview(filename, canon, unitcode, initcode)
+            self.clear_live_plotter()
             threading.Thread(target=self.load_preview, args=(filename, canon, unitcode, initcode,)).start()
-            #if result > gcode.MIN_ERROR:
-            #    self.report_gcode_error(result, seq, filename)
+#            if result > gcode.MIN_ERROR:
+#                self.report_gcode_error(result, seq, filename)
 
         finally:
             pass
@@ -304,9 +305,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
     def loading_finished(self, widget, result, seq):
         print "******** Loading Finished *********"
 
-        shutil.rmtree(self.td)
-
-        self.show_all()
+        #shutil.rmtree(self.td)
 
         #self.set_current_view()
         if result > gcode.MIN_ERROR:
@@ -365,7 +364,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
     def select_prime(self, x, y):
         self.select_primed = x, y
 
-    @rs274.glcanon.with_context
+    @glcanon.with_context
     def select_fire(self, widget, event):
         if not self.select_primed: return
         x, y = self.select_primed
@@ -528,3 +527,4 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
 
     def rotate_view(self,x,y):
         self.rotateOrTranslate(x, y)
+
