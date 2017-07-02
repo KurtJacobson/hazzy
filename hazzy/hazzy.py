@@ -236,9 +236,6 @@ class Hazzy:
         self.cycle_start_button_state = 'start'
         self.hold_resume_button_state = 'inactive'
 
-        self.style_scheme = None
-        self.lang_spec = None
-
         self.task_state = None
         self.task_mode = None
         self.interp_state = None
@@ -254,11 +251,8 @@ class Hazzy:
         self.periodic_cycle_counter = 0 # Determine when to call slow_periodic()
 
         self.dro_has_focus = False      # To stop DRO update if user is trying to type into it
-        self.mdi_has_focus = False      # 
-        self.zoom_in_pressed = False    # Keep track of continuous zoom IN button on gremlin
-        self.zoom_out_pressed = False   # Keep track of continuous zoom OUT button on gremlin
+        self.mdi_has_focus = False      #
 
-        self.usb_dir = ""
         self.current_preview_file = None
         self.surface_speed = ""
         self.chip_load = ""
@@ -267,6 +261,7 @@ class Hazzy:
         self.rapid_override = ""
         self.spindle_speed = ""
         self.current_tool = ""
+        self.motion_line = 0
         self.current_tool_data = [""]*5 + ["No Tool Loaded"]
         self.current_work_cord = ""     # Keep track of current work cord
         self.codes = []                 # Unformatted G codes + M codes to check if an update is required
@@ -526,6 +521,11 @@ class Hazzy:
         # message = self.error_channel.poll()
         # if message:
         #   self._show_message(message)
+
+        # Update motion line
+        if self.stat.motion_line != self.motion_line:
+            self.motion_line = self.stat.motion_line
+            self.gcode_view.highlight_line(self.motion_line, 'motion')
 
         # Update work cord if it has changed
         if self.current_work_cord != self.stat.g5x_index:
@@ -929,7 +929,7 @@ class Hazzy:
 
         self.gremlin.set_view('z')
         self.gremlin.mouse_btn_mode = 2
-        self.gremlin.set_display_units(self.machine_units)
+        #self.gremlin.set_display_units(self.machine_units)
         self.gremlin.connect('gcode-error', self.on_gremlin_gcode_error)
         self.gremlin.connect('line-clicked', self.on_gremlin_line_clicked)
         self.gremlin.connect('loading_progress', self.on_gremlin_loading_progress_changed)
@@ -1036,13 +1036,16 @@ class Hazzy:
                 self.filechooser.set_current_folder(fpath)
 
     def load_gcode_file(self, fname):
-        self.set_mode(linuxcnc.MODE_AUTO)
+        self.widgets.notebook.set_current_page(0)
+#        self.set_mode(linuxcnc.MODE_AUTO)
         # If a file is already loaded clear the interpreter
         if self.stat.file != "":
-            self.command.reset_interpreter()
-            self.command.wait_complete()
+#            self.command.reset_interpreter()
+#            self.command.wait_complete()
+            self.set_mode(linuxcnc.MODE_MDI)
+            self.set_mode(linuxcnc.MODE_AUTO)
+        self.gcode_view.load_file(fname)
         self.command.program_open(fname)
-        self.widgets.notebook.set_current_page(0)
         self.widgets.gcode_file_label.set_text(fname)
         self.gremlin.load()
         log.debug("NGC file loaded: {0}".format(fname))

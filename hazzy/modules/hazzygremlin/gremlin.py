@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 #    Copyright (C) 2009-2012
 #    Jeff Epler <jepler@unpythonic.net>,
 #    Pavel Shramov <psha@kamba.psha.org.ru>,
@@ -33,7 +34,10 @@
 #    2016 Norbert Schechner
 #    corrected mode handling for lathes, as in most modes it was not possible to move, as 
 #    it has only been allowed in p view.
-
+#
+#    2017 Kurt Jacobson
+#    Added preview generation progress percentage tracking for use in updating
+#    a progress bar in the UI
 
 
 import gtk
