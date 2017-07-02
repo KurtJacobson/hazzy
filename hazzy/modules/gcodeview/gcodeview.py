@@ -123,7 +123,7 @@ class GcodeView(gobject.GObject,):
 
 
     def highlight_line(self, lnum, style='motion'):
-        if not lnum:
+        if not lnum or lnum == -1:
             if self.mark:
                 self.buf.delete_mark(self.mark)
                 self.mark = None

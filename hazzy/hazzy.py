@@ -124,7 +124,6 @@ def excepthook(exc_type, exc_value, exc_traceback):
     log.critical("".join(message))
     error_dialog.run("".join(message))
 
-
 # Connect the except hook to the handler
 sys.excepthook = excepthook
 
@@ -231,7 +230,7 @@ class Hazzy:
 
         # Constants
         self.axis_letters = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W']
-        self.inifile = INIFILE
+        self.inifile = linuxcnc.ini(INIFILE)
 
         # Define default button states 
         self.cycle_start_button_state = 'start'
@@ -344,9 +343,7 @@ class Hazzy:
         self._update_interp_state()
         self._update_motion_mode()
         self._get_axis_list()
-        
-        self.gremlin = HazzyGremlin(self,680,410)
-        
+
 # =========================================================
 # BEGIN - Appearance initialization
 # =========================================================
@@ -482,7 +479,6 @@ class Hazzy:
 
         # Finally, show the window 
         self.window.show()
-        self._init_gremlin()
 
 # =========================================================
 # BEGIN - Periodic status checking and updating
@@ -513,14 +509,6 @@ class Hazzy:
         self._update_spindle_speed_label()
         self._updade_dro_status()
 
-        # Use this periodic to repeatedly zoom gremlin, better then
-        # using a while loop with sleep() as that would block the thread
-        if self.zoom_in_pressed:
-            self.widgets.gremlin.zoom_in()
-
-        if self.zoom_out_pressed:
-            self.widgets.gremlin.zoom_out()
-
         # Call _slow_periodic() every 5 cycles of _fast_periodic()  
         self.periodic_cycle_counter += 1
         if self.periodic_cycle_counter >= 5:
@@ -541,6 +529,7 @@ class Hazzy:
 
         # Update work cord if it has changed
         if self.current_work_cord != self.stat.g5x_index:
+            self.refresh_gremlin()
             self._update_work_cord()
 
         # Update G/M codes if they have changed    
@@ -574,9 +563,13 @@ class Hazzy:
 
         # self.stat.program_units returns 1 for inch, 2 for mm and 3 for cm  
         if self.stat.program_units != 1:
-            self.display_units = 'mm'
+            if self.display_units != 'mm':
+                self.display_units = 'mm'
+                self.gremlin.set_display_units('mm')
         else:
-            self.display_units = 'in'
+            if self.display_units != 'in':
+                self.display_units = 'in'
+                self.gremlin.set_display_units('in')
 
         # Update velocity DROs     
         self._update_vel()
@@ -654,17 +647,6 @@ class Hazzy:
         msg = '<span size=\"11000\" weight=\"bold\" foreground=\"{0}\">{1}:' \
         '</span> {2}'.format(color, kind, text)
         self.widgets.message_label.set_markup(msg)
-
-
-    def on_gremlin_gcode_error(self, widget, errortext):
-        text = errortext.splitlines()
-        temp = text[1].replace("Near line ", "").replace(" of", "")
-        lnum = int(temp) - 1
-        fname = text[0].replace("G-Code error in ", "")
-        message = "near line {0}, ".format(lnum) + text[3]
-        self._show_message(["ERROR", message ])
-        log.error(errortext)
-        self.gcode_view.highlight_error_line(lnum)
 
 
 # =========================================================
@@ -849,9 +831,13 @@ class Hazzy:
         try:
             val = self.s.eval(entry) * factor
             self.set_work_offset(aletter, val)
-        except:
+        except (SyntaxError, simpleeval.NameNotDefined):
             msg = "{0} axis DRO entry '{1}' is not valid".format(aletter, entry)
             log.error(msg)
+            self._show_message(["ERROR", msg])
+        except Exception as e:
+            log.exception(e)
+            msg = "{0} axis DRO entry error, see log for details".format(aletter)
             self._show_message(["ERROR", msg])
 
         self.window.set_focus(None)
@@ -922,10 +908,11 @@ class Hazzy:
             self.window.set_focus(None)
 
     def on_button1_clicked(self, widget, data=None):
-        pass
+        self.gremlin._redraw()
 
     def on_redraw_clicked(self, widget, data=None):
-        self.set_selected_tool(3)
+        self.gremlin.load()
+
 
 # =========================================================      
 # BEGIN - [Main] notebook page button handlers
@@ -935,63 +922,39 @@ class Hazzy:
         self.widgets['gcode_view'].add(self.gcode_view.gtksourceview)
 
     def _init_gremlin(self):
-        self.widgets.gremlin.set_property('view', 'z')
-        self.widgets.gremlin.set_property("mouse_btn_mode", 2)
-        self.widgets.gremlin.grid_size = 1.0
-        self.widgets.gremlin.set_property("metric_units", int(self.stat.linear_units))
-        self.widgets.gremlin.set_property("use_commanded", not self.dro_actual_pos)
-        self.widgets.gremlin.connect('loading_progress', self.on_gremlin_loading_progress_changed)
+        w, h = self.widgets.grembox.get_size_request()
+        self.gremlin = HazzyGremlin(self.inifile, w, h)
+        self.widgets.grembox.add(self.gremlin.gremlin_view)
+        self.widgets.grembox.show_all()
 
+        self.gremlin.set_view('z')
+        self.gremlin.mouse_btn_mode = 2
+        self.gremlin.set_display_units(self.machine_units)
+        self.gremlin.connect('gcode-error', self.on_gremlin_gcode_error)
+        self.gremlin.connect('line-clicked', self.on_gremlin_line_clicked)
+        self.gremlin.connect('loading_progress', self.on_gremlin_loading_progress_changed)
+        self.gremlin.use_commanded = not self.dro_actual_pos
 
-
-    # HAL_Gremlin preview buttons
-    def on_zoom_in_button_press_event(self, widget, data=None):
-        self.zoom_in_pressed = True
-
-    def on_zoom_in_button_release_event(self, widget, data=None):
-        self.zoom_in_pressed = False
-
-    def on_zoom_out_button_press_event(self, widget, data=None):
-        self.zoom_out_pressed = True
-
-    def on_zoom_out_button_release_event(self, widget, data=None):
-        self.zoom_out_pressed = False
-
-    def on_view_x_button_press_event(self, widget, data=None):
-        self.widgets.gremlin.set_property('view', 'x') 
-
-    def on_view_y_button_press_event(self, widget, data=None):
-        self.widgets.gremlin.set_property('view', 'y')         
-
-    def on_view_z_button_press_event(self, widget, data=None):
-        self.widgets.gremlin.set_property('view', 'z')         
-
-    def on_view_p_button_press_event(self, widget, data=None):
-        self.widgets.gremlin.set_property('view', 'p')
-
-    def on_mouse_mode_button_press_event(self, widget, data=None):
-        if self.gremlin_mouse_mode == 0:
-            self.widgets.gremlin.set_property("mouse_btn_mode", 2)
-            self.set_image('mouse_mode_image', 'view_pan.png')
-            self.gremlin_mouse_mode = 2
-        else:
-            self.widgets.gremlin.set_property("mouse_btn_mode", 0)
-            self.set_image('mouse_mode_image', 'view_rotate.png')
-            self.gremlin_mouse_mode = 0
+    def on_gremlin_gcode_error(self, widget, fname, lnum, text):
+        msg = "{2} near line {1} of '{0}'".format(fname, lnum, text)
+        self._show_message(["ERROR", msg])
+        self.gcode_view.highlight_error_line(lnum)
 
     # Highlight code line for selected line in gremlin
     def on_gremlin_line_clicked(self, widget, line):
-        if line != -1:
-            self.gcode_view.highlight_line(line, 'selected')
+        self.gcode_view.highlight_line(line, 'selected')
 
-    # Double click gremlin to clear live plot
-    def on_gremlin_button_press_event(self, widget, event):
-        if event.type == gtk.gdk._2BUTTON_PRESS:
-            self.widgets.gremlin.clear_live_plotter()
+    def on_gremlin_loading_progress_changed(self, widget, percent):
+        #print "Generating preview: {}%".format(percent)
+        pass
 
-    def on_gremlin_loading_progress_changed(self, widget, percentage):
-        print "Generating preview: {}%".format(percentage)
-
+    def refresh_gremlin(self):
+        # Redraw screen with new offset
+        # Switch modes to cause an interp sync
+        self.set_mode(linuxcnc.MODE_MANUAL)
+        self.set_mode(linuxcnc.MODE_MDI)
+        self.gremlin.clear_live_plotter()
+        self.gremlin.load()
 
 # =========================================================      
 # BEGIN - [File] notebook page button handlers
@@ -1081,7 +1044,7 @@ class Hazzy:
         self.command.program_open(fname)
         self.widgets.notebook.set_current_page(0)
         self.widgets.gcode_file_label.set_text(fname)
-        # self.widgets.gremlin.reloadfile(fname)
+        self.gremlin.load()
         log.debug("NGC file loaded: {0}".format(fname))
 
     def on_file_name_editing_started(self, widget, entry):
@@ -1730,7 +1693,7 @@ class Hazzy:
         self.issue_mdi(offset_command)
         self.set_mode(linuxcnc.MODE_MANUAL)
         # FIXME This does not always work to display the new work offset
-        self.widgets.gremlin.reloadfile(self.stat.file)
+        self.refresh_gremlin()
 
     def home_joint(self, joint):
         if self.stat.joint[joint]['homed'] == 0 and not self.stat.estop and self.stat.joint[joint]['homing'] == 0:
