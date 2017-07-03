@@ -23,7 +23,6 @@ import os
 import gtk
 import gobject
 import threading
-gobject.threads_init()
 
 import gcode
 import gremlin
@@ -44,6 +43,7 @@ class HazzyGremlin(gremlin.Gremlin):
             (gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING,)),
         'loading-progress': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
         'completed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_INT,)),
+        'set-view' : (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ()),
     }
 
 
@@ -98,9 +98,9 @@ class HazzyGremlin(gremlin.Gremlin):
             self.emit('loading_progress', percent)
 
 
-    def realize(self,widget):
-        super(HazzyGremlin, self).realize(widget)
-        #self.progressbar.hide()
+#    def realize(self,widget):
+#        super(HazzyGremlin, self).realize(widget)
+#        #self.progressbar.hide()
 
 
     def posstrs(self):

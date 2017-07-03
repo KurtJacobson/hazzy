@@ -63,7 +63,6 @@ import sys
 
 import thread
 import threading
-gobject.threads_init()
 
 from minigl import *
 
@@ -135,7 +134,8 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         self.connect('button-release-event', self.select_fire)
         self.connect('scroll-event', self.scroll)
 
-        self.connect('completed', self.loading_finished)
+#        self.connect('completed', self.loading_finished)
+#        self.connect('set-view', self.set_current_view)
 
         self.add_events(gtk.gdk.POINTER_MOTION_MASK)
         self.add_events(gtk.gdk.POINTER_MOTION_HINT_MASK)
@@ -260,12 +260,13 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
 
         if s.file: 
             self.load()
-            #threading.Thread(target=self.load).start()
+            threading.Thread(target=self.load).start()
 
-    def set_current_view(self):
+    def set_current_view(self, data=None):
         if self.current_view not in ['p', 'x', 'y', 'y2', 'z', 'z2']:
             return
         return getattr(self, 'set_view_%s' % self.current_view)()
+
 
     def load(self,filename = None):
         s = self.stat
@@ -305,9 +306,11 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
     def loading_finished(self, widget, result, seq):
         print "******** Loading Finished *********"
 
+        print result, seq
         #shutil.rmtree(self.td)
 
-        #self.set_current_view()
+        self.set_current_view()
+
         if result > gcode.MIN_ERROR:
                 self.report_gcode_error(result, seq, self._current_file)
 

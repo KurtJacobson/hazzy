@@ -26,7 +26,6 @@ import gcode
 import os
 
 import gobject
-gobject.threads_init()
 
 def minmax(*args):
     return min(*args), max(*args)
@@ -79,14 +78,15 @@ limiticon = array.array('B',
            0,   0,    0, 0])
 
 class GLCanon(Translated, ArcsToSegmentsMixin, gobject.GObject):
-    __gtype_name__ = "GLCanon"
-    __gsignals__ = {
-        'completed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_INT,)),
-    }
+#    __gtype_name__ = "GLCanon"
+#    __gsignals__ = {
+#        'completed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_INT,)),
+#        'set-view' : (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ()),
+#    }
 
     lineno = -1
     def __init__(self, colors, geometry, is_foam=0):
-        gobject.GObject.__init__(self)
+#        gobject.GObject.__init__(self)
 
         # traverse list - [line number, [start position], [end position], [tlo x, tlo y, tlo z]]
         self.traverse = []; self.traverse_append = self.traverse.append
@@ -1810,7 +1810,7 @@ class GlCanonDraw:
         result, seq = gcode.parse(f, canon, *args)
         print "####################### DONE LOADING #############################"
 
-        self.emit('completed', result, seq)
+#        self.emit('completed', result, seq)
 
         if result <= gcode.MIN_ERROR:
             self.canon.progress.nextphase(1)
@@ -1819,6 +1819,11 @@ class GlCanonDraw:
             self.stale_dlist('program_norapids')
             self.stale_dlist('select_rapids')
             self.stale_dlist('select_norapids')
+
+#        print "emiting set-view"
+#        self.emit('set-view')
+
+        gobject.idle_add(self.loading_finished, self, result, seq)
 
 
     def from_internal_units(self, pos, unit=None):
