@@ -26,7 +26,6 @@ import sys
 import gtksourceview2 as gtksourceview
 import gobject
 import logging
-from hal_glib import GStat
 from preferences import Preferences
 from modules.touchpads.keyboard import Keyboard
 
@@ -83,9 +82,6 @@ class GcodeView(gobject.GObject,):
 
         # Only highlight motion line if not preview
         if not self.is_preview:
-            self.gstat = GStat()
-            self.gstat.connect('line-changed', self.on_line_changed)
-            self.gstat.connect('file-loaded', self.on_file_loaded)
             self.gtksourceview.set_can_focus(False)
             self.holder_text = ""
 
@@ -123,7 +119,7 @@ class GcodeView(gobject.GObject,):
 
 
     def highlight_line(self, lnum, style='motion'):
-        if not lnum:
+        if not lnum or lnum == -1:
             if self.mark:
                 self.buf.delete_mark(self.mark)
                 self.mark = None
@@ -137,13 +133,6 @@ class GcodeView(gobject.GObject,):
         else:
             self.buf.move_mark(self.mark, iter)
         self.gtksourceview.scroll_to_mark(self.mark, 0, True, 0, 0.5)
-
-    # GStat callbacks
-    def on_line_changed(self, gobject, lnum):
-        self.highlight_line(lnum, 'motion')
-
-    def on_file_loaded(self, widget, fn):
-        self.load_file(fn)
 
     # Since Gremlin reports any errors before GStat emits the 'file-loaded'
     # signal, we have to save the error line here and then do the actual 

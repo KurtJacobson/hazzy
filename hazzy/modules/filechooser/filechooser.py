@@ -124,6 +124,7 @@ class Filechooser(gobject.GObject):
             btn = gtk.Button()
             btn.connect('clicked', self.on_nav_btn_clicked)
             btn.set_can_focus(False)
+            btn.set_use_underline(False)
             btn_list.append(btn)
             box.pack_start(btn, False, False, 0)
             btn_dict[btn] = ''
@@ -178,7 +179,7 @@ class Filechooser(gobject.GObject):
         self.current_selection = None
 
         if path:
-            self._cur_dir = os.path.realpath(path)
+            self._cur_dir = path #os.path.realpath(path)
 
             # Reset scrollbars since display has changed
             self.file_vadj.set_value(0)

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="220"
+   height="100"
+   id="svg3033"
+   version="1.1"
+   inkscape:version="0.48.3.1 r9886"
+   sodipodi:docname="progressbar_bg.svg">
+  <defs
+     id="defs3035" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="2.8"
+     inkscape:cx="120.05128"
+     inkscape:cy="68.080503"
+     inkscape:document-units="px"
+     inkscape:current-layer="g3016"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     showborder="true"
+     inkscape:showpageshadow="true"
+     inkscape:window-width="1920"
+     inkscape:window-height="1115"
+     inkscape:window-x="0"
+     inkscape:window-y="26"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata3038">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-1.8099588e-6,-952.36221)">
+    <g
+       transform="matrix(0.73333333,0,0,1.0687259,129.63625,-366.89433)"
+       id="g3016"
+       inkscape:export-filename="/home/kurt/Desktop/spinner_bg.png"
+       inkscape:export-xdpi="90"
+       inkscape:export-ydpi="90">
+      <rect
+         style="fill:#615f5f;fill-opacity:1;stroke:none;display:inline"
+         id="rect3105-3-5-6-6"
+         width="300"
+         height="93.569359"
+         x="-176.7767"
+         y="1234.4199"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/yes_no_background.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+      <rect
+         style="fill:#908e8e;fill-opacity:1;stroke:#000000;stroke-width:2.25915551;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;display:inline"
+         id="rect3844-7-3-6-3-7-7"
+         width="270"
+         height="72.9841"
+         x="-161.7767"
+         y="1244.7125"
+         rx="9.5454588"
+         ry="6.5498543"
+         inkscape:export-filename="/home/kurt/Desktop/hazzy-mill/hazzy/images/yes_no_background.png"
+         inkscape:export-xdpi="90"
+         inkscape:export-ydpi="90" />
+    </g>
+  </g>
+</svg>
