@@ -35,6 +35,9 @@ import logging
 log = logging.getLogger("HAZZY.GETINI")
 
 CONFIGPATH = os.environ['CONFIG_DIR']
+pydir = os.path.abspath(os.path.dirname(__file__))
+MAINDIR = os.path.dirname(pydir)
+
 
 class GetIniInfo:
 
@@ -85,6 +88,15 @@ class GetIniInfo:
                 machinename = machinename.replace(" ", "_")
                 temp = os.path.join(CONFIGPATH, "%s.log" % machinename)
         log.info("Log file path: %s" % temp)
+        return temp
+
+    def get_open_file(self):
+        temp = self.inifile.find("DISPLAY", "OPEN_FILE")
+        if not temp:
+            temp = os.path.join(MAINDIR, "sim.hazzy/example_gcode/hazzy.ngc")
+        if not os.path.exists(temp):
+            log.warning("Path given in [DISPLY] OPEN_FILE in INI is not valid")
+            return
         return temp
 
     def get_coordinates(self):

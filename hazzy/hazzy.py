@@ -156,17 +156,6 @@ class Hazzy:
         self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
         self.error_dialog = Dialogs(DialogTypes.ERROR)
 
-        # Add filechooser
-        filechooser_widget = self.filechooser.get_filechooser_widget()
-        self.widgets['filechooser_box'].add(filechooser_widget)
-
-        self.filechooser.connect('file-activated', self.on_file_activated)
-        self.filechooser.connect('selection-changed', self.on_file_selection_changed)
-        self.filechooser.connect('filename-editing-started', 
-                                    self.on_file_name_editing_started)
-        self.filechooser.connect('button-release-event', 
-                                    self.on_filechooser_button_release_event)
-        self.filechooser.connect('error', self.on_filechooser_error)
 
 
         # Components needed to communicate with hal and linuxcnc
@@ -320,12 +309,12 @@ class Hazzy:
         self.style_scheme_name = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_NAME", 'gcode', str)
         self.lang_spec_file = self.prefs.getpref("GCODE VIEW", "LANG_SPEC_FILE", 'GCode.lang', str)
         self.lang_spec_name = self.prefs.getpref("GCODE VIEW", "LANG_SPEC_NAME", 'gcode', str)
-        
+
         # [MACHINE DEFAULTS]
         self.df_feed = self.prefs.getpref("MACHINE DEFAULTS", "DF_SPEED", 10, int)
         self.df_speed = self.prefs.getpref("MACHINE DEFAULTS", "DF_FEED", 300, int)
-        
-        
+
+
 # =========================================================
 # BEGIN - Do initial updates
 # =========================================================        
@@ -333,7 +322,7 @@ class Hazzy:
         # Initial poll so all is up to date
         self.stat.poll()
         self.error_channel.poll()
-        
+
         # Initialize settings
         self._init_window()
         self._update_machine_state() 
@@ -477,6 +466,8 @@ class Hazzy:
 
         # Finally, show the window 
         self.window.show()
+
+        self.load_gcode_file(self.get_ini_info.get_open_file())
 
 # =========================================================
 # BEGIN - Periodic status checking and updating
@@ -965,6 +956,19 @@ class Hazzy:
 # ========================================================= 
 
     def _init_file_chooser(self):
+
+        # Add filechooser
+        filechooser_widget = self.filechooser.get_filechooser_widget()
+        self.widgets['filechooser_box'].add(filechooser_widget)
+
+        self.filechooser.connect('file-activated', self.on_file_activated)
+        self.filechooser.connect('selection-changed', self.on_file_selection_changed)
+        self.filechooser.connect('filename-editing-started', 
+                                    self.on_file_name_editing_started)
+        self.filechooser.connect('button-release-event', 
+                                    self.on_filechooser_button_release_event)
+        self.filechooser.connect('error', self.on_filechooser_error)
+
         path = os.path.expanduser(self.nc_file_path)
         if not os.path.isdir(path):
             msg = "Path given in [DISPLAY] PROGRAM_PREFIX in INI is not valid"
@@ -1041,11 +1045,7 @@ class Hazzy:
 
     def load_gcode_file(self, fname):
         self.widgets.notebook.set_current_page(0)
-#        self.set_mode(linuxcnc.MODE_AUTO)
-        # If a file is already loaded clear the interpreter
         if self.stat.file != "":
-#            self.command.reset_interpreter()
-#            self.command.wait_complete()
             self.set_mode(linuxcnc.MODE_MDI)
             self.set_mode(linuxcnc.MODE_AUTO)
         self.gcode_view.load_file(fname)
