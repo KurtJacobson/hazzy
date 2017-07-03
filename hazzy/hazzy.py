@@ -911,10 +911,11 @@ class Hazzy:
             self.window.set_focus(None)
 
     def on_button1_clicked(self, widget, data=None):
-        self.gremlin._redraw()
+        self.gremlin.expose()
 
     def on_redraw_clicked(self, widget, data=None):
-        self.gremlin.load()
+        self.gremlin.expose()
+        #self.gremlin.load()
 
 
 # =========================================================      

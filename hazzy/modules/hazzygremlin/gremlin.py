@@ -64,7 +64,11 @@ import sys
 import thread
 import threading
 
+import logging
+
 from minigl import *
+
+log = logging.getLogger("HAZZY.GREMLIN.GREMLIN")
 
 class DummyProgress:
     def nextphase(self, unused): pass
@@ -134,9 +138,6 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         self.connect('button-release-event', self.select_fire)
         self.connect('scroll-event', self.scroll)
 
-#        self.connect('completed', self.loading_finished)
-#        self.connect('set-view', self.set_current_view)
-
         self.add_events(gtk.gdk.POINTER_MOTION_MASK)
         self.add_events(gtk.gdk.POINTER_MOTION_HINT_MASK)
         self.add_events(gtk.gdk.BUTTON_MOTION_MASK)
@@ -150,7 +151,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         self.maxlat = 90
 
         self.highlight_line = None
-        self.program_alpha = False
+        self.program_alpha = True
         self.use_joints_mode = False
         self.use_commanded = True
         self.show_limits = True
@@ -172,6 +173,8 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         self.mouse_btn_mode = 0
         self.line_count = 0
 
+        self.label = None
+
         self.a_axis_wrapped = inifile.find("AXIS_A", "WRAPPED_ROTARY")
         self.b_axis_wrapped = inifile.find("AXIS_B", "WRAPPED_ROTARY")
         self.c_axis_wrapped = inifile.find("AXIS_C", "WRAPPED_ROTARY")
@@ -183,7 +186,12 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         self.num_joints = int(inifile.find("KINS", "JOINTS") or live_axis_count)
 
     def fileloading(self, current_line):
-        pass
+        percent = current_line * 100 / self.line_count
+        if self.percent != percent:
+            self.percent = percent
+            msg = "Parsing G-code {}%".format(self.percent)
+            self.label.set_text(msg)
+            self.emit('loading_progress', percent)
 
     def activate(self):
         glcontext = gtk.gtkgl.widget_get_gl_context(self)
@@ -276,6 +284,8 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         elif not filename and not s.file:
             return
 
+        self.label.show()
+
         self.td = tempfile.mkdtemp()
         self._current_file = filename
         try:
@@ -291,25 +301,20 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
 
             unitcode = "G%d" % (20 + (s.linear_units == 1))
             initcode = self.inifile.find("RS274NGC", "RS274NGC_STARTUP_CODE") or ""
-#            self.load_preview(filename, canon, unitcode, initcode)
-            self.clear_live_plotter()
+#           self.load_preview(filename, canon, unitcode, initcode)
             threading.Thread(target=self.load_preview, args=(filename, canon, unitcode, initcode,)).start()
-#            if result > gcode.MIN_ERROR:
-#                self.report_gcode_error(result, seq, filename)
 
-        finally:
+        except:
             pass
 
-        #self.set_current_view()
-
-
     def loading_finished(self, widget, result, seq):
-        print "******** Loading Finished *********"
-
-        print result, seq
-        #shutil.rmtree(self.td)
-
         self.set_current_view()
+        self.label.hide()
+        
+        try:
+            shutil.rmtree(self.td)
+        except Exception as e:
+            log.exception(e)
 
         if result > gcode.MIN_ERROR:
                 self.report_gcode_error(result, seq, self._current_file)
@@ -499,7 +504,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         fname = os.path.basename(fpath)
         lnum = seq - 1
         msg = gcode.strerror(result)
-        print 'G-Code error in "{0}" near line {1}, {2}'.format(fname, lnum, msg)
+        log.error('G-Code error in "{0}" near line {1}, {2}'.format(fname, lnum, msg))
 
 
     # These are for external controlling of the view

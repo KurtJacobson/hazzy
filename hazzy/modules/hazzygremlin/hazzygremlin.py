@@ -21,6 +21,7 @@
 
 import os
 import gtk
+import pango
 import gobject
 import threading
 
@@ -42,8 +43,6 @@ class HazzyGremlin(gremlin.Gremlin):
         'gcode-error': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, 
             (gobject.TYPE_STRING, gobject.TYPE_INT, gobject.TYPE_STRING,)),
         'loading-progress': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
-        'completed': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT, gobject.TYPE_INT,)),
-        'set-view' : (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, ()),
     }
 
 
@@ -80,27 +79,32 @@ class HazzyGremlin(gremlin.Gremlin):
         controls.set_size_request(40, self.height)
         self.gremlin_view.add(controls)
 
-        # Add progress bar
-        self.progressbar = gtk.ProgressBar()
-        self.progressbar.set_size_request(300, 25)
-        self.progressbar.set_text("Generating preview ...")
-        fixed.put(self.progressbar, 0, self.height - 25)
+        # Add progress label
+        self.label = gtk.Label()
+        self.label.modify_font(pango.FontDescription('FreeSans 11'))
+        self.label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('White'))
+        labelbox = gtk.EventBox()
+        labelbox.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color('Black'))
+        labelbox.set_size_request(-1, 20)
+        labelbox.add(self.label)
+        fixed.put(labelbox, 0 , self.height - 20)
 
 
-    def fileloading(self, current_line):
-        percent = current_line * 100 / self.line_count
-        if self.percent != percent:
-            self.percent = percent
-            self.progressbar.set_fraction(self.percent / 100)
-            msg = "Generating preview {}%".format(self.percent)
-            self.progressbar.set_text(msg)
-            log.debug(msg)
-            self.emit('loading_progress', percent)
+#    def fileloading(self, current_line):
+#        self.progressbar.show()
+#        percent = current_line * 100 / self.line_count
+#        if self.percent != percent:
+#            self.percent = percent
+#            msg = "Generating preview {}%".format(self.percent)
+#            self.progressbar.set_text(msg)
+#            self.progressbar.set_fraction(self.percent / 100)
+#            log.debug(msg)
+#            self.emit('loading_progress', percent)
 
 
-#    def realize(self,widget):
-#        super(HazzyGremlin, self).realize(widget)
-#        #self.progressbar.hide()
+    def realize(self,widget):
+        super(HazzyGremlin, self).realize(widget)
+        self.label.hide()
 
 
     def posstrs(self):
