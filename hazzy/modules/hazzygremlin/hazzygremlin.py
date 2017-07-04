@@ -162,16 +162,20 @@ class HazzyGremlin(gremlin.Gremlin):
     def on_zoom_in_pressed(self, widget, data=None):
         self.zoom_in_pressed = True
         gobject.timeout_add(50, self.zoom)
+        self.set_image('zoom_in_image', 'plus_selected.png')
 
     def on_zoom_in_released(self, widget, data=None):
         self.zoom_in_pressed = False
+        self.set_image('zoom_in_image', 'plus.png')
 
     def on_zoom_out_pressed(self, widget, data=None):
         self.zoom_out_pressed = True
         gobject.timeout_add(50, self.zoom)
+        self.set_image('zoom_out_image', 'minus_selected.png')
 
     def on_zoom_out_released(self, widget, data=None):
         self.zoom_out_pressed = False
+        self.set_image('zoom_out_image', 'minus.png')
 
 
 # View
@@ -194,16 +198,24 @@ class HazzyGremlin(gremlin.Gremlin):
         self.current_view = view
         self.set_current_view()
 
+        views = ['x', 'y', 'z', 'p']
+        for view in views:
+            image = 'view_{}_image'.format(view)
+            if self.current_view == view:
+                pic = '{}_selected.png'.format(view)
+            else:
+                pic = '{}.png'.format(view)
+            self.set_image(image, pic)
 
 # Mouse mode
     def on_toggle_mouse_mode_pressed(self, widget, data=None):
         if self.mouse_mode == 0:
             self.mouse_btn_mode = 2
-            self.set_image('mouse_mode_image', 'view_pan.png')
+            self.set_image('mouse_mode_image', 'pan_selected.png')
             self.mouse_mode = 2
         else:
             self.mouse_btn_mode = 0
-            self.set_image('mouse_mode_image', 'view_rotate.png')
+            self.set_image('mouse_mode_image', 'rotate_selected.png')
             self.mouse_mode = 0
 
     def set_image(self, image_name, image_file):
@@ -211,8 +223,61 @@ class HazzyGremlin(gremlin.Gremlin):
         image.set_from_file(os.path.join(UIDIR, image_file))
 
 
+# Settings
+    def on_settings_pressed(self, widegt, event):
+        pass
+
+    def toggle_program_alpha(self, widegt):
+        self.program_alpha = not self.program_alpha
+
+    def toggle_lathe_option(self, widegt):
+        self.lathe_option = not self.lathe_option
+
+    def toggle_show_limits(self, widegt):
+        self.show_limits = not self.show_limits
+
+    def toggle_show_extents_option(self, widegt):
+        self.show_extents_option = not self.show_extents_option
+
+    def toggle_show_live_plot(self, widegt):
+        self.show_live_plot = not self.show_live_plot
+
+
 # Clear on double click
     def on_gremlin_clicked(self, widget, event, data=None):
         if event.type == gtk.gdk._2BUTTON_PRESS:
             self.clear_live_plotter()
+
+# Settings
+        if event.type == gtk.gdk.BUTTON_PRESS and event.button == 3:
+
+            menu = gtk.Menu()
+
+            program_alpha = gtk.CheckMenuItem("Program alpha")
+            program_alpha.set_active(self.program_alpha)
+            program_alpha.connect("activate", self.toggle_program_alpha)
+            menu.append(program_alpha)
+
+            show_limits = gtk.CheckMenuItem("Show limits")
+            show_limits.set_active(self.show_limits)
+            show_limits.connect("activate", self.toggle_show_limits)
+            menu.append(show_limits)
+
+            show_extents = gtk.CheckMenuItem("Show extents")
+            show_extents.set_active(self.show_extents_option)
+            show_extents.connect("activate", self.toggle_show_extents_option)
+            menu.append(show_extents)
+
+            live_plot = gtk.CheckMenuItem("Show live plot")
+            live_plot.set_active(self.show_live_plot)
+            live_plot.connect("activate", self.toggle_show_live_plot)
+            menu.append(live_plot)
+
+#            lathe = gtk.CheckMenuItem("Lathe mode")
+#            lathe.set_active(self.lathe_option )
+#            lathe.connect("activate", self.toggle_lathe_option)
+#            menu.append(lathe)
+
+            menu.popup(None, None, None, event.button, event.time)
+            menu.show_all()
 

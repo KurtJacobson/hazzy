@@ -8,13 +8,6 @@
     <property name="can_focus">False</property>
     <property name="n_rows">8</property>
     <child>
-      <object class="GtkImage" id="settings">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="pixbuf">settings.png</property>
-      </object>
-    </child>
-    <child>
       <object class="GtkEventBox" id="mouse_mode">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
@@ -24,7 +17,7 @@
           <object class="GtkImage" id="mouse_mode_image">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">view_pan.png</property>
+            <property name="pixbuf">pan_selected.png</property>
           </object>
         </child>
       </object>
@@ -83,7 +76,7 @@
           <object class="GtkImage" id="view_x_image">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">view_x.png</property>
+            <property name="pixbuf">x.png</property>
           </object>
         </child>
       </object>
@@ -102,7 +95,7 @@
           <object class="GtkImage" id="view_y_image">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">view_y.png</property>
+            <property name="pixbuf">y.png</property>
           </object>
         </child>
       </object>
@@ -121,7 +114,7 @@
           <object class="GtkImage" id="view_z_image">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">view_z.png</property>
+            <property name="pixbuf">z.png</property>
           </object>
         </child>
       </object>
@@ -140,7 +133,7 @@
           <object class="GtkImage" id="view_p_image">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="pixbuf">view_p.png</property>
+            <property name="pixbuf">p.png</property>
           </object>
         </child>
       </object>
@@ -148,6 +141,21 @@
         <property name="top_attach">6</property>
         <property name="bottom_attach">7</property>
       </packing>
+    </child>
+    <child>
+      <object class="GtkEventBox" id="settings">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_settings_pressed" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="settings_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">settings.png</property>
+          </object>
+        </child>
+      </object>
     </child>
   </object>
 </interface>
