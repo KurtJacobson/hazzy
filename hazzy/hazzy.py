@@ -227,6 +227,7 @@ class Hazzy:
         # Define default button states 
         self.cycle_start_button_state = 'start'
         self.hold_resume_button_state = 'inactive'
+        self.last_key_event = None, 0
 
         self.task_state = None
         self.task_mode = None
@@ -265,7 +266,7 @@ class Hazzy:
         self.joint_axis_dict = {}       # Joint axis correspondence
         self.homed_joints = []          # List of homed joints
 
-                
+
 # =========================================================
 # BEGIN - Preferences
 # =========================================================
@@ -1661,7 +1662,88 @@ class Hazzy:
         else:
             self.widgets.dro_mask.set_visible(False)
             for joint, dro in self.rel_dro_dict.iteritems():
-                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))          
+                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))
+
+
+# =========================================================
+# BEGIN - Jogging
+# =========================================================
+
+    def on_key_press_event(self, widget, event):
+
+        keyname = gtk.gdk.keyval_name(event.keyval)
+        #print("pressed key = ",keyname)
+
+        if self.stat.task_mode != linuxcnc.MODE_MANUAL \
+            or not self.widgets.notebook.get_current_page() == 0 \
+            or not self.is_homed():
+            return
+
+        if keyname == 'Up':
+            self.jog("+y")
+            return True
+        elif keyname == 'Down':
+            self.jog("-y")
+            return True
+        elif keyname == 'Left':
+            self.jog("-x")
+            return True
+        elif keyname == 'Right':
+            self.jog("+x")
+            return True
+        elif keyname == 'Page_Up':
+            self.jog("-z")
+            return True
+        elif keyname == 'Page_Down':
+            self.jog("+z")
+            return True
+
+
+    def on_key_release_event(self, widget, event):
+
+        if self.stat.task_mode != linuxcnc.MODE_MANUAL:
+            return
+
+        keyname = gtk.gdk.keyval_name(event.keyval)
+        #print("Released key = ",keyname)
+
+        if keyname == 'Up':
+            self.jog_stop("+y")
+            return True
+        elif keyname == 'Down':
+            self.jog_stop("-y")
+            return True
+        elif keyname == 'Left':
+            self.jog_stop("-x")
+            return True
+        elif keyname == 'Right':
+            self.jog_stop("+x")
+            return True
+        elif keyname == 'Page_Up':
+            self.jog_stop("-z")
+            return True
+        elif keyname == 'Page_Down':
+            self.jog_stop("+z")
+            return True
+
+
+    def jog(self, axis):
+        JOGMODE = 0
+        velocity = .05
+        direction = axis[0]
+        axis_num = "xyzabcuvw".index(axis[1])
+        print axis_num, direction
+        self.command.jog(linuxcnc.JOG_CONTINUOUS, JOGMODE, axis_num, float('{}{}'.format(direction, velocity)))
+
+
+    def jog_stop(self, axis):
+        JOGMODE = 0
+        velocity = 10
+        direction = axis[0]
+        axis_num = "xyzabcuvw".index(axis[1])
+        print axis_num, direction
+        self.command.jog(linuxcnc.JOG_STOP, JOGMODE, axis_num)
+
 
 # =========================================================
 # BEGIN - Helper functions
@@ -1803,6 +1885,8 @@ class Hazzy:
 
     # Decorate the window if screen is big enough
     def _init_window(self):
+        self.window.connect( "key_press_event", self.on_key_press_event)
+        self.window.connect( "key_release_event", self.on_key_release_event)
         screen_w = gtk.gdk.Screen().get_width()
         screen_h = gtk.gdk.Screen().get_height()
         if screen_w > 1024 and screen_h > 768:
