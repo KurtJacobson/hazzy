@@ -229,18 +229,23 @@ class HazzyGremlin(gremlin.Gremlin):
 
     def toggle_program_alpha(self, widegt):
         self.program_alpha = not self.program_alpha
+        self.expose()
 
     def toggle_lathe_option(self, widegt):
         self.lathe_option = not self.lathe_option
+        self.expose()
 
     def toggle_show_limits(self, widegt):
         self.show_limits = not self.show_limits
+        self.expose()
 
     def toggle_show_extents_option(self, widegt):
         self.show_extents_option = not self.show_extents_option
+        self.expose()
 
     def toggle_show_live_plot(self, widegt):
         self.show_live_plot = not self.show_live_plot
+        self.expose()
 
 
 # Clear on double click
