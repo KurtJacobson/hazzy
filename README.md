@@ -30,8 +30,6 @@ Hazzy is an attempt at a UI for LinuxCNC that is uncompromised when used exclusi
     * Move files and folders to trash
     * Bookmark frequently used folders
 
-### Limitations
-Hazzy does not support keyboard or on-screen jogging, because it is not indented for use with a keyboard and jogging with a touchscreen is *dangerous* (don't ask how I know!). Instead I use a simple MPG with axis and increment selector switches, which is both a very safe and convenient way to move the machine during setup or manual operations. I will probably add very basic keyboard jogging in the future for convenience when putting the machine together.
 
 ### Installing
 
@@ -64,6 +62,11 @@ I will be updating this repository frequently. To get the latest version enter y
    ```git pull origin master```
 
 If you have any problems, questions or suggestions, however minor, do not hesitate to open an issue, or better yet, a pull request!
+
+### About Jogging
+Hazzy does not support on-screen jogging. This is because I do not think it is a good idea to trust even the best industrial touchscreen with control of such a potentially disastrous operation. A single missed key release, caused by an oily chip or a little bit of spit on the screen, or the touchscreen driver crashing, or, whatever, could ruin days worth of work. For these reasons I strongly recommend that all jogging be handled by the real time components (FPGA cards etc.). All that being said , hazzy does have basic keyboard jogging, intended for use during initial machine setup and testing. It can be enabled by setting ```[JOGGING] USE_KEYBOARD = YES``` in the <machine_name>.prefs file located in the config directory.
+
+Hazzy does work well with an MPG, which is what use. I have some info on setting up a basic MPG here: https://github.com/KurtJacobson/RF45-CNC/wiki/LinuxCNC-MPG
 
 ### Notes
 I started working on this project some time in 2015 with the intention of trying to learn some basic programing (I am a mechanical/nuclear engineer by training, with little if any programing experience) while also learning about Linux and LinuxCNC.  My idea was to make a Haas like interface for LinuxCNC, hence the name hazzy, but it has morphed into something more like Mach3 or PathPilot.  It has been a great learning experience and I have had a lot of fun working on it the project.  I hope you enjoy!
