@@ -69,6 +69,7 @@ class Preferences(cp):
 
     # Get the pref form the section
     def getpref(self, section, option, default_val = False, opt_type = bool):
+        self.read(self.fn)
         rtn_type = self.types.get(opt_type)
         try:
             value = rtn_type(self, section, option)
