@@ -59,12 +59,35 @@ class ColoredFormatter(Formatter):
         clr = COLORS[color]
         return (PREFIX + '%dm%s' + SUFFIX) % (clr, text)
 
+
+    def text_colorer(self, text):
+        words = text.split(' ')
+        colored_text = ''
+        for word in words:
+            if '$' in word:
+                for color, number in COLORS.iteritems():
+                    word = word.replace('{0}$'.format(color), '{0}{1}'.format(PREFIX, number))
+                    print word
+                    word += SUFFIX
+            colored_text = '{} {}'.format(colored_text, word)
+        return colored_text
+
+
     def format(self, record):
         colored_record = copy(record)
+
+        # Add colors to levelname
         levelname = colored_record.levelname
         color = MAPPING.get(levelname, 'white')
         colored_levelname = self.colorer(levelname, color)
         colored_record.levelname = colored_levelname
+
+        # Add colors to message text
+        msg = colored_record.getMessage()
+        print 'This is the got mesage', msg
+        colored_msg = self.text_colorer(msg)
+        colored_record.msg = colored_msg
+
         return Formatter.format(self, colored_record)
 
 
@@ -92,7 +115,7 @@ log.addHandler(fh)
 
 if __name__ == '__main__':
     log.setLevel(logging.DEBUG)
-    log.debug('debug')
+    log.debug('red$debug this is a test')
     log.info('info')
     log.warning('warning')
     log.error('error')
