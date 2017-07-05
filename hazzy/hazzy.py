@@ -227,6 +227,7 @@ class Hazzy:
         # Define default button states 
         self.cycle_start_button_state = 'start'
         self.hold_resume_button_state = 'inactive'
+        self.is_pressed = {}
 
         self.task_state = None
         self.task_mode = None
@@ -265,20 +266,24 @@ class Hazzy:
         self.joint_axis_dict = {}       # Joint axis correspondence
         self.homed_joints = []          # List of homed joints
 
-                
+
 # =========================================================
 # BEGIN - Preferences
 # =========================================================
         # If a preference file does not exist it will be created in the config dir
-        
+
         # [FILE PATHS]
         self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_path, str)
         path = os.path.join(MAINDIR, "sim.hazzy/example_gcode/new file.ngc")
         self.new_program_template = self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", path, str)
-                
+
         # [FILE FILTERS]
         self.preview_ext = self.prefs.getpref("FILE FILTERS", "PREVIEW_EXT", [".ngc", ".txt", ".tap", ".nc"], str)
-        
+
+        # [JOGGING]
+        self.allow_keyboard_jog = self.prefs.getpref("JOGGING", "USE_KEYBOARD", "YES")
+        self.jog_velocity = self.prefs.getpref("JOGGING", "VELOCITY", 1, int)
+
         # [POP-UP KEYPAD]        
         self.keypad_on_mdi = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_MDI", "YES")
         self.keypad_on_dro = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_DRO", "YES")
@@ -291,11 +296,11 @@ class Hazzy:
         self.abs_font = pango.FontDescription(self.prefs.getpref("FONTS", "ABS_FONT", 'dejavusans condensed 12', str))
         self.vel_font = pango.FontDescription(self.prefs.getpref("FONTS", "VEL_FONT", 'dejavusans condensed 14', str))
         self.label_font = pango.FontDescription(self.prefs.getpref("FONTS", "LABEL_FONT", 'NimbusSansL 10', str))
-        
+
         # [POS DROs]
         self.in_dro_plcs = self.prefs.getpref("POS DROs", "IN_DEC_PLCS", 4, int)
         self.mm_dro_plcs = self.prefs.getpref("POS DROs", "MM_DEC_PLCS", 3, int)
-        
+
         # [VEL DROs]
         self.in_vel_dec_plcs = self.prefs.getpref("VEL DROs", "IN_VEL_DEC_PLCS", 1, int)
         self.in_feed_dec_plcs = self.prefs.getpref("VEL DROs", "IN_FEED_DEC_PLCS", 1, int)
@@ -303,7 +308,7 @@ class Hazzy:
         self.mm_vel_dec_plcs = self.prefs.getpref("VEL DROs", "MM_VEL_DEC_PLCS", 2, int)
         self.mm_feed_dec_plcs = self.prefs.getpref("VEL DROs", "MM_FEED_DEC_PLCS", 0, int)
         self.mm_g95_dec_plcs = self.prefs.getpref("VEL DROs", "MM_G95_DEC_PLCS", 0, int)
-        
+
         # [GCODE VIEW]
         self.style_scheme_file = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_FILE", 'GCode.xml', str)
         self.style_scheme_name = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_NAME", 'gcode', str)
@@ -483,7 +488,7 @@ class Hazzy:
 
         self.stat.poll()
 
-        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
+        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE or not self.is_homed():
             self._update_joint_dros()
             if self.widgets.dro_notebook.get_current_page() != 0:
                 self.widgets.dro_notebook.set_current_page(0)
@@ -727,8 +732,7 @@ class Hazzy:
             self.set_image('reset_image', 'reset.png')
 
     def on_abs_label_clicked(self, widget, data=None):
-        # Home -1 means all
-        self.set_mode(linuxcnc.MODE_MANUAL)
+        # Home all
         self.home_joint(-1)
 
     def on_abs_dro_clicked(self, widget, data=None):
@@ -944,7 +948,6 @@ class Hazzy:
         pass
 
     def refresh_gremlin(self):
-        # Redraw screen with new offset
         # Switch modes to cause an interp sync
         self.set_mode(linuxcnc.MODE_MANUAL)
         self.set_mode(linuxcnc.MODE_MDI)
@@ -1661,7 +1664,106 @@ class Hazzy:
         else:
             self.widgets.dro_mask.set_visible(False)
             for joint, dro in self.rel_dro_dict.iteritems():
-                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))          
+                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))
+
+
+# =========================================================
+# BEGIN - Jogging
+# =========================================================
+
+    def on_key_press_event(self, widget, event):
+
+        keyname = gtk.gdk.keyval_name(event.keyval)
+
+        allow_jog = self.prefs.getpref("JOGGING", "USE_KEYBOARD", "YES")
+        if allow_jog == False:
+            return
+
+        if self.is_pressed.get(keyname, False) == True:
+            return True
+
+        if self.stat.task_mode != linuxcnc.MODE_MANUAL \
+            or not self.widgets.notebook.get_current_page() == 0 \
+            or not self.is_homed():
+            return
+
+        if keyname == 'Up':
+            self.jog("+y")
+            self.is_pressed[keyname] = True
+            return True
+        elif keyname == 'Down':
+            self.jog("-y")
+            self.is_pressed[keyname] = True
+            return True
+        elif keyname == 'Left':
+            self.jog("-x")
+            self.is_pressed[keyname] = True
+            return True
+        elif keyname == 'Right':
+            self.jog("+x")
+            self.is_pressed[keyname] = True
+            return True
+        elif keyname == 'Page_Up':
+            self.jog("+z")
+            self.is_pressed[keyname] = True
+            return True
+        elif keyname == 'Page_Down':
+            self.jog("-z")
+            self.is_pressed[keyname] = True
+            return True
+
+
+    def on_key_release_event(self, widget, event):
+
+        keyname = gtk.gdk.keyval_name(event.keyval)
+
+        if self.stat.task_mode != linuxcnc.MODE_MANUAL:
+            return
+
+        if not keyname in self.is_pressed:
+            return
+
+        if keyname == 'Up':
+            self.jog_stop("y")
+            self.is_pressed[keyname] = False
+            return True
+        elif keyname == 'Down':
+            self.jog_stop("y")
+            self.is_pressed[keyname] = False
+            return True
+        elif keyname == 'Left':
+            self.jog_stop("x")
+            self.is_pressed[keyname] = False
+            return True
+        elif keyname == 'Right':
+            self.jog_stop("x")
+            self.is_pressed[keyname] = False
+            return True
+        elif keyname == 'Page_Up':
+            self.jog_stop("z")
+            self.is_pressed[keyname] = False
+            return True
+        elif keyname == 'Page_Down':
+            self.jog_stop("z")
+            self.is_pressed[keyname] = False
+            return True
+
+
+    def jog(self, axis):
+        JOGMODE = 0
+        dir = axis[0]
+        vel = self.prefs.getpref("JOGGING", "VELOCITY", 1, int)
+        axis_num = "xyzabcuvw".index(axis[1])
+        log.debug("START jogging {} axis".format(axis[1]))
+        self.command.jog(linuxcnc.JOG_CONTINUOUS, JOGMODE, axis_num, float('{}{}'.format(dir, vel)))
+
+
+    def jog_stop(self, axis):
+        JOGMODE = 0
+        axis_num = "xyzabcuvw".index(axis)
+        log.debug("STOP jogging {} axis".format(axis))
+        self.command.jog(linuxcnc.JOG_STOP, JOGMODE, axis_num)
+
 
 # =========================================================
 # BEGIN - Helper functions
@@ -1699,15 +1801,14 @@ class Hazzy:
         offset_command = 'G10 L20 P%d %s%.12f' % (self.current_work_cord, axis, value)
         self.issue_mdi(offset_command)
         self.set_mode(linuxcnc.MODE_MANUAL)
-        # FIXME This does not always work to display the new work offset
         self.refresh_gremlin()
 
     def home_joint(self, joint):
+        self.set_mode(linuxcnc.MODE_MANUAL)
         if self.stat.joint[joint]['homed'] == 0 and not self.stat.estop and self.stat.joint[joint]['homing'] == 0:
             msg = "Homing joint {0}".format(joint)
             log.info(msg)
             self._show_message(["INFO", msg])
-            # self.set_mode(linuxcnc.MODE_MANUAL)
             self.command.home(joint)
             # Indicate homing in process, needed to cause update of joint status
             self.homed_joints[joint] = 2
@@ -1718,7 +1819,6 @@ class Hazzy:
                 msg = "Unhoming joint {0}".format(joint)
                 log.info(msg)
                 self._show_message(["INFO", msg])
-                # self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
                 self.command.unhome(joint)
         elif self.stat.joint[joint]['homing'] != 0:
@@ -1737,9 +1837,9 @@ class Hazzy:
                 return False
         return True
 
-    # Check if the machine is moving due to MDI, program execution, etc.        
+    # Check if the machine is moving due to MDI, program execution, etc.
     def is_moving(self):
-        # self.stat.state returns current command execution status. 
+        # self.stat.state returns current command execution status.
         # one of RCS_DONE, RCS_EXEC, RCS_ERROR.
         if self.stat.state == linuxcnc.RCS_EXEC:
             return True
@@ -1803,6 +1903,8 @@ class Hazzy:
 
     # Decorate the window if screen is big enough
     def _init_window(self):
+        self.window.connect( "key_press_event", self.on_key_press_event)
+        self.window.connect( "key_release_event", self.on_key_release_event)
         screen_w = gtk.gdk.Screen().get_width()
         screen_h = gtk.gdk.Screen().get_height()
         if screen_w > 1024 and screen_h > 768:
