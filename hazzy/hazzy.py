@@ -728,8 +728,7 @@ class Hazzy:
             self.set_image('reset_image', 'reset.png')
 
     def on_abs_label_clicked(self, widget, data=None):
-        # Home -1 means all
-        self.set_mode(linuxcnc.MODE_MANUAL)
+        # Home all
         self.home_joint(-1)
 
     def on_abs_dro_clicked(self, widget, data=None):
@@ -945,7 +944,6 @@ class Hazzy:
         pass
 
     def refresh_gremlin(self):
-        # Redraw screen with new offset
         # Switch modes to cause an interp sync
         self.set_mode(linuxcnc.MODE_MANUAL)
         self.set_mode(linuxcnc.MODE_MDI)
@@ -1732,7 +1730,7 @@ class Hazzy:
         velocity = .05
         direction = axis[0]
         axis_num = "xyzabcuvw".index(axis[1])
-        print axis_num, direction
+        log.debug("START jogging {} axis".format(axis[1]))
         self.command.jog(linuxcnc.JOG_CONTINUOUS, JOGMODE, axis_num, float('{}{}'.format(direction, velocity)))
 
 
@@ -1741,7 +1739,7 @@ class Hazzy:
         velocity = 10
         direction = axis[0]
         axis_num = "xyzabcuvw".index(axis[1])
-        print axis_num, direction
+        log.debug("STOP jogging {} axis".format(axis[1]))
         self.command.jog(linuxcnc.JOG_STOP, JOGMODE, axis_num)
 
 
@@ -1781,7 +1779,6 @@ class Hazzy:
         offset_command = 'G10 L20 P%d %s%.12f' % (self.current_work_cord, axis, value)
         self.issue_mdi(offset_command)
         self.set_mode(linuxcnc.MODE_MANUAL)
-        # FIXME This does not always work to display the new work offset
         self.refresh_gremlin()
 
     def home_joint(self, joint):
@@ -1789,7 +1786,6 @@ class Hazzy:
             msg = "Homing joint {0}".format(joint)
             log.info(msg)
             self._show_message(["INFO", msg])
-            # self.set_mode(linuxcnc.MODE_MANUAL)
             self.command.home(joint)
             # Indicate homing in process, needed to cause update of joint status
             self.homed_joints[joint] = 2
@@ -1800,7 +1796,6 @@ class Hazzy:
                 msg = "Unhoming joint {0}".format(joint)
                 log.info(msg)
                 self._show_message(["INFO", msg])
-                # self.set_mode(linuxcnc.MODE_MANUAL)
                 self.set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
                 self.command.unhome(joint)
         elif self.stat.joint[joint]['homing'] != 0:
@@ -1819,9 +1814,9 @@ class Hazzy:
                 return False
         return True
 
-    # Check if the machine is moving due to MDI, program execution, etc.        
+    # Check if the machine is moving due to MDI, program execution, etc.
     def is_moving(self):
-        # self.stat.state returns current command execution status. 
+        # self.stat.state returns current command execution status.
         # one of RCS_DONE, RCS_EXEC, RCS_ERROR.
         if self.stat.state == linuxcnc.RCS_EXEC:
             return True
