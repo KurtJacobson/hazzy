@@ -484,7 +484,7 @@ class Hazzy:
 
         self.stat.poll()
 
-        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
+        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE or not self.is_homed():
             self._update_joint_dros()
             if self.widgets.dro_notebook.get_current_page() != 0:
                 self.widgets.dro_notebook.set_current_page(0)
@@ -1782,6 +1782,7 @@ class Hazzy:
         self.refresh_gremlin()
 
     def home_joint(self, joint):
+        self.set_mode(linuxcnc.MODE_MANUAL)
         if self.stat.joint[joint]['homed'] == 0 and not self.stat.estop and self.stat.joint[joint]['homing'] == 0:
             msg = "Homing joint {0}".format(joint)
             log.info(msg)
