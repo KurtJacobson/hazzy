@@ -227,7 +227,7 @@ class Hazzy:
         # Define default button states 
         self.cycle_start_button_state = 'start'
         self.hold_resume_button_state = 'inactive'
-        self.last_key_event = None, 0
+        self.is_pressed = {}
 
         self.task_state = None
         self.task_mode = None
@@ -271,15 +271,19 @@ class Hazzy:
 # BEGIN - Preferences
 # =========================================================
         # If a preference file does not exist it will be created in the config dir
-        
+
         # [FILE PATHS]
         self.nc_file_path = self.prefs.getpref("FILE PATHS", "DEFAULT_NC_DIR", self.nc_file_path, str)
         path = os.path.join(MAINDIR, "sim.hazzy/example_gcode/new file.ngc")
         self.new_program_template = self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", path, str)
-                
+
         # [FILE FILTERS]
         self.preview_ext = self.prefs.getpref("FILE FILTERS", "PREVIEW_EXT", [".ngc", ".txt", ".tap", ".nc"], str)
-        
+
+        # [JOGGING]
+        self.allow_keyboard_jog = self.prefs.getpref("JOGGING", "USE_KEYBOARD", "YES")
+        self.jog_velocity = self.prefs.getpref("JOGGING", "VELOCITY", 1, int)
+
         # [POP-UP KEYPAD]        
         self.keypad_on_mdi = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_MDI", "YES")
         self.keypad_on_dro = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_DRO", "YES")
@@ -292,11 +296,11 @@ class Hazzy:
         self.abs_font = pango.FontDescription(self.prefs.getpref("FONTS", "ABS_FONT", 'dejavusans condensed 12', str))
         self.vel_font = pango.FontDescription(self.prefs.getpref("FONTS", "VEL_FONT", 'dejavusans condensed 14', str))
         self.label_font = pango.FontDescription(self.prefs.getpref("FONTS", "LABEL_FONT", 'NimbusSansL 10', str))
-        
+
         # [POS DROs]
         self.in_dro_plcs = self.prefs.getpref("POS DROs", "IN_DEC_PLCS", 4, int)
         self.mm_dro_plcs = self.prefs.getpref("POS DROs", "MM_DEC_PLCS", 3, int)
-        
+
         # [VEL DROs]
         self.in_vel_dec_plcs = self.prefs.getpref("VEL DROs", "IN_VEL_DEC_PLCS", 1, int)
         self.in_feed_dec_plcs = self.prefs.getpref("VEL DROs", "IN_FEED_DEC_PLCS", 1, int)
@@ -304,7 +308,7 @@ class Hazzy:
         self.mm_vel_dec_plcs = self.prefs.getpref("VEL DROs", "MM_VEL_DEC_PLCS", 2, int)
         self.mm_feed_dec_plcs = self.prefs.getpref("VEL DROs", "MM_FEED_DEC_PLCS", 0, int)
         self.mm_g95_dec_plcs = self.prefs.getpref("VEL DROs", "MM_G95_DEC_PLCS", 0, int)
-        
+
         # [GCODE VIEW]
         self.style_scheme_file = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_FILE", 'GCode.xml', str)
         self.style_scheme_name = self.prefs.getpref("GCODE VIEW", "STYLE_SCHEME_NAME", 'gcode', str)
@@ -1670,7 +1674,13 @@ class Hazzy:
     def on_key_press_event(self, widget, event):
 
         keyname = gtk.gdk.keyval_name(event.keyval)
-        #print("pressed key = ",keyname)
+
+        allow_jog = self.prefs.getpref("JOGGING", "USE_KEYBOARD", "YES")
+        if allow_jog == False:
+            return
+
+        if self.is_pressed.get(keyname, False) == True:
+            return True
 
         if self.stat.task_mode != linuxcnc.MODE_MANUAL \
             or not self.widgets.notebook.get_current_page() == 0 \
@@ -1679,67 +1689,79 @@ class Hazzy:
 
         if keyname == 'Up':
             self.jog("+y")
+            self.is_pressed[keyname] = True
             return True
         elif keyname == 'Down':
             self.jog("-y")
+            self.is_pressed[keyname] = True
             return True
         elif keyname == 'Left':
             self.jog("-x")
+            self.is_pressed[keyname] = True
             return True
         elif keyname == 'Right':
             self.jog("+x")
+            self.is_pressed[keyname] = True
             return True
         elif keyname == 'Page_Up':
-            self.jog("-z")
+            self.jog("+z")
+            self.is_pressed[keyname] = True
             return True
         elif keyname == 'Page_Down':
-            self.jog("+z")
+            self.jog("-z")
+            self.is_pressed[keyname] = True
             return True
 
 
     def on_key_release_event(self, widget, event):
 
+        keyname = gtk.gdk.keyval_name(event.keyval)
+
         if self.stat.task_mode != linuxcnc.MODE_MANUAL:
             return
 
-        keyname = gtk.gdk.keyval_name(event.keyval)
-        #print("Released key = ",keyname)
+        if not keyname in self.is_pressed:
+            return
 
         if keyname == 'Up':
-            self.jog_stop("+y")
+            self.jog_stop("y")
+            self.is_pressed[keyname] = False
             return True
         elif keyname == 'Down':
-            self.jog_stop("-y")
+            self.jog_stop("y")
+            self.is_pressed[keyname] = False
             return True
         elif keyname == 'Left':
-            self.jog_stop("-x")
+            self.jog_stop("x")
+            self.is_pressed[keyname] = False
             return True
         elif keyname == 'Right':
-            self.jog_stop("+x")
+            self.jog_stop("x")
+            self.is_pressed[keyname] = False
             return True
         elif keyname == 'Page_Up':
-            self.jog_stop("-z")
+            self.jog_stop("z")
+            self.is_pressed[keyname] = False
             return True
         elif keyname == 'Page_Down':
-            self.jog_stop("+z")
+            self.jog_stop("z")
+            self.is_pressed[keyname] = False
             return True
 
 
     def jog(self, axis):
         JOGMODE = 0
-        velocity = .05
-        direction = axis[0]
+        dir = axis[0]
+        vel = self.prefs.getpref("JOGGING", "VELOCITY", 1, int)
         axis_num = "xyzabcuvw".index(axis[1])
         log.debug("START jogging {} axis".format(axis[1]))
-        self.command.jog(linuxcnc.JOG_CONTINUOUS, JOGMODE, axis_num, float('{}{}'.format(direction, velocity)))
+        self.command.jog(linuxcnc.JOG_CONTINUOUS, JOGMODE, axis_num, float('{}{}'.format(dir, vel)))
 
 
     def jog_stop(self, axis):
         JOGMODE = 0
-        velocity = 10
-        direction = axis[0]
-        axis_num = "xyzabcuvw".index(axis[1])
-        log.debug("STOP jogging {} axis".format(axis[1]))
+        axis_num = "xyzabcuvw".index(axis)
+        log.debug("STOP jogging {} axis".format(axis))
         self.command.jog(linuxcnc.JOG_STOP, JOGMODE, axis_num)
 
 
