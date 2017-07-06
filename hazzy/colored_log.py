@@ -59,12 +59,34 @@ class ColoredFormatter(Formatter):
         clr = COLORS[color]
         return (PREFIX + '%dm%s' + SUFFIX) % (clr, text)
 
+
+    def text_colorer(self, text):
+        words = text.split(' ')
+        clr_msg = []
+        for word in words:
+            if '$' in word:
+                ind = word.index('$')
+                clr = word[:ind]
+                text = word[ind+1:]
+                word = self.colorer(text, clr)
+            clr_msg.append(word)
+        return ' '.join(clr_msg)
+
+
     def format(self, record):
         colored_record = copy(record)
+
+        # Add colors to levelname
         levelname = colored_record.levelname
         color = MAPPING.get(levelname, 'white')
         colored_levelname = self.colorer(levelname, color)
         colored_record.levelname = colored_levelname
+
+        # Add colors to message text
+        msg = colored_record.getMessage()
+        colored_msg = self.text_colorer(msg)
+        colored_record.msg = colored_msg
+
         return Formatter.format(self, colored_record)
 
 
@@ -92,8 +114,8 @@ log.addHandler(fh)
 
 if __name__ == '__main__':
     log.setLevel(logging.DEBUG)
-    log.debug('debug')
-    log.info('info')
+    log.debug('Spindle has been green$STARTED')
+    log.info('Spindle has been red$STOPED')
     log.warning('warning')
     log.error('error')
     log.critical('critical')
