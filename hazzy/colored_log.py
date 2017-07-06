@@ -62,15 +62,15 @@ class ColoredFormatter(Formatter):
 
     def text_colorer(self, text):
         words = text.split(' ')
-        colored_text = ''
+        clr_msg = []
         for word in words:
             if '$' in word:
-                for color, number in COLORS.iteritems():
-                    word = word.replace('{0}$'.format(color), '{0}{1}'.format(PREFIX, number))
-                    print word
-                    word += SUFFIX
-            colored_text = '{} {}'.format(colored_text, word)
-        return colored_text
+                ind = word.index('$')
+                clr = word[:ind]
+                text = word[ind+1:]
+                word = self.colorer(text, clr)
+            clr_msg.append(word)
+        return ' '.join(clr_msg)
 
 
     def format(self, record):
@@ -84,7 +84,6 @@ class ColoredFormatter(Formatter):
 
         # Add colors to message text
         msg = colored_record.getMessage()
-        print 'This is the got mesage', msg
         colored_msg = self.text_colorer(msg)
         colored_record.msg = colored_msg
 
@@ -115,8 +114,8 @@ log.addHandler(fh)
 
 if __name__ == '__main__':
     log.setLevel(logging.DEBUG)
-    log.debug('red$debug this is a test')
-    log.info('info')
+    log.debug('Spindle has been green$STARTED')
+    log.info('Spindle has been red$STOPED')
     log.warning('warning')
     log.error('error')
     log.critical('critical')
