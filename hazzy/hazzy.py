@@ -1754,14 +1754,14 @@ class Hazzy:
         dir = axis[0]
         vel = self.prefs.getpref("JOGGING", "VELOCITY", 1, int)
         axis_num = "xyzabcuvw".index(axis[1])
-        log.debug("START jogging {} axis".format(axis[1]))
+        log.debug("green$STARTED jogging {} axis".format(axis))
         self.command.jog(linuxcnc.JOG_CONTINUOUS, JOGMODE, axis_num, float('{}{}'.format(dir, vel)))
 
 
     def jog_stop(self, axis):
         JOGMODE = 0
         axis_num = "xyzabcuvw".index(axis)
-        log.debug("STOP jogging {} axis".format(axis))
+        log.debug("red$STOPED jogging {} axis".format(axis))
         self.command.jog(linuxcnc.JOG_STOP, JOGMODE, axis_num)
 
 
