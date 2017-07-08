@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 #   An attempt at a new UI for LinuxCNC that can be used
 #   on a touch screen without any lost of functionality.
 #   The code is written in python and glade and is almost a
@@ -352,7 +351,6 @@ class Hazzy:
         # Initialize MDI entry
         self.widgets.mdi_entry.modify_font(self.mdi_font)
         self.widgets.mdi_entry.set_text("MDI:")
-        
         self.widgets.tool_number_entry.modify_font(self.dro_font)
         self.widgets.spindle_speed_entry.modify_font(self.dro_font)
 
@@ -490,7 +488,7 @@ class Hazzy:
         self._update_spindle_speed_label()
         self._updade_dro_status()
 
-        # Call _slow_periodic() every 5 cycles of _fast_periodic()  
+        # Call _slow_periodic() every 5 cycles of _fast_periodic()
         self.periodic_cycle_counter += 1
         if self.periodic_cycle_counter >= 5:
             self._slow_periodic()
@@ -541,8 +539,6 @@ class Hazzy:
         if tuple(self.homed_joints) != self.stat.homed:
             self._update_homing_status()
 
-        # print self.stat.homed
-
         # Update current tool data if it has changed
         if self.current_tool != self.stat.tool_in_spindle:
             self._update_current_tool_data()
@@ -557,7 +553,7 @@ class Hazzy:
                 self.display_units = 'in'
                 self.gremlin.set_display_units('in')
 
-        # Update velocity DROs     
+        # Update velocity DROs
         self._update_vel()
 
         # Update cutting parameter labels
@@ -572,7 +568,7 @@ class Hazzy:
             self.widgets.opstop.set_active(self.stat.optional_stop)
 
         # Update opskip status
-        if self.stat.block_delete != self.widgets.opskip.get_active() :
+        if self.stat.block_delete != self.widgets.opskip.get_active():
             self.widgets.opskip.set_active(self.stat.block_delete)
 
         # If new error flash message border red for 2s
@@ -593,7 +589,7 @@ class Hazzy:
         kind, text = message # Unpack
 
         if "joint" in text:
-            # Replace "joint N" with "L axis" 
+            # Replace "joint N" with "L axis"
             for axis in self.axis_letter_list:
                 joint = 'XYZABCUVWS'.index(axis)
                 text = text.replace("joint {0}".format(joint), "{0} axis".format(axis))
@@ -752,9 +748,9 @@ class Hazzy:
         if exit_hazzy:
             self.close_window()
 
-    # =========================================================      
+    # =========================================================
     # Main panel CheckBox handlers
-    # Have to use pressed for these as clicked is emited on 
+    # Have to use pressed for these as clicked is emited on
     # set_active() in the update function in slow_periodic
 
     def on_opstop_pressed(self, widget, data= None):
@@ -900,9 +896,9 @@ class Hazzy:
         #self.gremlin.load()
 
 
-# =========================================================      
+# =========================================================
 # BEGIN - [Main] notebook page button handlers
-# ========================================================= 
+# =========================================================
 
     def _init_gcode_view(self):
         self.widgets['gcode_view'].add(self.gcode_view.gtksourceview)
@@ -941,9 +937,9 @@ class Hazzy:
         self.gremlin.clear_live_plotter()
         self.gremlin.load()
 
-# =========================================================      
+# =========================================================
 # BEGIN - [File] notebook page button handlers
-# ========================================================= 
+# =========================================================
 
     def _init_file_chooser(self):
 
@@ -997,7 +993,7 @@ class Hazzy:
             if not self.gcode_preview.buf.get_modified():
                 self.load_gcode_preview(None)     # Clear the preview
 
-    # If file has been edited ask if should save before reloading preview        
+    # If file has been edited ask if should save before reloading preview
     # Need to do this on release or the popup gets the mouse up and we are stuck in drag
     def on_filechooser_button_release_event(self, widget, data=None):
         fname = self.filechooser.get_path_at_cursor()
@@ -1021,7 +1017,7 @@ class Hazzy:
                 self.load_gcode_preview()         # Clear sourceview
 
     # Load file on activate in file chooser, better for mouse users
-    def on_file_activated(self, widget, fpath): 
+    def on_file_activated(self, widget, fpath):
         self.load_gcode_file(fpath)
 
     # Load file on "Load Gcode" button clicked, better for touchscreen users
@@ -1081,7 +1077,7 @@ class Hazzy:
         self.gcode_preview.load_file(fn)
 
 
-# =========================================================      
+# =========================================================
 # BEGIN - [Tool] notebook page handlers
 # =========================================================
 
@@ -1252,7 +1248,7 @@ class Hazzy:
 
     # Popup int numpad on int edit
     def on_int_editing_started(self, renderer, entry, row):
-        if self.keypad_on_offsets:  
+        if self.keypad_on_offsets:
             self.int_touchpad.show(entry)
 
     # Popup float numpad on float edit
@@ -1363,7 +1359,7 @@ class Hazzy:
             mode_str = "MDI"
         elif self.stat.task_mode == linuxcnc.MODE_MANUAL:
             self.task_mode = linuxcnc.MODE_MANUAL
-            mode_str = "MAN"    
+            mode_str = "MAN"
         elif self.stat.task_mode == linuxcnc.MODE_AUTO:
             self.task_mode = linuxcnc.MODE_AUTO
             mode_str = "AUTO"
@@ -1378,13 +1374,13 @@ class Hazzy:
             state_str = "IDLE"
         elif self.stat.interp_state == linuxcnc.INTERP_READING:
             self.interp_state = linuxcnc.INTERP_READING
-            state_str = "READ"    
+            state_str = "READ"
         elif self.stat.interp_state == linuxcnc.INTERP_PAUSED:
             self.interp_state = linuxcnc.INTERP_PAUSED
             state_str = "PAUSE"
         elif self.stat.interp_state == linuxcnc.INTERP_WAITING:
             self.interp_state = linuxcnc.INTERP_WAITING
-            state_str = "WAIT" 
+            state_str = "WAIT"
         else:
             state_str = "Unknown"
         log.debug("Interpreter is in state: {0}".format(state_str))
@@ -1412,7 +1408,7 @@ class Hazzy:
             pos = self.stat.position
             
         dtg = self.stat.dtg
-        g5x_offset = self.stat.g5x_offset        
+        g5x_offset = self.stat.g5x_offset
         g92_offset = self.stat.g92_offset
         tool_offset = self.stat.tool_offset
 
@@ -1445,7 +1441,7 @@ class Hazzy:
                 dro.set_text("%.*f" % (dec_plc, rel[axis]))
 
         for axis, dro in self.dtg_dro_dict.iteritems():
-                dro.set_text("%.*f" % (dec_plc, dtg[axis]))     
+                dro.set_text("%.*f" % (dec_plc, dtg[axis]))
 
         for axis, dro in self.abs_dro_dict.iteritems():
                 dro.set_text("%.*f" % (dec_plc, pos[axis]))
@@ -1459,10 +1455,10 @@ class Hazzy:
             dro = self.joint_pos_dro_list[joint]
             dro.set_text("%.4f" % pos[joint])
 
-    # Convert DRO units back and forth from in to mm    
+    # Convert DRO units back and forth from in to mm
     def convert_dro_units(self, values):
         out = [0]*9
-        for axis, value in enumerate(values) :  
+        for axis, value in enumerate(values) :
             out[axis] = values[axis] * self.conversion[axis]
         return out
 
@@ -1557,7 +1553,7 @@ class Hazzy:
             self.surface_speed = self.spindle_speed * tool_dia * 0.2618
             self.chip_load = self.stat.current_vel * 60 / (self.spindle_speed + .01) * 2
             self.widgets.surface_speed.set_text('{:.1f}'.format(self.surface_speed))
-            self.widgets.chip_load.set_text('{:.4f}'.format(self.chip_load))        
+            self.widgets.chip_load.set_text('{:.4f}'.format(self.chip_load))
         else:        
             self.widgets.surface_speed.set_text("-")
             self.widgets.chip_load.set_text("-")
@@ -1755,7 +1751,7 @@ class Hazzy:
 # =========================================================
 # BEGIN - Helper functions
 # =========================================================
-                        
+
     def set_mode(self, mode):
         if self.stat.task_mode == mode:
             return True
@@ -1817,7 +1813,7 @@ class Hazzy:
             log.error(msg)
             self._show_message(["ERROR", msg])
 
-    # Check if all joints are homed  
+    # Check if all joints are homed
     def is_homed(self):
         for joint in range(self.num_joints):
             if not self.stat.joint[joint]['homed']:
@@ -1864,7 +1860,7 @@ class Hazzy:
 
     # Used to throw out unintentional mouse wheelin thru notebook tabs
     def on_notebook_scroll_event(self, widget, event):
-        return True            
+        return True
 
     # Handle window exit button press
     def on_window_delete_event(self, widget, data=None):
