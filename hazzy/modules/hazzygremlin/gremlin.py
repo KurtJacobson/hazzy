@@ -310,7 +310,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
     def loading_finished(self, widget, result, seq):
         self.set_current_view()
         self.label.hide()
-        
+
         try:
             shutil.rmtree(self.td)
         except Exception as e:
