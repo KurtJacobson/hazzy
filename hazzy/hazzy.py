@@ -28,25 +28,17 @@
 
 import traceback          # Needed to launch traceback errors
 import hal                # Base hal class to react to hal signals
-import hal_glib           # Needed to make our own hal pins
-import gtk, glib          # Base for pygtk widgets and constants
+import gtk                # Base for pygtk widgets
 import sys                # Handle system calls
 import os                 # Needed to get the paths and directories
 import pango              # Needed for font settings
 import gladevcp.makepins  # To make HAL pins and set up updating for them
-import subprocess         # To launch onboard and other processes
-import vte                # To get the embedded terminal
-import tempfile           # Needed for creating a new file
-import datetime           # Needed for the clock
 import linuxcnc           # To get our own error system
 import gobject            # Needed to add the timer for periodic
 import logging            # Needed for logging errors
-from gladevcp.gladebuilder import GladeBuilder
-import gtksourceview2 as gtksourceview
 import math
 
 gobject.threads_init()
-
 
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
@@ -62,7 +54,6 @@ MAINDIR = os.path.dirname(HAZZYDIR)
 # Set system path so we can find our own modules
 sys.path.insert(1, HAZZYDIR)
 sys.path.insert(2, MODULEDIR)
-
 
 # Set up logging
 from colored_log import ColoredFormatter
@@ -90,7 +81,6 @@ log.info("The hazzy directory is: ".format(HAZZYDIR))
 log.info("The config dir is: ".format(CONFIGDIR))
 
 
-
 # Now we have the path to our own modules so we can import them
 import widgets                  # Norbert's module for geting objects quickly
 import preferences              # Handles the preferences
@@ -108,7 +98,6 @@ from modules.hazzygremlin.hazzygremlin import HazzyGremlin
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
-
 
 # Init error dialog
 error_dialog = Dialogs(DialogTypes.ERROR)
@@ -145,24 +134,11 @@ class Hazzy:
         # Retrieve main window
         self.window = self.widgets.window
 
-        # Module init
-        self.gcode_view = GcodeView(preview=False)
-        self.gcode_preview = GcodeView(preview=True)
-        self.float_touchpad = Touchpad("float")
-        self.int_touchpad = Touchpad("int")
-        self.keyboard = Keyboard
-        self.keyboard.set_parent(self.window)
-        self.filechooser = Filechooser()
-        self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
-        self.error_dialog = Dialogs(DialogTypes.ERROR)
-
-
-
         # Components needed to communicate with hal and linuxcnc
         self.hal = hal.component('hazzy')
         self.command = linuxcnc.command()
         self.stat = linuxcnc.stat()
-        self.error_channel = linuxcnc.error_channel()     
+        self.error_channel = linuxcnc.error_channel()
 
         # Norbert's module to get information from the ini file
         self.get_ini_info = getiniinfo.GetIniInfo()
@@ -172,8 +148,19 @@ class Hazzy:
         self.prefs = preferences.Preferences
         self.prefs.set_file_path(pref_file)
 
-        #
+        # Module used to evaluate expressions in entries
         self.s = simpleeval.SimpleEval()
+
+        # Hazzy Modules init
+        self.gcode_view = GcodeView(preview=False)
+        self.gcode_preview = GcodeView(preview=True)
+        self.float_touchpad = Touchpad("float")
+        self.int_touchpad = Touchpad("int")
+        self.keyboard = Keyboard
+        self.keyboard.set_parent(self.window)
+        self.filechooser = Filechooser()
+        self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
+        self.error_dialog = Dialogs(DialogTypes.ERROR)
 
         # Get the tool table liststore
         self.tool_liststore = self.builder.get_object("tool_liststore")
@@ -205,7 +192,7 @@ class Hazzy:
         gobject.timeout_add(75, self._fast_periodic)
 
         # Set the conversions used for changing the DRO units
-        # Only want to convert linear axes, hence a list of conversion factors
+        # Only convert linear axes (XYZUVW), use factor of unity for ABC
         if self.get_ini_info.get_machine_metric(): 
             # List of factors for converting from mm to inches
             self.conversion = [1.0/25.4]*3+[1]*3+[1.0/25.4]*3
@@ -769,7 +756,7 @@ class Hazzy:
     # Main panel CheckBox handlers
     # Have to use pressed for these as clicked is emited on 
     # set_active() in the update function in slow_periodic
-        
+
     def on_opstop_pressed(self, widget, data= None):
         if self.stat.optional_stop == 0:
             self.command.set_optional_stop(1)
@@ -815,7 +802,7 @@ class Hazzy:
             if dro == widget:
                 aletter = self.axis_letters[axis_number]
                 break
-                
+
         factor = 1
         entry = widget.get_text().lower()
         if "in" in entry or '"' in entry:
@@ -847,8 +834,8 @@ class Hazzy:
 
     def on_tool_number_entry_activate(self, widget):
         tnum = widget.get_text()
-        try: 
-            tnum = int(tnum)        
+        try:
+            tnum = int(tnum)
             self.issue_mdi("M6 T%s G43" % tnum)
         except:
             msg = '"{0}" is not a valid tool number'.format(tnum)
