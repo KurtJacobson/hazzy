@@ -23,7 +23,6 @@ import os
 import gtk
 import pango
 import gobject
-import threading
 
 import gcode
 import gremlin
@@ -45,10 +44,10 @@ class HazzyGremlin(gremlin.Gremlin):
         'loading-progress': (gobject.SIGNAL_RUN_FIRST, gobject.TYPE_NONE, (gobject.TYPE_INT,)),
     }
 
-
     def __init__(self, inifile, width, height):
         gobject.GObject.__init__(self)
-        gremlin.Gremlin.__init__(self, inifile)
+
+        super(HazzyGremlin, self).__init__(inifile)
 
         self.width = width
         self.height = height
@@ -102,7 +101,7 @@ class HazzyGremlin(gremlin.Gremlin):
 #            self.emit('loading_progress', percent)
 
 
-    def realize(self,widget):
+    def realize(self, widget):
         super(HazzyGremlin, self).realize(widget)
         self.label.hide()
 

@@ -45,8 +45,6 @@ from gladevcp.gladebuilder import GladeBuilder
 import gtksourceview2 as gtksourceview
 import math
 
-gobject.threads_init()
-
 
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))

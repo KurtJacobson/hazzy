@@ -62,7 +62,6 @@ import os
 import sys
 
 import thread
-import threading
 
 import logging
 
@@ -70,9 +69,12 @@ from minigl import *
 
 log = logging.getLogger("HAZZY.GREMLIN.GREMLIN")
 
+
 class DummyProgress:
     def nextphase(self, unused): pass
+
     def progress(self): pass
+
 
 class StatCanon(glcanon.GLCanon, rs274.interpret.StatMixin):
     def __init__(self, colors, geometry, lathe_view_option, stat, random, Gremlin_instance):
@@ -268,7 +270,6 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
 
         if s.file: 
             self.load()
-            threading.Thread(target=self.load).start()
 
     def set_current_view(self, data=None):
         if self.current_view not in ['p', 'x', 'y', 'y2', 'z', 'z2']:
@@ -276,7 +277,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         return getattr(self, 'set_view_%s' % self.current_view)()
 
 
-    def load(self,filename = None):
+    def load(self, filename=None):
         s = self.stat
         s.poll()
         if not filename and s.file:
@@ -288,6 +289,7 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
 
         self.td = tempfile.mkdtemp()
         self._current_file = filename
+
         try:
             lines = open(self._current_file).readlines()
             self.line_count = len(lines)
@@ -299,13 +301,17 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
                 shutil.copy(parameter, temp_parameter)
             canon.parameter_file = temp_parameter
 
-            unitcode = "G%d" % (20 + (s.linear_units == 1))
+            unitcode = "G{0}".format(20 + (s.linear_units == 1))
             initcode = self.inifile.find("RS274NGC", "RS274NGC_STARTUP_CODE") or ""
-#           self.load_preview(filename, canon, unitcode, initcode)
-            threading.Thread(target=self.load_preview, args=(filename, canon, unitcode, initcode,)).start()
 
-        except:
-            pass
+            self.load_preview(filename, canon, unitcode, initcode)
+
+        except Exception as e:
+            log.debug(e)
+
+    def load_preview(self, f, canon, *args):
+        super(Gremlin, self).load_preview(f, canon, *args)
+        log.debug("Load Preview")
 
     def loading_finished(self, widget, result, seq):
         self.set_current_view()
@@ -319,9 +325,10 @@ class Gremlin(gtk.gtkgl.widget.DrawingArea, glnav.GlNavBase,
         if result > gcode.MIN_ERROR:
                 self.report_gcode_error(result, seq, self._current_file)
 
-
     def get_program_alpha(self): return self.program_alpha
+
     def get_num_joints(self): return self.num_joints
+
     def get_geometry(self):
         temp = self.inifile.find("DISPLAY", "GEOMETRY")
         if temp:
