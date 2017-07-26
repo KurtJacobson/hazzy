@@ -89,6 +89,7 @@ class GcodeView(gobject.GObject,):
         self.gtksourceview.connect('key-press-event', self.on_key_press)
 
         # Set line highlight styles
+        self.gtksourceview.set_mark_category_background('none', gtk.gdk.Color('#ffffff'))
         self.gtksourceview.set_mark_category_background('motion', gtk.gdk.Color('#c5c5c5'))
         self.gtksourceview.set_mark_category_background('selected', gtk.gdk.Color('#96fef6'))
         self.gtksourceview.set_mark_category_background('error', gtk.gdk.Color('#ff7373'))
@@ -118,7 +119,7 @@ class GcodeView(gobject.GObject,):
             self.highlight_line(None)
 
 
-    def highlight_line(self, lnum, style='motion'):
+    def highlight_line(self, lnum, style='none'):
         if not lnum or lnum == -1:
             if self.mark:
                 self.buf.delete_mark(self.mark)
@@ -147,7 +148,7 @@ class GcodeView(gobject.GObject,):
         self.buf.set_modified(data)
 
     def set_line_number(self, lnum):
-        self.highlight_line(None, int(lnum))
+        self.highlight_line(int(lnum))
 
     def get_program_length(self):
         return self.buf.get_line_count()

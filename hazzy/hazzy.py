@@ -39,13 +39,13 @@ import math
 
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-INIFILE = sys.argv[2]                                   # Path to .ini file
-CONFIGDIR = os.path.dirname(INIFILE)                    # Path to config dir
+INIFILE = sys.argv[2]                               # Path to .ini file
+CONFIGDIR = os.path.dirname(INIFILE)                # Path to config dir
 
 # We use __file__ to get the file dir so we can run from any location
-HAZZYDIR = os.path.dirname(os.path.realpath(__file__))  # Path to hazzy.py dir
-IMAGEDIR = os.path.join(HAZZYDIR, 'images')             # Path to images, glade
-MODULEDIR = os.path.join(HAZZYDIR, 'modules')           #
+HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
+IMAGEDIR = os.path.join(HAZZYDIR, 'images')
+MODULEDIR = os.path.join(HAZZYDIR, 'modules')
 MAINDIR = os.path.dirname(HAZZYDIR)
 
 # Set system path so we can find our own modules
@@ -79,7 +79,7 @@ log.info("The config dir is: ".format(CONFIGDIR))
 
 
 # Now we have the path to our own modules so we can import them
-import widgets                  # Norbert's module for geting objects quickly
+import widgets                  # Norbert's module for geting objects
 import preferences              # Handles the preferences
 import getiniinfo               # Handles .ini file reading and value validation
 import simpleeval               # Used to evaluate expressions in numeric entries
@@ -208,7 +208,7 @@ class Hazzy:
         self.axis_letters = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W']
         self.inifile = linuxcnc.ini(INIFILE)
 
-        # Define default button states 
+        # Define default button states
         self.cycle_start_button_state = 'start'
         self.hold_resume_button_state = 'inactive'
         self.is_pressed = {}
@@ -455,6 +455,7 @@ class Hazzy:
         # Finally, show the window 
         self.window.show()
 
+        # Open file specified in INI [DISPLY] OPEN_FILE
         self.load_gcode_file(self.get_ini_info.get_open_file())
 
 # =========================================================
@@ -526,8 +527,8 @@ class Hazzy:
         if self.task_mode != self.stat.task_mode:
             self._update_machine_mode()
 
-        # Update interpreter state if it has changed    
-        if self.interp_state != self.stat.interp_state:    
+        # Update interpreter state if it has changed
+        if self.interp_state != self.stat.interp_state:
             self._update_interp_state()
 
         if self.motion_mode != self.stat.motion_mode:
@@ -569,7 +570,7 @@ class Hazzy:
         if self.stat.block_delete != self.widgets.opskip.get_active():
             self.widgets.opskip.set_active(self.stat.block_delete)
 
-        # If new error flash message border red for 2s
+        # If new error, flash message border red for 2s
         if self.new_error:
             self.error_flash_timer += 1
             if self.error_flash_timer >= 4:
@@ -577,7 +578,10 @@ class Hazzy:
                 self.new_error = False
                 self.error_flash_timer = 0
 
- 
+        if not self.is_moving():
+            self.set_mode(linuxcnc.MODE_MANUAL)
+
+
 # =========================================================
 # BEGIN - Info/Error message display 
 # =========================================================
@@ -697,20 +701,34 @@ class Hazzy:
 
     # Toggle the reset button state and set the corresponding image
     def on_reset_pressed(self, widget, data=None):
-        if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET:
-            log.debug("Reseting E-stop")
-            self.set_state(linuxcnc.STATE_ESTOP_RESET)
-            self.stat.poll()
-        # Check if the machine actually reset
-        self.stat.poll()
-        if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET and self.stat.task_state != linuxcnc.STATE_ON :
-            log.debug("Failed to bring machine out of E-stop")
-            return
-        # Turn on after reset
+
         if self.stat.task_state != linuxcnc.STATE_ON:
-            log.debug("Turning machine on")
-            self.set_state(linuxcnc.STATE_ON)
-            self.set_image('reset_image', 'reset.png')
+            if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET:
+                log.debug("Reseting E-stop")
+                self.set_state(linuxcnc.STATE_ESTOP_RESET)
+
+                # Check if the machine actually reset
+                self.stat.poll()
+                if self.stat.task_state != linuxcnc.STATE_ESTOP_RESET and self.stat.task_state != linuxcnc.STATE_ON :
+                    log.debug("Failed to bring machine out of E-stop")
+                    return
+
+            # Turn on after reset
+            if self.stat.task_state != linuxcnc.STATE_ON:
+                log.debug("Turning machine on")
+                self.set_state(linuxcnc.STATE_ON)
+                self.set_image('reset_image', 'reset.png')
+
+        else:
+            if self.is_moving():
+                self.command.abort()
+            if self.is_homed():
+                self.issue_mdi('M30')
+                self.gcode_view.set_line_number(1)
+                self.gremlin.clear_live_plotter()
+                self.gremlin.set_view('z')
+            self.set_mode(linuxcnc.MODE_MANUAL)
+
 
     def on_abs_label_clicked(self, widget, data=None):
         # Home all
@@ -852,7 +870,7 @@ class Hazzy:
 
     # =========================================================
     # MDI entry handlers
-    
+
     def on_mdi_entry_gets_focus(self, widget, event):
         # if self.dro_is_locked:
         #   self.window.set_focus(None)
@@ -1385,7 +1403,7 @@ class Hazzy:
         self.widgets.emc_interp_label.set_text("Interp: {0}".format(state_str))
 
     def _update_motion_mode(self):
-        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_COORD: 
+        if self.stat.motion_mode == linuxcnc.TRAJ_MODE_COORD:
             self.motion_mode = linuxcnc.TRAJ_MODE_COORD
             motion_str = "COORD"
         elif self.stat.motion_mode == linuxcnc.TRAJ_MODE_FREE:
@@ -1456,7 +1474,7 @@ class Hazzy:
     # Convert DRO units back and forth from in to mm
     def convert_dro_units(self, values):
         out = [0]*9
-        for axis, value in enumerate(values) :
+        for axis, value in enumerate(values):
             out[axis] = values[axis] * self.conversion[axis]
         return out
 
@@ -1552,7 +1570,7 @@ class Hazzy:
             self.chip_load = self.stat.current_vel * 60 / (self.spindle_speed + .01) * 2
             self.widgets.surface_speed.set_text('{:.1f}'.format(self.surface_speed))
             self.widgets.chip_load.set_text('{:.4f}'.format(self.chip_load))
-        else:        
+        else:
             self.widgets.surface_speed.set_text("-")
             self.widgets.chip_load.set_text("-")
 
@@ -1565,14 +1583,14 @@ class Hazzy:
             if axis_letter in self.axis_letter_list:
                 continue
             self.axis_letter_list.append(axis_letter)
-        
+
         self.num_axes = len(self.axis_letter_list)
-                
+
         # Axis number list (Ex. [0, 1, 2, 4])
         for axis in self.axis_letter_list:
             axis_number = self.axis_letters.index(axis)
             self.axis_number_list.append(axis_number)
-        
+
         # Joint:Axis dict (Ex. {0:0, 1:1, 2:2, 3:4})
         for jnum, aletter in enumerate(coordinates):
             anum = self.axis_letters.index(aletter)
@@ -1635,13 +1653,13 @@ class Hazzy:
                 self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
         self.homed_joints = homed_joints
 
-    #TODO Make so does not run if it does not need to 
+    #TODO Make so does not run if it does not need to
     def _updade_dro_status(self):
         if self.is_moving() or not self.is_homed():  # or not self.no_force_homing:
             # An eventbox is placed over the editable DROs, if it is visible it blocks them from events 
             self.widgets.dro_mask.set_visible(True)
             for anum, dro in self.rel_dro_dict.iteritems():
-                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))  
+                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))
         else:
             self.widgets.dro_mask.set_visible(False)
             for joint, dro in self.rel_dro_dict.iteritems():
@@ -1751,6 +1769,7 @@ class Hazzy:
 # =========================================================
 
     def set_mode(self, mode):
+        self.stat.poll()
         if self.stat.task_mode == mode:
             return True
         self.command.mode(mode)
@@ -1758,6 +1777,7 @@ class Hazzy:
         return True
 
     def set_state(self, state):
+        self.stat.poll()
         if self.stat.state == state:
             return True
         self.command.state(state)
@@ -1765,6 +1785,7 @@ class Hazzy:
         return True
 
     def set_motion_mode(self, mode):
+        self.stat.poll()
         if self.stat.motion_mode == mode:
             return True
         self.command.teleop_enable(0)
