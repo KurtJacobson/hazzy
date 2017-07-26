@@ -37,8 +37,6 @@ import gobject            # Needed to add the timer for periodic
 import logging            # Needed for logging errors
 import math
 
-gobject.threads_init()
-
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 INIFILE = sys.argv[2]                                   # Path to .ini file
