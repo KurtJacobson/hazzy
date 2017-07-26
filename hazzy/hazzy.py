@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 #   An attempt at a new UI for LinuxCNC that can be used
 #   on a touch screen without any lost of functionality.
 #   The code is written in python and glade and is almost a
@@ -28,23 +27,15 @@
 
 import traceback          # Needed to launch traceback errors
 import hal                # Base hal class to react to hal signals
-import hal_glib           # Needed to make our own hal pins
-import gtk, glib          # Base for pygtk widgets and constants
+import gtk                # Base for pygtk widgets
 import sys                # Handle system calls
 import os                 # Needed to get the paths and directories
 import pango              # Needed for font settings
 import gladevcp.makepins  # To make HAL pins and set up updating for them
-import subprocess         # To launch onboard and other processes
-import vte                # To get the embedded terminal
-import tempfile           # Needed for creating a new file
-import datetime           # Needed for the clock
 import linuxcnc           # To get our own error system
 import gobject            # Needed to add the timer for periodic
 import logging            # Needed for logging errors
-from gladevcp.gladebuilder import GladeBuilder
-import gtksourceview2 as gtksourceview
 import math
-
 
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
@@ -60,7 +51,6 @@ MAINDIR = os.path.dirname(HAZZYDIR)
 # Set system path so we can find our own modules
 sys.path.insert(1, HAZZYDIR)
 sys.path.insert(2, MODULEDIR)
-
 
 # Set up logging
 from colored_log import ColoredFormatter
@@ -88,7 +78,6 @@ log.info("The hazzy directory is: ".format(HAZZYDIR))
 log.info("The config dir is: ".format(CONFIGDIR))
 
 
-
 # Now we have the path to our own modules so we can import them
 import widgets                  # Norbert's module for geting objects quickly
 import preferences              # Handles the preferences
@@ -106,7 +95,6 @@ from modules.hazzygremlin.hazzygremlin import HazzyGremlin
 
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
-
 
 # Init error dialog
 error_dialog = Dialogs(DialogTypes.ERROR)
@@ -143,24 +131,11 @@ class Hazzy:
         # Retrieve main window
         self.window = self.widgets.window
 
-        # Module init
-        self.gcode_view = GcodeView(preview=False)
-        self.gcode_preview = GcodeView(preview=True)
-        self.float_touchpad = Touchpad("float")
-        self.int_touchpad = Touchpad("int")
-        self.keyboard = Keyboard
-        self.keyboard.set_parent(self.window)
-        self.filechooser = Filechooser()
-        self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
-        self.error_dialog = Dialogs(DialogTypes.ERROR)
-
-
-
         # Components needed to communicate with hal and linuxcnc
         self.hal = hal.component('hazzy')
         self.command = linuxcnc.command()
         self.stat = linuxcnc.stat()
-        self.error_channel = linuxcnc.error_channel()     
+        self.error_channel = linuxcnc.error_channel()
 
         # Norbert's module to get information from the ini file
         self.get_ini_info = getiniinfo.GetIniInfo()
@@ -170,8 +145,19 @@ class Hazzy:
         self.prefs = preferences.Preferences
         self.prefs.set_file_path(pref_file)
 
-        #
+        # Module used to evaluate expressions in entries
         self.s = simpleeval.SimpleEval()
+
+        # Hazzy Modules init
+        self.gcode_view = GcodeView(preview=False)
+        self.gcode_preview = GcodeView(preview=True)
+        self.float_touchpad = Touchpad("float")
+        self.int_touchpad = Touchpad("int")
+        self.keyboard = Keyboard
+        self.keyboard.set_parent(self.window)
+        self.filechooser = Filechooser()
+        self.yes_no_dialog = Dialogs(DialogTypes.YES_NO)
+        self.error_dialog = Dialogs(DialogTypes.ERROR)
 
         # Get the tool table liststore
         self.tool_liststore = self.builder.get_object("tool_liststore")
@@ -203,7 +189,7 @@ class Hazzy:
         gobject.timeout_add(75, self._fast_periodic)
 
         # Set the conversions used for changing the DRO units
-        # Only want to convert linear axes, hence a list of conversion factors
+        # Only convert linear axes (XYZUVW), use factor of unity for ABC
         if self.get_ini_info.get_machine_metric(): 
             # List of factors for converting from mm to inches
             self.conversion = [1.0/25.4]*3+[1]*3+[1.0/25.4]*3
@@ -363,7 +349,6 @@ class Hazzy:
         # Initialize MDI entry
         self.widgets.mdi_entry.modify_font(self.mdi_font)
         self.widgets.mdi_entry.set_text("MDI:")
-        
         self.widgets.tool_number_entry.modify_font(self.dro_font)
         self.widgets.spindle_speed_entry.modify_font(self.dro_font)
 
@@ -501,7 +486,7 @@ class Hazzy:
         self._update_spindle_speed_label()
         self._updade_dro_status()
 
-        # Call _slow_periodic() every 5 cycles of _fast_periodic()  
+        # Call _slow_periodic() every 5 cycles of _fast_periodic()
         self.periodic_cycle_counter += 1
         if self.periodic_cycle_counter >= 5:
             self._slow_periodic()
@@ -552,8 +537,6 @@ class Hazzy:
         if tuple(self.homed_joints) != self.stat.homed:
             self._update_homing_status()
 
-        # print self.stat.homed
-
         # Update current tool data if it has changed
         if self.current_tool != self.stat.tool_in_spindle:
             self._update_current_tool_data()
@@ -568,7 +551,7 @@ class Hazzy:
                 self.display_units = 'in'
                 self.gremlin.set_display_units('in')
 
-        # Update velocity DROs     
+        # Update velocity DROs
         self._update_vel()
 
         # Update cutting parameter labels
@@ -583,7 +566,7 @@ class Hazzy:
             self.widgets.opstop.set_active(self.stat.optional_stop)
 
         # Update opskip status
-        if self.stat.block_delete != self.widgets.opskip.get_active() :
+        if self.stat.block_delete != self.widgets.opskip.get_active():
             self.widgets.opskip.set_active(self.stat.block_delete)
 
         # If new error flash message border red for 2s
@@ -604,7 +587,7 @@ class Hazzy:
         kind, text = message # Unpack
 
         if "joint" in text:
-            # Replace "joint N" with "L axis" 
+            # Replace "joint N" with "L axis"
             for axis in self.axis_letter_list:
                 joint = 'XYZABCUVWS'.index(axis)
                 text = text.replace("joint {0}".format(joint), "{0} axis".format(axis))
@@ -763,11 +746,11 @@ class Hazzy:
         if exit_hazzy:
             self.close_window()
 
-    # =========================================================      
+    # =========================================================
     # Main panel CheckBox handlers
-    # Have to use pressed for these as clicked is emited on 
+    # Have to use pressed for these as clicked is emited on
     # set_active() in the update function in slow_periodic
-        
+
     def on_opstop_pressed(self, widget, data= None):
         if self.stat.optional_stop == 0:
             self.command.set_optional_stop(1)
@@ -813,7 +796,7 @@ class Hazzy:
             if dro == widget:
                 aletter = self.axis_letters[axis_number]
                 break
-                
+
         factor = 1
         entry = widget.get_text().lower()
         if "in" in entry or '"' in entry:
@@ -845,8 +828,8 @@ class Hazzy:
 
     def on_tool_number_entry_activate(self, widget):
         tnum = widget.get_text()
-        try: 
-            tnum = int(tnum)        
+        try:
+            tnum = int(tnum)
             self.issue_mdi("M6 T%s G43" % tnum)
         except:
             msg = '"{0}" is not a valid tool number'.format(tnum)
@@ -911,9 +894,9 @@ class Hazzy:
         #self.gremlin.load()
 
 
-# =========================================================      
+# =========================================================
 # BEGIN - [Main] notebook page button handlers
-# ========================================================= 
+# =========================================================
 
     def _init_gcode_view(self):
         self.widgets['gcode_view'].add(self.gcode_view.gtksourceview)
@@ -952,9 +935,9 @@ class Hazzy:
         self.gremlin.clear_live_plotter()
         self.gremlin.load()
 
-# =========================================================      
+# =========================================================
 # BEGIN - [File] notebook page button handlers
-# ========================================================= 
+# =========================================================
 
     def _init_file_chooser(self):
 
@@ -1008,7 +991,7 @@ class Hazzy:
             if not self.gcode_preview.buf.get_modified():
                 self.load_gcode_preview(None)     # Clear the preview
 
-    # If file has been edited ask if should save before reloading preview        
+    # If file has been edited ask if should save before reloading preview
     # Need to do this on release or the popup gets the mouse up and we are stuck in drag
     def on_filechooser_button_release_event(self, widget, data=None):
         fname = self.filechooser.get_path_at_cursor()
@@ -1032,7 +1015,7 @@ class Hazzy:
                 self.load_gcode_preview()         # Clear sourceview
 
     # Load file on activate in file chooser, better for mouse users
-    def on_file_activated(self, widget, fpath): 
+    def on_file_activated(self, widget, fpath):
         self.load_gcode_file(fpath)
 
     # Load file on "Load Gcode" button clicked, better for touchscreen users
@@ -1092,7 +1075,7 @@ class Hazzy:
         self.gcode_preview.load_file(fn)
 
 
-# =========================================================      
+# =========================================================
 # BEGIN - [Tool] notebook page handlers
 # =========================================================
 
@@ -1263,7 +1246,7 @@ class Hazzy:
 
     # Popup int numpad on int edit
     def on_int_editing_started(self, renderer, entry, row):
-        if self.keypad_on_offsets:  
+        if self.keypad_on_offsets:
             self.int_touchpad.show(entry)
 
     # Popup float numpad on float edit
@@ -1374,7 +1357,7 @@ class Hazzy:
             mode_str = "MDI"
         elif self.stat.task_mode == linuxcnc.MODE_MANUAL:
             self.task_mode = linuxcnc.MODE_MANUAL
-            mode_str = "MAN"    
+            mode_str = "MAN"
         elif self.stat.task_mode == linuxcnc.MODE_AUTO:
             self.task_mode = linuxcnc.MODE_AUTO
             mode_str = "AUTO"
@@ -1389,13 +1372,13 @@ class Hazzy:
             state_str = "IDLE"
         elif self.stat.interp_state == linuxcnc.INTERP_READING:
             self.interp_state = linuxcnc.INTERP_READING
-            state_str = "READ"    
+            state_str = "READ"
         elif self.stat.interp_state == linuxcnc.INTERP_PAUSED:
             self.interp_state = linuxcnc.INTERP_PAUSED
             state_str = "PAUSE"
         elif self.stat.interp_state == linuxcnc.INTERP_WAITING:
             self.interp_state = linuxcnc.INTERP_WAITING
-            state_str = "WAIT" 
+            state_str = "WAIT"
         else:
             state_str = "Unknown"
         log.debug("Interpreter is in state: {0}".format(state_str))
@@ -1423,7 +1406,7 @@ class Hazzy:
             pos = self.stat.position
             
         dtg = self.stat.dtg
-        g5x_offset = self.stat.g5x_offset        
+        g5x_offset = self.stat.g5x_offset
         g92_offset = self.stat.g92_offset
         tool_offset = self.stat.tool_offset
 
@@ -1456,7 +1439,7 @@ class Hazzy:
                 dro.set_text("%.*f" % (dec_plc, rel[axis]))
 
         for axis, dro in self.dtg_dro_dict.iteritems():
-                dro.set_text("%.*f" % (dec_plc, dtg[axis]))     
+                dro.set_text("%.*f" % (dec_plc, dtg[axis]))
 
         for axis, dro in self.abs_dro_dict.iteritems():
                 dro.set_text("%.*f" % (dec_plc, pos[axis]))
@@ -1470,10 +1453,10 @@ class Hazzy:
             dro = self.joint_pos_dro_list[joint]
             dro.set_text("%.4f" % pos[joint])
 
-    # Convert DRO units back and forth from in to mm    
+    # Convert DRO units back and forth from in to mm
     def convert_dro_units(self, values):
         out = [0]*9
-        for axis, value in enumerate(values) :  
+        for axis, value in enumerate(values) :
             out[axis] = values[axis] * self.conversion[axis]
         return out
 
@@ -1568,7 +1551,7 @@ class Hazzy:
             self.surface_speed = self.spindle_speed * tool_dia * 0.2618
             self.chip_load = self.stat.current_vel * 60 / (self.spindle_speed + .01) * 2
             self.widgets.surface_speed.set_text('{:.1f}'.format(self.surface_speed))
-            self.widgets.chip_load.set_text('{:.4f}'.format(self.chip_load))        
+            self.widgets.chip_load.set_text('{:.4f}'.format(self.chip_load))
         else:        
             self.widgets.surface_speed.set_text("-")
             self.widgets.chip_load.set_text("-")
@@ -1752,21 +1735,21 @@ class Hazzy:
         dir = axis[0]
         vel = self.prefs.getpref("JOGGING", "VELOCITY", 1, int)
         axis_num = "xyzabcuvw".index(axis[1])
-        log.debug("START jogging {} axis".format(axis[1]))
+        log.debug("green$STARTED jogging {} axis".format(axis))
         self.command.jog(linuxcnc.JOG_CONTINUOUS, JOGMODE, axis_num, float('{}{}'.format(dir, vel)))
 
 
     def jog_stop(self, axis):
         JOGMODE = 0
         axis_num = "xyzabcuvw".index(axis)
-        log.debug("STOP jogging {} axis".format(axis))
+        log.debug("red$STOPED jogging {} axis".format(axis))
         self.command.jog(linuxcnc.JOG_STOP, JOGMODE, axis_num)
 
 
 # =========================================================
 # BEGIN - Helper functions
 # =========================================================
-                        
+
     def set_mode(self, mode):
         if self.stat.task_mode == mode:
             return True
@@ -1828,7 +1811,7 @@ class Hazzy:
             log.error(msg)
             self._show_message(["ERROR", msg])
 
-    # Check if all joints are homed  
+    # Check if all joints are homed
     def is_homed(self):
         for joint in range(self.num_joints):
             if not self.stat.joint[joint]['homed']:
@@ -1875,7 +1858,7 @@ class Hazzy:
 
     # Used to throw out unintentional mouse wheelin thru notebook tabs
     def on_notebook_scroll_event(self, widget, event):
-        return True            
+        return True
 
     # Handle window exit button press
     def on_window_delete_event(self, widget, data=None):
