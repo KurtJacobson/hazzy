@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 #   Copyright (c) 2017 Kurt Jacobson
 #       <kurtcjacobson@gmail.com>
@@ -18,16 +18,21 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-
-import pygtk
-import gtk
 import os
 import sys
-import gtksourceview2 as gtksourceview
-import gobject
 import logging
-from preferences import Preferences
-from modules.touchpads.keyboard import Keyboard
+
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+gi.require_version('Gdk', '3.0')
+from gi.repository import Gdk
+gi.require_version('GtkSource', '3.0')
+from gi.repository import GtkSource
+from gi.repository import GObject
+
+#from preferences import Preferences
+#from modules.touchpads.keyboard import Keyboard
 
 log = logging.getLogger("HAZZY.GCODEVIEW")
 
@@ -37,31 +42,31 @@ LANGDIR = os.path.join(PYDIR, 'gcode_highlight', "language-specs")
 STYLEDIR = os.path.join(PYDIR, 'gcode_highlight', "styles")
 
 
-class GcodeView(gobject.GObject,):
+class GcodeView(GObject.GObject,):
     __gtype_name__ = 'GcodeView'
     __gsignals__ = {
-        'file-activated': (gobject.SIGNAL_RUN_FIRST, None, (str,)),
-        'selection-changed': (gobject.SIGNAL_RUN_FIRST, None, (str,)),
-        'button-press-event': (gobject.SIGNAL_RUN_FIRST, None, (object,)),
-        'error': (gobject.SIGNAL_RUN_FIRST, None, (str, str))
+        'file-activated': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
+        'selection-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
+        'button-press-event': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        'error': (GObject.SignalFlags.RUN_FIRST, None, (str, str))
     }
 
     def __init__(self, preview=False):
 
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
         self.is_preview = preview
 
         # Module init
-        self.prefs = Preferences
-        self.keyboard = Keyboard
+#        self.prefs = Preferences
+#        self.keyboard = Keyboard
 
         # create buffer
-        self.buf = gtksourceview.Buffer()
-        self.gtksourceview = gtksourceview.View(self.buf)
+        self.view = GtkSource.View()
+        self.buf = self.view.get_buffer()
 
         # setup style and lang managers
-        self.lm = gtksourceview.LanguageManager()
-        self.sm = gtksourceview.StyleSchemeManager()
+        self.lm = GtkSource.LanguageManager()
+        self.sm = GtkSource.StyleSchemeManager()
 
         self.lm.set_search_path([LANGDIR])
         self.sm.set_search_path([STYLEDIR])
@@ -71,34 +76,39 @@ class GcodeView(gobject.GObject,):
 
         self.buf.set_max_undo_levels(20)
 
-        self.gtksourceview.set_show_line_numbers(True)
-        self.gtksourceview.set_show_line_marks(False)
-        self.gtksourceview.set_highlight_current_line(False)
+        self.view.set_show_line_numbers(True)
+        self.view.set_show_line_marks(False)
+        self.view.set_highlight_current_line(False)
 
         # Only allow edit if gcode preview
-        self.gtksourceview.set_editable(self.is_preview)
+        self.view.set_editable(self.is_preview)
 
         self.holder_text = "\t\t\t****No file to preview****"
 
         # Only highlight motion line if not preview
         if not self.is_preview:
-            self.gtksourceview.set_can_focus(False)
+            self.view.set_can_focus(False)
             self.holder_text = ""
 
-        self.gtksourceview.connect('button-press-event', self.on_button_press)
-        self.gtksourceview.connect('key-press-event', self.on_key_press)
+        self.view.connect('button-press-event', self.on_button_press)
+        self.view.connect('key-press-event', self.on_key_press)
 
         # Set line highlight styles
-        self.gtksourceview.set_mark_category_background('none', gtk.gdk.Color('#ffffff'))
-        self.gtksourceview.set_mark_category_background('motion', gtk.gdk.Color('#c5c5c5'))
-        self.gtksourceview.set_mark_category_background('selected', gtk.gdk.Color('#96fef6'))
-        self.gtksourceview.set_mark_category_background('error', gtk.gdk.Color('#ff7373'))
+        mark = GtkSource.Mark.new('error', 'error')
+        att = GtkSource.MarkAttributes()
+        print(att)
+        mark.set_background(Gdk.Color('#ffffff'))
+        #self.view.set_mark_attributes('none', (255, 255, 255), 1)
+        #.source_mark_attributes_set_background('none', Gdk.Color('#ffffff'))
+#        self.view.set_mark_category_background('motion', Gdk.Color('#c5c5c5'))
+#        self.view.set_mark_category_background('selected', Gdk.Color('#96fef6'))
+#        self.view.set_mark_category_background('error', Gdk.Color('#ff7373'))
 
         self.mark = None
         self.current_file = None
         self.error_line =None
 
-        self.gtksourceview.show()
+        self.view.show()
 
 
     def load_file(self, fn=None):
@@ -133,7 +143,7 @@ class GcodeView(gobject.GObject,):
             self.mark = self.buf.create_source_mark(style, style, iter)
         else:
             self.buf.move_mark(self.mark, iter)
-        self.gtksourceview.scroll_to_mark(self.mark, 0, True, 0, 0.5)
+        self.view.scroll_to_mark(self.mark, 0, True, 0, 0.5)
 
     # Since Gremlin reports any errors before GStat emits the 'file-loaded'
     # signal, we have to save the error line here and then do the actual 
@@ -156,7 +166,7 @@ class GcodeView(gobject.GObject,):
 
     # Toggle line numbers on double click
     def on_button_press(self, widget, event):
-        if event.type == gtk.gdk._2BUTTON_PRESS:
+        if event.type == Gdk.EventType.DOUBLE_BUTTON_PRESS:
             if widget.get_show_line_numbers():
                 widget.set_show_line_numbers(False)
             else:
@@ -166,16 +176,16 @@ class GcodeView(gobject.GObject,):
 
         if self.is_preview:
             if self.current_file is None:
-                self.load_file(self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", "", str))
-            if self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES"):
-                self.keyboard.show(widget, True)
+                pass #self.load_file(self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", "", str))
+            if False: #self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES"):
+                pass #self.keyboard.show(widget, True)
 
 
     # If no "save as" file name specified save to the current file in preview
     def save(self, fn=None):
         if fn is None:
             fn = self.current_file
-        text = self.buf.get_text(self.buf.get_start_iter(), self.buf.get_end_iter())
+        text = self.buf.get_text(self.buf.get_start_iter(), self.buf.get_end_iter(), include_hidden_chars=True)
 
         with open(fn, "w") as openfile:
             openfile.write(text)
@@ -187,8 +197,8 @@ class GcodeView(gobject.GObject,):
     # ctrl+s to save the file
     def on_key_press(self, widget, event):
         kv = event.keyval
-        if event.state & gtk.gdk.CONTROL_MASK:
-            if kv == gtk.keysyms.s:
+        if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
+            if kv == Gdk.KEY_s:
                 self.save()
 
 
@@ -197,17 +207,17 @@ class GcodeView(gobject.GObject,):
 # ==========================================================
 
 def main():
-    gtk.main()
+    Gtk.main()
 
 def destroy(widget):
-    gtk.main_quit()
+    Gtk.main_quit()
 
 if __name__ == "__main__":
     gcodeview = GcodeView(preview=True)
-    window = gtk.Window()
-    scrolled = gtk.ScrolledWindow()
+    window = Gtk.Window()
+    scrolled = Gtk.ScrolledWindow()
     window.connect('destroy', destroy)
-    scrolled.add(gcodeview.gtksourceview)
+    scrolled.add(gcodeview.view)
     window.add(scrolled)
     window.set_default_size(350, 400)
     gcodeview.buf.set_text(
