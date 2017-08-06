@@ -1,0 +1,10 @@
+.button {
+    border-color: black;
+    border-radius: 5px;
+    color: white;
+    background: linear-gradient(gray, black);
+}
+
+.background {
+    background: linear-gradient(gray, black);
+}
