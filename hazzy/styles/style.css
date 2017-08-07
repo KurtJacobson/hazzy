@@ -1,10 +1,18 @@
 .button {
     border-color: black;
     border-radius: 5px;
-    color: white;
-    background: linear-gradient(gray, black);
+    color: black;
+    font-size: 14pt;
+    background: darkgray;
 }
 
+button:active {
+  background-color: gray;
+  border-radius: 10px;
+}
+
+
 .background {
-    background: black;
+    background: gray;
+    border-radius: 10px;
 }
