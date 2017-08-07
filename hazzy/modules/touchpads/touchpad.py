@@ -29,6 +29,27 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
 
+class TouchPad:
+    def __init__(self, test=False):
+        self.window = TouchPadWindow()
+        self.dro = None
+        self.original_text = None
+
+        if test:
+            self.window.disable_dot()
+            self.window.show()
+
+    def show(self, widget, kind="float"):
+
+        if kind != "float":
+            self.window.disable_dot()
+
+        self.dro = widget
+        self.original_text = self.dro.get_text()
+
+        self.window.show()
+
+
 class TouchPadWindow(Gtk.Window):
     def __init__(self):
         super(TouchPadWindow, self).__init__()
@@ -40,9 +61,8 @@ class TouchPadWindow(Gtk.Window):
 
         style_provider = Gtk.CssProvider()
 
-        css = open(os.path.join("styles", "style.css"), 'rb')
-        css_data = css.read()
-        css.close()
+        with open(os.path.join("styles", "style.css"), 'rb') as css:
+            css_data = css.read()
 
         style_provider.load_from_data(css_data)
 
@@ -53,6 +73,8 @@ class TouchPadWindow(Gtk.Window):
 
         numpad = builder.get_object("numpad")
 
+        self.dot_button = builder.get_object("dot")
+
         self.add(numpad)
 
         self.set_position(Gtk.WindowPosition.CENTER)
@@ -60,11 +82,11 @@ class TouchPadWindow(Gtk.Window):
         self.set_modal(True)
         self.set_decorated(False)
 
-        self.show_all()
+    def disable_dot(self):
+        self.dot_button.set_sensitive(False)
 
 
 class TouchPadHandler:
-
     @staticmethod
     def on_numpad_delete_event(*args):
         Gtk.main_quit(*args)
@@ -82,9 +104,12 @@ class TouchPadHandler:
         print(keyname)
 
     def on_button_clicked(self, button):
-
         print(button.get_name())
 
 
-TouchPadWindow()
-Gtk.main()
+def main():
+    TouchPad(test=True)
+    Gtk.main()
+
+if __name__ == "__main__":
+    main()
