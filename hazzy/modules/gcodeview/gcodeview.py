@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 #   Copyright (c) 2017 Kurt Jacobson
 #       <kurtcjacobson@gmail.com>
@@ -95,9 +95,24 @@ class GcodeView(GObject.GObject,):
 
         # Set line highlight styles
         mark = GtkSource.Mark.new('error', 'error')
-        att = GtkSource.MarkAttributes()
-        print(att)
-        mark.set_background(Gdk.Color('#ffffff'))
+        print mark.get_category()
+
+        att = GtkSource.MarkAttributes.new()
+        self.view.set_mark_attributes('none', att, 1)
+
+        att = GtkSource.MarkAttributes.new()
+        att.set_background(Gdk.RGBA(200,200,200,255))
+        self.view.set_mark_attributes('motion', att, 1)
+
+        att = GtkSource.MarkAttributes.new()
+        att.set_background(Gdk.RGBA(150,255,255,255))
+        self.view.set_mark_attributes('selected', att, 1)
+
+        att = GtkSource.MarkAttributes.new()
+        att.set_background(Gdk.RGBA(255,115,115,255))
+        self.view.set_mark_attributes('error', att, 1)
+
+        #mark.set_background(Gdk.Color('#ffffff'))
         #self.view.set_mark_attributes('none', (255, 255, 255), 1)
         #.source_mark_attributes_set_background('none', Gdk.Color('#ffffff'))
 #        self.view.set_mark_category_background('motion', Gdk.Color('#c5c5c5'))
@@ -130,12 +145,14 @@ class GcodeView(GObject.GObject,):
 
 
     def highlight_line(self, lnum, style='none'):
+        print lnum, style
         if not lnum or lnum == -1:
             if self.mark:
                 self.buf.delete_mark(self.mark)
                 self.mark = None
             return
         iter = self.buf.get_iter_at_line(lnum-1)
+        print iter
         if not self.mark:
             self.mark = self.buf.create_source_mark(style, style, iter)
         elif self.mark != self.buf.get_mark(style):
@@ -227,5 +244,5 @@ G1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0
 
 M3''')
     window.show_all()
-    gcodeview.highlight_line(3, 'error')
+    gcodeview.highlight_line(2, 'error')
     main()
