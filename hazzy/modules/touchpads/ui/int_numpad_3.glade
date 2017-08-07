@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.20.0 
 
-Copyright (C) 
+Copyright (C) Copyright (c) 2017 Kurt Jacobson
 
 This file is part of Hazzy.
 
@@ -18,12 +18,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+Author: Kurt Jacobson
+
 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
   <!-- interface-license-type gplv3 -->
   <!-- interface-name Hazzy -->
   <!-- interface-description Popup numberpad for use on all numeric only entries -->
+  <!-- interface-copyright Copyright (c) 2017 Kurt Jacobson -->
+  <!-- interface-authors Kurt Jacobson -->
   <object class="GtkWindow" id="numpad">
     <property name="name">numpad</property>
     <property name="can_focus">False</property>
