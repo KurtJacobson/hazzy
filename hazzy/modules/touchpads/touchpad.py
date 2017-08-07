@@ -65,13 +65,16 @@ class TouchPadWindow(Gtk.Window):
 
 class TouchPadHandler:
 
-    def on_numpad_delete_event(self, *args):
+    @staticmethod
+    def on_numpad_delete_event(*args):
         Gtk.main_quit(*args)
 
-    def on_cancel_clicked(self, *args):
+    @staticmethod
+    def on_cancel_clicked(*args):
         Gtk.main_quit(*args)
 
-    def on_ok_clicked(self, *args):
+    @staticmethod
+    def on_ok_clicked(*args):
         Gtk.main_quit(*args)
 
     def on_numpad_key_release_event(self, widget, event):
