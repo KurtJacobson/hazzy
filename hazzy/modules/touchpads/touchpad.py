@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#   Popup numberpad for use on all numeric only entries
+#   Numeric touchpad for use on all entries
 #
 #   Copyright (c) 2017 Kurt Jacobson
 #       <kurtcjacobson@gmail.com>
@@ -20,6 +20,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import os
 import gi
 import logging
@@ -29,6 +30,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
 log = logging.getLogger("HAZZY.TOUCHPAD")
+
 
 class TouchPad:
     def __init__(self, test=False):
@@ -43,7 +45,7 @@ class TouchPad:
     def show(self, widget, kind="float"):
 
         if kind != "float":
-            self.window.disable_dot()
+            self.window.disable_dot_button()
 
         self.dro = widget
         self.original_text = self.dro.get_text()
@@ -82,7 +84,7 @@ class TouchPadWindow(Gtk.Window):
         self.set_modal(True)
         self.set_decorated(False)
 
-    def disable_dot(self):
+    def disable_dot_button(self):
         self.dot_button.set_sensitive(False)
 
 
