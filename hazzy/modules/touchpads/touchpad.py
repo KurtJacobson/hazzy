@@ -26,11 +26,44 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 
-from gi.repository import Gtk
-from gi.repository import Gdk
+from gi.repository import Gtk, Gdk
 
 
-class TouchpadHandler:
+class TouchPadWindow(Gtk.Window):
+    def __init__(self):
+        super(TouchPadWindow, self).__init__()
+
+        builder = Gtk.Builder()
+        builder.add_from_file(os.path.join("modules", "touchpads", "ui", "int_numpad_3.glade"))
+
+        builder.connect_signals(TouchPadHandler())
+
+        style_provider = Gtk.CssProvider()
+
+        css = open(os.path.join("styles", "style.css"), 'rb')
+        css_data = css.read()
+        css.close()
+
+        style_provider.load_from_data(css_data)
+
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), style_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+        numpad = builder.get_object("numpad")
+
+        self.add(numpad)
+
+        self.set_position(Gtk.WindowPosition.CENTER)
+        self.set_resizable(False)
+        self.set_modal(True)
+        self.set_decorated(False)
+
+        self.show_all()
+
+
+class TouchPadHandler:
 
     def on_numpad_delete_event(self, *args):
         Gtk.main_quit(*args)
@@ -49,25 +82,6 @@ class TouchpadHandler:
 
         print(button.get_name())
 
-builder = Gtk.Builder()
-builder.add_from_file(os.path.join("modules", "touchpads", "ui", "int_numpad_3.glade"))
 
-builder.connect_signals(TouchpadHandler())
-
-style_provider = Gtk.CssProvider()
-
-css = open(os.path.join("styles", "style.css"), 'rb')
-css_data = css.read()
-css.close()
-
-style_provider.load_from_data(css_data)
-
-Gtk.StyleContext.add_provider_for_screen(
-    Gdk.Screen.get_default(), style_provider,
-    Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-)
-
-win = builder.get_object("numpad")
-win.show_all()
-
+TouchPadWindow()
 Gtk.main()
