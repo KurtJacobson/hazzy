@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 #   Popup numberpad for use on all numeric only entries
-
+#
 #   Copyright (c) 2017 Kurt Jacobson
 #       <kurtcjacobson@gmail.com>
 #

@@ -23,6 +23,7 @@ along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
   <requires lib="gtk+" version="3.20"/>
   <!-- interface-license-type gplv3 -->
   <!-- interface-name Hazzy -->
+  <!-- interface-description Popup numberpad for use on all numeric only entries -->
   <object class="GtkWindow" id="numpad">
     <property name="name">numpad</property>
     <property name="can_focus">False</property>
