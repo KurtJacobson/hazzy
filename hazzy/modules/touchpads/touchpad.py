@@ -39,7 +39,7 @@ class TouchPad:
         self.original_text = None
 
         if test:
-            self.window.disable_dot()
+            self.window.disable_dot_button()
             self.window.show()
 
     def show(self, widget, kind="float"):
