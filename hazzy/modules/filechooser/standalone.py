@@ -2,7 +2,7 @@
 
 # For stand-alone testing of the filechooser
 
-import gtk
+from gi.repository import Gtk
 import os
 import sys
 import filechooser
@@ -24,7 +24,7 @@ class Filechooser(object):
     def __init__(self):
 
         # Glade setup
-        self.builder = gtk.Builder()
+        self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/standalone.glade")
         self.window = self.builder.get_object("window1")
         self.builder.connect_signals(self)
@@ -102,11 +102,11 @@ class Filechooser(object):
     # Delete the window
     def on_window1_delete_event(self, widget, event, data=None):
         self.window.destroy()
-        gtk.main_quit()
+        Gtk.main_quit()
 
 
 def main():
-    gtk.main()
+    Gtk.main()
 
 
 if __name__ == "__main__":

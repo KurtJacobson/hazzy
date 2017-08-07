@@ -18,8 +18,8 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-import gtk
-import gio
+from gi.repository import Gtk
+from gi.repository import Gio
 import mimetypes
 import userdirectories
 
@@ -35,7 +35,7 @@ class Icons():
         if self.theme.has_icon('folder'):
             self.default_icon = self.theme.load_icon('folder', 16, 0)
         else:
-            self.default_icon = self.theme.load_icon(gtk.STOCK_DIRECTORY, 16, 0)
+            self.default_icon = self.theme.load_icon(Gtk.STOCK_DIRECTORY, 16, 0)
 
         self._user_directories = {}
         self._prepare_icons()
@@ -82,16 +82,16 @@ class Icons():
 
 
     def get_for_file(self, fname):
-        mime = gio.content_type_guess(fname)
+        mime = Gio.content_type_guess(fname)
         if mime:
-            icon_name = gio.content_type_get_icon(mime)
+            icon_name = Gio.content_type_get_icon(mime)
             icon = self.theme.choose_icon(icon_name.get_names(), 16, 0)
             if icon:
-                return gtk.IconInfo.load_icon(icon)
+                return Gtk.IconInfo.load_icon(icon)
             else:
-                name = gtk.STOCK_FILE
+                name = Gtk.STOCK_FILE
         else:
-            name = gtk.STOCK_FILE
+            name = Gtk.STOCK_FILE
         return self.theme.load_icon(name, 16, 0)
 
 

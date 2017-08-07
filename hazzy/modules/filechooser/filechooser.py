@@ -18,13 +18,14 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-import gobject
-import gtk
-import gio
+from gi.repository import GObject
+from gi.repository import Gtk
+from gi.repository import Gio
 import sys
 import os
 import shutil
 import logging
+
 from datetime import datetime
 from move2trash import move2trash
 from bookmarks import BookMarks
@@ -37,22 +38,22 @@ pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, 'ui')
 
 
-class Filechooser(gobject.GObject):
+class Filechooser(GObject.GObject):
     __gtype_name__ = 'Filechooser'
     __gsignals__ = {
-        'file-activated': (gobject.SIGNAL_RUN_FIRST, None, (str,)),
-        'selection-changed': (gobject.SIGNAL_RUN_FIRST, None, (str,)),
-        'filename-editing-started': (gobject.SIGNAL_RUN_FIRST, None, (object,)),
-        'button-release-event': (gobject.SIGNAL_RUN_FIRST, None, ()),
-        'error': (gobject.SIGNAL_RUN_FIRST, None, (str, str))
+        'file-activated': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
+        'selection-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
+        'filename-editing-started': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        'button-release-event': (GObject.SignalFlags.RUN_FIRST, None, ()),
+        'error': (GObject.SignalFlags.RUN_FIRST, None, (str, str))
     }
 
     def __init__(self):
 
-        gobject.GObject.__init__(self)
+        GObject.GObject.__init__(self)
 
         # Glade setup
-        self.builder = gtk.Builder()
+        self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, "filechooser.glade"))
         self.builder.connect_signals(self)
 
@@ -74,20 +75,20 @@ class Filechooser(gobject.GObject):
         self.bookmark_treeview.set_row_separator_func(self.bookmark_separator)
 
         # Enable DnD TODO DnD is not implemented yet
-        self.file_treeview.enable_model_drag_source(gtk.gdk.BUTTON1_MASK, \
-                                                    [('text/plain', 0, 0)], gtk.gdk.ACTION_MOVE | gtk.gdk.ACTION_COPY)
+        self.file_treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, \
+                                                    [('text/plain', 0, 0)], Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
         self.file_treeview.enable_model_drag_dest([('text/plain', 0, 0)], \
-                                                  gtk.gdk.ACTION_COPY)
+                                                  Gdk.DragAction.COPY)
 
         # Connect callbacks to VolumeMonitor
-        self.mounts = gio.VolumeMonitor()
+        self.mounts = Gio.VolumeMonitor()
         self.mounts.connect('mount-added', self.on_mount_added)
         self.mounts.connect('mount-removed', self.on_mount_removed)
 
         # Initialize objects
         self.ok_cancel_dialog = Dialogs(DialogTypes.OK_CANCEL)
         self.bookmarks = BookMarks()
-        self.icons = Icons(gtk.icon_theme_get_default())
+        self.icons = Icons(Gtk.IconTheme.get_default())
 
         # Initialize places
         home = os.environ['HOME']
@@ -121,7 +122,7 @@ class Filechooser(gobject.GObject):
         btn_list = self.nav_btn_list
         btn_dict = self.nav_btn_path_dict
         for i in range(10):
-            btn = gtk.Button()
+            btn = Gtk.Button()
             btn.connect('clicked', self.on_nav_btn_clicked)
             btn.set_can_focus(False)
             btn.set_use_underline(False)
