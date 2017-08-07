@@ -352,5 +352,8 @@ Author: Kurt Jacobson
         <property name="width">2</property>
       </packing>
     </child>
+    <style>
+      <class name="background"/>
+    </style>
   </object>
 </interface>
