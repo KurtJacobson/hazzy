@@ -21,13 +21,14 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-
 import gi
+import logging
 
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk, Gdk
 
+log = logging.getLogger("HAZZY.TOUCHPAD")
 
 class TouchPad:
     def __init__(self, test=False):
@@ -56,7 +57,6 @@ class TouchPadWindow(Gtk.Window):
 
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join("modules", "touchpads", "ui", "int_numpad_3.glade"))
-
         builder.connect_signals(TouchPadHandler())
 
         style_provider = Gtk.CssProvider()
@@ -100,11 +100,12 @@ class TouchPadHandler:
         Gtk.main_quit(*args)
 
     def on_numpad_key_release_event(self, widget, event):
-        keyname = Gdk.keyval_name(event.keyval)
-        print(keyname)
+        key_name = Gdk.keyval_name(event.keyval)
+        log.debug("key pressed from keyboard: {0}".format(key_name))
 
     def on_button_clicked(self, button):
-        print(button.get_name())
+        button_name = button.get_name()
+        log.debug("button pressed from touchpad :{0}".format(button_name))
 
 
 def main():
