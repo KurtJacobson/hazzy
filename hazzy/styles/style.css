@@ -6,13 +6,18 @@
     background: darkgray;
 }
 
-button:active {
-  background-color: gray;
-  border-radius: 10px;
+.button:active {
+    background-color: gray;
+    border-radius: 10px;
 }
-
 
 .background {
     background: gray;
+    border-radius: 0px;
+}
+
+.frame {
     border-radius: 10px;
+    border-width: 4px;
+    border-color: black;
 }
