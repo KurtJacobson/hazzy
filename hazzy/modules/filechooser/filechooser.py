@@ -35,6 +35,7 @@ from gi.repository import Gio
 
 from datetime import datetime
 from move2trash import move2trash
+from userdirectories import UserDirectories
 from bookmarks import BookMarks
 from icons import Icons
 #from modules.dialogs.dialogs import Dialogs, DialogTypes
@@ -77,8 +78,6 @@ class Filechooser(GObject.GObject):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-        Gtk.TouchscreenMode = True
-
         # Retrieve frequently used objects
         self.nav_box = self.builder.get_object('nav_box')
         self.eject_column = self.builder.get_object('eject_col')
@@ -113,8 +112,9 @@ class Filechooser(GObject.GObject):
         self.icons = Icons(Gtk.IconTheme.get_default())
 
         # Initialize places
-        home = os.environ['HOME']
-        desktop = os.path.expanduser("~/Desktop")
+        self.userdirs = UserDirectories()
+        desktop = self.userdirs.get_XDG_directory('XDG_DESKTOP_DIR')
+        home = self.userdirs.get_home_directory()
         self.places = [home, desktop]
 
         # Initialize variables
