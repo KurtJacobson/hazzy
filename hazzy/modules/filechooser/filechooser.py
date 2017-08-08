@@ -18,19 +18,26 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import GObject
-from gi.repository import Gtk
-from gi.repository import Gio
 import sys
 import os
 import shutil
 import logging
 
+import gi
+
+from gi.repository import GObject
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+gi.require_version('Gdk', '3.0')
+from gi.repository import Gdk
+gi.require_version('Gio', '2.0')
+from gi.repository import Gio
+
 from datetime import datetime
 from move2trash import move2trash
 from bookmarks import BookMarks
 from icons import Icons
-from modules.dialogs.dialogs import Dialogs, DialogTypes
+#from modules.dialogs.dialogs import Dialogs, DialogTypes
 
 log = logging.getLogger("HAZZY.FILECHOOSER")
 
@@ -54,13 +61,13 @@ class Filechooser(GObject.GObject):
 
         # Glade setup
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(UIDIR, "filechooser.glade"))
+        self.builder.add_from_file(os.path.join(UIDIR, "filechooser_4.glade"))
         self.builder.connect_signals(self)
 
         # Retrieve frequently used objects
         self.nav_box = self.builder.get_object('hbox1')
         self.eject_column = self.builder.get_object('eject_col')
-        file_adj = self.builder.get_object('scrolledwindow1')
+        file_adj = self.builder.get_object('fileview')
         self.file_vadj = file_adj.get_vadjustment()
         self.file_hadj = file_adj.get_hadjustment()
 
@@ -81,12 +88,13 @@ class Filechooser(GObject.GObject):
                                                   Gdk.DragAction.COPY)
 
         # Connect callbacks to VolumeMonitor
-        self.mounts = Gio.VolumeMonitor()
-        self.mounts.connect('mount-added', self.on_mount_added)
-        self.mounts.connect('mount-removed', self.on_mount_removed)
+        self.mounts = Gio.VolumeMonitor.get()
+        print self.mounts
+#        self.mounts.connect('mount-added', self.on_mount_added)
+#        self.mounts.connect('mount-removed', self.on_mount_removed)
 
         # Initialize objects
-        self.ok_cancel_dialog = Dialogs(DialogTypes.OK_CANCEL)
+        #self.ok_cancel_dialog = Dialogs(DialogTypes.OK_CANCEL)
         self.bookmarks = BookMarks()
         self.icons = Icons(Gtk.IconTheme.get_default())
 
@@ -118,6 +126,7 @@ class Filechooser(GObject.GObject):
         self._fill_file_liststore(self._cur_dir)
 
     def _init_nav_buttons(self):
+        self.builder.get_object('arrow_right').hide()
         box = self.nav_box
         btn_list = self.nav_btn_list
         btn_dict = self.nav_btn_path_dict
@@ -136,7 +145,7 @@ class Filechooser(GObject.GObject):
         places = path.split('/')[1:]
         path = '/'
         for btn in self.nav_btn_list:
-            btn.hide()
+            pass #btn.hide()
         w_needed = 0
         for i, place in enumerate(places):
             btn = self.nav_btn_list[i]
@@ -144,8 +153,10 @@ class Filechooser(GObject.GObject):
             path = os.path.join(path, place)
             self.nav_btn_path_dict[btn] = path
             btn.show()
-            w_needed += btn.size_request()[0]
-        w_allowed = self.nav_box.get_allocation()[2]
+            w_needed += btn.get_allocated_width()
+            print place, w_needed
+        w_allowed = self.nav_box.get_allocated_width()
+        print 'W allowed', w_allowed
         if w_needed > w_allowed:
             self.builder.get_object('goto_root').hide()
             self.builder.get_object('arrow_left').show()
@@ -155,7 +166,7 @@ class Filechooser(GObject.GObject):
         count = 0
         while w_needed > w_allowed:
             btn = self.nav_btn_list[count]
-            w_needed -= btn.size_request()[0]
+            w_needed -= btn.get_allocated_width()
             btn.hide()
             count += 1
 
@@ -244,7 +255,7 @@ class Filechooser(GObject.GObject):
     def on_filechooser_treeview_cursor_changed(self, widget):
         path = widget.get_cursor()[0]
         # Prevent emiting selection changed on double click
-        if path == self.current_selection:
+        if path == self.current_selection or path is None:
             return
         self.current_selection = path
         fname = self.file_liststore[path][2]
@@ -290,7 +301,7 @@ class Filechooser(GObject.GObject):
 
     # Get filechooser object to embed in main window
     def get_filechooser_widget(self):
-        return self.builder.get_object('vbox1')
+        return self.builder.get_object('filechooser')
 
     # Add filter by name and list of extensions to display
     def add_filter(self, name, ext):
@@ -417,6 +428,7 @@ class Filechooser(GObject.GObject):
         mounts = self.mounts.get_mounts()
         paths = []
         for mount in mounts:
+            print mount.get_name()
             path = mount.get_root().get_path()
             paths.append(path)
         return paths
@@ -674,7 +686,7 @@ class Filechooser(GObject.GObject):
 
         if os.path.exists(dst):
             text = "Destination already exists! \n Overwrite {}?".format(dst_name)
-            overwrite = self.ok_cancel_dialog.run(text)
+            overwrite = False #self.ok_cancel_dialog.run(text)
             if not overwrite:
                 msg = "User selected not to overwrite {}".format(dst_name)
                 log.info(msg)
@@ -708,7 +720,7 @@ class Filechooser(GObject.GObject):
 
         if os.path.exists(dst):
             text = "Destination already exists! \n Overwrite {}?".format(src_name)
-            overwrite = self.ok_cancel_dialog.run(text)
+            overwrite = False #self.ok_cancel_dialog.run(text)
             if not overwrite:
                 msg = 'User selected not to overwrite "{}"'.format(src_name)
                 log.info(msg)

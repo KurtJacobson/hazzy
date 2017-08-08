@@ -2,6 +2,8 @@
 
 # For stand-alone testing of the filechooser
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 import os
 import sys
@@ -33,6 +35,7 @@ class Filechooser(object):
         self.filechooser = filechooser.Filechooser()
         box = self.builder.get_object("hbox1")
         filechooser_widget = self.filechooser.get_filechooser_widget()
+        print filechooser_widget
         box.add(filechooser_widget)
 
         # Initialize keyboard if we found it

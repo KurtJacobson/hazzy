@@ -18,7 +18,10 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+gi.require_version('Gio', '2.0')
 from gi.repository import Gio
 import mimetypes
 import userdirectories
@@ -84,7 +87,7 @@ class Icons():
     def get_for_file(self, fname):
         mime = Gio.content_type_guess(fname)
         if mime:
-            icon_name = Gio.content_type_get_icon(mime)
+            icon_name = Gio.content_type_get_icon(str(mime))
             icon = self.theme.choose_icon(icon_name.get_names(), 16, 0)
             if icon:
                 return Gtk.IconInfo.load_icon(icon)
