@@ -78,7 +78,7 @@ class Filechooser(GObject.GObject):
         )
 
         # Retrieve frequently used objects
-        self.nav_box = self.builder.get_object('hbox1')
+        self.nav_box = self.builder.get_object('nav_box')
         self.eject_column = self.builder.get_object('eject_col')
         file_adj = self.builder.get_object('fileview')
         self.file_vadj = file_adj.get_vadjustment()
@@ -134,7 +134,7 @@ class Filechooser(GObject.GObject):
 
 
     # Have to do this once realized so sizes will have been allocated
-    def on_vbox1_realize(self, widget):
+    def on_filechooser_realize(self, widget):
         self._update_bookmarks()
         self._fill_file_liststore(self._cur_dir)
 
@@ -145,13 +145,13 @@ class Filechooser(GObject.GObject):
         btn_dict = self.nav_btn_path_dict
         for i in range(10):
             btn = Gtk.Button()
+            btn.set_name('nav_btn')
             btn.connect('clicked', self.on_nav_btn_clicked)
             btn.set_can_focus(False)
             btn.set_use_underline(False)
             btn_list.append(btn)
             box.pack_start(btn, False, False, 0)
             btn_dict[btn] = ''
-            self.nav_box.show_all()
 
     def _update_nav_buttons(self, path=None):
         if path is None:
@@ -159,8 +159,9 @@ class Filechooser(GObject.GObject):
         places = path.split('/')[1:]
         path = '/'
         for btn in self.nav_btn_list:
-            pass #btn.hide()
+            btn.hide()
         w_needed = 0
+        w_allowed = self.nav_box.get_allocated_width()
         for i, place in enumerate(places):
             btn = self.nav_btn_list[i]
             btn.set_label(place)
@@ -169,7 +170,6 @@ class Filechooser(GObject.GObject):
             btn.show()
             w_needed += btn.get_allocated_width()
             print place, w_needed
-        w_allowed = self.nav_box.get_allocated_width()
         print 'W allowed', w_allowed
         if w_needed > w_allowed:
             self.builder.get_object('goto_root').hide()
