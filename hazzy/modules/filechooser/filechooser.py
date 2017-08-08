@@ -64,6 +64,19 @@ class Filechooser(GObject.GObject):
         self.builder.add_from_file(os.path.join(UIDIR, "filechooser_4.glade"))
         self.builder.connect_signals(self)
 
+
+        style_provider = Gtk.CssProvider()
+
+        with open(os.path.join("ui", "style.css"), 'rb') as css:
+            css_data = css.read()
+
+        style_provider.load_from_data(css_data)
+
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), style_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
         # Retrieve frequently used objects
         self.nav_box = self.builder.get_object('hbox1')
         self.eject_column = self.builder.get_object('eject_col')
@@ -90,8 +103,8 @@ class Filechooser(GObject.GObject):
         # Connect callbacks to VolumeMonitor
         self.mounts = Gio.VolumeMonitor.get()
         print self.mounts
-#        self.mounts.connect('mount-added', self.on_mount_added)
-#        self.mounts.connect('mount-removed', self.on_mount_removed)
+        self.mounts.connect('mount-added', self.on_mount_added)
+        self.mounts.connect('mount-removed', self.on_mount_removed)
 
         # Initialize objects
         #self.ok_cancel_dialog = Dialogs(DialogTypes.OK_CANCEL)
@@ -138,6 +151,7 @@ class Filechooser(GObject.GObject):
             btn_list.append(btn)
             box.pack_start(btn, False, False, 0)
             btn_dict[btn] = ''
+            self.nav_box.show_all()
 
     def _update_nav_buttons(self, path=None):
         if path is None:
@@ -598,6 +612,8 @@ class Filechooser(GObject.GObject):
         model = self.bookmark_liststore
         path, column = widget.get_cursor()
         fpath = model[path][2]
+        if fpath is None:
+            return
         if column == self.eject_column and model[path][3] == True:
             os.system('eject "{0}"'.format(fpath))
             if fpath == self._cur_dir:

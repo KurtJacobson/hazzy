@@ -78,9 +78,9 @@
         </child>
         <child>
           <object class="GtkBox" id="hbox1">
+            <property name="height_request">30</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
             <child>
               <placeholder/>
             </child>
