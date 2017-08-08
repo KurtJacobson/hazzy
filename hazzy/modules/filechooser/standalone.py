@@ -27,15 +27,20 @@ class Filechooser(object):
 
         # Glade setup
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("ui/standalone.glade")
-        self.window = self.builder.get_object("window1")
-        self.builder.connect_signals(self)
+        self.builder.add_from_file("ui/standalone_3.glade")
+
+        self.window = Gtk.Window()
+        box = self.builder.get_object('box')
+        self.window.add(box)
+        header = self.builder.get_object('header')
+        self.window.set_titlebar(header)
+        self.window.connect('delete_event', self.on_delete_event)
+
 
         # Filechooser setup
         self.filechooser = filechooser.Filechooser()
-        box = self.builder.get_object("hbox1")
+        box = self.builder.get_object("box")
         filechooser_widget = self.filechooser.get_filechooser_widget()
-        print filechooser_widget
         box.add(filechooser_widget)
 
         # Initialize keyboard if we found it
@@ -47,7 +52,6 @@ class Filechooser(object):
         self.filechooser.connect('selection-changed', self.on_file_selection_changed)
         self.filechooser.connect('filename-editing-started', self.on_file_name_editing_started)
         self.filechooser.connect('error', self.on_error)
-        self.builder.get_object('paste').set_sensitive(False)
 
         # Set up file ext filters
         self.filechooser.add_filter('gcode', ['.ngc', '.TAP', '.txt'])
@@ -103,7 +107,7 @@ class Filechooser(object):
             self.keyboard.show(entry, "", True)
 
     # Delete the window
-    def on_window1_delete_event(self, widget, event, data=None):
+    def on_delete_event(self, widget, event, data=None):
         self.window.destroy()
         Gtk.main_quit()
 

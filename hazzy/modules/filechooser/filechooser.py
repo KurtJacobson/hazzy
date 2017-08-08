@@ -61,7 +61,7 @@ class Filechooser(GObject.GObject):
 
         # Glade setup
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(UIDIR, "filechooser_4.glade"))
+        self.builder.add_from_file(os.path.join(UIDIR, "filechooser_3.glade"))
         self.builder.connect_signals(self)
 
 
@@ -77,6 +77,8 @@ class Filechooser(GObject.GObject):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
+        Gtk.TouchscreenMode = True
+
         # Retrieve frequently used objects
         self.nav_box = self.builder.get_object('nav_box')
         self.eject_column = self.builder.get_object('eject_col')
@@ -90,9 +92,9 @@ class Filechooser(GObject.GObject):
 
         # Retrieve treeviews
         self.file_treeview = self.builder.get_object("file_treeview")
-        self.bookmark_treeview = self.builder.get_object("bookmark_treeview")
 
-        self.bookmark_treeview.set_row_separator_func(self.bookmark_separator)
+        # 
+        self.bookmark_listbox = self.builder.get_object("bookmark_listbox")
 
         # Enable DnD TODO DnD is not implemented yet
         self.file_treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, \
@@ -102,7 +104,6 @@ class Filechooser(GObject.GObject):
 
         # Connect callbacks to VolumeMonitor
         self.mounts = Gio.VolumeMonitor.get()
-        print self.mounts
         self.mounts.connect('mount-added', self.on_mount_added)
         self.mounts.connect('mount-removed', self.on_mount_removed)
 
@@ -442,9 +443,10 @@ class Filechooser(GObject.GObject):
         mounts = self.mounts.get_mounts()
         paths = []
         for mount in mounts:
-            print mount.get_name()
             path = mount.get_root().get_path()
-            paths.append(path)
+            name = mount.get_name()
+            removable = mount.can_eject()
+            paths.append([path, name, removable])
         return paths
 
     # Get list of user bookmarks
@@ -608,18 +610,15 @@ class Filechooser(GObject.GObject):
             self._update_nav_buttons('')
         self._update_bookmarks()
 
-    def on_bookmark_treeview_cursor_changed(self, widget):
-        model = self.bookmark_liststore
-        path, column = widget.get_cursor()
-        fpath = model[path][2]
-        if fpath is None:
-            return
-        if column == self.eject_column and model[path][3] == True:
-            os.system('eject "{0}"'.format(fpath))
-            if fpath == self._cur_dir:
-                self.file_liststore.clear()
-            return
-        self._fill_file_liststore(fpath)
+    def on_eject_clicked(self, widget):
+        row = widget.get_parent().get_parent()
+        path = row.get_tooltip_text()
+        print path
+#        os.system('eject "{0}"'.format(fpath))
+#        if fpath == self._cur_dir:
+#            self.file_liststore.clear()
+#        return
+#        self._fill_file_liststore(fpath)
 
     def on_add_bookmark_button_release_event(self, widget, data=None):
         path = self.file_treeview.get_cursor()[0]
@@ -633,11 +632,11 @@ class Filechooser(GObject.GObject):
         self.add_bookmark(fpath)
 
     def on_remove_bookmark_button_release_event(self, widget, data=None):
-        path = self.bookmark_treeview.get_cursor()[0]
+        row = self.bookmark_listbox.get_selected_row()
+        path = row.get_tooltip_text()
         if path is None:
             return
-        fpath = self.bookmark_liststore[path][2]
-        self.remove_bookmark(fpath)
+        self.bookmark_listbox.remove(row)
 
     def _update_bookmarks(self):
         places = sorted(self.places, key=len, reverse=False)
@@ -646,30 +645,69 @@ class Filechooser(GObject.GObject):
         model = self.bookmark_liststore
         model.clear()
 
+        for child in self.bookmark_listbox.get_children():
+            self.bookmark_listbox.remove(child)
+
         # Add the places
         for path in places:
-            name = os.path.split(path)[1]
             icon = self.icons.get_for_directory(path)
-            model.append([icon, name, path, False])
+            self.add_listbox_row(icon, path)
 
         # Add the mounts
-        for path in mounts:
-            name = os.path.split(path)[1]
+        for mount in mounts:
+            path, name, removable = mount
             icon = self.icons.get_for_device('USBdrive')
-            model.append([icon, name, path, True])
+            self.add_listbox_row(icon, path, name, removable)
 
         # Add the seperator
         model.append([None, None, None, False])
+
+        row = Gtk.ListBoxRow()
+        separator = Gtk.Separator()
+        print separator
+        row.add(separator)
+        self.bookmark_listbox.add(row)
 
         # Add the bookmarks
         for bookmark in bookmarks:
             path, name = bookmark
             if not os.path.exists(path):
                 continue
-            if name == '':
-                name = os.path.split(path)[1]
             icon = self.icons.get_for_directory(path)
-            model.append([icon, name, path, False])
+            self.add_listbox_row(icon, path, name)
+
+        self.bookmark_listbox.show_all()
+
+
+    def add_listbox_row(self, icon, path, name=None, removable_media=False):
+        if not name or name == '':
+            name = os.path.split(path)[1]
+        row = Gtk.ListBoxRow()
+        row.set_tooltip_text(path)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        row.add(hbox)
+
+        # Add icon
+        image = Gtk.Image.new_from_pixbuf(icon)
+        hbox.pack_start(image, False, False, 0)
+
+        # Add label
+        label = Gtk.Label()
+        label.set_text(name)
+        label.set_xalign(0)
+        hbox.pack_start(label, True, True, 4)
+
+        # Add media eject button
+        if removable_media:
+            icon = self.icons.get_for_device('media-eject')
+            image = Gtk.Image.new_from_pixbuf(icon)
+            btn = Gtk.Button()
+            btn.connect('clicked', self.on_eject_clicked)
+            btn.set_name('eject')
+            btn.set_image(image)
+            hbox.pack_start(btn, False, False, 0)
+
+        self.bookmark_listbox.add(row)
 
     # Generate sort key based on file basename
     def sort(self, path):
@@ -678,6 +716,10 @@ class Filechooser(GObject.GObject):
     # If name is None row should be a separator
     def bookmark_separator(self, model, iter):
         return self.bookmark_liststore.get_value(iter, 1) is None
+
+    def on_bookmark_activated(self, widget, data=None):
+        path = data.get_tooltip_text()
+        self._fill_file_liststore(path)
 
     # =======================================
     #   File utilities

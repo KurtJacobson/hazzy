@@ -26,6 +26,7 @@ from gi.repository import Gio
 import mimetypes
 import userdirectories
 
+ICONSIZE = 24
 
 class Icons():
 
@@ -36,9 +37,9 @@ class Icons():
 
         # get default directory  icon
         if self.theme.has_icon('folder'):
-            self.default_icon = self.theme.load_icon('folder', 16, 0)
+            self.default_icon = self.theme.load_icon('folder', ICONSIZE, 0)
         else:
-            self.default_icon = self.theme.load_icon(Gtk.STOCK_DIRECTORY, 16, 0)
+            self.default_icon = self.theme.load_icon(Gtk.STOCK_DIRECTORY, ICONSIZE, 0)
 
         self._user_directories = {}
         self._prepare_icons()
@@ -65,7 +66,7 @@ class Icons():
 
             # check if icon exists
             if self.theme.has_icon(icon_name):
-                icon = self.theme.load_icon(icon_name, 16, 0)
+                icon = self.theme.load_icon(icon_name, ICONSIZE, 0)
             else:
                 icon = self.default_icon
 
@@ -74,7 +75,7 @@ class Icons():
         # add user home directory
         home = self.userdirs.get_home_directory()
         if self.theme.has_icon('user-home'):  # 'folder-home'
-            icon = self.theme.load_icon('user-home', 16, 0)
+            icon = self.theme.load_icon('user-home', ICONSIZE, 0)
         else:
             icon = self.default_icon
         self._user_directories[home] = icon
@@ -88,18 +89,21 @@ class Icons():
         mime = Gio.content_type_guess(fname)
         if mime:
             icon_name = Gio.content_type_get_icon(str(mime))
-            icon = self.theme.choose_icon(icon_name.get_names(), 16, 0)
+            icon = self.theme.choose_icon(icon_name.get_names(), ICONSIZE, 0)
             if icon:
                 return Gtk.IconInfo.load_icon(icon)
             else:
                 name = Gtk.STOCK_FILE
         else:
             name = Gtk.STOCK_FILE
-        return self.theme.load_icon(name, 16, 0)
+        return self.theme.load_icon(name, ICONSIZE, 0)
 
 
     # TODO expand for other devices
     def get_for_device(self, name):
         if name == "USBdrive":
             if self.theme.has_icon('drive-removable-media'):
-                return self.theme.load_icon('drive-removable-media', 16, 0)
+                return self.theme.load_icon('drive-removable-media', ICONSIZE, 0)
+        if name == "media-eject":
+            if self.theme.has_icon('media-eject'):
+                return self.theme.load_icon('media-eject', ICONSIZE, 0)
