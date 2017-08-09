@@ -28,24 +28,18 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 gi.require_version('Gdk', '3.0')
 from gi.repository import Gdk
-
 from gi.repository import GObject
-import logging
-
-log = logging.getLogger("HAZZY.KEYBOARD")
-
-log.setLevel(logging.DEBUG)
-
-# Add console handler
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-log.addHandler(ch)
 
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(PYDIR, 'ui')
 HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 sys.path.insert(1, HAZZYDIR)
+
+import logger
+
+log = logger.get_logger("HAZZY.KEYBOARD")
+logger.set_level('INFO')
 
 _keymap = Gdk.Keymap.get_default()
 
@@ -72,6 +66,7 @@ class Keyboard():
         self.window.set_keep_above(True)
         self.window.add(keyboard)
 
+        log.info("setting up keyboard")
 
         style_provider = Gtk.CssProvider()
 
@@ -197,7 +192,7 @@ class Keyboard():
 
         except Exception as e:
             log.exception(e)
-            #log.error("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
+            log.error("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
             self.window.hide()
 
         # Unshift if left shift is active, right shift is "sticky"

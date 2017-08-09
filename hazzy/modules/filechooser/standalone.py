@@ -45,7 +45,7 @@ class Filechooser(object):
 
         # Initialize keyboard if we found it
         if KEYBOARD:
-            self.keyboard = Keyboard()
+            self.keyboard = Keyboard
 
         # Connect signals emited by filechooser
         self.filechooser.connect('file-activated', self.on_file_activated)
@@ -104,7 +104,7 @@ class Filechooser(object):
 
     def on_file_name_editing_started(self, widget, entry):
         if KEYBOARD:
-            self.keyboard.show(entry, "", True)
+            self.keyboard.show(entry, True)
 
     # Delete the window
     def on_delete_event(self, widget, event, data=None):

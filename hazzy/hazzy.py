@@ -34,13 +34,15 @@ import pango              # Needed for font settings
 import gladevcp.makepins  # To make HAL pins and set up updating for them
 import linuxcnc           # To get our own error system
 import gobject            # Needed to add the timer for periodic
-import logging            # Needed for logging errors
 import math
 
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 INIFILE = sys.argv[2]                               # Path to .ini file
 CONFIGDIR = os.path.dirname(INIFILE)                # Path to config dir
+
+# Path to TCL for external programs eg. halshow
+TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
 # We use __file__ to get the file dir so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
@@ -53,30 +55,11 @@ sys.path.insert(1, HAZZYDIR)
 sys.path.insert(2, MODULEDIR)
 
 # Set up logging
-from colored_log import ColoredFormatter
-
-# Create logger
-log = logging.getLogger("HAZZY")
-log.setLevel(logging.DEBUG)
-
-# Add console handler
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-cf = ColoredFormatter("[%(name)s][%(levelname)s]  %(message)s (%(filename)s:%(lineno)d)")
-ch.setFormatter(cf)
-log.addHandler(ch)
-
-# Add file handler
-fh = logging.FileHandler('hazzy.log')
-fh.setLevel(logging.DEBUG)
-ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(ff)
-log.addHandler(fh)
-
+import logger
+log = logger.get_logger('HAZZY')
 
 log.info("The hazzy directory is: ".format(HAZZYDIR))
 log.info("The config dir is: ".format(CONFIGDIR))
-
 
 # Now we have the path to our own modules so we can import them
 import widgets                  # Norbert's module for geting objects
@@ -93,8 +76,7 @@ from modules.dialogs.dialogs import Dialogs, DialogTypes
 from modules.gcodeview.gcodeview import GcodeView
 from modules.hazzygremlin.hazzygremlin import HazzyGremlin
 
-# Path to TCL for external programs eg. halshow
-TCLPATH = os.environ['LINUXCNC_TCL_DIR']
+
 
 # Init error dialog
 error_dialog = Dialogs(DialogTypes.ERROR)
