@@ -39,6 +39,7 @@
       <object class="GtkBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="margin_bottom">5</property>
         <child>
           <object class="GtkButton" id="arrow_left">
             <property name="visible">True</property>
@@ -124,7 +125,7 @@
       <object class="GtkPaned">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="position">150</property>
+        <property name="position">160</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
