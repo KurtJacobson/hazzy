@@ -51,12 +51,13 @@ MODULEDIR = os.path.join(HAZZYDIR, 'modules')
 MAINDIR = os.path.dirname(HAZZYDIR)
 
 # Set system path so we can find our own modules
-sys.path.insert(1, HAZZYDIR)
-sys.path.insert(2, MODULEDIR)
+if not HAZZYDIR in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
 
 # Set up logging
 import logger
-log = logger.get_logger('HAZZY')
+log = logger.get('HAZZY')
 
 log.info("The hazzy directory is: ".format(HAZZYDIR))
 log.info("The config dir is: ".format(CONFIGDIR))
