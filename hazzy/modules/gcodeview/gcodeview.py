@@ -20,27 +20,33 @@
 
 import os
 import sys
-import logging
-
 import gi
-from gi.repository import GObject
+
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 gi.require_version('Gdk', '3.0')
-from gi.repository import Gdk
 gi.require_version('GtkSource', '3.0')
+
+from gi.repository import GObject
+from gi.repository import Gtk
+from gi.repository import Gdk
 from gi.repository import GtkSource
 
-
-#from preferences import Preferences
-#from modules.touchpads.keyboard import Keyboard
-
-log = logging.getLogger("HAZZY.GCODEVIEW")
-
 # Set up paths
-PYDIR = os.path.dirname(os.path.realpath(__file__))
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+if not HAZZYDIR in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
 LANGDIR = os.path.join(PYDIR, 'gcode_highlight', "language-specs")
 STYLEDIR = os.path.join(PYDIR, 'gcode_highlight', "styles")
+
+# Import our own modules
+from preferences import Preferences
+from modules.touchpads.keyboard import Keyboard
+
+# Setup logger
+import logger
+log = logger.get("HAZZY.GCODEVIEW")
 
 
 class GcodeView(GObject.GObject,):

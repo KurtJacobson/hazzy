@@ -2,23 +2,23 @@
 
 # For stand-alone testing of the filechooser
 
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 import os
 import sys
+import gi
+
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
+
+
+# Setup paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+if not HAZZYDIR in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
+# Imoport our own modules
 import filechooser
-
-
-MODULEDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-sys.path.insert(1, MODULEDIR)
-
-try:
-    from touchpads.keyboard import Keyboard
-    KEYBOARD = True
-except:
-    KEYBOARD = False
-    print("Keyboard not available for testing")
+from modules.touchpads.keyboard import Keyboard
 
 
 class Filechooser(object):
@@ -43,9 +43,8 @@ class Filechooser(object):
         filechooser_widget = self.filechooser.get_filechooser_widget()
         box.add(filechooser_widget)
 
-        # Initialize keyboard if we found it
-        if KEYBOARD:
-            self.keyboard = Keyboard
+        # Initialize keyboard
+        self.keyboard = Keyboard
 
         # Connect signals emited by filechooser
         self.filechooser.connect('file-activated', self.on_file_activated)
@@ -103,8 +102,7 @@ class Filechooser(object):
         print("Selection changed: " + path)
 
     def on_file_name_editing_started(self, widget, entry):
-        if KEYBOARD:
-            self.keyboard.show(entry, True)
+        self.keyboard.show(entry, True)
 
     # Delete the window
     def on_delete_event(self, widget, event, data=None):

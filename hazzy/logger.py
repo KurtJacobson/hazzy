@@ -23,9 +23,11 @@
 import logging
 from colored_log import ColoredFormatter
 
-def get_logger(name):
+# Get logger for module with name 'name'
+def get(name):
     return logging.getLogger(name)
 
+# Set global logging level
 def set_level(level):
     base_log.setLevel(getattr(logging, level))
     log.info('Base log level set to {}'.format(level))
@@ -49,5 +51,6 @@ ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(ff)
 base_log.addHandler(fh)
 
-log = get_logger('HAZZY.LOGGER')
-log.info('Logging setup complete')
+# Get logger for logger
+log = get('HAZZY.LOGGER')
+log.info('Logger setup complete')

@@ -25,23 +25,28 @@ import sys
 import gi
 
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 gi.require_version('Gdk', '3.0')
+
+from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
 
+# Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-UIDIR = os.path.join(PYDIR, 'ui')
 HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+if not HAZZYDIR in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
+UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
-sys.path.insert(1, HAZZYDIR)
 
+# Setup logging
 import logger
+log = logger.get("HAZZY.KEYBOARD")
 
-log = logger.get_logger("HAZZY.KEYBOARD")
-logger.set_level('INFO')
 
 _keymap = Gdk.Keymap.get_default()
+
 
 def singleton(cls):
     return cls()
@@ -61,13 +66,13 @@ class Keyboard():
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
+
         keyboard = self.builder.get_object('keyboard')
-        self.window = self.builder.get_object('window') #Gtk.Window()
+        self.window = self.builder.get_object('window')
         self.window.set_keep_above(True)
         self.window.add(keyboard)
 
-        log.info("setting up keyboard")
-
+        # Setup CSS themeing
         style_provider = Gtk.CssProvider()
 
         with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
@@ -80,9 +85,8 @@ class Keyboard():
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
+
         self.wait_counter = 0
-
-
 
         self.letters = 'abcdefghijklmnopqrstuvwxyz' # Now I've said my abc's
 #                Don't remove the space character ^ It's named ' ' in glade too!

@@ -22,32 +22,38 @@
 import os
 import sys
 import shutil
-import logging
 import gi
 
-from gi.repository import GObject
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 gi.require_version('Gdk', '3.0')
-from gi.repository import Gdk
 gi.require_version('Gio', '2.0')
+
+from gi.repository import GObject
+from gi.repository import Gtk
+from gi.repository import Gdk
 from gi.repository import Gio
 
 from datetime import datetime
 
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-UIDIR = os.path.join(PYDIR, 'ui')
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-STYLEDIR = os.path.join(HAZZYDIR, 'themes')
-sys.path.insert(1, HAZZYDIR)
 
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+if not HAZZYDIR in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
+UIDIR = os.path.join(PYDIR, 'ui')
+STYLEDIR = os.path.join(HAZZYDIR, 'themes')
+
+# Import our own modules
 from move2trash import move2trash
 from userdirectories import UserDirectories
 from bookmarks import BookMarks
 from icons import Icons
 #from modules.dialogs.dialogs import Dialogs, DialogTypes
 
-log = logging.getLogger("HAZZY.FILECHOOSER")
+# Setup logging
+import logger
+log = logger.get("HAZZY.FILECHOOSER")
 
 
 class Filechooser(GObject.GObject):
