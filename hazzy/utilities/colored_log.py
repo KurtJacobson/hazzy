@@ -92,28 +92,28 @@ class ColoredFormatter(Formatter):
 
 # ********* Example Usage *********
 
-import logging
-
-# Create logger
-log = logging.getLogger(__name__)
-
-# Add console handler
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-cf = ColoredFormatter("[%(name)s][%(levelname)s]  %(message)s (%(filename)s:%(lineno)d)")
-ch.setFormatter(cf)
-log.addHandler(ch)
-
-# Add file handler
-fh = logging.FileHandler('hazzy.log')
-fh.setLevel(logging.DEBUG)
-ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(ff)
-log.addHandler(fh)
-
-
 if __name__ == '__main__':
+
+    import logging
+
+    # Create logger
+    log = logging.getLogger(__name__)
     log.setLevel(logging.DEBUG)
+
+    # Add console handler
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    cf = ColoredFormatter("[%(name)s][%(levelname)s]  %(message)s (%(filename)s:%(lineno)d)")
+    ch.setFormatter(cf)
+    log.addHandler(ch)
+
+    # Add file handler
+    fh = logging.FileHandler('hazzy.log')
+    fh.setLevel(logging.DEBUG)
+    ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(ff)
+    log.addHandler(fh)
+
     log.debug('Spindle has been green$STARTED')
     log.info('Spindle has been red$STOPED')
     log.warning('warning')

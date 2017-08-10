@@ -52,7 +52,7 @@ from icons import Icons
 #from modules.dialogs.dialogs import Dialogs, DialogTypes
 
 # Setup logging
-import logger
+from utilities import logger
 log = logger.get("HAZZY.FILECHOOSER")
 
 

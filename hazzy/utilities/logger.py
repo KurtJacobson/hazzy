@@ -20,8 +20,14 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import logging
 from colored_log import ColoredFormatter
+
+PYDIR = os.path.dirname(os.path.realpath(__file__))
+HAZZYDIR = os.path.dirname(PYDIR)
+
+defualt_log_file = os.path.join(HAZZYDIR, 'hazzy.log')
 
 # Get logger for module with name 'name'
 def get(name):
@@ -45,7 +51,7 @@ base_log.addHandler(ch)
 
 # Add file handler 
 # TODO add support for setting log file path
-fh = logging.FileHandler('hazzy.log')
+fh = logging.FileHandler(defualt_log_file)
 fh.setLevel(logging.DEBUG)
 ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(ff)
