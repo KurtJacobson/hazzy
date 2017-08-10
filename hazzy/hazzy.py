@@ -106,7 +106,7 @@ class Hazzy:
 
         # Glade setup
         gladefile = os.path.join(IMAGEDIR, 'hazzy.glade')
-        self.builder = gtk.Builder()
+        self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
         self.widgets = widgets.Widgets(self.builder)
@@ -169,7 +169,7 @@ class Hazzy:
         self.tool_table = self.get_ini_info.get_tool_table()
         # CYCLE_TIME = time, in ms, that display will sleep between polls
         # cycle_time = self.get_ini_info.get_cycle_time() # Defaults to 50ms
-        gobject.timeout_add(75, self._fast_periodic)
+        GObject.timeout_add(75, self._fast_periodic)
 
         # Set the conversions used for changing the DRO units
         # Only convert linear axes (XYZUVW), use factor of unity for ABC
@@ -258,11 +258,11 @@ class Hazzy:
         self.keypad_on_edit = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES")
 
         # [FONTS]
-        self.mdi_font = pango.FontDescription(self.prefs.getpref("FONTS", "MDI_FONT", 'dejavusans condensed 14', str))
-        self.dro_font = pango.FontDescription(self.prefs.getpref("FONTS", "DRO_FONT", 'dejavusans condensed 16', str))
-        self.abs_font = pango.FontDescription(self.prefs.getpref("FONTS", "ABS_FONT", 'dejavusans condensed 12', str))
-        self.vel_font = pango.FontDescription(self.prefs.getpref("FONTS", "VEL_FONT", 'dejavusans condensed 14', str))
-        self.label_font = pango.FontDescription(self.prefs.getpref("FONTS", "LABEL_FONT", 'NimbusSansL 10', str))
+        self.mdi_font = Pango.FontDescription(self.prefs.getpref("FONTS", "MDI_FONT", 'dejavusans condensed 14', str))
+        self.dro_font = Pango.FontDescription(self.prefs.getpref("FONTS", "DRO_FONT", 'dejavusans condensed 16', str))
+        self.abs_font = Pango.FontDescription(self.prefs.getpref("FONTS", "ABS_FONT", 'dejavusans condensed 12', str))
+        self.vel_font = Pango.FontDescription(self.prefs.getpref("FONTS", "VEL_FONT", 'dejavusans condensed 14', str))
+        self.label_font = Pango.FontDescription(self.prefs.getpref("FONTS", "LABEL_FONT", 'NimbusSansL 10', str))
 
         # [POS DROs]
         self.in_dro_plcs = self.prefs.getpref("POS DROs", "IN_DEC_PLCS", 4, int)
@@ -311,8 +311,8 @@ class Hazzy:
         '''
         for i in range(1, 7):
             label = self.widgets["spindle_label_%s" % i]
-            label.modify_font(pango.FontDescription('FreeSans 11'))
-            label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#262626'))
+            label.modify_font(Pango.FontDescription('FreeSans 11'))
+            label.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('#262626'))
         '''
 
         # List of labels in the spindle display area
@@ -325,8 +325,8 @@ class Hazzy:
         '''
         for i in spindle_dro_list:
             label = self.widgets[i]
-            label.modify_font(pango.FontDescription('dejavusans condensed 14'))
-            label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+            label.modify_font(Pango.FontDescription('dejavusans condensed 14'))
+            label.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('black'))
         '''
 
         # Initialize MDI entry
@@ -354,7 +354,7 @@ class Hazzy:
         # Set DRO fonts/colors
         for axis, dro in self.rel_dro_dict.iteritems():
             dro.modify_font(self.dro_font)
-            dro.modify_text(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+            dro.modify_text(Gtk.StateType.NORMAL, Gdk.Color('black'))
 
         self.dtg_dro_dict = {}
         for i in range(self.num_axes):
@@ -364,7 +364,7 @@ class Hazzy:
         # Set DTG DRO fonts/colors.
         for axis, dro in self.dtg_dro_dict.iteritems():
             dro.modify_font(self.dro_font)
-            dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+            dro.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('black'))
 
         self.abs_dro_dict = {}
         for i in range(self.num_axes):
@@ -375,7 +375,7 @@ class Hazzy:
         for axis, dro in self.abs_dro_dict.iteritems():
             dro.modify_font(self.abs_font)
             if not self.no_force_homing:
-                dro.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+                dro.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('red'))
 
         self.abs_dro_eventboxes_dict = {}
         for i in range(self.num_axes):
@@ -386,13 +386,13 @@ class Hazzy:
         for i in range(self.num_axes):
             label = self.widgets['dro_label_{0}'.format(i)]
             label.modify_font(self.mdi_font)
-            label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
+            label.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('#333333'))
             label.set_text(self.axis_letter_list[i])
 
         for i in ['rel_dro_label', 'dtg_dro_label', 'abs_dro_label', 'spindle_rpm_label']:
             label = self.widgets[i]
-            label.modify_font(pango.FontDescription('dejavusans condensed 12'))
-            label.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('#333333'))
+            label.modify_font(Pango.FontDescription('dejavusans condensed 12'))
+            label.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('#333333'))
 
         # Joint DROs
         # Hide extra DROs
@@ -424,8 +424,8 @@ class Hazzy:
             btn = self.widgets['joint_home_btn_{0}'.format(joint)]
             self.home_joint_btn_list.append(btn)
 
-        # self.widgets.spindle_text.modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
-        # self.widgets.spindle_text.modify_font(pango.FontDescription('FreeSans condensed  14'))
+        # self.widgets.spindle_text.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('black'))
+        # self.widgets.spindle_text.modify_font(Pango.FontDescription('FreeSans condensed  14'))
         self.set_animation('reset_image', 'reset.gif')  # Set the initial animated reset image
 
         # Last things to init
@@ -787,7 +787,7 @@ class Hazzy:
         self.window.set_focus(None)
 
     def on_dro_key_press_event(self, widget, event, data=None):
-        if event.keyval == gtk.keysyms.Escape:
+        if event.keyval == Gdk.KEY_Escape:
             self.dro_has_focus = False
             self.window.set_focus(None)
 
@@ -874,7 +874,7 @@ class Hazzy:
         self.mdi_has_focus = False
 
     def on_mdi_entry_key_press_event(self, widget, event): 
-        if event.keyval == gtk.keysyms.Escape:
+        if event.keyval == Gdk.KEY_Escape:
             self.window.set_focus(None)
 
     def on_mdi_entry_activate(self, widget):
@@ -1616,24 +1616,24 @@ class Hazzy:
         for joint in range(self.num_joints):
             if self.stat.joint[joint]['homed'] != 0:
                 homed_joints[joint] = 1 # 1 indicates homed
-                self.joint_pos_dro_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+                self.joint_pos_dro_list[joint].modify_fg(Gtk.StateType.NORMAL, Gdk.Color('black'))
                 self.joint_status_label_list[joint].set_text("homed")
                 self.home_joint_btn_list[joint].set_label("Unhome")
                 axis = self.joint_axis_dict[joint]
-                self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('black'))
+                self.abs_dro_dict[axis].modify_fg(Gtk.StateType.NORMAL, Gdk.Color('black'))
             elif self.stat.joint[joint]['homing'] != 0:
                 homed_joints[joint] = 2 # 2 indicates homing in progress
-                self.joint_pos_dro_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('yellow'))
+                self.joint_pos_dro_list[joint].modify_fg(Gtk.StateType.NORMAL, Gdk.Color('yellow'))
                 self.joint_status_label_list[joint].set_text("homing")
                 axis = self.joint_axis_dict[joint]
-                self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('yellow'))
+                self.abs_dro_dict[axis].modify_fg(Gtk.StateType.NORMAL, Gdk.Color('yellow'))
             else:
                 homed_joints[joint] = 0 # 0 indicates unhomed
-                self.joint_pos_dro_list[joint].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+                self.joint_pos_dro_list[joint].modify_fg(Gtk.StateType.NORMAL, Gdk.Color('red'))
                 self.joint_status_label_list[joint].set_text("unhomed")
                 self.home_joint_btn_list[joint].set_label("Home")
                 axis = self.joint_axis_dict[joint]
-                self.abs_dro_dict[axis].modify_fg(gtk.STATE_NORMAL, gtk.gdk.Color('red'))
+                self.abs_dro_dict[axis].modify_fg(Gtk.StateType.NORMAL, Gdk.Color('red'))
         self.homed_joints = homed_joints
 
     #TODO Make so does not run if it does not need to
@@ -1642,11 +1642,11 @@ class Hazzy:
             # An eventbox is placed over the editable DROs, if it is visible it blocks them from events 
             self.widgets.dro_mask.set_visible(True)
             for anum, dro in self.rel_dro_dict.iteritems():
-                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('#908e8e'))
+                dro.modify_base(Gtk.StateType.NORMAL, Gdk.Color('#908e8e'))
         else:
             self.widgets.dro_mask.set_visible(False)
             for joint, dro in self.rel_dro_dict.iteritems():
-                dro.modify_base(gtk.STATE_NORMAL, gtk.gdk.Color('white'))
+                dro.modify_base(Gtk.StateType.NORMAL, Gdk.Color('white'))
 
 
 # =========================================================
@@ -1655,7 +1655,7 @@ class Hazzy:
 
     def on_key_press_event(self, widget, event):
 
-        keyname = gtk.gdk.keyval_name(event.keyval)
+        keyname = Gdk.keyval_name(event.keyval)
 
         allow_jog = self.prefs.getpref("JOGGING", "USE_KEYBOARD", "YES")
         if allow_jog == False:
@@ -1697,7 +1697,7 @@ class Hazzy:
 
     def on_key_release_event(self, widget, event):
 
-        keyname = gtk.gdk.keyval_name(event.keyval)
+        keyname = Gdk.keyval_name(event.keyval)
 
         if self.stat.task_mode != linuxcnc.MODE_MANUAL:
             return
@@ -1880,7 +1880,7 @@ class Hazzy:
         self.set_state(linuxcnc.STATE_OFF)
         self.set_state(linuxcnc.STATE_ESTOP)
         log.info("Hazzy will now quit...")
-        gtk.main_quit()
+        Gtk.main_quit()
 
 # =========================================================
 # BEGIN - init functions
@@ -1890,8 +1890,8 @@ class Hazzy:
     def _init_window(self):
         self.window.connect( "key_press_event", self.on_key_press_event)
         self.window.connect( "key_release_event", self.on_key_release_event)
-        screen_w = gtk.gdk.Screen().get_width()
-        screen_h = gtk.gdk.Screen().get_height()
+        screen_w = Gdk.Screen().get_width()
+        screen_h = Gdk.Screen().get_height()
         if screen_w > 1024 and screen_h > 768:
             log.debug("Screen size: {0}x{1} Decorating the window"
                   .format(str(screen_w), str(screen_h)))
@@ -1902,7 +1902,7 @@ class Hazzy:
 
 
 def main():
-    gtk.main()
+    Gtk.main()
 
 if __name__ == "__main__":
     ui = Hazzy()
