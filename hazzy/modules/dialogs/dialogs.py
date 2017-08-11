@@ -22,9 +22,11 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-
-import gtk
 import os
+import gi
+
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk
 
 pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, "ui")
@@ -36,7 +38,7 @@ class DialogTypes():
     ERROR = 2
 
 
-class Dialogs(gtk.Dialog):
+class Dialogs(Gtk.Dialog):
     """ A object that creates various kinds of dialogs """
 
     def __init__(self, dialog_type=DialogTypes.YES_NO):
@@ -44,7 +46,7 @@ class Dialogs(gtk.Dialog):
             1 = ok/cancel,
             2 = error """
 
-        super(Dialogs, self).__init__()  # Initialize the gtk.Dialog super class
+        super(Dialogs, self).__init__()  # Initialize the Gtk.Dialog super class
 
         # Glade setup
         if dialog_type == DialogTypes.YES_NO or dialog_type == DialogTypes.OK_CANCEL:
@@ -52,7 +54,7 @@ class Dialogs(gtk.Dialog):
         else:
             gladefile = os.path.join(UIDIR, 'error_dialog.glade')
 
-        self.builder = gtk.Builder()
+        self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
 
@@ -75,14 +77,14 @@ class Dialogs(gtk.Dialog):
 
         self.result = True
         self.dialog_window.hide()
-        gtk.main_quit()
+        Gtk.main_quit()
 
     def on_button2_clicked(self, widget, data=None):
         """ NO/CANCEL Buttons"""
 
         self.result = False
         self.dialog_window.hide()
-        gtk.main_quit()
+        Gtk.main_quit()
 
     def run(self, message):
         """ Show the Dialog only if not already running """
@@ -91,7 +93,7 @@ class Dialogs(gtk.Dialog):
             self.running = True
             self.message_label.set_text(message)
             self.dialog_window.show()
-            gtk.main()
+            Gtk.main()
             self.running = False
 
         return self.result

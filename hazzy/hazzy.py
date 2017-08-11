@@ -27,14 +27,23 @@
 
 import traceback          # Needed to launch traceback errors
 import hal                # Base hal class to react to hal signals
-import gtk                # Base for pygtk widgets
 import sys                # Handle system calls
 import os                 # Needed to get the paths and directories
-import pango              # Needed for font settings
-import gladevcp.makepins  # To make HAL pins and set up updating for them
+#import gladevcp.makepins  # To make HAL pins and set up updating for them
 import linuxcnc           # To get our own error system
-import gobject            # Needed to add the timer for periodic
 import math
+
+import gi
+
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
+
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GObject
+from gi.repository import Pango
+
+
 
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
@@ -44,7 +53,7 @@ CONFIGDIR = os.path.dirname(INIFILE)                # Path to config dir
 # Path to TCL for external programs eg. halshow
 TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
-# We use __file__ to get the file dir so we can run from any location
+# Get actual paths so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
 IMAGEDIR = os.path.join(HAZZYDIR, 'images')
 MODULEDIR = os.path.join(HAZZYDIR, 'modules')
@@ -71,11 +80,11 @@ import simpleeval               # Used to evaluate expressions in numeric entrie
 
 # Import modules
 from modules.touchpads.keyboard import Keyboard
-from modules.touchpads.touchpad import Touchpad
+#from modules.touchpads.touchpad import Touchpad
 from modules.filechooser.filechooser import Filechooser
 from modules.dialogs.dialogs import Dialogs, DialogTypes
 from modules.gcodeview.gcodeview import GcodeView
-from modules.hazzygremlin.hazzygremlin import HazzyGremlin
+#from modules.hazzygremlin.hazzygremlin import HazzyGremlin
 
 
 
@@ -134,8 +143,8 @@ class Hazzy:
         # Hazzy Modules init
         self.gcode_view = GcodeView(preview=False)
         self.gcode_preview = GcodeView(preview=True)
-        self.float_touchpad = Touchpad("float")
-        self.int_touchpad = Touchpad("int")
+        #self.float_touchpad = Touchpad("float")
+        #self.int_touchpad = Touchpad("int")
         self.keyboard = Keyboard
         self.keyboard.set_parent(self.window)
         self.filechooser = Filechooser()
@@ -154,7 +163,7 @@ class Hazzy:
 
         self.hal.newpin('coolant', hal.HAL_BIT, hal.HAL_OUT)
         self.hal.newpin('error', hal.HAL_BIT, hal.HAL_OUT)
-        panel = gladevcp.makepins.GladePanel(self.hal, gladefile, self.builder, None)
+        #panel = gladevcp.makepins.GladePanel(self.hal, gladefile, self.builder, None)
 
         self.hal.ready()
 
@@ -253,8 +262,8 @@ class Hazzy:
 
         # [POP-UP KEYPAD]        
         self.keypad_on_mdi = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_MDI", "YES")
-        self.keypad_on_dro = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_DRO", "YES")
-        self.keypad_on_offsets = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_OFFSETS", "YES")
+        self.keypad_on_dro = False #self.prefs.getpref("POP-UP KEYPAD", "USE_ON_DRO", "YES")
+        self.keypad_on_offsets = False #self.prefs.getpref("POP-UP KEYPAD", "USE_ON_OFFSETS", "YES")
         self.keypad_on_edit = self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES")
 
         # [FONTS]
@@ -529,11 +538,11 @@ class Hazzy:
         if self.stat.program_units != 1:
             if self.display_units != 'mm':
                 self.display_units = 'mm'
-                self.gremlin.set_display_units('mm')
+#                self.gremlin.set_display_units('mm')
         else:
             if self.display_units != 'in':
                 self.display_units = 'in'
-                self.gremlin.set_display_units('in')
+#                self.gremlin.set_display_units('in')
 
         # Update velocity DROs
         self._update_vel()
@@ -708,8 +717,8 @@ class Hazzy:
             if self.is_homed():
                 self.issue_mdi('M30')
                 self.gcode_view.set_line_number(1)
-                self.gremlin.clear_live_plotter()
-                self.gremlin.set_view('z')
+#                self.gremlin.clear_live_plotter()
+#                self.gremlin.set_view('z')
             self.set_mode(linuxcnc.MODE_MANUAL)
 
 
@@ -888,11 +897,10 @@ class Hazzy:
             self.window.set_focus(None)
 
     def on_button1_clicked(self, widget, data=None):
-        self.gremlin.expose()
+        pass
 
     def on_redraw_clicked(self, widget, data=None):
-        self.gremlin.expose()
-        #self.gremlin.load()
+        pass
 
 
 # =========================================================
@@ -904,17 +912,17 @@ class Hazzy:
 
     def _init_gremlin(self):
         w, h = self.widgets.grembox.get_size_request()
-        self.gremlin = HazzyGremlin(self.inifile, w, h)
+        #self.gremlin = HazzyGremlin(self.inifile, w, h)
         self.widgets.grembox.add(self.gremlin.gremlin_view)
         self.widgets.grembox.show_all()
 
-        self.gremlin.set_view('z')
-        self.gremlin.mouse_btn_mode = 2
-        #self.gremlin.set_display_units(self.machine_units)
-        self.gremlin.connect('gcode-error', self.on_gremlin_gcode_error)
-        self.gremlin.connect('line-clicked', self.on_gremlin_line_clicked)
-        self.gremlin.connect('loading_progress', self.on_gremlin_loading_progress_changed)
-        self.gremlin.use_commanded = not self.dro_actual_pos
+#        self.gremlin.set_view('z')
+#        self.gremlin.mouse_btn_mode = 2
+#        #self.gremlin.set_display_units(self.machine_units)
+#        self.gremlin.connect('gcode-error', self.on_gremlin_gcode_error)
+#        self.gremlin.connect('line-clicked', self.on_gremlin_line_clicked)
+#        self.gremlin.connect('loading_progress', self.on_gremlin_loading_progress_changed)
+#        self.gremlin.use_commanded = not self.dro_actual_pos
 
     def on_gremlin_gcode_error(self, widget, fname, lnum, text):
         msg = "{2} near line {1} of '{0}'".format(fname, lnum, text)
@@ -933,8 +941,8 @@ class Hazzy:
         # Switch modes to cause an interp sync
         self.set_mode(linuxcnc.MODE_MANUAL)
         self.set_mode(linuxcnc.MODE_MDI)
-        self.gremlin.clear_live_plotter()
-        self.gremlin.load()
+#        self.gremlin.clear_live_plotter()
+#        self.gremlin.load()
 
 # =========================================================
 # BEGIN - [File] notebook page button handlers
@@ -1036,7 +1044,7 @@ class Hazzy:
         self.gcode_view.load_file(fname)
         self.command.program_open(fname)
         self.widgets.gcode_file_label.set_text(fname)
-        self.gremlin.load()
+#        self.gremlin.load()
         log.debug("NGC file loaded: {0}".format(fname))
 
     def on_file_name_editing_started(self, widget, entry):

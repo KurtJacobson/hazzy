@@ -27,7 +27,9 @@ from colored_log import ColoredFormatter
 PYDIR = os.path.dirname(os.path.realpath(__file__))
 HAZZYDIR = os.path.dirname(PYDIR)
 
-defualt_log_file = os.path.join(HAZZYDIR, 'hazzy.log')
+# TODO Get log file path from INI
+log_file = os.path.join(HAZZYDIR, 'hazzy.log')
+
 
 # Get logger for module with name 'name'
 def get(name):
@@ -51,7 +53,7 @@ base_log.addHandler(ch)
 
 # Add file handler 
 # TODO add support for setting log file path
-fh = logging.FileHandler(defualt_log_file)
+fh = logging.FileHandler(log_file)
 fh.setLevel(logging.DEBUG)
 ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 fh.setFormatter(ff)
@@ -59,4 +61,4 @@ base_log.addHandler(fh)
 
 # Get logger for logger
 log = get('HAZZY.LOGGER')
-log.info('Logger setup complete')
+log.info('Logging to "{}"'.format(log_file))

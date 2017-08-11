@@ -30,15 +30,19 @@
 from linuxcnc import ini
 import os
 import sys
-import logging
+import logger
 
-log = logging.getLogger("HAZZY.GETINI")
+log = logger.get("HAZZY.GETINI")
 
-CONFIGPATH = os.environ['CONFIG_DIR']
-pydir = os.path.abspath(os.path.dirname(__file__))
-MAINDIR = os.path.dirname(pydir)
+CONFIGPATH = os.environ.get('CONFIG_DIR', None)
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.join(PYDIR, '../..')
 
 
+def singleton(cls):
+    return cls()
+
+@singleton
 class GetIniInfo:
 
     def __init__(self):
@@ -78,7 +82,7 @@ class GetIniInfo:
 
     def get_log_file_path(self):
         # we get the log file, if there is none given in the INI
-        # we use hazzy.pref in the config dir
+        # we use hazzy.log in the config dir
         temp = self.inifile.find("DISPLAY", "LOG_FILE_PATH")
         if not temp:
             machinename = self.inifile.find("EMC", "MACHINE")

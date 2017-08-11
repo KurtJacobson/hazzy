@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
-  <!-- interface-requires gladevcp 0.0 -->
-  <!-- interface-naming-policy toplevel-contextual -->
+  <requires lib="gtk+" version="3.0"/>
+  <requires lib="gladevcp" version="0.0"/>
   <object class="GtkAction" id="action1"/>
   <object class="GtkFileFilter" id="nc_file_filter"/>
   <object class="GtkFileFilter" id="ngc_file_filter"/>
@@ -74,8 +74,6 @@
                     <property name="height_request">373</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="hscrollbar_policy">automatic</property>
-                    <property name="vscrollbar_policy">automatic</property>
                     <child>
                       <placeholder/>
                     </child>
@@ -155,20 +153,20 @@
                     <child>
                       <object class="GtkButton" id="load_gcode">
                         <property name="label" translatable="yes">Load Gcode</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_load_gcode_clicked" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkButton" id="save_as">
                         <property name="label" translatable="yes">Save As</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_save_as_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -179,10 +177,10 @@
                     <child>
                       <object class="GtkButton" id="save">
                         <property name="label" translatable="yes">Save</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_save_file_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -193,10 +191,10 @@
                     <child>
                       <object class="GtkButton" id="cut">
                         <property name="label" translatable="yes">Cut</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_cut_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -207,10 +205,10 @@
                     <child>
                       <object class="GtkButton" id="copy">
                         <property name="label" translatable="yes">Copy</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_copy_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -221,10 +219,10 @@
                     <child>
                       <object class="GtkButton" id="paste">
                         <property name="label" translatable="yes">Paste</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_paste_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -235,10 +233,10 @@
                     <child>
                       <object class="GtkButton" id="delete">
                         <property name="label" translatable="yes">Delete</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_delete_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -249,10 +247,10 @@
                     <child>
                       <object class="GtkButton" id="new_folder">
                         <property name="label" translatable="yes">New Folder</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="receives_default">False</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_new_folder_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -269,12 +267,12 @@
                 <child>
                   <object class="GtkCheckButton" id="filter_ngc_chk">
                     <property name="label" translatable="yes">Filter .ngc</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="width_request">100</property>
                     <property name="height_request">25</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">False</property>
-                    <property name="use_action_appearance">False</property>
                     <property name="active">True</property>
                     <property name="draw_indicator">True</property>
                     <signal name="toggled" handler="on_filter_ngc_chk_toggled" swapped="no"/>
@@ -290,8 +288,6 @@
                     <property name="height_request">380</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="hscrollbar_policy">automatic</property>
-                    <property name="vscrollbar_policy">automatic</property>
                     <child>
                       <placeholder/>
                     </child>
@@ -353,8 +349,6 @@
                     <property name="height_request">380</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="hscrollbar_policy">automatic</property>
-                    <property name="vscrollbar_policy">automatic</property>
                     <child>
                       <object class="GtkTreeView" id="tooltable_treeview">
                         <property name="visible">True</property>
@@ -362,6 +356,9 @@
                         <property name="model">tool_liststore</property>
                         <property name="search_column">1</property>
                         <signal name="button-press-event" handler="on_treeview_button_press_event" swapped="no"/>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
                         <child>
                           <object class="GtkTreeViewColumn" id="select">
                             <child>
@@ -385,8 +382,8 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_num">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_tool_num_edited" swapped="no"/>
+                                <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
                               </object>
                               <attributes>
                                 <attribute name="cell-background">6</attribute>
@@ -401,8 +398,8 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_pocket">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_tool_pocket_edited" swapped="no"/>
+                                <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
                               </object>
                               <attributes>
                                 <attribute name="cell-background">6</attribute>
@@ -417,8 +414,8 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_dia">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_tool_dia_edited" swapped="no"/>
+                                <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
                               </object>
                               <attributes>
                                 <attribute name="cell-background">6</attribute>
@@ -433,8 +430,8 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_z_offset">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_z_offset_edited" swapped="no"/>
+                                <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
                               </object>
                               <attributes>
                                 <attribute name="cell-background">6</attribute>
@@ -449,8 +446,8 @@
                             <child>
                               <object class="GtkCellRendererText" id="cell_tool_remark">
                                 <property name="editable">True</property>
-                                <signal name="editing-started" handler="on_remark_editing_started" swapped="no"/>
                                 <signal name="edited" handler="on_tool_remark_edited" swapped="no"/>
+                                <signal name="editing-started" handler="on_remark_editing_started" swapped="no"/>
                               </object>
                               <attributes>
                                 <attribute name="cell-background">6</attribute>
@@ -480,8 +477,8 @@
                         <property name="height_request">20</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="yalign">1</property>
                         <property name="label" translatable="yes">Tool Table</property>
+                        <property name="yalign">1</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -490,11 +487,11 @@
                     <child>
                       <object class="GtkButton" id="reload_tt">
                         <property name="label" translatable="yes">Reload</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_load_tool_table_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -505,11 +502,11 @@
                     <child>
                       <object class="GtkButton" id="save_tt">
                         <property name="label" translatable="yes">Save</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_save_tool_table_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -522,8 +519,8 @@
                         <property name="height_request">20</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="yalign">1</property>
                         <property name="label" translatable="yes">Tool Entry</property>
+                        <property name="yalign">1</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -536,11 +533,11 @@
                     <child>
                       <object class="GtkButton" id="add_tool">
                         <property name="label" translatable="yes">Add</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_add_tool_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -551,11 +548,11 @@
                     <child>
                       <object class="GtkButton" id="delet_tool">
                         <property name="label" translatable="yes">Delete</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_delete_selected_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -568,8 +565,8 @@
                         <property name="height_request">20</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="yalign">1</property>
                         <property name="label" translatable="yes">Selected</property>
+                        <property name="yalign">1</property>
                         <attributes>
                           <attribute name="weight" value="bold"/>
                         </attributes>
@@ -582,11 +579,11 @@
                     <child>
                       <object class="GtkButton" id="change_to_selected">
                         <property name="label" translatable="yes">M6 T# G43</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_change_to_selected_tool_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -597,11 +594,11 @@
                     <child>
                       <object class="GtkButton" id="touchoff_selected">
                         <property name="label" translatable="yes">Touch Off</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="height_request">40</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                       </object>
                       <packing>
                         <property name="top_attach">8</property>
@@ -657,20 +654,20 @@
                     <child>
                       <object class="GtkButton" id="hal_show">
                         <property name="label" translatable="yes">HAL Show</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_hal_show_clicked" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkButton" id="calibration">
                         <property name="label" translatable="yes">Calibration</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_calibration_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -681,10 +678,10 @@
                     <child>
                       <object class="GtkButton" id="hal_meter">
                         <property name="label" translatable="yes">HAL Meter</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_hal_meter_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -695,10 +692,10 @@
                     <child>
                       <object class="GtkButton" id="status">
                         <property name="label" translatable="yes">Status</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_status_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -709,10 +706,10 @@
                     <child>
                       <object class="GtkButton" id="hal_scope">
                         <property name="label" translatable="yes">HAL Scope</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_hal_scope_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -723,10 +720,10 @@
                     <child>
                       <object class="GtkButton" id="classicladder">
                         <property name="label" translatable="yes">ClassicLadder</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
                         <signal name="clicked" handler="on_classicladder_clicked" swapped="no"/>
                       </object>
                       <packing>
@@ -764,27 +761,6 @@
           </packing>
         </child>
         <child>
-          <object class="HAL_HBar" id="halbar_spindle_load">
-            <property name="width_request">180</property>
-            <property name="height_request">25</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="bg_color">#bebebebebebe</property>
-            <property name="max">120</property>
-            <property name="target_color">#a0a02020f0f0</property>
-            <property name="value">25</property>
-            <property name="z0_border">0.75</property>
-            <property name="z0_color">#0000ffff0000</property>
-            <property name="z1_border">0.82999998331069946</property>
-            <property name="z1_color">#ffffffff0000</property>
-            <property name="z2_color">#ffff00000000</property>
-          </object>
-          <packing>
-            <property name="x">148</property>
-            <property name="y">644</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLabel" id="label1">
             <property name="width_request">127</property>
             <property name="height_request">20</property>
@@ -806,10 +782,10 @@
             <property name="height_request">30</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="xalign">0</property>
-            <property name="yalign">0</property>
             <property name="label" translatable="yes">Active G-codes</property>
             <property name="wrap">True</property>
+            <property name="xalign">0</property>
+            <property name="yalign">0</property>
           </object>
           <packing>
             <property name="x">354</property>
@@ -828,13 +804,11 @@
             <property name="caps_lock_warning">False</property>
             <property name="primary_icon_activatable">False</property>
             <property name="secondary_icon_activatable">False</property>
-            <property name="primary_icon_sensitive">True</property>
-            <property name="secondary_icon_sensitive">True</property>
-            <signal name="changed" handler="on_mdi_entry_changed" swapped="no"/>
             <signal name="activate" handler="on_mdi_entry_activate" swapped="no"/>
-            <signal name="key-press-event" handler="on_mdi_entry_key_press_event" swapped="no"/>
             <signal name="button-release-event" handler="on_mdi_entry_gets_focus" swapped="no"/>
+            <signal name="changed" handler="on_mdi_entry_changed" swapped="no"/>
             <signal name="focus-out-event" handler="on_mdi_entry_loses_focus" swapped="no"/>
+            <signal name="key-press-event" handler="on_mdi_entry_key_press_event" swapped="no"/>
           </object>
           <packing>
             <property name="x">16</property>
@@ -844,12 +818,12 @@
         <child>
           <object class="GtkToggleButton" id="togglebutton1">
             <property name="label" translatable="yes">TOGGLE</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">75</property>
             <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="use_action_appearance">False</property>
           </object>
           <packing>
             <property name="x">691</property>
@@ -859,12 +833,12 @@
         <child>
           <object class="GtkButton" id="exit_program">
             <property name="label" translatable="yes">EXIT</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">75</property>
             <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="use_action_appearance">False</property>
             <signal name="clicked" handler="on_exit_program_clicked" swapped="no"/>
           </object>
           <packing>
@@ -875,12 +849,12 @@
         <child>
           <object class="GtkButton" id="redraw">
             <property name="label" translatable="yes">REDRAW</property>
+            <property name="use_action_appearance">False</property>
             <property name="width_request">75</property>
             <property name="height_request">25</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="receives_default">True</property>
-            <property name="use_action_appearance">False</property>
             <signal name="clicked" handler="on_redraw_clicked" swapped="no"/>
           </object>
           <packing>
@@ -901,10 +875,10 @@
             <child>
               <object class="GtkCheckButton" id="opskip">
                 <property name="label" translatable="yes">OPSKIP</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="draw_indicator">True</property>
                 <signal name="pressed" handler="on_opskip_pressed" swapped="no"/>
               </object>
@@ -915,10 +889,10 @@
             <child>
               <object class="GtkCheckButton" id="opstop">
                 <property name="label" translatable="yes">OPSTOP</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="draw_indicator">True</property>
                 <signal name="pressed" handler="on_opstop_pressed" swapped="no"/>
               </object>
@@ -931,10 +905,10 @@
             <child>
               <object class="GtkCheckButton" id="step">
                 <property name="label" translatable="yes">STEP</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="draw_indicator">True</property>
                 <signal name="pressed" handler="on_step_clicked" swapped="no"/>
               </object>
@@ -947,10 +921,10 @@
             <child>
               <object class="GtkCheckButton" id="start_from_line">
                 <property name="label" translatable="yes">LINE</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
-                <property name="use_action_appearance">False</property>
                 <property name="draw_indicator">True</property>
               </object>
               <packing>
@@ -993,16 +967,16 @@
               <object class="GtkLabel" id="overide_lable_1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">1</property>
                 <property name="label" translatable="yes">FEED:</property>
+                <property name="xalign">1</property>
               </object>
             </child>
             <child>
               <object class="GtkLabel" id="overide_lable_2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">1</property>
                 <property name="label" translatable="yes">SPEED:</property>
+                <property name="xalign">1</property>
               </object>
               <packing>
                 <property name="top_attach">1</property>
@@ -1013,8 +987,8 @@
               <object class="GtkLabel" id="overide_lable_3">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">1</property>
                 <property name="label" translatable="yes">RAPID:</property>
+                <property name="xalign">1</property>
               </object>
               <packing>
                 <property name="top_attach">2</property>
@@ -1026,8 +1000,8 @@
                 <property name="width_request">40</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">100%</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1038,8 +1012,8 @@
               <object class="GtkLabel" id="spindle_override_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">100%</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1052,8 +1026,8 @@
               <object class="GtkLabel" id="rapid_override_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">100%</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1081,9 +1055,9 @@
               <object class="GtkLabel" id="spindle_label_4">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">1</property>
                 <property name="label" translatable="yes">PROG FEED:</property>
                 <property name="use_markup">True</property>
+                <property name="xalign">1</property>
               </object>
             </child>
             <child>
@@ -1091,8 +1065,8 @@
                 <property name="width_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">25</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1103,9 +1077,9 @@
               <object class="GtkLabel" id="spindle_label_5">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">1</property>
                 <property name="label" translatable="yes">ACT FEED:</property>
                 <property name="use_markup">True</property>
+                <property name="xalign">1</property>
               </object>
               <packing>
                 <property name="top_attach">1</property>
@@ -1117,8 +1091,8 @@
                 <property name="width_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">30</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1131,9 +1105,9 @@
               <object class="GtkLabel" id="spindle_label_6">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">1</property>
                 <property name="label" translatable="yes">ACT VEL:</property>
                 <property name="use_markup">True</property>
+                <property name="xalign">1</property>
               </object>
               <packing>
                 <property name="top_attach">2</property>
@@ -1145,8 +1119,8 @@
                 <property name="width_request">50</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">200</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1188,12 +1162,12 @@
         </child>
         <child>
           <object class="GtkButton" id="cycle_start">
+            <property name="use_action_appearance">False</property>
             <property name="width_request">100</property>
             <property name="height_request">45</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="use_action_appearance">False</property>
             <signal name="pressed" handler="on_cycle_start_pressed" swapped="no"/>
             <child>
               <object class="GtkImage" id="cycle_start_image">
@@ -1210,12 +1184,12 @@
         </child>
         <child>
           <object class="GtkButton" id="feed_hold">
+            <property name="use_action_appearance">False</property>
             <property name="width_request">100</property>
             <property name="height_request">45</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="use_action_appearance">False</property>
             <signal name="pressed" handler="on_feed_hold_pressed" swapped="no"/>
             <child>
               <object class="GtkImage" id="feed_hold_image">
@@ -1232,12 +1206,12 @@
         </child>
         <child>
           <object class="GtkButton" id="reset">
+            <property name="use_action_appearance">False</property>
             <property name="width_request">100</property>
             <property name="height_request">30</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="receives_default">False</property>
-            <property name="use_action_appearance">False</property>
             <signal name="clicked" handler="on_reset_pressed" swapped="no"/>
             <child>
               <object class="GtkImage" id="reset_image">
@@ -1265,8 +1239,8 @@
                 <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">State:</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="x_options"/>
@@ -1277,8 +1251,8 @@
                 <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">Interp:</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1291,8 +1265,8 @@
                 <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">Mode:</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="top_attach">1</property>
@@ -1305,8 +1279,8 @@
                 <property name="width_request">100</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="xalign">0</property>
                 <property name="label" translatable="yes">Motion:</property>
+                <property name="xalign">0</property>
               </object>
               <packing>
                 <property name="left_attach">1</property>
@@ -1357,8 +1331,8 @@
                     <property name="width_request">40</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0.75</property>
                     <property name="label" translatable="yes">#</property>
+                    <property name="xalign">0.75</property>
                     <attributes>
                       <attribute name="size" value="13000"/>
                     </attributes>
@@ -1381,12 +1355,10 @@
                     <property name="shadow_type">none</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
-                    <property name="primary_icon_sensitive">True</property>
-                    <property name="secondary_icon_sensitive">True</property>
                     <signal name="activate" handler="on_tool_number_entry_activate" swapped="no"/>
                     <signal name="button-release-event" handler="on_int_dro_gets_focus" swapped="no"/>
-                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                     <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
+                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                   </object>
                   <packing>
                     <property name="expand">True</property>
@@ -1420,13 +1392,19 @@
                 <property name="n_columns">2</property>
                 <property name="column_spacing">5</property>
                 <child>
+                  <placeholder/>
+                </child>
+                <child>
+                  <placeholder/>
+                </child>
+                <child>
                   <object class="GtkLabel" id="tool_diameter_label">
                     <property name="width_request">80</property>
                     <property name="height_request">22</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">DIAMETER:</property>
+                    <property name="xalign">1</property>
                   </object>
                 </child>
                 <child>
@@ -1434,8 +1412,8 @@
                     <property name="width_request">65</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">0.0625</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -1449,8 +1427,8 @@
                     <property name="height_request">22</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">LENGTH:</property>
+                    <property name="xalign">1</property>
                   </object>
                   <packing>
                     <property name="top_attach">1</property>
@@ -1461,8 +1439,8 @@
                   <object class="GtkLabel" id="tool_length">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">2.3874</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -1477,8 +1455,8 @@
                     <property name="height_request">22</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">CHIP LOAD:</property>
+                    <property name="xalign">1</property>
                   </object>
                   <packing>
                     <property name="top_attach">3</property>
@@ -1489,8 +1467,8 @@
                   <object class="GtkLabel" id="chip_load">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">0.0075</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -1505,8 +1483,8 @@
                     <property name="height_request">22</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">SURF SPD:</property>
+                    <property name="xalign">1</property>
                   </object>
                   <packing>
                     <property name="top_attach">2</property>
@@ -1517,8 +1495,8 @@
                   <object class="GtkLabel" id="surface_speed">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">0</property>
                     <property name="label" translatable="yes">250.0</property>
+                    <property name="xalign">0</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -1526,12 +1504,6 @@
                     <property name="top_attach">2</property>
                     <property name="bottom_attach">3</property>
                   </packing>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
                 </child>
               </object>
               <packing>
@@ -1566,12 +1538,10 @@
                 <property name="shadow_type">none</property>
                 <property name="primary_icon_activatable">False</property>
                 <property name="secondary_icon_activatable">False</property>
-                <property name="primary_icon_sensitive">True</property>
-                <property name="secondary_icon_sensitive">True</property>
                 <signal name="activate" handler="on_spindle_speed_entry_activate" swapped="no"/>
                 <signal name="button-release-event" handler="on_int_dro_gets_focus" swapped="no"/>
-                <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                 <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
+                <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -1833,10 +1803,10 @@
                 <child>
                   <object class="GtkButton" id="button1">
                     <property name="label" translatable="yes">Home All</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_home_all_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -1847,10 +1817,10 @@
                 <child>
                   <object class="GtkButton" id="joint_home_btn_0">
                     <property name="label" translatable="yes">Home</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_home_joint_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -1863,10 +1833,10 @@
                 <child>
                   <object class="GtkButton" id="joint_home_btn_1">
                     <property name="label" translatable="yes">Home</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_home_joint_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -1879,10 +1849,10 @@
                 <child>
                   <object class="GtkButton" id="joint_home_btn_2">
                     <property name="label" translatable="yes">Home</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_home_joint_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -1895,10 +1865,10 @@
                 <child>
                   <object class="GtkButton" id="joint_home_btn_3">
                     <property name="label" translatable="yes">Home</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_home_joint_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -1911,10 +1881,10 @@
                 <child>
                   <object class="GtkButton" id="joint_home_btn_4">
                     <property name="label" translatable="yes">Home</property>
+                    <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="use_action_appearance">False</property>
                     <signal name="clicked" handler="on_home_joint_clicked" swapped="no"/>
                   </object>
                   <packing>
@@ -1956,15 +1926,12 @@
                     <property name="invisible_char">●</property>
                     <property name="xalign">1</property>
                     <property name="shadow_type">none</property>
-                    <property name="invisible_char_set">True</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
-                    <property name="primary_icon_sensitive">True</property>
-                    <property name="secondary_icon_sensitive">True</property>
                     <signal name="activate" handler="on_dro_activate" swapped="no"/>
                     <signal name="button-release-event" handler="on_dro_gets_focus" swapped="no"/>
-                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                     <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
+                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -1985,15 +1952,12 @@
                     <property name="invisible_char">●</property>
                     <property name="xalign">1</property>
                     <property name="shadow_type">none</property>
-                    <property name="invisible_char_set">True</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
-                    <property name="primary_icon_sensitive">True</property>
-                    <property name="secondary_icon_sensitive">True</property>
                     <signal name="activate" handler="on_dro_activate" swapped="no"/>
-                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                     <signal name="button-release-event" handler="on_dro_gets_focus" swapped="no"/>
                     <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
+                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -2014,15 +1978,12 @@
                     <property name="invisible_char">●</property>
                     <property name="xalign">1</property>
                     <property name="shadow_type">none</property>
-                    <property name="invisible_char_set">True</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
-                    <property name="primary_icon_sensitive">True</property>
-                    <property name="secondary_icon_sensitive">True</property>
                     <signal name="activate" handler="on_dro_activate" swapped="no"/>
                     <signal name="button-release-event" handler="on_dro_gets_focus" swapped="no"/>
-                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                     <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
+                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -2043,15 +2004,12 @@
                     <property name="invisible_char">●</property>
                     <property name="xalign">1</property>
                     <property name="shadow_type">none</property>
-                    <property name="invisible_char_set">True</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
-                    <property name="primary_icon_sensitive">True</property>
-                    <property name="secondary_icon_sensitive">True</property>
                     <signal name="activate" handler="on_dro_activate" swapped="no"/>
                     <signal name="button-release-event" handler="on_dro_gets_focus" swapped="no"/>
-                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                     <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
+                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -2072,15 +2030,12 @@
                     <property name="invisible_char">●</property>
                     <property name="xalign">1</property>
                     <property name="shadow_type">none</property>
-                    <property name="invisible_char_set">True</property>
                     <property name="primary_icon_activatable">False</property>
                     <property name="secondary_icon_activatable">False</property>
-                    <property name="primary_icon_sensitive">True</property>
-                    <property name="secondary_icon_sensitive">True</property>
                     <signal name="activate" handler="on_dro_activate" swapped="no"/>
                     <signal name="button-release-event" handler="on_dro_gets_focus" swapped="no"/>
-                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                     <signal name="focus-out-event" handler="on_dro_loses_focus" swapped="no"/>
+                    <signal name="key-press-event" handler="on_dro_key_press_event" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -2108,9 +2063,9 @@
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">dtg_0</property>
                     <property name="max_width_chars">0</property>
+                    <property name="xalign">1</property>
                   </object>
                   <packing>
                     <property name="left_attach">2</property>
@@ -2125,8 +2080,8 @@
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">dtg_1</property>
+                    <property name="xalign">1</property>
                   </object>
                   <packing>
                     <property name="left_attach">2</property>
@@ -2141,8 +2096,8 @@
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">dtg_2</property>
+                    <property name="xalign">1</property>
                   </object>
                   <packing>
                     <property name="left_attach">2</property>
@@ -2157,8 +2112,8 @@
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">dtg_3</property>
+                    <property name="xalign">1</property>
                   </object>
                   <packing>
                     <property name="left_attach">2</property>
@@ -2173,8 +2128,8 @@
                     <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="xalign">1</property>
                     <property name="label" translatable="yes">dtg_4</property>
+                    <property name="xalign">1</property>
                   </object>
                   <packing>
                     <property name="left_attach">2</property>
@@ -2269,8 +2224,8 @@
                         <property name="width_request">70</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xalign">1</property>
                         <property name="label" translatable="yes">abs_0</property>
+                        <property name="xalign">1</property>
                       </object>
                     </child>
                   </object>
@@ -2291,8 +2246,8 @@
                       <object class="GtkLabel" id="abs_1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xalign">1</property>
                         <property name="label" translatable="yes">abs_1</property>
+                        <property name="xalign">1</property>
                       </object>
                     </child>
                   </object>
@@ -2313,8 +2268,8 @@
                       <object class="GtkLabel" id="abs_2">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xalign">1</property>
                         <property name="label" translatable="yes">abs_2</property>
+                        <property name="xalign">1</property>
                       </object>
                     </child>
                   </object>
@@ -2335,8 +2290,8 @@
                       <object class="GtkLabel" id="abs_3">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xalign">1</property>
                         <property name="label" translatable="yes">abs_3</property>
+                        <property name="xalign">1</property>
                       </object>
                     </child>
                   </object>
@@ -2357,8 +2312,8 @@
                       <object class="GtkLabel" id="abs_4">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="xalign">1</property>
                         <property name="label" translatable="yes">abs_4</property>
+                        <property name="xalign">1</property>
                       </object>
                     </child>
                   </object>
@@ -2368,6 +2323,9 @@
                     <property name="top_attach">5</property>
                     <property name="bottom_attach">6</property>
                   </packing>
+                </child>
+                <child>
+                  <placeholder/>
                 </child>
                 <child>
                   <placeholder/>
