@@ -75,7 +75,7 @@ log = logger.get('HAZZY')
 DRAG_ACTION = Gdk.DragAction.COPY
 
 
-class DragDropWindow(Gtk.Window):
+class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Hazzy")
 
@@ -91,7 +91,7 @@ class DragDropWindow(Gtk.Window):
 
         self.add(self.panel)
 
-        self.iconview = DragSourceIconView()
+        self.iconview = DragSourcePanel()
         self.drop_area = DropArea()
 
         self.panel.pack_start(self.iconview, True, True, 0)
@@ -129,7 +129,7 @@ class DragDropWindow(Gtk.Window):
         self.iconview.drag_source_add_text_targets()
 
 
-class DragSourceIconView(Gtk.IconView):
+class DragSourcePanel(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
         self.set_text_column(COLUMN_TEXT)
@@ -170,7 +170,7 @@ class DropArea(Gtk.Box):
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
-        example_widget = DragSourceIconView()
+        example_widget = DragSourcePanel()
         self.add(example_widget)
 
         childs = self.get_children()
@@ -180,20 +180,20 @@ class DropArea(Gtk.Box):
 
         if info == TARGET_ENTRY_TEXT:
             text = data.get_text()
-            print("Received text: %s" % text)
+            log.info("Received text: %s" % text)
 
         elif info == TARGET_ENTRY_PIXBUF:
             pixbuf = data.get_pixbuf()
             width = pixbuf.get_width()
             height = pixbuf.get_height()
 
-            print("Received pixbuf with width %spx and height %spx" % (width,
+            log.info("Received pixbuf with width %spx and height %spx" % (width,
 
                                                                        height))
 
 
 def main():
-    win = DragDropWindow()
+    win = HazzyWindow()
     win.show_all()
     Gtk.main()
 
