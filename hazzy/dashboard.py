@@ -1,38 +1,104 @@
+#!/usr/bin/env python
+
+#   An attempt at a new UI for LinuxCNC that can be used
+#   on a touch screen without any lost of functionality.
+#   The code is written in python and glade and is almost a
+#   complete rewrite, but was influenced mainly by Gmoccapy
+#   and Touchy, with some code adapted from the HAL VCP widgets.
+
+#   Copyright (c) 2017 Kurt Jacobson
+#       <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+import os
+import sys
 import gi
 
 gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import GObject
 from gi.repository import GdkPixbuf
 
-(TARGET_ENTRY_TEXT,
- TARGET_ENTRY_PIXBUF) = range(2)
 
-(COLUMN_TEXT,
- COLUMN_PIXBUF) = range(2)
+# Setup paths to files
+BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
+#INIFILE = sys.argv[2]                               # Path to .ini file
+#CONFIGDIR = os.path.dirname(INIFILE)                # Path to config dir
+
+"""
+# Path to TCL for external programs eg. halshow
+if sys.argv[1] != "-ini":
+    raise SystemExit, "-ini must be first argument{0}".format(TCLPATH=os.environ['LINUXCNC_TCL_DIR'])
+"""
+
+# Get actual paths so we can run from any location
+HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
+UIDIR = os.path.join(HAZZYDIR, 'ui')
+MODULEDIR = os.path.join(HAZZYDIR, 'modules')
+MAINDIR = os.path.dirname(HAZZYDIR)
+
+# Set system path so we can find our own modules
+if HAZZYDIR not in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
+# Import our own modules
+from utilities import logger
+
+log = logger.get('HAZZY')
+
+(
+    TARGET_ENTRY_TEXT,
+    TARGET_ENTRY_PIXBUF
+) = range(2)
+
+(
+    COLUMN_TEXT,
+    COLUMN_PIXBUF
+) = range(2)
 
 DRAG_ACTION = Gdk.DragAction.COPY
 
 
 class DragDropWindow(Gtk.Window):
     def __init__(self):
-        Gtk.Window.__init__(self, title="Drag and Drop Demo")
+        Gtk.Window.__init__(self, title="Hazzy")
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.add(vbox)
+        # UI setup
+        gladefile = os.path.join(UIDIR, 'hazzy_3.ui')
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(gladefile)
+        self.builder.connect_signals(self)
 
-        hbox = Gtk.Box(spacing=12)
-        vbox.pack_start(hbox, True, True, 0)
+        self.panel = self.builder.get_object('panel')
+        titlebar = self.builder.get_object('titlebar')
+        self.set_titlebar(titlebar)
+
+        self.add(self.panel)
 
         self.iconview = DragSourceIconView()
         self.drop_area = DropArea()
 
-        hbox.pack_start(self.iconview, True, True, 0)
-        hbox.pack_start(self.drop_area, True, True, 0)
+        self.panel.pack_start(self.iconview, True, True, 0)
+        self.panel.pack_start(self.drop_area, True, True, 0)
 
         button_box = Gtk.Box(spacing=6)
-        vbox.pack_start(button_box, True, False, 0)
+        self.panel.pack_start(button_box, True, False, 0)
 
         image_button = Gtk.RadioButton.new_with_label_from_widget(None,
                                                                   "Images")
@@ -45,6 +111,8 @@ class DragDropWindow(Gtk.Window):
         button_box.pack_start(text_button, True, False, 0)
 
         self.add_image_targets()
+
+        self.connect("delete-event", Gtk.main_quit)
 
     def add_image_targets(self, button=None):
         targets = Gtk.TargetList.new([])
@@ -102,8 +170,8 @@ class DropArea(Gtk.Box):
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
-        trull = DragSourceIconView()
-        self.add(trull)
+        example_widget = DragSourceIconView()
+        self.add(example_widget)
 
         childs = self.get_children()
 
@@ -125,11 +193,10 @@ class DropArea(Gtk.Box):
 
 
 def main():
-
     win = DragDropWindow()
-    win.connect("delete-event", Gtk.main_quit)
     win.show_all()
     Gtk.main()
+
 
 if __name__ == "__main__":
     main()
