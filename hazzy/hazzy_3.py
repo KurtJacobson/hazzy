@@ -81,6 +81,9 @@ class LinuxCNC():
 
         btn = self.builder.get_object('btn1')
 
+        self.revealer = self.builder.get_object('revealer')
+        self.infobar = self.builder.get_object('infobar')
+
         self.dro = Dro()
 
 
@@ -90,12 +93,23 @@ class LinuxCNC():
         self.status.monitor('tool_in_spindle', self.test)
         self.status.monitor('tool_in_spindle', self.test2)
         self.status.monitor('g92_offset', self.g92)
+        self.status.monitor('file', self.on_file_changed)
 
         # Connect stat
         self.status.connect('update-axis-positions', self.update_position)
         self.status.connect('active-codes-changed', self.update_codes)
 
         self.window.show()
+
+
+    def reveal(self, widget, data=None):
+        print Gtk.MessageType.WARNING
+        self.infobar.set_message_type(Gtk.MessageType.WARNING)
+        self.revealer.set_reveal_child(True)
+
+    def infobar_response(self, widget, data=None):
+        self.revealer.set_reveal_child(False)
+
 
     def test(self, widget, data=None):
         pass
@@ -105,6 +119,9 @@ class LinuxCNC():
 
     def g92(self, widget, data):
         pass
+
+    def on_file_changed(self, widget, data):
+        print data
 
     def update_position(self, widget, pos, rel, dtg):
         label = self.builder.get_object('label')
