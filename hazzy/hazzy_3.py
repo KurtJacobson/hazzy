@@ -18,8 +18,10 @@ BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 INIFILE = sys.argv[2]                               # Path to .ini file
 CONFIGDIR = os.path.dirname(INIFILE)                # Path to config dir
 
+
 # Path to TCL for external programs eg. halshow
-TCLPATH = os.environ['LINUXCNC_TCL_DIR']
+if sys.argv[1] != "-ini":
+    raise SystemExit, "-ini must be first argument{0}".format(TCLPATH=os.environ['LINUXCNC_TCL_DIR'])
 
 # Get actual paths so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
@@ -28,7 +30,7 @@ MODULEDIR = os.path.join(HAZZYDIR, 'modules')
 MAINDIR = os.path.dirname(HAZZYDIR)
 
 # Set system path so we can find our own modules
-if not HAZZYDIR in sys.path:
+if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 # Import our own modules
