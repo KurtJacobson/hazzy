@@ -83,10 +83,9 @@ class Status(GObject.GObject):
         self.stat = stat or linuxcnc.stat()
         self.error = linuxcnc.error_channel()
 
-
         # Get INI settings
         iniinfo = getiniinfo.GetIniInfo
-        self.report_actual_position = False # iniinfo.get_position_feedback_actual()
+        self.report_actual_position = iniinfo.get_position_feedback_actual()
 
         self.machineinfo = machineinfo.MachineInfo
 
@@ -102,18 +101,8 @@ class Status(GObject.GObject):
         self.formated_gcodes = None
         self.formated_mcodes = None
 
-        self.tool_in_spindle = None
-        self.spindle_brake = None
-        self.spindle_enabled = None
-        self.spindle_override_enabled = None
-        self.spindle_speed = None
-        self.spindle_override = None
-
         self.registry = []
         self.old = {}
-
-
-        self.tool_in_spindle = None
 
         GObject.timeout_add(50, self.periodic)
 
@@ -164,32 +153,32 @@ class Status(GObject.GObject):
         if self.task_state != self.stat.task_state:
             self.task_state = self.stat.task_state
             self.emit('task-state-changed', STATES.get(self.task_state, 'UNKNOWN'))
-            log.debug("Machine is in state: {0}".format(STATES.get(self.task_state, 'UNKNOWN')))
+            log.debug("Machine state: {0}".format(STATES.get(self.task_state, 'UNKNOWN')))
 
 
         if self.task_mode != self.stat.task_mode:
             self.task_mode = self.stat.task_mode
             self.emit('task-mode-changed', MODES.get(self.task_mode, 'UNKNOWN'))
-            log.debug("Machine is in mode: {0}".format(MODES.get(self.task_mode, 'UNKNOWN')))
+            log.debug("Machine mode: {0}".format(MODES.get(self.task_mode, 'UNKNOWN')))
 
 
         if self.interp_state != self.stat.interp_state:
             self.interp_state = self.stat.interp_state
             self.emit('interp-state-changed', INTERP.get(self.interp_state, 'UNKNOWN'))
-            log.debug("Interpreter is in state: {0}".format(INTERP.get(self.interp_state, 'UNKNOWN')))
+            log.debug("Interpreter: {0}".format(INTERP.get(self.interp_state, 'UNKNOWN')))
 
 
         if self.motion_mode != self.stat.motion_mode:
             self.motion_mode = self.stat.motion_mode
             self.emit('motion-mode-changed', MOTION.get(self.motion_mode, 'UNKNOWN'))
-            log.debug("Machine is in mode: {0}".format(MOTION.get(self.motion_mode, 'UNKNOWN')))
+            log.debug("Motion mode: {0}".format(MOTION.get(self.motion_mode, 'UNKNOWN')))
 
 
         if self.g5x_index != self.stat.g5x_index:
             self.g5x_index = self.stat.g5x_index
             work_cords = ["G53", "G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3"]
             self.emit('work-cord-changed', work_cords[self.g5x_index])
-            log.debug("Work coordinate system: {}".format(work_cords[self.g5x_index]))
+            log.debug("Work coord: {}".format(work_cords[self.g5x_index]))
 
 
         # self.stat.program_units returns 1 for inch, 2 for mm and 3 for cm
