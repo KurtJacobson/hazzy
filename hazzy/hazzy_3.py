@@ -41,11 +41,11 @@ from gi.repository import GObject
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 INIFILE = sys.argv[2]                               # Path to .ini file
 CONFIGDIR = os.path.dirname(INIFILE)                # Path to config dir
-
+TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
 # Path to TCL for external programs eg. halshow
 if sys.argv[1] != "-ini":
-    raise SystemExit, "-ini must be first argument{0}".format(TCLPATH=os.environ['LINUXCNC_TCL_DIR'])
+    raise SystemExit("-ini must be first argument")
 
 # Get actual paths so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
@@ -65,19 +65,24 @@ from utilities import status
 from modules.dro.dro import Dro
 
 
-class LinuxCNC():
+class LinuxCNC:
 
     def __init__(self):
 
         # UI setup
         gladefile = os.path.join(UIDIR, 'hazzy_3.ui')
+
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
 
-        self.window = self.builder.get_object('window')
+        panel = self.builder.get_object('panel')
         titlebar = self.builder.get_object('titlebar')
+
+        self.window = Gtk.Window()
+
         self.window.set_titlebar(titlebar)
+        self.window.add(panel)
 
         btn = self.builder.get_object('btn1')
 
@@ -86,9 +91,7 @@ class LinuxCNC():
 
         self.dro = Dro()
 
-
         self.status = status.Status
-
 
         self.status.monitor('tool_in_spindle', self.test)
         self.status.monitor('tool_in_spindle', self.test2)
@@ -99,8 +102,9 @@ class LinuxCNC():
         self.status.connect('update-axis-positions', self.update_position)
         self.status.connect('active-codes-changed', self.update_codes)
 
-        self.window.show()
+        self.window.connect("delete-event", Gtk.main_quit)
 
+        self.window.show()
 
     def reveal(self, widget, data=None):
         print Gtk.MessageType.WARNING
@@ -109,7 +113,6 @@ class LinuxCNC():
 
     def infobar_response(self, widget, data=None):
         self.revealer.set_reveal_child(False)
-
 
     def test(self, widget, data=None):
         pass
@@ -132,14 +135,9 @@ class LinuxCNC():
         print mcodes
 
 
-    def on_window_delete_event(self, widget, data=None):
-        print "Quiting"
-        Gtk.main_quit()
-
-
 def main():
+    LinuxCNC()
     Gtk.main()
 
 if __name__ == "__main__":
-    ui = LinuxCNC()
     main()
