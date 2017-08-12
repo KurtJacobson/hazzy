@@ -22,14 +22,27 @@
 
 
 import os
+import sys
 import gi
-import logging
 
 gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk
+from gi.repository import Gdk
 
-log = logging.getLogger("HAZZY.TOUCHPAD")
+# Setup paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+if HAZZYDIR not in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
+UIDIR = os.path.join(PYDIR, 'ui')
+STYLEDIR = os.path.join(HAZZYDIR, 'themes')
+
+# Setup logging
+from utilities import logger
+log = logger.get("HAZZY.KEYBOARD")
 
 
 class TouchPad:
@@ -58,12 +71,12 @@ class TouchPadWindow(Gtk.Window):
         super(TouchPadWindow, self).__init__()
 
         builder = Gtk.Builder()
-        builder.add_from_file(os.path.join("modules", "touchpads", "ui", "int_numpad_3.glade"))
+        builder.add_from_file(os.path.join(UIDIR, "int_numpad_3.glade"))
         builder.connect_signals(TouchPadHandler())
 
         style_provider = Gtk.CssProvider()
 
-        with open(os.path.join("styles", "style.css"), 'rb') as css:
+        with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
             css_data = css.read()
 
         style_provider.load_from_data(css_data)

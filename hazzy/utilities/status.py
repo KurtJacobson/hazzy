@@ -71,7 +71,9 @@ class Status(GObject.GObject):
         'active-codes-changed': (GObject.SignalFlags.RUN_FIRST, None, (object, object)),
 
         'update-joint-positions': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
-        'update-axis-positions': (GObject.SignalFlags.RUN_FIRST, None, (object, object, object))
+        'update-axis-positions': (GObject.SignalFlags.RUN_FIRST, None, (object, object, object)),
+
+        'file-loaded': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
     }
 
 
@@ -100,6 +102,8 @@ class Status(GObject.GObject):
         self.mcodes = None
         self.formated_gcodes = None
         self.formated_mcodes = None
+
+        self.file = None
 
         self.registry = []
         self.old = {}
@@ -191,6 +195,12 @@ class Status(GObject.GObject):
         if self.gcodes != self.stat.gcodes or self.mcodes != self.stat.mcodes:
             gcodes, mcodes = self._get_active_codes()
             self.emit('active-codes-changed', gcodes, mcodes)
+
+
+        if self.file != self.stat.file and self.stat.call_level == 0:
+            self.file = self.stat.file
+            if self.stat.interp_state == linuxcnc.INTERP_IDLE:
+                self.emit('file-loaded', self.file)
 
 
 

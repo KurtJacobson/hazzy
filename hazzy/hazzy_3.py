@@ -1,5 +1,29 @@
 #!/usr/bin/env python
 
+#   An attempt at a new UI for LinuxCNC that can be used
+#   on a touch screen without any lost of functionality.
+#   The code is written in python and glade and is almost a
+#   complete rewrite, but was influenced mainly by Gmoccapy
+#   and Touchy, with some code adapted from the HAL VCP widgets.
+
+#   Copyright (c) 2017 Kurt Jacobson
+#       <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 import sys
 import linuxcnc
@@ -57,6 +81,9 @@ class LinuxCNC():
 
         btn = self.builder.get_object('btn1')
 
+        self.revealer = self.builder.get_object('revealer')
+        self.infobar = self.builder.get_object('infobar')
+
         self.dro = Dro()
 
 
@@ -66,12 +93,23 @@ class LinuxCNC():
         self.status.monitor('tool_in_spindle', self.test)
         self.status.monitor('tool_in_spindle', self.test2)
         self.status.monitor('g92_offset', self.g92)
+        self.status.monitor('file', self.on_file_changed)
 
         # Connect stat
         self.status.connect('update-axis-positions', self.update_position)
         self.status.connect('active-codes-changed', self.update_codes)
 
         self.window.show()
+
+
+    def reveal(self, widget, data=None):
+        print Gtk.MessageType.WARNING
+        self.infobar.set_message_type(Gtk.MessageType.WARNING)
+        self.revealer.set_reveal_child(True)
+
+    def infobar_response(self, widget, data=None):
+        self.revealer.set_reveal_child(False)
+
 
     def test(self, widget, data=None):
         pass
@@ -81,6 +119,9 @@ class LinuxCNC():
 
     def g92(self, widget, data):
         pass
+
+    def on_file_changed(self, widget, data):
+        print data
 
     def update_position(self, widget, pos, rel, dtg):
         label = self.builder.get_object('label')
