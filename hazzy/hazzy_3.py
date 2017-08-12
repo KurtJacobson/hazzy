@@ -71,13 +71,18 @@ class LinuxCNC():
 
         # UI setup
         gladefile = os.path.join(UIDIR, 'hazzy_3.ui')
+
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
 
-        self.window = self.builder.get_object('window')
+        panel = self.builder.get_object('panel')
         titlebar = self.builder.get_object('titlebar')
+
+        self.window = Gtk.Window()
+
         self.window.set_titlebar(titlebar)
+        self.window.add(panel)
 
         btn = self.builder.get_object('btn1')
 
