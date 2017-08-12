@@ -65,7 +65,7 @@ from utilities import status
 from modules.dro.dro import Dro
 
 
-class LinuxCNC():
+class LinuxCNC:
 
     def __init__(self):
 
@@ -91,9 +91,7 @@ class LinuxCNC():
 
         self.dro = Dro()
 
-
         self.status = status.Status
-
 
         self.status.monitor('tool_in_spindle', self.test)
         self.status.monitor('tool_in_spindle', self.test2)
@@ -108,7 +106,6 @@ class LinuxCNC():
 
         self.window.show()
 
-
     def reveal(self, widget, data=None):
         print Gtk.MessageType.WARNING
         self.infobar.set_message_type(Gtk.MessageType.WARNING)
@@ -116,7 +113,6 @@ class LinuxCNC():
 
     def infobar_response(self, widget, data=None):
         self.revealer.set_reveal_child(False)
-
 
     def test(self, widget, data=None):
         pass
