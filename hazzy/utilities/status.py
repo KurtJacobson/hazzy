@@ -23,8 +23,6 @@ import linuxcnc
 from gi.repository import GObject
 
 import getiniinfo
-import machineinfo
-
 
 # Setup logging
 import logger
@@ -61,19 +59,13 @@ def singleton(cls):
 class Status(GObject.GObject):
     __gtype_name__ = 'Status'
     __gsignals__ = {
-        'task_state_changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'task_mode_changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'interp_state_changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'motion_mode_changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
+        'formated-gcodes': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        'formated-mcodes': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
 
-        'work-cord-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'metric-mode-changed': (GObject.SignalFlags.RUN_FIRST, None, (bool,)),
-        'active-codes-changed': (GObject.SignalFlags.RUN_FIRST, None, (object, object)),
+        'joint-positions': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        'axis-positions': (GObject.SignalFlags.RUN_FIRST, None, (object, object, object)),
 
-        'update-joint-positions': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
-        'update-axis-positions': (GObject.SignalFlags.RUN_FIRST, None, (object, object, object)),
-
-        'file-loaded': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
+        'file-loaded': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
     }
 
 
@@ -82,6 +74,8 @@ class Status(GObject.GObject):
 
         GObject.GObject.__init__(self)
 
+        self.signals = GObject.signal_list_names(self)
+
         self.stat = stat or linuxcnc.stat()
         self.error = linuxcnc.error_channel()
 
@@ -89,122 +83,140 @@ class Status(GObject.GObject):
         iniinfo = getiniinfo.GetIniInfo
         self.report_actual_position = iniinfo.get_position_feedback_actual()
 
-        self.machineinfo = machineinfo.MachineInfo
-
-        self.task_state = None
-        self.task_mode = None
-        self.interp_state = None
-        self.motion_mode = None
-
-        self.g5x_index = None
-        self.program_units = None
-        self.gcodes = None
-        self.mcodes = None
-        self.formated_gcodes = None
-        self.formated_mcodes = None
+        self.axis_list = []
 
         self.file = None
 
         self.registry = []
         self.old = {}
 
+        self.on_value_changed('axis_mask', self._update_axis_list, True)
+
+        self.on_value_changed('task_state', self._update_task_state, True)
+        self.on_value_changed('task_mode', self._update_task_mode, True)
+        self.on_value_changed('interp_state', self._update_interp_state, True)
+        self.on_value_changed('motion_mode', self._update_motion_mode, True)
+        self.on_value_changed('g5x_index', self._update_work_corordinate, True)
+
+        self.on_value_changed('gcodes', self._update_active_gcodes, True)
+        self.on_value_changed('mcodes', self._update_active_mcodes, True)
+
+        self.on_value_changed('file', self._update_file, True)
+
         GObject.timeout_add(50, self.periodic)
 
 
     # This allows monitoring any of the linuxcnc.stat attributes
-    # and connecting a callback for a value change
-    def monitor(self, attribute, callback):
+    # and connecting a callback to be called on attribute value change
+    def on_value_changed(self, attribute, callback, internal=False):
 
-        if attribute not in GObject.signal_list_names(Status) \
-            and attribute not in self.registry:
+        if hasattr(self.stat, attribute) \
+            or attribute.replace('_', '-') in self.signals:
 
-            GObject.signal_new(attribute, self, GObject.SignalFlags.RUN_FIRST, None, (object,))
-            self.registry.append(attribute)
+            if attribute.replace('_', '-') not in self.signals \
+                and attribute not in self.registry:
+
+                GObject.signal_new(attribute, self, GObject.SignalFlags.RUN_FIRST, None, (object,))
+                self.registry.append(attribute)
+                self.old[attribute] = None
+
+            self.connect(attribute, callback)
             self.old[attribute] = None
+            if not internal:
+                log.info('"{}" connected to "stat.{}" value changed' \
+                    .format(str(callback.__name__), attribute))
 
-        self.connect(attribute, callback)
-        log.info('"{}" connected to "stat.{}" value changed' \
-            .format(str(callback.__name__), attribute))
+        else:
+            log.warning('linuxcnc.stat does not have attribute "{}"'.format(attribute))
+
 
 
     def periodic(self):
         try:
             self.stat.poll()
-            self.update()
+
+            for attribute in self.registry:
+                old = self.old[attribute]
+                new = getattr(self.stat, attribute)
+                if old != new:
+                    self.old[attribute] = new
+                    self.emit(attribute, new)
+
+            # Always update joint/axis positions
+            self._update_axis_positions()
+            self._update_joint_positions()
+
         except Exception as e:
             log.exception(e)
         return True
 
 
-    def update(self):
 
-        for attribute in self.registry:
-            old = self.old[attribute]
-            new = getattr(self.stat, attribute)
-            if old != new:
-                self.old[attribute] = new
-                self.emit(attribute, new)
-                #log.debug('"{}" changed from "{}" to "{}"'.format(attribute, old, new))
-
-        # Current axis possitions
-        pos, rel, dtg = self._get_axis_position()
-        self.emit('update-axis-positions', pos, rel, dtg)
-
-        # Current joint possitions
-        self.emit('update-joint-positions', self._get_joint_position())
+    def _update_task_state(self, widget, task_state):
+        state_str = STATES.get(task_state, 'UNKNOWN')
+        log.debug("Machine state: {0}".format(state_str))
 
 
-        if self.task_state != self.stat.task_state:
-            self.task_state = self.stat.task_state
-            self.emit('task-state-changed', STATES.get(self.task_state, 'UNKNOWN'))
-            log.debug("Machine state: {0}".format(STATES.get(self.task_state, 'UNKNOWN')))
+    def _update_task_mode(self, widget, task_mode):
+        mode_str = MODES.get(task_mode, 'UNKNOWN')
+        log.debug("Machine mode: {0}".format(mode_str))
 
 
-        if self.task_mode != self.stat.task_mode:
-            self.task_mode = self.stat.task_mode
-            self.emit('task-mode-changed', MODES.get(self.task_mode, 'UNKNOWN'))
-            log.debug("Machine mode: {0}".format(MODES.get(self.task_mode, 'UNKNOWN')))
+    def _update_interp_state(self, widget, interp_state):
+        interp_str = INTERP.get(interp_state, 'UNKNOWN')
+        log.debug("Interp state: {0}".format(interp_str))
 
 
-        if self.interp_state != self.stat.interp_state:
-            self.interp_state = self.stat.interp_state
-            self.emit('interp-state-changed', INTERP.get(self.interp_state, 'UNKNOWN'))
-            log.debug("Interpreter: {0}".format(INTERP.get(self.interp_state, 'UNKNOWN')))
+    def _update_motion_mode(self, widget, motion_mode):
+        motion_str = MOTION.get(motion_mode, 'UNKNOWN')
+        log.debug("Motion mode: {0}".format(motion_str))
 
 
-        if self.motion_mode != self.stat.motion_mode:
-            self.motion_mode = self.stat.motion_mode
-            self.emit('motion-mode-changed', MOTION.get(self.motion_mode, 'UNKNOWN'))
-            log.debug("Motion mode: {0}".format(MOTION.get(self.motion_mode, 'UNKNOWN')))
+    def _update_work_corordinate(self, widget, g5x_index):
+        work_cords = ["G53", "G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3"]
+        work_cord_str = work_cords[g5x_index]
+        log.debug("Work coord: {}".format(work_cord_str))
 
 
-        if self.g5x_index != self.stat.g5x_index:
-            self.g5x_index = self.stat.g5x_index
-            work_cords = ["G53", "G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3"]
-            self.emit('work-cord-changed', work_cords[self.g5x_index])
-            log.debug("Work coord: {}".format(work_cords[self.g5x_index]))
+    def _update_active_gcodes(self, widget, gcodes):
+        formated_gcodes = []
+        for gcode in sorted(gcodes[1:]):
+            if gcode == -1:
+                continue
+            if gcode % 10 == 0:
+                formated_gcodes.append("G{0}".format(gcode / 10))
+            else:
+                formated_gcodes.append("G{0}.{1}".format(gcode / 10, gcode % 10))
+        self.emit('formated-gcodes', formated_gcodes)
 
 
-        # self.stat.program_units returns 1 for inch, 2 for mm and 3 for cm
-        if self.program_units != self.stat.program_units:
-            self.program_units = self.stat.program_units
-            self.emit('metric-mode-changed', self.program_units != 1)
-            log.debug("G21 active: {}".format(str(self.program_units != 1)))
+    def _update_active_mcodes(self, widget, mcodes):
+        formated_mcodes = []
+        for mcode in sorted(mcodes[1:]):
+            if mcode == -1: 
+                continue
+            formated_mcodes.append("M{0}".format(mcode))
+        self.emit('formated-mcodes', formated_mcodes)
 
 
-        if self.gcodes != self.stat.gcodes or self.mcodes != self.stat.mcodes:
-            gcodes, mcodes = self._get_active_codes()
-            self.emit('active-codes-changed', gcodes, mcodes)
+    def _update_file(self, widget, file):
+        if self.stat.interp_state == linuxcnc.INTERP_IDLE \
+            and self.stat.call_level == 0:
+
+            self.emit('file-loaded', file)
+            log.debug('File loaded: "{}"'.format(file))
 
 
-        if self.file != self.stat.file and self.stat.call_level == 0:
-            self.file = self.stat.file
-            if self.stat.interp_state == linuxcnc.INTERP_IDLE:
-                self.emit('file-loaded', self.file)
+    def _update_axis_list(self, widget, axis_mask):
+        mask = '{0:09b}'.format(axis_mask)
+
+        self.axis_list = []
+        for anum, enabled in enumerate(mask[::-1]):
+            if enabled == '1':
+                self.axis_list.append(anum)
 
 
-
-    def _get_axis_position(self):
+    def _update_axis_positions(self):
 
         if self.report_actual_position:
             pos = self.stat.actual_position
@@ -217,7 +229,7 @@ class Status(GObject.GObject):
         tool_offset = self.stat.tool_offset
 
         rel = [0]*9
-        for axis in self.machineinfo.axis_number_list:
+        for axis in self.axis_list:
             rel[axis] = pos[axis] - g5x_offset[axis] - tool_offset[axis]
 
         if self.stat.rotation_xy != 0:
@@ -227,42 +239,18 @@ class Status(GObject.GObject):
             rel[0] = xr
             rel[1] = yr
 
-        for axis in self.machineinfo.axis_number_list:
+        for axis in self.axis_list:
             rel[axis] -= g92_offset[axis]
 
-        return pos, tuple(rel), tuple(dtg)
+        self.emit('axis-positions', pos, tuple(rel), tuple(dtg))
 
 
-    def _get_joint_position(self):
+    def _update_joint_positions(self):
+
         if self.report_actual_position:
             pos = self.stat.joint_actual_position
         else:
             pos = self.stat.joint_position
-        return pos
 
-
-    def _get_active_codes(self):
-
-            self.gcodes = self.stat.gcodes
-            self.mcodes = self.stat.mcodes
-
-            gcodes = []
-            for gcode in sorted(self.gcodes[1:]):
-                if gcode == -1:
-                    continue
-                if gcode % 10 == 0:
-                    gcodes.append("G{0}".format(gcode / 10))
-                else:
-                    gcodes.append("G{0}.{1}".format(gcode / 10, gcode % 10))
-
-            mcodes = []
-            for mcode in sorted(self.mcodes[1:]):
-                if mcode == -1: 
-                    continue
-                mcodes.append("M{0}".format(mcode))
-
-            self.formated_gcodes = gcodes
-            self.formated_mcodes = mcodes
-
-            return gcodes, mcodes
+        self.emit('joint-positions', pos)
 

@@ -2,7 +2,6 @@
 
 import os
 import sys
-import importlib
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -21,7 +20,7 @@ if HAZZYDIR not in sys.path:
 UIDIR = os.path.join(PYDIR)
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
-status = importlib.import_module('utilities.status')
+from utilities.status import Status
 
 # Setup logging
 from utilities import logger
@@ -33,9 +32,10 @@ class Dro(Gtk.Box):
     def __init__(self):
         Gtk.Box.__init__(self)
 
-        self.stat = status.Status
+        self.stat = Status
 
-        self.stat.connect('update_axis_positions', self.update_dros)
+        self.stat.on_value_changed('axis_positions', self.update_dros)
+        self.stat.on_value_changed('tool_in_spindle', self.update_tool)
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'dro.ui'))
@@ -53,4 +53,7 @@ class Dro(Gtk.Box):
         self.x.set_text(str(rel[0]))
         self.y.set_text(str(rel[1]))
         self.z.set_text(str(rel[2]))
+
+    def update_tool(self, widget, tool_num):
+        print tool_num
 
