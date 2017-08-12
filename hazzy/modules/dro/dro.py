@@ -38,12 +38,16 @@ class Dro():
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'dro.ui'))
 
-        self.window = self.builder.get_object('window')
+#        self.window = self.builder.get_object('window')
 
         self.x = self.builder.get_object('x')
         self.y = self.builder.get_object('y')
         self.z = self.builder.get_object('z')
-        self.window.show()
+
+        #self.window.show()
+
+    def get(self):
+        return self.builder.get_object('dro')
 
 
     def update_dros(self, widget, pos, rel, dtg):

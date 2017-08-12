@@ -59,6 +59,7 @@ if HAZZYDIR not in sys.path:
 
 # Import our own modules
 from utilities import logger
+from modules.dro.dro import Dro
 
 log = logger.get('HAZZY')
 
@@ -170,7 +171,7 @@ class DropArea(Gtk.Box):
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
-        example_widget = DragSourcePanel()
+        example_widget = Dro().get()
         self.add(example_widget)
 
         childs = self.get_children()
@@ -188,7 +189,6 @@ class DropArea(Gtk.Box):
             height = pixbuf.get_height()
 
             log.info("Received pixbuf with width %spx and height %spx" % (width,
-
                                                                        height))
 
 
