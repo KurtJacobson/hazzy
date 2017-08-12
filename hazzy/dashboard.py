@@ -164,32 +164,18 @@ class DragSourcePanel(Gtk.IconView):
 
 
 class DropArea(Gtk.Box):
+
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], DRAG_ACTION)
 
         self.connect("drag-data-received", self.on_drag_data_received)
 
+
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
         dro_widget = Dro()
-
-        received_widget = dro_widget
-        self.add(received_widget)
-
-        for widgets in self.get_children():
-            widgets.show_all()
-
-        if info == TARGET_ENTRY_TEXT:
-            text = data.get_text()
-            log.info("Received text: %s" % text)
-
-        elif info == TARGET_ENTRY_PIXBUF:
-            pixbuf = data.get_pixbuf()
-            width = pixbuf.get_width()
-            height = pixbuf.get_height()
-
-            log.info("Received pixbuf with width %spx and height %spx" % (width, height))
+        self.add(dro_widget)
 
 
 def main():
