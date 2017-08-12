@@ -70,38 +70,28 @@ class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Hazzy")
 
-        # UI setup
         gladefile = os.path.join(UIDIR, 'hazzy_3.ui')
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
-        self.builder.connect_signals(self)
-
-        self.panel = self.builder.get_object('panel')
-        self.titlebar = self.builder.get_object('titlebar')
-        self.set_titlebar(self.titlebar)
-        self.add(self.panel)
 
         self.iconview = DragSourcePanel()
         self.drop_area = DropArea()
 
-        self.revealer = Gtk.Revealer()
-        self.revealer.set_reveal_child(True)
+        self.panel = self.builder.get_object('panel')
+        self.titlebar = self.builder.get_object('titlebar')
+        self.revealer_button = self.builder.get_object('revealer')
+        self.widget_chooser = self.builder.get_object('widget_chooser')
 
-        label = Gtk.Label("Label in a Revealer")
-        self.revealer.add(self.iconview)
+        self.set_titlebar(self.titlebar)
+        self.add(self.panel)
 
-        self.panel.pack_start(self.revealer, True, True, 0)
-
-        button = Gtk.Button("Reveal")
-        button.connect("clicked", self.on_reveal_clicked)
-
-        self.panel.pack_start(button, True, True, 0)
-
+        self.widget_chooser.add(self.iconview)
         self.panel.pack_start(self.drop_area, True, True, 0)
 
         self.add_image_targets()
 
+        self.revealer_button.connect("clicked", self.on_reveal_clicked)
         self.connect("delete-event", Gtk.main_quit)
 
     def add_image_targets(self, button=None):
@@ -119,8 +109,8 @@ class HazzyWindow(Gtk.Window):
         self.iconview.drag_source_add_text_targets()
 
     def on_reveal_clicked(self, button):
-        reveal = self.revealer.get_reveal_child()
-        self.revealer.set_reveal_child(not reveal)
+        reveal = self.widget_chooser.get_reveal_child()
+        self.widget_chooser.set_reveal_child(not reveal)
 
 
 class DragSourcePanel(Gtk.IconView):
