@@ -41,11 +41,11 @@ from gi.repository import GObject
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
 INIFILE = sys.argv[2]                               # Path to .ini file
 CONFIGDIR = os.path.dirname(INIFILE)                # Path to config dir
-
+TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
 # Path to TCL for external programs eg. halshow
 if sys.argv[1] != "-ini":
-    raise SystemExit, "-ini must be first argument{0}".format(TCLPATH=os.environ['LINUXCNC_TCL_DIR'])
+    raise SystemExit("-ini must be first argument")
 
 # Get actual paths so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
@@ -136,8 +136,8 @@ class LinuxCNC:
 
 
 def main():
+    LinuxCNC()
     Gtk.main()
 
 if __name__ == "__main__":
-    ui = LinuxCNC()
     main()

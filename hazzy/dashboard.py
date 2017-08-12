@@ -35,17 +35,15 @@ from gi.repository import Gdk
 from gi.repository import GObject
 from gi.repository import GdkPixbuf
 
-
 # Setup paths to files
 BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
-#INIFILE = sys.argv[2]                               # Path to .ini file
-#CONFIGDIR = os.path.dirname(INIFILE)                # Path to config dir
+INIFILE = sys.argv[2]  # Path to .ini file
+CONFIGDIR = os.path.dirname(INIFILE)  # Path to config dir
+TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
-"""
 # Path to TCL for external programs eg. halshow
 if sys.argv[1] != "-ini":
-    raise SystemExit, "-ini must be first argument{0}".format(TCLPATH=os.environ['LINUXCNC_TCL_DIR'])
-"""
+    raise SystemExit("-ini must be first argument")
 
 # Get actual paths so we can run from any location
 HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
@@ -65,13 +63,15 @@ log = logger.get('HAZZY')
 
 (
     TARGET_ENTRY_TEXT,
-    TARGET_ENTRY_PIXBUF
-) = range(2)
+    TARGET_ENTRY_PIXBUF,
+    TARGER_ENTRY_WIDGET
+) = range(3)
 
 (
     COLUMN_TEXT,
-    COLUMN_PIXBUF
-) = range(2)
+    COLUMN_PIXBUF,
+    COLUMN_WIDGET
+) = range(3)
 
 DRAG_ACTION = Gdk.DragAction.COPY
 
@@ -82,13 +82,14 @@ class HazzyWindow(Gtk.Window):
 
         # UI setup
         gladefile = os.path.join(UIDIR, 'hazzy_3.ui')
+
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
 
         self.panel = self.builder.get_object('panel')
-        titlebar = self.builder.get_object('titlebar')
-        self.set_titlebar(titlebar)
+        self.titlebar = self.builder.get_object('titlebar')
+        self.set_titlebar(self.titlebar)
 
         self.add(self.panel)
 
@@ -101,13 +102,11 @@ class HazzyWindow(Gtk.Window):
         button_box = Gtk.Box(spacing=6)
         self.panel.pack_start(button_box, True, False, 0)
 
-        image_button = Gtk.RadioButton.new_with_label_from_widget(None,
-                                                                  "Images")
+        image_button = Gtk.RadioButton.new_with_label_from_widget(None, "Images")
         image_button.connect("toggled", self.add_image_targets)
         button_box.pack_start(image_button, True, False, 0)
 
-        text_button = Gtk.RadioButton.new_with_label_from_widget(image_button,
-                                                                 "Text")
+        text_button = Gtk.RadioButton.new_with_label_from_widget(image_button, "Text")
         text_button.connect("toggled", self.add_text_targets)
         button_box.pack_start(text_button, True, False, 0)
 
@@ -133,17 +132,19 @@ class HazzyWindow(Gtk.Window):
 class DragSourcePanel(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
+
         self.set_text_column(COLUMN_TEXT)
         self.set_pixbuf_column(COLUMN_PIXBUF)
 
         model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
         self.set_model(model)
-        self.add_item("Item 1", "image-missing")
-        self.add_item("Item 2", "help-about")
-        self.add_item("Item 3", "edit-copy")
 
-        self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [],
-                                      DRAG_ACTION)
+        self.add_item("Dro", "image-missing")
+        self.add_item("Code View", "help-about")
+        self.add_item("Code Editor", "edit-copy")
+
+        self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], DRAG_ACTION)
+
         self.connect("drag-data-get", self.on_drag_data_get)
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
@@ -190,8 +191,7 @@ class DropArea(Gtk.Box):
             width = pixbuf.get_width()
             height = pixbuf.get_height()
 
-            log.info("Received pixbuf with width %spx and height %spx" % (width,
-                                                                       height))
+            log.info("Received pixbuf with width %spx and height %spx" % (width, height))
 
 
 def main():
