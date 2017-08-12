@@ -171,7 +171,9 @@ class DropArea(Gtk.Box):
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
-        example_widget = Dro().get()
+        dro_widget = Dro()
+
+        example_widget = dro_widget
         self.add(example_widget)
 
         childs = self.get_children()
