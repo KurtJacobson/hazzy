@@ -222,25 +222,24 @@ class GcodeView(GObject.GObject,):
 # ==========================================================
 
 def main():
-    Gtk.main()
 
-def destroy(widget):
-    Gtk.main_quit()
-
-if __name__ == "__main__":
     gcodeview = GcodeView(preview=True)
     window = Gtk.Window()
     scrolled = Gtk.ScrolledWindow()
-    window.connect('destroy', destroy)
+
+    window.connect('destroy', Gtk.main_quit)
+
     scrolled.add(gcodeview.view)
+
     window.add(scrolled)
     window.set_default_size(350, 400)
-    gcodeview.buf.set_text(
-'''(TEST OF G-CODE HIGHLIGHTING)
 
-G1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0
-
-M3''')
-    window.show_all()
+    gcodeview.buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
     gcodeview.highlight_line(3, 'motion')
+
+    window.show_all()
+
+    Gtk.main()
+
+if __name__ == "__main__":
     main()
