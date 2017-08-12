@@ -104,6 +104,8 @@ class LinuxCNC():
         self.status.connect('update-axis-positions', self.update_position)
         self.status.connect('active-codes-changed', self.update_codes)
 
+        self.window.connect("delete-event", Gtk.main_quit)
+
         self.window.show()
 
 
@@ -135,11 +137,6 @@ class LinuxCNC():
     def update_codes(self, widget, gcodes, mcodes):
         print gcodes
         print mcodes
-
-
-    def on_window_delete_event(self, widget, data=None):
-        print "Quiting"
-        Gtk.main_quit()
 
 
 def main():
