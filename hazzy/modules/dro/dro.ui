@@ -159,10 +159,4 @@
       </object>
     </child>
   </object>
-  <object class="GtkWindow" id="window">
-    <property name="can_focus">False</property>
-    <child>
-      <placeholder/>
-    </child>
-  </object>
 </interface>
