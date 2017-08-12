@@ -23,6 +23,7 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
 import os
 import sys
 import gi
@@ -61,19 +62,8 @@ from modules.dro.dro import Dro
 
 log = logger.get('HAZZY')
 
-(
-    TARGET_ENTRY_TEXT,
-    TARGET_ENTRY_PIXBUF,
-    TARGER_ENTRY_WIDGET
-) = range(3)
-
-(
-    COLUMN_TEXT,
-    COLUMN_PIXBUF,
-    COLUMN_WIDGET
-) = range(3)
-
-DRAG_ACTION = Gdk.DragAction.COPY
+(TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
+(COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
 
 
 class HazzyWindow(Gtk.Window):
@@ -90,25 +80,25 @@ class HazzyWindow(Gtk.Window):
         self.panel = self.builder.get_object('panel')
         self.titlebar = self.builder.get_object('titlebar')
         self.set_titlebar(self.titlebar)
-
         self.add(self.panel)
 
         self.iconview = DragSourcePanel()
         self.drop_area = DropArea()
 
-        self.panel.pack_start(self.iconview, True, True, 0)
+        self.revealer = Gtk.Revealer()
+        self.revealer.set_reveal_child(True)
+
+        label = Gtk.Label("Label in a Revealer")
+        self.revealer.add(self.iconview)
+
+        self.panel.pack_start(self.revealer, True, True, 0)
+
+        button = Gtk.Button("Reveal")
+        button.connect("clicked", self.on_reveal_clicked)
+
+        self.panel.pack_start(button, True, True, 0)
+
         self.panel.pack_start(self.drop_area, True, True, 0)
-
-        button_box = Gtk.Box(spacing=6)
-        self.panel.pack_start(button_box, True, False, 0)
-
-        image_button = Gtk.RadioButton.new_with_label_from_widget(None, "Images")
-        image_button.connect("toggled", self.add_image_targets)
-        button_box.pack_start(image_button, True, False, 0)
-
-        text_button = Gtk.RadioButton.new_with_label_from_widget(image_button, "Text")
-        text_button.connect("toggled", self.add_text_targets)
-        button_box.pack_start(text_button, True, False, 0)
 
         self.add_image_targets()
 
@@ -128,10 +118,16 @@ class HazzyWindow(Gtk.Window):
         self.drop_area.drag_dest_add_text_targets()
         self.iconview.drag_source_add_text_targets()
 
+    def on_reveal_clicked(self, button):
+        reveal = self.revealer.get_reveal_child()
+        self.revealer.set_reveal_child(not reveal)
+
 
 class DragSourcePanel(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
+
+
 
         self.set_text_column(COLUMN_TEXT)
         self.set_pixbuf_column(COLUMN_PIXBUF)
@@ -143,7 +139,7 @@ class DragSourcePanel(Gtk.IconView):
         self.add_item("Code View", "help-about")
         self.add_item("Code Editor", "edit-copy")
 
-        self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], DRAG_ACTION)
+        self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY)
 
         self.connect("drag-data-get", self.on_drag_data_get)
 
@@ -167,10 +163,9 @@ class DropArea(Gtk.Box):
 
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
-        self.drag_dest_set(Gtk.DestDefaults.ALL, [], DRAG_ACTION)
+        self.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
 
         self.connect("drag-data-received", self.on_drag_data_received)
-
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
