@@ -174,12 +174,10 @@ class DropArea(Gtk.Box):
 
         dro_widget = Dro()
 
-        example_widget = dro_widget
-        self.add(example_widget)
+        received_widget = dro_widget
+        self.add(received_widget)
 
-        childs = self.get_children()
-
-        for widgets in childs:
+        for widgets in self.get_children():
             widgets.show_all()
 
         if info == TARGET_ENTRY_TEXT:
