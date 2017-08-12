@@ -27,9 +27,11 @@ status = importlib.import_module('utilities.status')
 from utilities import logger
 log = logger.get("HAZZY.KEYBOARD")
 
-class Dro():
+
+class Dro(Gtk.Box):
 
     def __init__(self):
+        Gtk.Box.__init__(self)
 
         self.stat = status.Status
 
@@ -38,13 +40,14 @@ class Dro():
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'dro.ui'))
 
-        self.window = self.builder.get_object('window')
-
         self.x = self.builder.get_object('x')
         self.y = self.builder.get_object('y')
         self.z = self.builder.get_object('z')
-        self.window.show()
 
+        self.display = self.builder.get_object('dro')
+
+        self.add(self.display)
+        #self.window.show()
 
     def update_dros(self, widget, pos, rel, dtg):
         self.x.set_text(str(rel[0]))
