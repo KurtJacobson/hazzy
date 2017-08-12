@@ -47,7 +47,7 @@ class Dro(Gtk.Box):
         self.display = self.builder.get_object('dro')
 
         self.add(self.display)
-        #self.window.show()
+        self.show_all()
 
     def update_dros(self, widget, pos, rel, dtg):
         self.x.set_text(str(rel[0]))
