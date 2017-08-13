@@ -42,6 +42,7 @@ STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 # Setup logging
 from utilities import logger
+
 log = logger.get("HAZZY.KEYBOARD")
 
 
@@ -53,7 +54,7 @@ class TouchPad:
 
         if test:
             self.window.disable_dot_button()
-            self.window.show()
+            self.window.show_all()
 
     def show(self, widget, kind="float"):
 
@@ -63,28 +64,16 @@ class TouchPad:
         self.dro = widget
         self.original_text = self.dro.get_text()
 
-        self.window.show()
+        self.window.show_all()
 
 
 class TouchPadWindow(Gtk.Window):
     def __init__(self):
-        super(TouchPadWindow, self).__init__()
+        Gtk.Window.__init__(self)
 
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(UIDIR, "int_numpad_3.glade"))
         builder.connect_signals(TouchPadHandler())
-
-        style_provider = Gtk.CssProvider()
-
-        with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
-            css_data = css.read()
-
-        style_provider.load_from_data(css_data)
-
-        Gtk.StyleContext.add_provider_for_screen(
-            Gdk.Screen.get_default(), style_provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-        )
 
         numpad = builder.get_object("numpad")
 
@@ -124,8 +113,22 @@ class TouchPadHandler:
 
 
 def main():
+    style_provider = Gtk.CssProvider()
+
+    with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
+        css_data = css.read()
+
+    style_provider.load_from_data(css_data)
+
+    Gtk.StyleContext.add_provider_for_screen(
+        Gdk.Screen.get_default(), style_provider,
+        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
+
     TouchPad(test=True)
+
     Gtk.main()
+
 
 if __name__ == "__main__":
     main()

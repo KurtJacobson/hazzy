@@ -51,6 +51,7 @@ HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
 UIDIR = os.path.join(HAZZYDIR, 'ui')
 MODULEDIR = os.path.join(HAZZYDIR, 'modules')
 MAINDIR = os.path.dirname(HAZZYDIR)
+STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 # Set system path so we can find our own modules
 if HAZZYDIR not in sys.path:
@@ -59,6 +60,7 @@ if HAZZYDIR not in sys.path:
 # Import our own modules
 from utilities import logger
 from modules.dro.dro import Dro
+from modules.gcodeview.gcodeview import GcodeViewWidget
 
 log = logger.get('HAZZY')
 
@@ -70,38 +72,28 @@ class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self, title="Hazzy")
 
-        # UI setup
         gladefile = os.path.join(UIDIR, 'hazzy_3.ui')
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
-        self.builder.connect_signals(self)
-
-        self.panel = self.builder.get_object('panel')
-        self.titlebar = self.builder.get_object('titlebar')
-        self.set_titlebar(self.titlebar)
-        self.add(self.panel)
 
         self.iconview = DragSourcePanel()
         self.drop_area = DropArea()
 
-        self.revealer = Gtk.Revealer()
-        self.revealer.set_reveal_child(True)
+        self.panel = self.builder.get_object('panel')
+        self.titlebar = self.builder.get_object('titlebar')
+        self.revealer_button = self.builder.get_object('revealer')
+        self.widget_chooser = self.builder.get_object('widget_chooser')
 
-        label = Gtk.Label("Label in a Revealer")
-        self.revealer.add(self.iconview)
+        self.set_titlebar(self.titlebar)
+        self.add(self.panel)
 
-        self.panel.pack_start(self.revealer, True, True, 0)
-
-        button = Gtk.Button("Reveal")
-        button.connect("clicked", self.on_reveal_clicked)
-
-        self.panel.pack_start(button, True, True, 0)
-
+        self.widget_chooser.add(self.iconview)
         self.panel.pack_start(self.drop_area, True, True, 0)
 
         self.add_image_targets()
 
+        self.revealer_button.connect("clicked", self.on_reveal_clicked)
         self.connect("delete-event", Gtk.main_quit)
 
     def add_image_targets(self, button=None):
@@ -119,15 +111,13 @@ class HazzyWindow(Gtk.Window):
         self.iconview.drag_source_add_text_targets()
 
     def on_reveal_clicked(self, button):
-        reveal = self.revealer.get_reveal_child()
-        self.revealer.set_reveal_child(not reveal)
+        reveal = self.widget_chooser.get_reveal_child()
+        self.widget_chooser.set_reveal_child(not reveal)
 
 
 class DragSourcePanel(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
-
-
 
         self.set_text_column(COLUMN_TEXT)
         self.set_pixbuf_column(COLUMN_PIXBUF)
@@ -160,7 +150,6 @@ class DragSourcePanel(Gtk.IconView):
 
 
 class DropArea(Gtk.Box):
-
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
@@ -170,12 +159,27 @@ class DropArea(Gtk.Box):
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
         dro_widget = Dro()
-        self.add(dro_widget)
+        gcv_widget = GcodeViewWidget()
 
+        self.add(dro_widget)
+        self.add(gcv_widget)
 
 def main():
+    style_provider = Gtk.CssProvider()
+
+    with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
+        css_data = css.read()
+
+    style_provider.load_from_data(css_data)
+
+    Gtk.StyleContext.add_provider_for_screen(
+        Gdk.Screen.get_default(), style_provider,
+        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
+
     win = HazzyWindow()
     win.show_all()
+
     Gtk.main()
 
 
