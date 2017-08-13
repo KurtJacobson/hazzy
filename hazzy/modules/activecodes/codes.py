@@ -41,24 +41,21 @@ class ActiveCodesWidget(Gtk.Box):
         self.status.on_value_changed('formated-gcodes', self.update_gcodes)
         self.status.on_value_changed('formated-mcodes', self.update_mcodes)
 
-        self.gcodes_box = Gtk.Box(orientation=HORIZONTAL)
-        self.mcodes_box = Gtk.Box(orientation=HORIZONTAL)
+        self.gcodes_box = None
+        self.mcodes_box = None
 
         self.gcodes_label = Gtk.Label()
-        self.mcodes_label = Gtk.Label()
-
         self.gcodes_label.set_text("Active GCode:")
+
+        self.mcodes_label = Gtk.Label()
         self.mcodes_label.set_text("Active MCode:")
-
-        self.pack_start(self.gcodes_box,  True, True, 0)
-        self.pack_start(self.mcodes_box,  True, True, 0)
-
-        self.gcodes_box.pack_start(self.gcodes_label,  True, True, 0)
-        self.mcodes_box.pack_start(self.mcodes_label,  True, True, 0)
 
         self.show_all()
 
     def update_gcodes(self, widget, codes):
+
+        self.gcodes_box = Gtk.Box(orientation=HORIZONTAL)
+        self.gcodes_box.pack_start(self.gcodes_label, True, True, 0)
 
         for code in codes:
             code_label = Gtk.Label()
@@ -66,8 +63,12 @@ class ActiveCodesWidget(Gtk.Box):
             self.gcodes_box.pack_start(code_label, True, True, 0)
 
         self.gcodes_box.show_all()
+        self.pack_start(self.gcodes_box,  True, True, 0)
 
     def update_mcodes(self, widget, codes):
+
+        self.mcodes_box = Gtk.Box(orientation=HORIZONTAL)
+        self.mcodes_box.pack_start(self.mcodes_label, True, True, 0)
 
         for code in codes:
             code_label = Gtk.Label()
@@ -75,3 +76,5 @@ class ActiveCodesWidget(Gtk.Box):
             self.mcodes_box.pack_start(code_label, True, True, 0)
 
         self.mcodes_box.show_all()
+        self.pack_start(self.mcodes_box,  True, True, 0)
+

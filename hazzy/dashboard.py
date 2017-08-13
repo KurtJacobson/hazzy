@@ -163,6 +163,8 @@ class DropArea(Gtk.Box):
         gcv_widget = GcodeViewWidget()
         ac_widget = ActiveCodesWidget()
 
+        self.add(dro_widget)
+        self.add(gcv_widget)
         self.add(ac_widget)
 
 def main():
