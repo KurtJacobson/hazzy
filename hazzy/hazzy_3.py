@@ -93,14 +93,14 @@ class LinuxCNC:
 
         self.status = status.Status
 
-        self.status.monitor('tool_in_spindle', self.test)
-        self.status.monitor('tool_in_spindle', self.test2)
-        self.status.monitor('g92_offset', self.g92)
-        self.status.monitor('file', self.on_file_changed)
+        self.status.on_value_changed('tool_in_spindle', self.test)
+        self.status.on_value_changed('tool_in_spindle', self.test2)
+        self.status.on_value_changed('g92_offset', self.g92)
+        self.status.on_value_changed('file', self.on_file_changed)
 
         # Connect stat
-        self.status.connect('update-axis-positions', self.update_position)
-        self.status.connect('active-codes-changed', self.update_codes)
+        self.status.connect('axis-positions', self.update_position)
+        self.status.connect('formated-gcodes', self.update_codes)
 
         self.window.connect("delete-event", Gtk.main_quit)
 
@@ -130,9 +130,8 @@ class LinuxCNC:
         label = self.builder.get_object('label')
         label.set_text(str(rel[1]))
 
-    def update_codes(self, widget, gcodes, mcodes):
+    def update_codes(self, widget, gcodes):
         print gcodes
-        print mcodes
 
 
 def main():
