@@ -84,7 +84,6 @@ class Status(GObject.GObject):
         self.report_actual_position = iniinfo.get_position_feedback_actual()
 
         self.axis_list = []
-
         self.file = None
 
         self.registry = []
@@ -120,6 +119,9 @@ class Status(GObject.GObject):
                 self.registry.append(attribute)
                 self.old[attribute] = None
 
+
+            self.old = {}
+
             self.connect(attribute, callback)
             self.old[attribute] = None
             if not internal:
@@ -136,7 +138,7 @@ class Status(GObject.GObject):
             self.stat.poll()
 
             for attribute in self.registry:
-                old = self.old[attribute]
+                old = self.old.get(attribute, None)
                 new = getattr(self.stat, attribute)
                 if old != new:
                     self.old[attribute] = new
@@ -148,6 +150,7 @@ class Status(GObject.GObject):
 
         except Exception as e:
             log.exception(e)
+
         return True
 
 
@@ -187,6 +190,7 @@ class Status(GObject.GObject):
                 formated_gcodes.append("G{0}".format(gcode / 10))
             else:
                 formated_gcodes.append("G{0}.{1}".format(gcode / 10, gcode % 10))
+        print formated_gcodes
         self.emit('formated-gcodes', formated_gcodes)
 
 
@@ -196,6 +200,7 @@ class Status(GObject.GObject):
             if mcode == -1: 
                 continue
             formated_mcodes.append("M{0}".format(mcode))
+        print formated_mcodes
         self.emit('formated-mcodes', formated_mcodes)
 
 
