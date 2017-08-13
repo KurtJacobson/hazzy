@@ -24,6 +24,20 @@
 }
 */
 
+button {
+    background: None;
+}
+
+button:active {
+    border-radius: 5px;
+    background: gray;
+}
+
+.frame {
+    border-radius: 7px;
+    border-width: 2px;
+}
+
 /***************
 * FileChooser *
 ***************/

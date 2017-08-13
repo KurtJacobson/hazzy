@@ -32,7 +32,7 @@ from gi.repository import GdkPixbuf
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
@@ -51,15 +51,15 @@ from modules.gcodeview.gcodeview import GcodeViewWidget
 
 class WidgetChooser(Gtk.Box):
 
-    def __init__(self, drop_area):
+    def __init__(self, dest):
         Gtk.Box.__init__(self)
 
-        self.drop_area = drop_area
+        self.dest = dest
 
         self.iconview = DragSourcePanel()
         self.pack_start(self.iconview, True, True, 0)
 
-        self.add_text_targets()
+        self.add_image_targets()
 
         self.connect("delete-event", Gtk.main_quit)
 
@@ -70,7 +70,7 @@ class WidgetChooser(Gtk.Box):
         targets = Gtk.TargetList.new([])
         targets.add_image_targets(TARGET_ENTRY_PIXBUF, True)
 
-        self.drop_area.drag_dest_set_target_list(targets)
+        self.dest.drag_dest_set_target_list(targets)
         self.iconview.drag_source_set_target_list(targets)
 
 
@@ -106,7 +106,7 @@ class DragSourcePanel(Gtk.IconView):
         selected_path = self.get_selected_items()[0]
         selected_iter = self.get_model().get_iter(selected_path)
 
-        if True: #info == TARGET_ENTRY_TEXT:
+        if info == TARGET_ENTRY_TEXT:
             text = self.get_model().get_value(selected_iter, COLUMN_TEXT)
             data.set_text(text, -1)
         elif info == TARGET_ENTRY_PIXBUF:
@@ -134,63 +134,22 @@ class DropArea(Gtk.Box):
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
         dro_widget = GcodeViewWidget()
-
-        label = data.get_text()
-
-        wwindow = WidgetWindow(dro_widget, label)
-
-        self.pack_start(wwindow, False, True, 0)
-
-
-class WidgetWindow(Gtk.Box):
-
-    def __init__(self, widget, label):
-        Gtk.Box.__init__(self)
-
-        builder = Gtk.Builder()
-        builder.add_from_file(os.path.join(PYDIR, 'widgetwindow.ui'))
-
-        self.label = builder.get_object('label')
-        self.box = builder.get_object('box')
-        wwindow = builder.get_object('widgetwindow')
-
-        self.add(wwindow)
-
-        self.box.add(widget)
-        self.label.set_text(label)
-
-        self.show_all()
+        self.pack_start(dro_widget, False, True, 10)
 
 
 # Testing Only
 def main():
-
-
-    style_provider = Gtk.CssProvider()
-
-    with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
-        css_data = css.read()
-
-    style_provider.load_from_data(css_data)
-
-    Gtk.StyleContext.add_provider_for_screen(
-        Gdk.Screen.get_default(), style_provider,
-        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-    )
-
-
-
     win = Gtk.Window()
     win.connect('destroy', Gtk.main_quit)
 
     box = Gtk.Box()
 
-    drop_area = DropArea()
+    droparea = DropArea()
 
-    chooser = WidgetChooser(drop_area)
+    chooser = WidgetChooser(droparea)
     box.pack_start(chooser, True, True, 0)
 
-    box.pack_start(drop_area, False, False, 0)
+    box.pack_start(droparea, False, False, 0)
 
     win.add(box)
     win.show_all()
