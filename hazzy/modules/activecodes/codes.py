@@ -57,14 +57,17 @@ class ActiveCodesWidget(Gtk.Box):
         self.mcodes_box.pack_start(self.mcodes_label,  True, True, 0)
 
         self.show_all()
-        
+
     def update_gcodes(self, widget, codes):
 
-        print("update_GCODES")
-        print(widget)
-        print(codes)
+        for code in codes:
+            code_label = Gtk.Label()
+            code_label.set_text(code)
+            self.gcodes_box.pack_start(code_label,  True, True, 0)
 
     def update_mcodes(self, widget, codes):
-        print("update_MCODES")
-        print(widget)
-        print(codes)
+
+        for code in codes:
+            code_label = Gtk.Label()
+            code_label.set_text(code)
+            self.mcodes_box.pack_start(code_label,  True, True, 0)
