@@ -19,41 +19,48 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import math
 import linuxcnc
+
 from gi.repository import GObject
 
 import getiniinfo
 
 # Setup logging
 import logger
+
 log = logger.get("HAZZY.STATUS")
 
+STATES = {
+    linuxcnc.STATE_ESTOP: 'ESTOP',
+    linuxcnc.STATE_ESTOP_RESET: 'RESET',
+    linuxcnc.STATE_ON: 'ON',
+    linuxcnc.STATE_OFF: 'OFF'
+}
 
-STATES = { linuxcnc.STATE_ESTOP:       'ESTOP'
-         , linuxcnc.STATE_ESTOP_RESET: 'RESET'
-         , linuxcnc.STATE_ON:          'ON'
-         , linuxcnc.STATE_OFF:         'OFF'
-         }
+MODES = {
+    linuxcnc.MODE_MANUAL: 'MAN',
+    linuxcnc.MODE_AUTO: 'AUTO',
+    linuxcnc.MODE_MDI: 'MDI'
+}
 
-MODES  = { linuxcnc.MODE_MANUAL: 'MAN'
-         , linuxcnc.MODE_AUTO:   'AUTO'
-         , linuxcnc.MODE_MDI:    'MDI'
-         }
+INTERP = {
+    linuxcnc.INTERP_WAITING: 'WAIT',
+    linuxcnc.INTERP_READING: 'READ',
+    linuxcnc.INTERP_PAUSED: 'PAUSED',
+    linuxcnc.INTERP_IDLE: 'IDLE'
+}
 
-INTERP = { linuxcnc.INTERP_WAITING: 'WAIT'
-         , linuxcnc.INTERP_READING: 'READ'
-         , linuxcnc.INTERP_PAUSED:  'PAUSED'
-         , linuxcnc.INTERP_IDLE:    'IDLE'
-         }
-
-MOTION = { linuxcnc.TRAJ_MODE_COORD:  'COORD'
-         , linuxcnc.TRAJ_MODE_FREE:   'FREE'
-         , linuxcnc.TRAJ_MODE_TELEOP: 'TELEOP'
-         }
+MOTION = {
+    linuxcnc.TRAJ_MODE_COORD: 'COORD',
+    linuxcnc.TRAJ_MODE_FREE: 'FREE',
+    linuxcnc.TRAJ_MODE_TELEOP: 'TELEOP'
+}
 
 
 def singleton(cls):
     return cls()
+
 
 @singleton
 class Status(GObject.GObject):
@@ -67,8 +74,6 @@ class Status(GObject.GObject):
 
         'file-loaded': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
     }
-
-
 
     def __init__(self, stat=None):
 
@@ -104,17 +109,15 @@ class Status(GObject.GObject):
 
         GObject.timeout_add(50, self.periodic)
 
-
     # This allows monitoring any of the linuxcnc.stat attributes
     # and connecting a callback to be called on attribute value change
     def on_value_changed(self, attribute, callback, internal=False):
 
         if hasattr(self.stat, attribute) \
-            or attribute.replace('_', '-') in self.signals:
+                or attribute.replace('_', '-') in self.signals:
 
             if attribute.replace('_', '-') not in self.signals \
-                and attribute not in self.registry:
-
+                    and attribute not in self.registry:
                 GObject.signal_new(attribute, self, GObject.SignalFlags.RUN_FIRST, None, (object,))
                 self.registry.append(attribute)
 
@@ -125,12 +128,10 @@ class Status(GObject.GObject):
 
             if not internal:
                 log.info('"{}" connected to "stat.{}" value changed' \
-                    .format(str(callback.__name__), attribute))
+                         .format(str(callback.__name__), attribute))
 
         else:
             log.warning('linuxcnc.stat does not have attribute "{}"'.format(attribute))
-
-
 
     def periodic(self):
         try:
@@ -152,33 +153,26 @@ class Status(GObject.GObject):
 
         return True
 
-
-
     def _update_task_state(self, widget, task_state):
         state_str = STATES.get(task_state, 'UNKNOWN')
         log.debug("Machine state: {0}".format(state_str))
-
 
     def _update_task_mode(self, widget, task_mode):
         mode_str = MODES.get(task_mode, 'UNKNOWN')
         log.debug("Machine mode: {0}".format(mode_str))
 
-
     def _update_interp_state(self, widget, interp_state):
         interp_str = INTERP.get(interp_state, 'UNKNOWN')
         log.debug("Interp state: {0}".format(interp_str))
-
 
     def _update_motion_mode(self, widget, motion_mode):
         motion_str = MOTION.get(motion_mode, 'UNKNOWN')
         log.debug("Motion mode: {0}".format(motion_str))
 
-
     def _update_work_corordinate(self, widget, g5x_index):
         work_cords = ["G53", "G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3"]
         work_cord_str = work_cords[g5x_index]
         log.debug("Work coord: {}".format(work_cord_str))
-
 
     def _update_active_gcodes(self, widget, gcodes):
         formated_gcodes = []
@@ -191,23 +185,19 @@ class Status(GObject.GObject):
                 formated_gcodes.append("G{0}.{1}".format(gcode / 10, gcode % 10))
         self.emit('formated-gcodes', formated_gcodes)
 
-
     def _update_active_mcodes(self, widget, mcodes):
         formated_mcodes = []
         for mcode in sorted(mcodes[1:]):
-            if mcode == -1: 
+            if mcode == -1:
                 continue
             formated_mcodes.append("M{0}".format(mcode))
         self.emit('formated-mcodes', formated_mcodes)
 
-
     def _update_file(self, widget, file):
         if self.stat.interp_state == linuxcnc.INTERP_IDLE \
-            and self.stat.call_level == 0:
-
+                and self.stat.call_level == 0:
             self.emit('file-loaded', file)
             log.debug('File loaded: "{}"'.format(file))
-
 
     def _update_axis_list(self, widget, axis_mask):
         mask = '{0:09b}'.format(axis_mask)
@@ -216,7 +206,6 @@ class Status(GObject.GObject):
         for anum, enabled in enumerate(mask[::-1]):
             if enabled == '1':
                 self.axis_list.append(anum)
-
 
     def _update_axis_positions(self):
 
@@ -230,7 +219,7 @@ class Status(GObject.GObject):
         g92_offset = self.stat.g92_offset
         tool_offset = self.stat.tool_offset
 
-        rel = [0]*9
+        rel = [0] * 9
         for axis in self.axis_list:
             rel[axis] = pos[axis] - g5x_offset[axis] - tool_offset[axis]
 
@@ -246,7 +235,6 @@ class Status(GObject.GObject):
 
         self.emit('axis-positions', pos, tuple(rel), tuple(dtg))
 
-
     def _update_joint_positions(self):
 
         if self.report_actual_position:
@@ -255,4 +243,3 @@ class Status(GObject.GObject):
             pos = self.stat.joint_position
 
         self.emit('joint-positions', pos)
-
