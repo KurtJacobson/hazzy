@@ -60,6 +60,7 @@ if HAZZYDIR not in sys.path:
 # Import our own modules
 from utilities import logger
 from modules.dro.dro import Dro
+from modules.gcodeview.gcodeview import GcodeViewWidget
 
 log = logger.get('HAZZY')
 
@@ -158,7 +159,10 @@ class DropArea(Gtk.Box):
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
         dro_widget = Dro()
+        gcv_widget = GcodeViewWidget()
+
         self.add(dro_widget)
+        self.add(gcv_widget)
 
 def main():
     style_provider = Gtk.CssProvider()
