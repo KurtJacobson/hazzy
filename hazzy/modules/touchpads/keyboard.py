@@ -187,7 +187,12 @@ class Keyboard():
                 self.builder.get_object('ctrl').set_active(False)
 
             #self.entry.get_parent_window()
-            event.window = self.entry.get_window()
+            # FIXME This is a kludge to get the window for both Entry and TextView
+            try:
+                event.window = self.entry.get_window()
+            except TypeError:
+                event.window = self.entry.get_window(Gtk.TextWindowType.TEXT)
+
             self.entry.event(event)    # Do the initial event
 
             # Call key repeat function every 50ms
