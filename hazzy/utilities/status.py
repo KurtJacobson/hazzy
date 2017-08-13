@@ -120,13 +120,12 @@ class Status(GObject.GObject):
                     and attribute not in self.registry:
                 GObject.signal_new(attribute, self, GObject.SignalFlags.RUN_FIRST, None, (object,))
                 self.registry.append(attribute)
-                self.old[attribute] = None
-
-
-            self.old = {}
 
             self.connect(attribute, callback)
-            self.old[attribute] = None
+
+            # Force update
+            self.old.clear()
+
             if not internal:
                 log.info('"{}" connected to "stat.{}" value changed' \
                          .format(str(callback.__name__), attribute))
@@ -139,7 +138,7 @@ class Status(GObject.GObject):
             self.stat.poll()
 
             for attribute in self.registry:
-                old = self.old.get(attribute, None)
+                old = self.old.get(attribute)
                 new = getattr(self.stat, attribute)
                 if old != new:
                     self.old[attribute] = new
