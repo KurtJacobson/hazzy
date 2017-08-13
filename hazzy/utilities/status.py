@@ -117,13 +117,12 @@ class Status(GObject.GObject):
 
                 GObject.signal_new(attribute, self, GObject.SignalFlags.RUN_FIRST, None, (object,))
                 self.registry.append(attribute)
-                self.old[attribute] = None
-
-
-            self.old = {}
 
             self.connect(attribute, callback)
-            self.old[attribute] = None
+
+            # Force update
+            self.old.clear()
+
             if not internal:
                 log.info('"{}" connected to "stat.{}" value changed' \
                     .format(str(callback.__name__), attribute))
@@ -138,7 +137,7 @@ class Status(GObject.GObject):
             self.stat.poll()
 
             for attribute in self.registry:
-                old = self.old.get(attribute, None)
+                old = self.old.get(attribute)
                 new = getattr(self.stat, attribute)
                 if old != new:
                     self.old[attribute] = new
@@ -190,7 +189,6 @@ class Status(GObject.GObject):
                 formated_gcodes.append("G{0}".format(gcode / 10))
             else:
                 formated_gcodes.append("G{0}.{1}".format(gcode / 10, gcode % 10))
-        print formated_gcodes
         self.emit('formated-gcodes', formated_gcodes)
 
 
@@ -200,7 +198,6 @@ class Status(GObject.GObject):
             if mcode == -1: 
                 continue
             formated_mcodes.append("M{0}".format(mcode))
-        print formated_mcodes
         self.emit('formated-mcodes', formated_mcodes)
 
 
