@@ -184,7 +184,6 @@ class Status(GObject.GObject):
                 formated_gcodes.append("G{0}".format(gcode / 10))
             else:
                 formated_gcodes.append("G{0}.{1}".format(gcode / 10, gcode % 10))
-        print formated_gcodes
         self.emit('formated-gcodes', formated_gcodes)
 
     def _update_active_mcodes(self, widget, mcodes):
@@ -193,7 +192,6 @@ class Status(GObject.GObject):
             if mcode == -1:
                 continue
             formated_mcodes.append("M{0}".format(mcode))
-        print formated_mcodes
         self.emit('formated-mcodes', formated_mcodes)
 
     def _update_file(self, widget, file):
