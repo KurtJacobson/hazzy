@@ -50,23 +50,26 @@ log = logger.get("HAZZY.GCODEVIEW")
 
 
 class GcodeViewWidget(Gtk.Frame):
+
     def __init__(self):
         Gtk.Frame.__init__(self)
 
         self.gcodeview = GcodeView(preview=True)
-        self.scrolled = Gtk.ScrolledWindow()
 
-        self.scrolled.add(self.gcodeview.view)
-
-        self.add(self.scrolled)
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.add(self.gcodeview.view)
+        self.add(scrolled)
 
         self.gcodeview.buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
         self.gcodeview.highlight_line(3, 'motion')
 
-        self.set_hexpand(True)
-        self.set_vexpand(True)
+        self.set_size_request(200, 200)
+
+        self.set_hexpand(False)
+        self.set_vexpand(False)
 
         self.show_all()
+
 
 class GcodeView(GObject.GObject,):
     __gtype_name__ = 'GcodeView'
@@ -83,8 +86,8 @@ class GcodeView(GObject.GObject,):
         self.is_preview = preview
 
         # Module init
-#        self.prefs = Preferences
-#        self.keyboard = Keyboard
+        self.prefs = Preferences
+        self.keyboard = Keyboard
 
         # create buffer
         self.view = GtkSource.View()
@@ -211,8 +214,8 @@ class GcodeView(GObject.GObject,):
         if self.is_preview:
             if self.current_file is None:
                 pass #self.load_file(self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", "", str))
-            if False: #self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES"):
-                pass #self.keyboard.show(widget, True)
+            if True: #self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES"):
+                self.keyboard.show(widget, True)
 
 
     # If no "save as" file name specified save to the current file in preview
@@ -234,6 +237,7 @@ class GcodeView(GObject.GObject,):
         if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
             if kv == Gdk.KEY_s:
                 self.save()
+
 
 
 # ==========================================================

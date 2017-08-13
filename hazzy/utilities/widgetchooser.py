@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #   Copyright (c) 2017 Kurt Jacobson
-#        <kcjengr@gmail.com>
+#       <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #
@@ -28,10 +28,11 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
+from gi.repository import GdkPixbuf
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
@@ -39,15 +40,21 @@ UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 # Setup logging
-from utilities import logger
-log = logger.get("HAZZY.KEYBOARD")
+import logger
+log = logger.get("HAZZY.WIDGETCHOOSER")
 
+from modules.gcodeview.gcodeview import GcodeViewWidget
+
+(TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
+(COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
 
 
 class WidgetChooser(Gtk.Box):
 
-    def __init__(self):
+    def __init__(self, dest):
         Gtk.Box.__init__(self)
+
+        self.dest = dest
 
         self.iconview = DragSourcePanel()
         self.pack_start(self.iconview, True, True, 0)
@@ -56,12 +63,14 @@ class WidgetChooser(Gtk.Box):
 
         self.connect("delete-event", Gtk.main_quit)
 
+        self.show_all()
+
 
     def add_image_targets(self, button=None):
         targets = Gtk.TargetList.new([])
         targets.add_image_targets(TARGET_ENTRY_PIXBUF, True)
 
-        self.drop_area.drag_dest_set_target_list(targets)
+        self.dest.drag_dest_set_target_list(targets)
         self.iconview.drag_source_set_target_list(targets)
 
 
@@ -88,7 +97,7 @@ class DragSourcePanel(Gtk.IconView):
         self.add_item("Code View", "help-about")
         self.add_item("Code Editor", "edit-copy")
 
-        self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], DRAG_ACTION)
+        self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY)
 
         self.connect("drag-data-get", self.on_drag_data_get)
 
@@ -116,19 +125,35 @@ class DropArea(Gtk.Box):
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
-        self.drag_dest_set(Gtk.DestDefaults.ALL, [], DRAG_ACTION)
+        self.set_size_request(100, 300)
+
+        self.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
         self.connect("drag-data-received", self.on_drag_data_received)
 
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
-        dro_widget = Dro()
-        self.add(dro_widget)
+        dro_widget = GcodeViewWidget()
+        self.pack_start(dro_widget, False, True, 10)
 
 
+# Testing Only
 def main():
-    win = HazzyWindow()
+    win = Gtk.Window()
+    win.connect('destroy', Gtk.main_quit)
+
+    box = Gtk.Box()
+
+    droparea = DropArea()
+
+    chooser = WidgetChooser(droparea)
+    box.pack_start(chooser, True, True, 0)
+
+    box.pack_start(droparea, False, False, 0)
+
+    win.add(box)
     win.show_all()
+
     Gtk.main()
 
 
