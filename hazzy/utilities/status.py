@@ -24,8 +24,6 @@ import linuxcnc
 
 from gi.repository import GObject
 
-import getiniinfo
-
 # Setup logging
 import logger
 
@@ -57,6 +55,11 @@ MOTION = {
     linuxcnc.TRAJ_MODE_TELEOP: 'TELEOP'
 }
 
+SIGNALS = {
+    'formated-gcodes': 'gcodes',
+    'formated-mcodes': 'mcodes',
+    'file-loaded': 'file'
+}
 
 def singleton(cls):
     return cls()
@@ -68,11 +71,9 @@ class Status(GObject.GObject):
     __gsignals__ = {
         'formated-gcodes': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
         'formated-mcodes': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
-
+        'file-loaded': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
         'joint-positions': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
         'axis-positions': (GObject.SignalFlags.RUN_FIRST, None, (object, object, object)),
-
-        'file-loaded': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
     }
 
     def __init__(self, stat=None):
@@ -84,9 +85,7 @@ class Status(GObject.GObject):
         self.stat = stat or linuxcnc.stat()
         self.error = linuxcnc.error_channel()
 
-        # Get INI settings
-        iniinfo = getiniinfo.GetIniInfo
-        self.report_actual_position = iniinfo.get_position_feedback_actual()
+        self.report_actual_position = False
 
         self.axis_list = []
         self.file = None
@@ -94,16 +93,16 @@ class Status(GObject.GObject):
         self.registry = []
         self.old = {}
 
-        self.on_value_changed('axis_mask', self._update_axis_list, True)
+        self.on_value_changed('axis_mask', self._update_axis_list, False)
 
-        self.on_value_changed('task_state', self._update_task_state, True)
-        self.on_value_changed('task_mode', self._update_task_mode, True)
-        self.on_value_changed('interp_state', self._update_interp_state, True)
-        self.on_value_changed('motion_mode', self._update_motion_mode, True)
-        self.on_value_changed('g5x_index', self._update_work_corordinate, True)
+        self.on_value_changed('task_state', self._update_task_state, False)
+        self.on_value_changed('task_mode', self._update_task_mode, False)
+        self.on_value_changed('interp_state', self._update_interp_state, False)
+        self.on_value_changed('motion_mode', self._update_motion_mode, False)
+        self.on_value_changed('g5x_index', self._update_work_corordinate, False)
 
-        self.on_value_changed('gcodes', self._update_active_gcodes, True)
-        self.on_value_changed('mcodes', self._update_active_mcodes, True)
+        self.on_value_changed('gcodes', self._update_active_gcodes, False)
+        self.on_value_changed('mcodes', self._update_active_mcodes, False)
 
         self.on_value_changed('file', self._update_file, True)
 
@@ -111,7 +110,7 @@ class Status(GObject.GObject):
 
     # This allows monitoring any of the linuxcnc.stat attributes
     # and connecting a callback to be called on attribute value change
-    def on_value_changed(self, attribute, callback, internal=False):
+    def on_value_changed(self, attribute, callback, print_info=True):
 
         if hasattr(self.stat, attribute) \
                 or attribute.replace('_', '-') in self.signals:
@@ -123,10 +122,13 @@ class Status(GObject.GObject):
 
             self.connect(attribute, callback)
 
-            # Force update
-            self.old.clear()
+            # Cause update
+            if attribute in SIGNALS.keys():
+                self.old[SIGNALS[attribute]] = None
+            else:
+                self.old[attribute] = None
 
-            if not internal:
+            if print_info:
                 log.info('"{}" connected to "stat.{}" value changed' \
                          .format(str(callback.__name__), attribute))
 
@@ -138,7 +140,7 @@ class Status(GObject.GObject):
             self.stat.poll()
 
             for attribute in self.registry:
-                old = self.old.get(attribute)
+                old = self.old[attribute]
                 new = getattr(self.stat, attribute)
                 if old != new:
                     self.old[attribute] = new
