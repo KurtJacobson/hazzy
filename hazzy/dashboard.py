@@ -51,6 +51,7 @@ HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
 UIDIR = os.path.join(HAZZYDIR, 'ui')
 MODULEDIR = os.path.join(HAZZYDIR, 'modules')
 MAINDIR = os.path.dirname(HAZZYDIR)
+STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 # Set system path so we can find our own modules
 if HAZZYDIR not in sys.path:
@@ -117,8 +118,6 @@ class DragSourcePanel(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
 
-
-
         self.set_text_column(COLUMN_TEXT)
         self.set_pixbuf_column(COLUMN_PIXBUF)
 
@@ -150,7 +149,6 @@ class DragSourcePanel(Gtk.IconView):
 
 
 class DropArea(Gtk.Box):
-
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
@@ -162,10 +160,22 @@ class DropArea(Gtk.Box):
         dro_widget = Dro()
         self.add(dro_widget)
 
-
 def main():
+    style_provider = Gtk.CssProvider()
+
+    with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
+        css_data = css.read()
+
+    style_provider.load_from_data(css_data)
+
+    Gtk.StyleContext.add_provider_for_screen(
+        Gdk.Screen.get_default(), style_provider,
+        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
+
     win = HazzyWindow()
     win.show_all()
+
     Gtk.main()
 
 
