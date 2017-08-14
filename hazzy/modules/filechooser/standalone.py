@@ -18,7 +18,7 @@ if HAZZYDIR not in sys.path:
 
 # Imoport our own modules
 import filechooser
-from modules.touchpads.keyboard import Keyboard
+from hazzy.modules.touchpads.keyboard import Keyboard
 
 
 class Filechooser(object):

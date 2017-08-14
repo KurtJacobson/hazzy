@@ -34,9 +34,10 @@
 
 import os
 import ConfigParser
-import logging
 
-log = logging.getLogger("HAZZY.PREFS")
+from hazzy.utilities import logger
+
+log = logger.get("HAZZY.PREFS")
 
 cp = ConfigParser.RawConfigParser
 cp.optionxform = str  # Needed to maintain option case

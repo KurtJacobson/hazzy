@@ -22,7 +22,8 @@
 
 import os
 import logging
-from colored_log import ColoredFormatter
+
+from hazzy.utilities.colored_log import ColoredFormatter
 
 PYDIR = os.path.dirname(os.path.realpath(__file__))
 HAZZYDIR = os.path.dirname(PYDIR)

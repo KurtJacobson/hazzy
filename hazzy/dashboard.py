@@ -58,10 +58,10 @@ if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 # Import our own modules
-from utilities import logger
-from modules.dro.dro import Dro
-from modules.gcodeview.gcodeview import GcodeViewWidget
-from modules.activecodes.codes import ActiveCodesWidget
+from hazzy.utilities import logger
+from hazzy.modules.dro.dro import Dro
+from hazzy.modules.gcodeview.gcodeview import GcodeViewWidget
+from hazzy.modules.activecodes.codes import ActiveCodesWidget
 
 log = logger.get('HAZZY')
 

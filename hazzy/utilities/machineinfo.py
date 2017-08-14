@@ -5,7 +5,7 @@ import getiniinfo
 
 
 # Setup logging
-import logger
+from hazzy.utilities import logger
 log = logger.get("HAZZY.MACHINEINFO")
 
 AXIS_LETTERS = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W']

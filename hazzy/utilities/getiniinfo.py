@@ -28,9 +28,11 @@
 
 
 from linuxcnc import ini
+
 import os
 import sys
-import logger
+
+from hazzy.utilities import logger
 
 log = logger.get("HAZZY.GETINI")
 
