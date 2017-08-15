@@ -10,7 +10,11 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 
 from constants import Paths
+
+from hazzy.utilities import logger
 from hazzy.dashboard import HazzyWindow
+
+log = logger.get('HAZZY')
 
 BASE = None
 INIFILE = None
@@ -42,7 +46,11 @@ def main(argv):
 
     hazzy_window.connect('delete-event', Gtk.main_quit)
 
+    log.info("Start")
+
     Gtk.main()
+    
+    log.info("Quit")
 
 
 if __name__ == "__main__":
