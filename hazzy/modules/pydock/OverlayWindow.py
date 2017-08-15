@@ -126,12 +126,16 @@ class OverlayWindow(Gtk.Window):
 
         style_ctxt = self.get_style_context()
 
+        """
         colorDic = {"#18b0ff": getcol("p_light_selected"),
                     "#575757": getcol("p_text_aa"),
                     "#e3ddd4": getcol("p_bg_color"),
                     "#d4cec5": getcol("p_bg_insensitive"),
                     "#ffffff": getcol("p_base_color"),
                     "#000000": getcol("p_fg_color")}
+        """
+
+        colorDic = {}
 
         data = open(svgPath).read()
         data = re.sub(
