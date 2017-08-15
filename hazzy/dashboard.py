@@ -35,8 +35,8 @@ from constants import Paths
 
 # Import our own modules
 from hazzy.utilities import logger
-from hazzy.utilities.widgetchooser import DragSourcePanel
-from hazzy.utilities.widgetchooser import DropArea
+from hazzy.modules.widgetchooser.widgetchooser import DragSourcePanel
+from hazzy.modules.widgetchooser.widgetchooser import DropArea
 
 log = logger.get('HAZZY.DASHBOARD')
 

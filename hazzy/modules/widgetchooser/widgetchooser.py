@@ -32,7 +32,7 @@ from gi.repository import GdkPixbuf
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
@@ -40,39 +40,36 @@ UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 # Setup logging
-import logger
-log = logger.get("HAZZY.WIDGETCHOOSER")
+from hazzy.utilities import logger
+from hazzy.modules.gcodeview.gcodeview import GcodeViewWidget
 
-from modules.gcodeview.gcodeview import GcodeViewWidget
+log = logger.get("HAZZY.WIDGETCHOOSER")
 
 (TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
 (COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
 
 
 class WidgetChooser(Gtk.Box):
-
-    def __init__(self, dest):
+    def __init__(self, drop_area):
         Gtk.Box.__init__(self)
 
-        self.dest = dest
+        self.drop_area = drop_area
 
         self.iconview = DragSourcePanel()
         self.pack_start(self.iconview, True, True, 0)
 
-        self.add_image_targets()
+        self.add_text_targets()
 
         self.connect("delete-event", Gtk.main_quit)
 
         self.show_all()
 
-
     def add_image_targets(self, button=None):
         targets = Gtk.TargetList.new([])
         targets.add_image_targets(TARGET_ENTRY_PIXBUF, True)
 
-        self.dest.drag_dest_set_target_list(targets)
+        self.drop_area.drag_dest_set_target_list(targets)
         self.iconview.drag_source_set_target_list(targets)
-
 
     def add_text_targets(self, button=None):
         self.drop_area.drag_dest_set_target_list(None)
@@ -80,7 +77,6 @@ class WidgetChooser(Gtk.Box):
 
         self.drop_area.drag_dest_add_text_targets()
         self.iconview.drag_source_add_text_targets()
-
 
 
 class DragSourcePanel(Gtk.IconView):
@@ -101,27 +97,23 @@ class DragSourcePanel(Gtk.IconView):
 
         self.connect("drag-data-get", self.on_drag_data_get)
 
-
     def on_drag_data_get(self, widget, drag_context, data, info, time):
         selected_path = self.get_selected_items()[0]
         selected_iter = self.get_model().get_iter(selected_path)
 
-        if info == TARGET_ENTRY_TEXT:
+        if True:  # info == TARGET_ENTRY_TEXT:
             text = self.get_model().get_value(selected_iter, COLUMN_TEXT)
             data.set_text(text, -1)
         elif info == TARGET_ENTRY_PIXBUF:
             pixbuf = self.get_model().get_value(selected_iter, COLUMN_PIXBUF)
             data.set_pixbuf(pixbuf)
 
-
     def add_item(self, text, icon_name):
         pixbuf = Gtk.IconTheme.get_default().load_icon(icon_name, 16, 0)
         self.get_model().append([text, pixbuf])
 
 
-
 class DropArea(Gtk.Box):
-
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
@@ -130,26 +122,59 @@ class DropArea(Gtk.Box):
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
         self.connect("drag-data-received", self.on_drag_data_received)
 
-
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
-
         dro_widget = GcodeViewWidget()
-        self.pack_start(dro_widget, False, True, 10)
+
+        label = data.get_text()
+
+        wwindow = WidgetWindow(dro_widget, label)
+
+        self.pack_start(wwindow, False, True, 0)
+
+
+class WidgetWindow(Gtk.Box):
+    def __init__(self, widget, label):
+        Gtk.Box.__init__(self)
+
+        builder = Gtk.Builder()
+        builder.add_from_file(os.path.join(PYDIR, 'ui', 'widgetwindow.ui'))
+
+        self.label = builder.get_object('label')
+        self.box = builder.get_object('box')
+        self.wwindow = builder.get_object('widgetwindow')
+
+        self.label.set_text(label)
+        self.box.add(widget)
+        self.add(self.wwindow)
+
+        self.show_all()
 
 
 # Testing Only
 def main():
+    style_provider = Gtk.CssProvider()
+
+    with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
+        css_data = css.read()
+
+    style_provider.load_from_data(css_data)
+
+    Gtk.StyleContext.add_provider_for_screen(
+        Gdk.Screen.get_default(), style_provider,
+        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
+
     win = Gtk.Window()
     win.connect('destroy', Gtk.main_quit)
 
     box = Gtk.Box()
 
-    droparea = DropArea()
+    drop_area = DropArea()
 
-    chooser = WidgetChooser(droparea)
+    chooser = WidgetChooser(drop_area)
     box.pack_start(chooser, True, True, 0)
 
-    box.pack_start(droparea, False, False, 0)
+    box.pack_start(drop_area, False, False, 0)
 
     win.add(box)
     win.show_all()
