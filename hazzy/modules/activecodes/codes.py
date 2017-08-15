@@ -20,11 +20,10 @@ if HAZZYDIR not in sys.path:
 UIDIR = os.path.join(PYDIR)
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
-from utilities.status import Status
+from hazzy.utilities.status import Status
+from hazzy.utilities import logger
 
 # Setup logging
-
-from utilities import logger
 log = logger.get("HAZZY.ACTIVE_CODES_WIDGET")
 
 VERTICAL = Gtk.Orientation.VERTICAL

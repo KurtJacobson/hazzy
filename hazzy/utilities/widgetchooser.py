@@ -40,10 +40,10 @@ UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 # Setup logging
-import logger
-log = logger.get("HAZZY.WIDGETCHOOSER")
+from hazzy.utilities import logger
+from hazzy.modules.gcodeview.gcodeview import GcodeViewWidget
 
-from modules.gcodeview.gcodeview import GcodeViewWidget
+log = logger.get("HAZZY.WIDGETCHOOSER")
 
 (TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
 (COLUMN_TEXT, COLUMN_PIXBUF) = range(2)

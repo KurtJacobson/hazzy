@@ -25,7 +25,7 @@ import linuxcnc
 from gi.repository import GObject
 
 # Setup logging
-import logger
+from hazzy.utilities import logger
 
 log = logger.get("HAZZY.STATUS")
 

@@ -41,11 +41,12 @@ LANGDIR = os.path.join(PYDIR, 'gcode_highlight', "language-specs")
 STYLEDIR = os.path.join(PYDIR, 'gcode_highlight', "styles")
 
 # Import our own modules
-from utilities.preferences import Preferences
-from modules.touchpads.keyboard import Keyboard
+from hazzy.utilities import logger
+from hazzy.utilities.preferences import Preferences
+from hazzy.modules.touchpads.keyboard import Keyboard
+
 
 # Setup logger
-from utilities import logger
 log = logger.get("HAZZY.GCODEVIEW")
 
 

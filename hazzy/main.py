@@ -58,11 +58,12 @@ if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 # Import our own modules
-from utilities import logger
-log = logger.get('HAZZY')
+from hazzy.utilities import logger
+from hazzy.utilities import status
+from hazzy.modules.dro.dro import Dro
 
-from utilities import status
-from modules.dro.dro import Dro
+
+log = logger.get('HAZZY')
 
 
 class LinuxCNC:

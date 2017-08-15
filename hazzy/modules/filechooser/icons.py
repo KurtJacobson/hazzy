@@ -19,12 +19,16 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 import gi
+
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
 gi.require_version('Gio', '2.0')
+
+from gi.repository import Gtk
 from gi.repository import Gio
+
 import mimetypes
-import userdirectories
+
+from hazzy.modules.filechooser import userdirectories
 
 ICONSIZE = 24
 
