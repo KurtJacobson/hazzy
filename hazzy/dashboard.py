@@ -114,8 +114,7 @@ class HazzyWindow(Gtk.Window):
         self.starButton.show_all()
 
     def __onDragEnd(self, widget, context):
-        for instance in self.getInstances(self.perspective):
-           instance.hideArrows()
+        self.starButton.hide()
 
     def __onDrop(self, starButton, position, sender):
         self.highlightArea.hide()
