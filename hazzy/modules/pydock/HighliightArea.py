@@ -21,6 +21,10 @@ class HighlightArea(OverlayWindow):
 
     def showAt(self, position):
         alloc = self.myparent.get_allocation()
+        width = 0
+        height = 0
+        x_loc = 0
+        y_loc = 0
         if position == NORTH:
             x_loc, y_loc = 0, 0
             width, height = alloc.width, alloc.height * 0.381966011

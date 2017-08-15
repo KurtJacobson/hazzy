@@ -30,6 +30,7 @@ class OverlayWindow(Gtk.Window):
             self.set_visual(visual)
         self.myparent = parent
 
+
     # ===========================================================================
     #   The overlay stuff
     # ===========================================================================
@@ -117,13 +118,13 @@ class OverlayWindow(Gtk.Window):
 
         # return hex string #rrggbb
         def getcol(col):
-            found, color = sytle_ctxt.lookup_color(col)
+            found, color = style_ctxt.lookup_color(col)
             # not found colors are black
             if not found:
                 print("color not found in overlaywindow.py:", col)
             return hexcol(color)
 
-        sytle_ctxt = self.get_style_context()
+        style_ctxt = self.get_style_context()
 
         colorDic = {"#18b0ff": getcol("p_light_selected"),
                     "#575757": getcol("p_text_aa"),
