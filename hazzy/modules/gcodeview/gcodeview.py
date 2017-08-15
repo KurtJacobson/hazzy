@@ -33,7 +33,7 @@ from gi.repository import GtkSource
 
 # Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
 if not HAZZYDIR in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
@@ -163,22 +163,17 @@ class GcodeView(GObject.GObject,):
 
 
     def highlight_line(self, lnum, style='none'):
-        print lnum, style
         if not lnum or lnum == -1:
             if self.mark:
                 self.buf.delete_mark(self.mark)
                 self.mark = None
-            print '1'
             return
         iter = self.buf.get_iter_at_line(lnum-1)
-        print iter
         if not self.mark:
-            print '2'
             self.mark = self.buf.create_source_mark(style, style, iter)
         elif self.mark != self.buf.get_mark(style):
             self.buf.delete_mark(self.mark)
             self.mark = self.buf.create_source_mark(style, style, iter)
-            print '3'
         else:
             self.buf.move_mark(self.mark, iter)
         self.view.scroll_to_mark(self.mark, 0, True, 0, 0.5)
