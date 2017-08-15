@@ -30,14 +30,10 @@ from gi.repository import Gdk
 from gi.repository import GObject
 from gi.repository import GdkPixbuf
 
+from constants import Paths
+
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
-UIDIR = os.path.join(PYDIR, 'ui')
-STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 # Setup logging
 from hazzy.utilities import logger
@@ -154,7 +150,7 @@ class WidgetWindow(Gtk.Box):
 def main():
     style_provider = Gtk.CssProvider()
 
-    with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
+    with open(os.path.join(Paths.STYLEDIR, "style.css"), 'rb') as css:
         css_data = css.read()
 
     style_provider.load_from_data(css_data)
