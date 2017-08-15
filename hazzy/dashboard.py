@@ -38,18 +38,46 @@ from hazzy.utilities import logger
 from hazzy.modules.widgetchooser.widgetchooser import DragSourcePanel
 from hazzy.modules.widgetchooser.widgetchooser import DropArea
 
+from hazzy.modules.pydock.StarArrowButton import StarArrowButton
+from hazzy.modules.pydock.HighliightArea import HighlightArea
+
 log = logger.get('HAZZY.DASHBOARD')
 
 
 class HazzyWindow(Gtk.Window):
     def __init__(self):
-        Gtk.Window.__init__(self, title="Hazzy")
+        Gtk.Window.__init__(self)
 
         gladefile = os.path.join(Paths.UIDIR, 'hazzy_3.ui')
 
-        self.iconview = DragSourcePanel()
+        self.dockable = True
 
+        self.iconview = DragSourcePanel()
         self.drop_area = DropArea()
+
+        self.iconview.connect("drag-begin", self.__onDragBegin),
+        self.iconview.connect("drag-end", self.__onDragEnd),
+        # self.connect_after("switch-page", self.__onPageSwitched),
+
+        self.highlightArea = HighlightArea(self)
+
+        self.button_cids = []
+
+        self.starButton = StarArrowButton(
+            self,
+            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_top.svg"),
+            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_right.svg"),
+            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_bottom.svg"),
+            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_left.svg"),
+            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_center.svg"),
+            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_star.svg")
+        )
+
+        self.button_cids += [
+            self.starButton.connect("dropped", self.__onDrop),
+            self.starButton.connect("hovered", self.__onHover),
+            self.starButton.connect("left", self.__onLeave),
+        ]
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
@@ -76,9 +104,39 @@ class HazzyWindow(Gtk.Window):
         self.revealer_area.set_reveal_child(not reveal)
 
     def add_targets(self):
-
         self.drop_area.drag_dest_set_target_list(None)
         self.iconview.drag_source_set_target_list(None)
 
         self.drop_area.drag_dest_add_text_targets()
         self.iconview.drag_source_add_text_targets()
+
+    def __onDragBegin(self, widget, context):
+        self.starButton.show_all()
+
+    def __onDragEnd(self, widget, context):
+        for instance in self.getInstances(self.perspective):
+           instance.hideArrows()
+
+    def __onDrop(self, starButton, position, sender):
+        self.highlightArea.hide()
+
+        # if the undocked leaf was alone, __onDragEnd may not triggered
+        # because leaf was removed
+        for instance in self.getInstances(self.perspective):
+            instance.hideArrows()
+
+        if self.dockable:
+            if sender.get_parent() == self and self.book.get_n_pages() == 1:
+                return
+            # cp = sender.get_current_page()
+            child = sender.get_nth_page(sender.get_current_page())
+            title, id = sender.get_parent().undock(child)
+            self.dock(child, position, title, id)
+
+    def __onHover(self, starButton, position, widget):
+        if self.dockable:
+            self.highlightArea.showAt(position)
+            starButton.get_window().raise_()
+
+    def __onLeave(self, starButton):
+        self.highlightArea.hide()
