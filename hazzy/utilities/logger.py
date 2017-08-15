@@ -23,18 +23,19 @@
 import os
 import logging
 
+from constants import Paths
+
 from hazzy.utilities.colored_log import ColoredFormatter
 
-PYDIR = os.path.dirname(os.path.realpath(__file__))
-HAZZYDIR = os.path.dirname(PYDIR)
 
 # TODO Get log file path from INI
-log_file = os.path.join(HAZZYDIR, 'hazzy.log')
+log_file = os.path.join(Paths.HAZZYDIR, 'hazzy.log')
 
 
 # Get logger for module with name 'name'
 def get(name):
     return logging.getLogger(name)
+
 
 # Set global logging level
 def set_level(level):
