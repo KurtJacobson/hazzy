@@ -59,7 +59,26 @@ class HazzyWindow(Gtk.Window):
         self.iconview.connect("drag-end", self.__onDragEnd),
         # self.connect_after("switch-page", self.__onPageSwitched),
 
-        self.highlightArea = HighlightArea(self)
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(gladefile)
+
+        self.panel = self.builder.get_object('panel')
+        self.titlebar = self.builder.get_object('titlebar')
+        self.revealer_button = self.builder.get_object('revealer_button')
+        self.revealer_area = self.builder.get_object('revealer_area')
+
+        self.set_titlebar(self.titlebar)
+
+        self.revealer_area.add(self.iconview)
+        self.panel.pack_start(self.drop_area, True, True, 0)
+
+        self.add(self.panel)
+        self.panel.show_all()
+
+        self.revealer_button.connect("clicked", self.on_reveal_clicked)
+
+
+        self.highlightArea = HighlightArea(self.panel)
 
         self.button_cids = []
 
@@ -79,23 +98,6 @@ class HazzyWindow(Gtk.Window):
             self.starButton.connect("left", self.__onLeave),
         ]
 
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file(gladefile)
-
-        self.panel = self.builder.get_object('panel')
-        self.titlebar = self.builder.get_object('titlebar')
-        self.revealer_button = self.builder.get_object('revealer_button')
-        self.revealer_area = self.builder.get_object('revealer_area')
-
-        self.set_titlebar(self.titlebar)
-
-        self.revealer_area.add(self.iconview)
-        self.panel.pack_start(self.drop_area, True, True, 0)
-
-        self.add(self.panel)
-        self.panel.show_all()
-
-        self.revealer_button.connect("clicked", self.on_reveal_clicked)
 
         self.add_targets()
 
