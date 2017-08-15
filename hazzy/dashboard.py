@@ -38,10 +38,7 @@ from hazzy.utilities import logger
 from hazzy.utilities.widgetchooser import DragSourcePanel
 from hazzy.utilities.widgetchooser import DropArea
 
-log = logger.get('HAZZY')
-
-(TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
-(COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
+log = logger.get('HAZZY.DASHBOARD')
 
 
 class HazzyWindow(Gtk.Window):
