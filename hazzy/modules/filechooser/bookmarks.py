@@ -21,7 +21,9 @@
 import os
 import logging
 
-log = logging.getLogger("HAZZY.FILECHOOSER.BOOKMARKS")
+from hazzy.utilities import logger
+
+log = logger.get("HAZZY.FILECHOOSER.BOOKMARKS")
 
 GTK_BOOKMARKS = os.path.expanduser("~/.gtk-bookmarks")  #FIXME use XDG env
 
