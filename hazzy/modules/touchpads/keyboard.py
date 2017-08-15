@@ -33,15 +33,19 @@ from gi.repository import GObject
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
+
 
 UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
-# Setup logging
+from constants import Paths
 from hazzy.utilities import logger
+
+
+# Setup logging
 log = logger.get("HAZZY.KEYBOARD")
 
 
@@ -75,7 +79,7 @@ class Keyboard():
         # Setup CSS themeing
         style_provider = Gtk.CssProvider()
 
-        with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
+        with open(os.path.join(Paths.STYLEDIR, "style.css"), 'rb') as css:
             css_data = css.read()
 
         style_provider.load_from_data(css_data)

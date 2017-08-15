@@ -13,7 +13,7 @@ from gi.repository import GObject
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 

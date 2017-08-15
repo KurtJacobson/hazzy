@@ -37,12 +37,12 @@ from datetime import datetime
 
 
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 UIDIR = os.path.join(PYDIR, 'ui')
-STYLEDIR = os.path.join(HAZZYDIR, 'themes')
+STYLEDIR = os.path.join(HAZZYDIR, 'hazzy', 'themes')
 
 # Import our own modules
 from hazzy.modules.filechooser.move2trash import move2trash
