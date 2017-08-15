@@ -4,7 +4,7 @@ import os
 class Paths(enumerate):
 
     # Path to TCL for external programs eg. halshow
-    TCLPATH = os.environ['LINUXCNC_TCL_DIR']
+    # TCLPATH = os.environ['LINUXCNC_TCL_DIR']  # unsused for now
 
     # Get actual paths so we can run from any location
     HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
