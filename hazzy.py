@@ -15,6 +15,7 @@ from hazzy.dashboard import HazzyWindow
 BASE = None
 INIFILE = None
 
+
 def main(argv):
 
     BASE = os.path.abspath(os.path.dirname(argv[0]))
