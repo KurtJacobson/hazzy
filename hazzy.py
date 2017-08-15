@@ -2,6 +2,7 @@
 import os
 import sys
 import gi
+import datetime
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -46,11 +47,16 @@ def main(argv):
 
     hazzy_window.connect('delete-event', Gtk.main_quit)
 
+    start_time = datetime.datetime.now()
+
     log.info("Start")
 
     Gtk.main()
-    
+
     log.info("Quit")
+
+    run_time = datetime.datetime.now() - start_time
+    log.info("Total session duration: {}".format(run_time))
 
 
 if __name__ == "__main__":
