@@ -21,7 +21,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkRevealer" id="widget_chooser">
+      <object class="GtkRevealer" id="revealer_area">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
@@ -35,7 +35,7 @@
       </packing>
     </child>
     <child>
-      <object class="GtkButton" id="revealer">
+      <object class="GtkButton" id="revealer_button">
         <property name="label">gtk-go-down</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
