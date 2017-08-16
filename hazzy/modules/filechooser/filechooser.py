@@ -153,19 +153,35 @@ class Filechooser(GObject.GObject):
         self._fill_file_liststore(self._cur_dir)
 
     def _init_nav_buttons(self):
-        #self.builder.get_object('arrow_right').hide()
         box = self.nav_btn_box
+        box.get_style_context().add_class(Gtk.STYLE_CLASS_LINKED)
+
+        arrow_left = Gtk.Arrow.new(Gtk.ArrowType.LEFT, Gtk.ShadowType.NONE)
+        self.arrow_btn_left = Gtk.Button()
+        self.arrow_btn_left.add(arrow_left)
+        box.add(self.arrow_btn_left)
+
+        self.btn_goto_root = Gtk.Button.new_from_icon_name('gtk-harddisk', Gtk.IconSize.LARGE_TOOLBAR)
+        self.btn_goto_root.connect('pressed', self.on_goto_root_clicked)
+        box.add(self.btn_goto_root)
+
         btn_list = self.nav_btn_list
         btn_dict = self.nav_btn_path_dict
         for i in range(10):
             btn = Gtk.Button()
-            #btn.set_name('navigation')
+            btn.set_hexpand(False)
             btn.connect('clicked', self.on_nav_btn_clicked)
             btn.set_can_focus(False)
             btn.set_use_underline(False)
             btn_list.append(btn)
             box.add(btn)
             btn_dict[btn] = ''
+
+#        arrow_right = Gtk.Arrow.new(Gtk.ArrowType.RIGHT, Gtk.ShadowType.NONE)
+#        self.arrow_btn_right = Gtk.Button()
+#        self.arrow_btn_right.add(arrow_right)
+#        box.add(self.arrow_btn_right)
+
         box.show_all()
 
     def _update_nav_buttons(self, path=None):
@@ -186,14 +202,12 @@ class Filechooser(GObject.GObject):
             self.nav_btn_path_dict[btn] = path
             btn.show()
             w_needed += btn.get_allocated_width()
-            #print place, w_needed
-        #print 'W allowed', w_allowed
-#        if w_needed > w_allowed:
-#            self.builder.get_object('goto_root').hide()
-#            self.builder.get_object('arrow_left').show()
-#        else:
-#            self.builder.get_object('goto_root').show()
-#            self.builder.get_object('arrow_left').hide()
+        if w_needed > w_allowed:
+            self.btn_goto_root.hide()
+            self.arrow_btn_left.show()
+        else:
+            self.btn_goto_root.show()
+            self.arrow_btn_left.hide()
         count = 0
         while w_needed > w_allowed:
             btn = self.nav_btn_list[count]

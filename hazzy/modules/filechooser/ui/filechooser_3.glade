@@ -31,62 +31,39 @@
   <object class="GtkBox" id="filechooser">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="margin_left">5</property>
+    <property name="margin_right">5</property>
+    <property name="margin_top">5</property>
+    <property name="margin_bottom">5</property>
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
     <property name="orientation">vertical</property>
     <signal name="realize" handler="on_filechooser_realize" swapped="no"/>
     <child>
-      <object class="GtkButtonBox" id="nav_btn_box">
+      <object class="GtkBox" id="nav_btn_box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="halign">start</property>
-        <property name="layout_style">expand</property>
+        <property name="margin_top">3</property>
+        <property name="margin_bottom">5</property>
         <child>
-          <object class="GtkButton" id="arrow_left">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <child>
-              <object class="GtkArrow">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="arrow_type">left</property>
-                <property name="shadow_type">none</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-            <property name="non_homogeneous">True</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="arrow_right">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <child>
-              <object class="GtkArrow">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">1</property>
-            <property name="secondary">True</property>
-            <property name="non_homogeneous">True</property>
-          </packing>
+          <placeholder/>
         </child>
       </object>
       <packing>
         <property name="expand">False</property>
-        <property name="fill">False</property>
+        <property name="fill">True</property>
         <property name="position">0</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSeparator">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
       </packing>
     </child>
     <child>
@@ -104,7 +81,6 @@
               <object class="GtkScrolledWindow" id="bookmarks_scrolled">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="shadow_type">in</property>
                 <child>
                   <object class="GtkViewport">
                     <property name="visible">True</property>
@@ -192,7 +168,6 @@
           <object class="GtkScrolledWindow" id="fileview">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="shadow_type">in</property>
             <child>
               <object class="GtkTreeView" id="file_treeview">
                 <property name="visible">True</property>
@@ -202,6 +177,7 @@
                 <property name="reorderable">True</property>
                 <property name="rules_hint">True</property>
                 <property name="search_column">2</property>
+                <property name="enable_grid_lines">vertical</property>
                 <signal name="button-release-event" handler="on_file_treeview_button_release_event" swapped="no"/>
                 <signal name="cursor-changed" handler="on_filechooser_treeview_cursor_changed" swapped="no"/>
                 <signal name="row-activated" handler="on_filechooser_treeview_row_activated" swapped="no"/>
@@ -281,14 +257,8 @@
       <packing>
         <property name="expand">True</property>
         <property name="fill">True</property>
-        <property name="position">1</property>
+        <property name="position">2</property>
       </packing>
     </child>
-  </object>
-  <object class="GtkButton" id="goto_root">
-    <property name="label" translatable="yes">button</property>
-    <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="receives_default">True</property>
   </object>
 </interface>
