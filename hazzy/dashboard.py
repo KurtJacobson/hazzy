@@ -53,7 +53,7 @@ class HazzyWindow(Gtk.Window):
         self.dockable = True
 
         self.iconview = DragSourcePanel()
-        self.drop_area = DropArea()
+        self.drop_area = Gtk.Box()
 
         self.iconview.connect("drag-begin", self.__onDragBegin),
         self.iconview.connect("drag-end", self.__onDragEnd),
@@ -77,19 +77,18 @@ class HazzyWindow(Gtk.Window):
 
         self.revealer_button.connect("clicked", self.on_reveal_clicked)
 
-
-        self.highlightArea = HighlightArea(self.panel)
+        self.highlightArea = HighlightArea(self.drop_area)
 
         self.button_cids = []
 
         self.starButton = StarArrowButton(
             self,
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_top.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_right.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_bottom.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_left.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_center.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_star.svg")
+            os.path.join(Paths.UIDIR, "dock_top.svg"),
+            os.path.join(Paths.UIDIR, "dock_right.svg"),
+            os.path.join(Paths.UIDIR, "dock_bottom.svg"),
+            os.path.join(Paths.UIDIR, "dock_left.svg"),
+            os.path.join(Paths.UIDIR, "dock_center.svg"),
+            os.path.join(Paths.UIDIR, "dock_star.svg")
         )
 
         self.button_cids += [
@@ -99,7 +98,7 @@ class HazzyWindow(Gtk.Window):
         ]
 
 
-        self.add_targets()
+        # self.add_targets()
 
     def on_reveal_clicked(self, button):
         reveal = self.revealer_area.get_reveal_child()
