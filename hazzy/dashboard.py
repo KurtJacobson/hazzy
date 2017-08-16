@@ -99,6 +99,7 @@ class HazzyWindow(Gtk.Window):
         ]
 
 
+        self.add_targets()
 
     def on_reveal_clicked(self, button):
         reveal = self.revealer_area.get_reveal_child()
