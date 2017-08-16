@@ -5,8 +5,6 @@ from .OverlayWindow import OverlayWindow
 
 from math import ceil as fceil
 
-# ceil = lambda f: int(fceil(f))
-
 
 def ceil(f):
     return int(fceil(f))
