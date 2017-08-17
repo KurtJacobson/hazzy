@@ -30,6 +30,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk
+from gi.repository import Gtk, GObject
 
 from constants import Paths
 
@@ -53,7 +54,7 @@ class HazzyWindow(Gtk.Window):
         self.dockable = True
 
         self.iconview = DragSourcePanel()
-        self.drop_area = DropArea()
+        self.drop_area = DropArea() #Gtk.Box()
 
         self.iconview.connect("drag-begin", self.__onDragBegin),
         self.iconview.connect("drag-end", self.__onDragEnd),
@@ -77,19 +78,18 @@ class HazzyWindow(Gtk.Window):
 
         self.revealer_button.connect("clicked", self.on_reveal_clicked)
 
-
-        self.highlightArea = HighlightArea(self.panel)
+        self.highlightArea = HighlightArea(self.drop_area)
 
         self.button_cids = []
 
         self.starButton = StarArrowButton(
             self,
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_top.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_right.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_bottom.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_left.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_center.svg"),
-            os.path.join(Paths.HAZZYDIR, "hazzy/ui/dock_star.svg")
+            os.path.join(Paths.UIDIR, "dock_top.svg"),
+            os.path.join(Paths.UIDIR, "dock_right.svg"),
+            os.path.join(Paths.UIDIR, "dock_bottom.svg"),
+            os.path.join(Paths.UIDIR, "dock_left.svg"),
+            os.path.join(Paths.UIDIR, "dock_center.svg"),
+            os.path.join(Paths.UIDIR, "dock_star.svg")
         )
 
         self.button_cids += [
@@ -99,7 +99,6 @@ class HazzyWindow(Gtk.Window):
         ]
 
 
-        self.add_targets()
 
     def on_reveal_clicked(self, button):
         reveal = self.revealer_area.get_reveal_child()
@@ -113,12 +112,15 @@ class HazzyWindow(Gtk.Window):
         self.iconview.drag_source_add_text_targets()
 
     def __onDragBegin(self, widget, context):
+        print 'onDragBegin'
         self.starButton.show_all()
 
     def __onDragEnd(self, widget, context):
+        print 'onDragEnd'
         self.starButton.hide()
 
     def __onDrop(self, starButton, position, sender):
+        print 'onDrop'
         self.highlightArea.hide()
 
         # if the undocked leaf was alone, __onDragEnd may not triggered
@@ -135,9 +137,42 @@ class HazzyWindow(Gtk.Window):
             self.dock(child, position, title, id)
 
     def __onHover(self, starButton, position, widget):
+        print 'onHover'
         if self.dockable:
             self.highlightArea.showAt(position)
             starButton.get_window().raise_()
 
     def __onLeave(self, starButton):
+        print "onLeave"
         self.highlightArea.hide()
+
+
+
+class DropArea(Gtk.Grid):
+
+    def __init__(self):
+        GObject.GObject.__init__(self)
+
+        self.set_hexpand(True)
+        self.set_vexpand(True)
+        self.set_column_homogeneous(True)
+        self.set_row_homogeneous(True)
+
+        columns = 10
+
+        lbl = Gtk.Label.new('0')
+        self.attach(lbl, 0, 0, 1, 1)
+
+        for i in range(1, columns):
+            lbl = Gtk.Label.new('{}'.format(i))
+            self.attach(lbl, 0, i, 1, 1)
+
+        for i in range(1, columns):
+            lbl = Gtk.Label.new('{}'.format(i))
+            self.attach(lbl, i, 0, 1, 1)
+
+#        lbl = Gtk.Button.new_with_label('Test1')
+#        self.attach(lbl, 1, 1, 1, 1)
+
+#        lbl = Gtk.Button.new_with_label('Test2')
+#        self.attach(lbl, 2, 3, 1, 1)
