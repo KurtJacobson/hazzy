@@ -59,15 +59,12 @@ class GcodeViewWidget(Gtk.Frame):
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.add(self.gcodeview.view)
+        scrolled.set_hexpand(True)
+        scrolled.set_vexpand(True)
         self.add(scrolled)
 
         self.gcodeview.buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
         self.gcodeview.highlight_line(3, 'motion')
-
-        self.set_size_request(200, 200)
-
-        self.set_hexpand(False)
-        self.set_vexpand(False)
 
         self.show_all()
 
