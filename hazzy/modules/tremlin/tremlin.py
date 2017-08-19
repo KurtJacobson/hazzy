@@ -217,7 +217,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
     def on_key_press(self, wid, event):
         """Key pressed."""
         m = self.get_pointer()
-        ctrl, shift = self._GetCtrlShift(event)
+        ctrl, shift = self._get_ctrl_shift(event)
         keycode, keysym = event.keyval, event.string
         key = chr(0)
         if keycode < 256:
@@ -230,7 +230,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
     def on_key_release(self, wid, event):
         "Key released."
         m = self.get_pointer()
-        ctrl, shift = self._GetCtrlShift(event)
+        ctrl, shift = self._get_ctrl_shift(event)
         keycode, keysym = event.keyval, event.string
         key = chr(0)
         if keycode < 256:
