@@ -84,14 +84,14 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self.connect("leave_notify_event", self.OnLeave)
         self.connect("key_press_event", self.OnKeyPress)
         self.connect("delete_event", self.OnDestroy)
-        """
-        self.add_events(Gtk.GLArea.EXPOSURE_MASK | Gtk.GLArea.BUTTON_PRESS_MASK |
-                        Gtk.GLArea.BUTTON_RELEASE_MASK |
-                        Gtk.GLArea.KEY_PRESS_MASK |
-                        Gtk.GLArea.POINTER_MOTION_MASK |
-                        Gtk.GLArea.POINTER_MOTION_HINT_MASK |
-                        Gtk.GLArea.ENTER_NOTIFY_MASK | Gtk.GLArea.LEAVE_NOTIFY_MASK)
-        """
+
+        self.add_events(Gdk.EventMask.EXPOSURE_MASK | Gdk.EventMask.BUTTON_PRESS_MASK |
+                        Gdk.EventMask.BUTTON_RELEASE_MASK |
+                        Gdk.EventMask.KEY_PRESS_MASK |
+                        Gdk.EventMask.POINTER_MOTION_MASK |
+                        Gdk.EventMask.POINTER_MOTION_HINT_MASK |
+                        Gdk.EventMask.ENTER_NOTIFY_MASK | Gdk.EventMask.LEAVE_NOTIFY_MASK)
+
     def __getattr__(self, attr):
         """Makes the object behave like a
         vtkGenericRenderWindowInteractor"""
@@ -146,9 +146,9 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
     def _GetCtrlShift(self, event):
         ctrl, shift = 0, 0
-        if (event.state & Gtk.GLArea.CONTROL_MASK) == Gtk.GLArea.CONTROL_MASK:
+        if (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK:
             ctrl = 1
-        if (event.state & Gtk.GLArea.SHIFT_MASK) == Gtk.GLArea.SHIFT_MASK:
+        if (event.state & Gdk.ModifierType.SHIFT_MASK) == Gdk.ModifierType.SHIFT_MASK:
             shift = 1
         return ctrl, shift
 
