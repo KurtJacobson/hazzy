@@ -35,7 +35,13 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GLib
 
-import vtk
+from vtk.vtkRenderingCorePython import vtkRenderWindow, vtkCamera
+from vtk.vtkRenderingCorePython import vtkGenericRenderWindowInteractor
+from vtk.vtkRenderingCorePython import vtkPolyDataMapper
+from vtk.vtkRenderingCorePython import vtkActor
+from vtk.vtkRenderingCorePython import vtkRenderer
+
+from vtk.vtkFiltersSourcesPython import vtkConeSource
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -48,13 +54,23 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
     def __init__(self, *args):
 
         Gtk.GLArea.__init__(self)
-        self._RenderWindow = vtk.vtkRenderWindow()
+
+        self.camera = vtkCamera()
+        self.camera.SetPosition(0, 0, 100)
+        self.camera.SetFocalPoint(0, 0, 0)
+
+
+        self.renderer = vtkRenderer()
+        self.renderer.SetActiveCamera(self.camera)
+
+        self._RenderWindow = vtkRenderWindow()
+        self._RenderWindow.AddRenderer(self.renderer)
 
         # private attributes
         self.__Created = 0
         self._ActiveButton = 0
 
-        self._Iren = vtk.vtkGenericRenderWindowInteractor()
+        self._Iren = vtkGenericRenderWindowInteractor()
         self._Iren.SetRenderWindow(self._RenderWindow)
 
         self._Iren.AddObserver('CreateTimerEvent', self.create_timer)
@@ -78,15 +94,19 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self.connect("configure-event", self.on_configure)
         self.connect("button-press-event", self.on_button_down)
         self.connect("button-release-event", self.on_button_up)
+        self.connect('scroll-event', self.on_scroll)
         self.connect("motion-notify-event", self.on_mouse_move)
         self.connect("enter-notify-event", self.on_enter)
         self.connect("leave-notify-event", self.on_leave)
         self.connect("key-press-event", self.on_key_press)
+        self.connect("key-release-event", self.on_key_release)
+        self.connect('scroll-event', self.on_scroll)
         self.connect("delete-event", self.on_destroy)
 
         self.add_events(Gdk.EventMask.EXPOSURE_MASK |
                         Gdk.EventMask.BUTTON_PRESS_MASK |
                         Gdk.EventMask.BUTTON_RELEASE_MASK |
+                        Gdk.EventMask.SCROLL_MASK |
                         Gdk.EventMask.KEY_PRESS_MASK |
                         Gdk.EventMask.POINTER_MOTION_MASK |
                         Gdk.EventMask.POINTER_MOTION_HINT_MASK |
@@ -189,6 +209,19 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
         return False
 
+    def on_scroll(self, wid, event):
+
+        if event.direction == Gdk.ScrollDirection.UP:
+            self.camera.Zoom(1.5)
+            self._RenderWindow.Render()
+            return True
+        elif event.direction == Gdk.ScrollDirection.DOWN:
+            self.camera.Zoom(.5)
+            self._RenderWindow.Render()
+            return True
+        else:
+            return False
+
     def on_mouse_move(self, wid, event):
         """Mouse has moved."""
         m = self.get_pointer()
@@ -265,19 +298,17 @@ class Tremlin(Gtk.Box):
 
     def test_cone(self):
         # The VTK stuff.
-        cone = vtk.vtkConeSource()
+        cone = vtkConeSource()
         cone.SetResolution(80)
 
-        coneMapper = vtk.vtkPolyDataMapper()
+        coneMapper = vtkPolyDataMapper()
         coneMapper.SetInputConnection(cone.GetOutputPort())
 
-        # coneActor = vtk.vtkLODActor()
-        coneActor = vtk.vtkActor()
+        coneActor = vtkActor()
         coneActor.SetMapper(coneMapper)
         coneActor.GetProperty().SetColor(0.5, 0.5, 1.0)
 
-        ren = vtk.vtkRenderer()
-        self.gvtk.GetRenderWindow().AddRenderer(ren)
+        ren = self.gvtk.renderer
         ren.AddActor(coneActor)
 
 
