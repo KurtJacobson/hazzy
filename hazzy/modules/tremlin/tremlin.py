@@ -74,15 +74,15 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
     def ConnectSignals(self):
         self.connect("realize", self.OnRealize)
-        ## self.connect("expose_event", self.OnExpose)
-        self.connect("configure_event", self.OnConfigure)
-        self.connect("button_press_event", self.OnButtonDown)
-        self.connect("button_release_event", self.OnButtonUp)
-        self.connect("motion_notify_event", self.OnMouseMove)
-        self.connect("enter_notify_event", self.OnEnter)
-        self.connect("leave_notify_event", self.OnLeave)
-        self.connect("key_press_event", self.OnKeyPress)
-        self.connect("delete_event", self.OnDestroy)
+        # self.connect("expose-event", self.OnExpose)
+        self.connect("configure-event", self.OnConfigure)
+        self.connect("button-press-event", self.OnButtonDown)
+        self.connect("button-release-event", self.OnButtonUp)
+        self.connect("motion-notify-event", self.OnMouseMove)
+        self.connect("enter-notify-event", self.OnEnter)
+        self.connect("leave-notify-event", self.OnLeave)
+        self.connect("key-press-event", self.OnKeyPress)
+        self.connect("delete-event", self.OnDestroy)
 
         self.add_events(Gdk.EventMask.EXPOSURE_MASK | Gdk.EventMask.BUTTON_PRESS_MASK |
                         Gdk.EventMask.BUTTON_RELEASE_MASK |
