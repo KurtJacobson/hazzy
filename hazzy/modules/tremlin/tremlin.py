@@ -121,7 +121,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         if self.__Created == 0:
             # you can't get the xid without the window being realized.
             self.realize()
-            win_id = str(self.get_window().xid)
+            win_id = str(self.get_window().get_xid())
             self._RenderWindow.SetWindowInfo(win_id)
             self._Iren.Initialize()
             self.__Created = 1
@@ -269,8 +269,8 @@ def main():
     gvtk.set_usize(400, 400)
     vbox.pack_start(gvtk, True, True, 0)
     gvtk.show()
-    gvtk.Initialize()
-    gvtk.Start()
+    ## gvtk.Initialize()
+    ## gvtk.Start()
     # prevents 'q' from exiting the app.
     gvtk.AddObserver("ExitEvent", lambda o, e, x=None: x)
 
@@ -286,12 +286,6 @@ def main():
     ren = vtk.vtkRenderer()
     gvtk.GetRenderWindow().AddRenderer(ren)
     ren.AddActor(coneActor)
-
-    # A simple quit button
-    quit = Gtk.Button("Quit!")
-    quit.connect("clicked", Gtk.main_quit)
-    vbox.pack_start(quit, True, True, 0)
-    quit.show()
 
     # show the main window and start event processing.
     window.show()
