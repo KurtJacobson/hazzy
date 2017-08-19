@@ -36,7 +36,6 @@ from gi.repository import Gdk
 from gi.repository import GLib
 
 import vtk
-import math
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -63,12 +62,12 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self.ConnectSignals()
 
         # need this to be able to handle key_press events.
-        ## self.set_flags(Gtk.CAN_FOCUS)
+        self.set_can_focus(True)
         # default size
-        self.set_usize(300, 300)
+        self.set_usize(800, 600)
 
     def set_usize(self, w, h):
-        ## Gtk.GLArea.set_usize(self, w, h)
+        self.set_size_request(w, h)
         self._RenderWindow.SetSize(w, h)
         self._Iren.SetSize(w, h)
         self._Iren.ConfigureEvent()
@@ -250,42 +249,56 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
             self._Iren.Initialize()
 
 
+class Tremlin(Gtk.Box):
+    def __init__(self):
+        Gtk.Box.__init__(self)
+
+        self.gvtk = GtkVTKRenderWindowInteractor()
+
+        # gvtk.SetDesiredUpdateRate(1000)
+        self.gvtk.set_usize(800, 600)
+        self.pack_start(self.gvtk, True, True, 0)
+
+        self.gvtk.show_all()
+        self.show_all()
+
+        ## gvtk.Initialize()
+        ## gvtk.Start()
+
+        # prevents 'q' from exiting the app.
+        self.gvtk.AddObserver("ExitEvent", lambda o, e, x=None: x)
+
+    def test_cone(self):
+
+        # The VTK stuff.
+        cone = vtk.vtkConeSource()
+        cone.SetResolution(80)
+
+        coneMapper = vtk.vtkPolyDataMapper()
+        coneMapper.SetInputConnection(cone.GetOutputPort())
+
+        # coneActor = vtk.vtkLODActor()
+        coneActor = vtk.vtkActor()
+        coneActor.SetMapper(coneMapper)
+        coneActor.GetProperty().SetColor(0.5, 0.5, 1.0)
+
+        ren = vtk.vtkRenderer()
+        self.gvtk.GetRenderWindow().AddRenderer(ren)
+        ren.AddActor(coneActor)
+
+
+
 def main():
     # The main window
-    window = Gtk.Window()
-    window.set_title("A GtkVTKRenderWindow Demo!")
+    window = Gtk.Window(title="HAZZY VTK")
     window.connect("destroy", Gtk.main_quit)
     window.connect("delete_event", Gtk.main_quit)
-    window.set_border_width(10)
+    ## window.set_border_width(10)
 
-    # A VBox into which widgets are packed.
-    vbox = Gtk.VBox(spacing=3)
-    window.add(vbox)
-    vbox.show()
+    tremlin = Tremlin()
+    tremlin.test_cone()
 
-    # The GtkVTKRenderWindow
-    gvtk = GtkVTKRenderWindowInteractor()
-    # gvtk.SetDesiredUpdateRate(1000)
-    gvtk.set_usize(400, 400)
-    vbox.pack_start(gvtk, True, True, 0)
-    gvtk.show()
-    ## gvtk.Initialize()
-    ## gvtk.Start()
-    # prevents 'q' from exiting the app.
-    gvtk.AddObserver("ExitEvent", lambda o, e, x=None: x)
-
-    # The VTK stuff.
-    cone = vtk.vtkConeSource()
-    cone.SetResolution(80)
-    coneMapper = vtk.vtkPolyDataMapper()
-    coneMapper.SetInputConnection(cone.GetOutputPort())
-    # coneActor = vtk.vtkLODActor()
-    coneActor = vtk.vtkActor()
-    coneActor.SetMapper(coneMapper)
-    coneActor.GetProperty().SetColor(0.5, 0.5, 1.0)
-    ren = vtk.vtkRenderer()
-    gvtk.GetRenderWindow().AddRenderer(ren)
-    ren.AddActor(coneActor)
+    window.add(tremlin)
 
     # show the main window and start event processing.
     window.show()
