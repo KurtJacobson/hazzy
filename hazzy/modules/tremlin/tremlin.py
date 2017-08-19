@@ -100,7 +100,8 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         elif hasattr(self._Iren, attr):
             return getattr(self._Iren, attr)
         else:
-            raise AttributeError(self.__class__.__name__ + " has no attribute named " + attr)
+            raise AttributeError("{0}  has no attribute named {1}".format(
+                self.__class__.__name__, attr))
 
     def CreateTimer(self, obj, event):
         GLib.timeout_add(10, self._Iren.TimerEvent)
