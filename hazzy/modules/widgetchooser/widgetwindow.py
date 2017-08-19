@@ -53,6 +53,8 @@ class WidgetWindow(Gtk.Box):
         self.initial_y = 0
         self.initial_w = 0
         self.initial_h = 0
+        self.dx_max = 0
+        self.dy_max = 0
 
 
         self.menu_btn.connect('pressed', menu_callback, self)
@@ -86,8 +88,7 @@ class WidgetWindow(Gtk.Box):
         x = event.x_root - self.offsetx
         y = event.y_root - self.offsety
         # make sure the potential coordinates x,y:
-        #   1) will not push any part of the widget outside of its parent container
-        #   2) is a multiple of SENSITIVITY
+        # will not push any part of the widget outside of its parent container
         x = max(min(x, self.maxx), 0)
         y = max(min(y, self.maxy), 0)
         if x != self.px or y != self.py:
@@ -109,32 +110,48 @@ class WidgetWindow(Gtk.Box):
 #  Drag Resize
 #==============
 
-    def on_resize_begin(self, w, event):
+    def on_resize_begin(self, widget, event):
         self.parent = self.get_parent()
-        if event.button == 1:
-            self.initial_x = event.x_root
-            self.initial_y = event.y_root
-            self.initial_w = self.get_allocation().width
-            self.initial_h = self.get_allocation().height
+        pw = self.parent.get_allocation().width
+        ph = self.parent.get_allocation().height
+
+        x = self.parent.child_get_property(self, 'x')
+        y = self.parent.child_get_property(self, 'y')
+        w = self.get_allocation().width
+        h = self.get_allocation().height
+
+        self.dx_max = pw - (x + w)
+        self.dy_max = ph - (y + h)
+
+        self.initial_x = event.x_root
+        self.initial_y = event.y_root
+        self.initial_w = self.get_allocation().width
+        self.initial_h = self.get_allocation().height
 
 
     def on_resize_x_motion(self, widget, event):
         dx = event.x_root - self.initial_x
-        w = self.initial_w + dx
-        h = self.initial_h
-        self.set_size_request(w, h)
+        if dx <= self.dx_max:
+            w = self.initial_w + dx
+            h = self.initial_h
+            self.set_size_request(w, h)
 
 
     def on_resize_y_motion(self, widget, event):
         dy = event.y_root - self.initial_y
-        w = self.initial_w
-        h = self.initial_h + dy
-        self.set_size_request(w, h)
+        if dy <= self.dy_max:
+            w = self.initial_w
+            h = self.initial_h + dy
+            self.set_size_request(w, h)
 
 
     def on_resize_motion(self, widget, event):
         dx = event.x_root - self.initial_x
         dy = event.y_root - self.initial_y
+        if dx > self.dx_max:
+            dx = self.dx_max
+        if dy > self.dy_max:
+            dy = self.dy_max
         w = self.initial_w + dx
         h = self.initial_h + dy
         self.set_size_request(w, h)
@@ -147,28 +164,6 @@ class WidgetWindow(Gtk.Box):
         w = int(round(float(w) / self.grid_size)) * self.grid_size
         h = int(round(float(h) / self.grid_size)) * self.grid_size
         self.set_size_request(w, h)
-
-
-
-    def motion_notify_event(self, widget, event):
-
-        # x_root,x_root relative to screen
-        # x,y relative to parent (fixed widget)
-        # px,py stores previous values of x,y
-
-        # get starting values for x,y
-        x = event.x_root - self.offsetx
-        y = event.y_root - self.offsety
-        # make sure the potential coordinates x,y:
-        #   1) will not push any part of the widget outside of its parent container
-        #   2) is a multiple of SENSITIVITY
-        x = max(min(x, self.maxx), 0)
-        y = max(min(y, self.maxy), 0)
-        if x != self.px or y != self.py:
-            self.px = x
-            self.py = y
-            print x, y
-            fixed.move(widget, x, y)
 
 
 
