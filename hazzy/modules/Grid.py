@@ -11,25 +11,13 @@ from widgetchooser.widgetwindow import WidgetWindow
 ROWS = 35
 COLUMNS = 50
 
-class Grid(Gtk.Grid):
+class Grid(Gtk.Fixed):
 
     def __init__(self):
         GObject.GObject.__init__(self)
 
         self.set_hexpand(True)
         self.set_vexpand(True)
-        self.set_column_homogeneous(True)
-        self.set_row_homogeneous(True)
-
-        # Add row placeholders
-        for i in range(1, ROWS):
-            lbl = Gtk.Label()
-            self.attach(lbl, 0, i, 1, 1)
-
-        # Add column placeholders
-        for i in range(1, COLUMNS):
-            lbl = Gtk.Label()
-            self.attach(lbl, i, 0, 1, 1)
 
         self.add()
 
@@ -42,13 +30,23 @@ class Grid(Gtk.Grid):
         win.show_all()
 
     def add(self):
-        view = GcodeViewWidget()
-        wwindow = WidgetWindow(view, 'G-code', self.on_menu_btn_pressed)
-        self.attach(wwindow, 0, 0, 15, 10)
 
-        view2 = GcodeViewWidget()
-        wwindow2 = WidgetWindow(view2, 'G-code', self.on_menu_btn_pressed)
-        self.attach_next_to(wwindow2, wwindow, Gtk.PositionType.RIGHT, 15, 10)
+        # Widget No.1
+        widget = GcodeViewWidget()
+        size = [400, 300]
+        name = 'G-code'
+        menu = self.on_menu_btn_pressed
+        wwindow = WidgetWindow(widget, size, name, menu)
+        self.put(wwindow, 0, 0)
+
+        # Widget No.2
+        widget = GcodeViewWidget()
+        size = [400, 300]
+        name = 'G-code'
+        menu = self.on_menu_btn_pressed
+        wwindow = WidgetWindow(widget, size, name, menu)
+        self.put(wwindow, 400, 0)
+
 
     def set_x(self, widget, x):
         self.child_set_property(widget, 'top_attach', x)

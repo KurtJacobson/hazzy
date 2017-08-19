@@ -22,7 +22,7 @@ def ceil(f):
 
 class WidgetWindow(Gtk.Box):
 
-    def __init__(self, widget, label, menu_callback):
+    def __init__(self, widget, size, label, menu_callback):
         Gtk.Box.__init__(self)
 
         builder = Gtk.Builder()
@@ -34,10 +34,12 @@ class WidgetWindow(Gtk.Box):
         self.box = builder.get_object('box')
         self.wwindow = builder.get_object('widgetwindow')
 
+        self.set_size_request(size[0], size[1])
         self.label.set_text(label)
         self.box.add(widget)
         self.add(self.wwindow)
 
+        self.parent = None
 
         self.offsetx = 0
         self.offsety = 0
@@ -72,12 +74,8 @@ class WidgetWindow(Gtk.Box):
         if x != self.px or y != self.py:
             self.px = x
             self.py = y
-            p = self.get_parent()
-            a = p.get_allocation()
-            xf, yf = a.width / 50, a.height / 35
-            x, y = int(x / xf), int(y / yf)
-            p.child_set_property(self, 'left_attach', x)
-            p.child_set_property(self, 'top_attach', y)
+            self.parent.child_set_property(self, 'x', x)
+            self.parent.child_set_property(self, 'y', y)
 
 
     def resize_in_x(self, widget, event):
@@ -103,21 +101,26 @@ class WidgetWindow(Gtk.Box):
 
 
     def drag_start(self, w, event):
-        self.ha.Show()
-        print "drag started"
+
+        self.parent = self.get_parent()
 
         if event.button == 1:
             # offset = distance of parent widget from edge of screen ...
-            self.offsetx, self.offsety =  w.get_toplevel().get_position()
+            self.offsetx, self.offsety = self.get_window().get_position()
             # plus distance from pointer to edge of widget
             self.offsetx += event.x
             self.offsety += event.y
             # maxx, maxy both relative to the parent
-            p = self.get_parent()
+            p = self.get_parent() # should be the Gtk.Fixed
             self.maxx = p.get_allocation().width - self.get_allocation().width
             self.maxy = p.get_allocation().height - self.get_allocation().height
 
+
     def drag_end(self, widget, event):
+        x = int(round(self.px / 20)) * 20
+        y = int(round(self.py / 20)) * 20
+        self.parent.child_set_property(self, 'x', x)
+        self.parent.child_set_property(self, 'y', y)
         self.ha.hide()
 
 
