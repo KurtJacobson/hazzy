@@ -8,9 +8,8 @@ from gi.repository import Gtk, GObject
 from gcodeview.gcodeview import GcodeViewWidget
 from widgetchooser.widgetwindow import WidgetWindow
 
-
-ROWS = 9
-COLUMNS = 12
+ROWS = 35
+COLUMNS = 50
 
 class Grid(Gtk.Grid):
 
@@ -37,7 +36,7 @@ class Grid(Gtk.Grid):
         self.popover = Popover(self)
 
         win = Gtk.Window()
-        win.set_default_size(600, 500)
+        win.set_default_size(1000, 700)
         win.add(self)
         win.connect('destroy', Gtk.main_quit)
         win.show_all()
@@ -45,11 +44,11 @@ class Grid(Gtk.Grid):
     def add(self):
         view = GcodeViewWidget()
         wwindow = WidgetWindow(view, 'G-code', self.on_menu_btn_pressed)
-        self.attach(wwindow, 0, 0, 5, 4)
+        self.attach(wwindow, 0, 0, 15, 10)
 
         view2 = GcodeViewWidget()
         wwindow2 = WidgetWindow(view2, 'G-code', self.on_menu_btn_pressed)
-        self.attach_next_to(wwindow2, wwindow, Gtk.PositionType.RIGHT, 5, 6)
+        self.attach_next_to(wwindow2, wwindow, Gtk.PositionType.RIGHT, 15, 10)
 
     def set_x(self, widget, x):
         self.child_set_property(widget, 'top_attach', x)
