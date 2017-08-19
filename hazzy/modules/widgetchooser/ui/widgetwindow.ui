@@ -168,8 +168,9 @@
           <object class="GtkEventBox" id="x_handle">
             <property name="can_focus">False</property>
             <property name="visible_window">False</property>
-            <signal name="button-press-event" handler="drag_start" swapped="no"/>
-            <signal name="motion-notify-event" handler="resize_in_x" swapped="no"/>
+            <signal name="button-press-event" handler="on_resize_begin" swapped="no"/>
+            <signal name="button-release-event" handler="on_resize_end" swapped="no"/>
+            <signal name="motion-notify-event" handler="on_resize_x_motion" swapped="no"/>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
@@ -190,8 +191,9 @@
           <object class="GtkEventBox" id="y_handle">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <signal name="button-press-event" handler="drag_start" swapped="no"/>
-            <signal name="motion-notify-event" handler="resize_in_y" swapped="no"/>
+            <signal name="button-press-event" handler="on_resize_begin" swapped="no"/>
+            <signal name="button-release-event" handler="on_resize_end" swapped="no"/>
+            <signal name="motion-notify-event" handler="on_resize_y_motion" swapped="no"/>
             <child>
               <object class="GtkImage">
                 <property name="visible">True</property>
@@ -212,9 +214,9 @@
           <object class="GtkEventBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <signal name="button-press-event" handler="drag_start" swapped="no"/>
-            <signal name="button-release-event" handler="drag_end" swapped="no"/>
-            <signal name="motion-notify-event" handler="drag_move" swapped="no"/>
+            <signal name="button-press-event" handler="on_drag_begin" swapped="no"/>
+            <signal name="button-release-event" handler="on_drag_end" swapped="no"/>
+            <signal name="motion-notify-event" handler="on_drag_motion" swapped="no"/>
             <child>
               <placeholder/>
             </child>
@@ -226,7 +228,20 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
+          <object class="GtkEventBox">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <signal name="button-press-event" handler="on_resize_begin" swapped="no"/>
+            <signal name="button-release-event" handler="on_resize_end" swapped="no"/>
+            <signal name="motion-notify-event" handler="on_resize_motion" swapped="no"/>
+            <child>
+              <placeholder/>
+            </child>
+          </object>
+          <packing>
+            <property name="left_attach">3</property>
+            <property name="top_attach">3</property>
+          </packing>
         </child>
         <child>
           <placeholder/>

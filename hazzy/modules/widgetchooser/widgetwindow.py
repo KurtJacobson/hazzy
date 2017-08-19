@@ -40,6 +40,7 @@ class WidgetWindow(Gtk.Box):
         self.add(self.wwindow)
 
         self.parent = None
+        self.grid_size = 20 # px
 
         self.offsetx = 0
         self.offsety = 0
@@ -47,6 +48,11 @@ class WidgetWindow(Gtk.Box):
         self.py = 0
         self.maxx = 0
         self.maxy = 0
+
+        self.initial_x = 0
+        self.initial_y = 0
+        self.initial_w = 0
+        self.initial_h = 0
 
 
         self.menu_btn.connect('pressed', menu_callback, self)
@@ -58,52 +64,12 @@ class WidgetWindow(Gtk.Box):
         self.show_all()
 
 
-    def drag_move(self, widget, event):
-        # get starting values for x,y
-        x = event.x_root - self.offsetx
-        y = event.y_root - self.offsety
-        # make sure the potential coordinates x,y:
-        #   1) will not push any part of the widget outside of its parent container
-        #   2) is a multiple of SENSITIVITY
-        x = max(min(x, self.maxx), 0)
-        y = max(min(y, self.maxy), 0)
+#==============
+#  Drag Move
+#==============
 
-        print self.offsetx, self.offsety
-        print x, y
-
-        if x != self.px or y != self.py:
-            self.px = x
-            self.py = y
-            self.parent.child_set_property(self, 'x', x)
-            self.parent.child_set_property(self, 'y', y)
-
-
-    def resize_in_x(self, widget, event):
-        # get starting values for x,y
-        x = event.x_root - self.offsetx
-        y = event.y_root - self.offsety
-        # make sure the potential coordinates x,y:
-        #   1) will not push any part of the widget outside of its parent container
-        #   2) is a multiple of SENSITIVITY
-        x = max(min(x, self.maxx), 0)
-        y = max(min(y, self.maxy), 0)
-        if x != self.px or y != self.py:
-            self.px = x
-            self.py = y
-            p = self.get_parent()
-            a = p.get_allocation()
-            xf, yf = a.width / 50, a.height / 35
-            x, y = int(x / xf), int(y / yf)
-            p.child_set_property(self, 'width', x)
-
-    def resize_in_y(self, widget, event):
-        print 'got resize_in_y'
-
-
-    def drag_start(self, w, event):
-
+    def on_drag_begin(self, w, event):
         self.parent = self.get_parent()
-
         if event.button == 1:
             # offset = distance of parent widget from edge of screen ...
             self.offsetx, self.offsety = self.get_window().get_position()
@@ -111,17 +77,77 @@ class WidgetWindow(Gtk.Box):
             self.offsetx += event.x
             self.offsety += event.y
             # maxx, maxy both relative to the parent
-            p = self.get_parent() # should be the Gtk.Fixed
-            self.maxx = p.get_allocation().width - self.get_allocation().width
-            self.maxy = p.get_allocation().height - self.get_allocation().height
+            self.maxx = self.parent.get_allocation().width - self.get_allocation().width
+            self.maxy = self.parent.get_allocation().height - self.get_allocation().height
 
 
-    def drag_end(self, widget, event):
-        x = int(round(self.px / 20)) * 20
-        y = int(round(self.py / 20)) * 20
+    def on_drag_motion(self, widget, event):
+        # get starting values for x,y
+        x = event.x_root - self.offsetx
+        y = event.y_root - self.offsety
+        # make sure the potential coordinates x,y:
+        #   1) will not push any part of the widget outside of its parent container
+        #   2) is a multiple of SENSITIVITY
+        x = max(min(x, self.maxx), 0)
+        y = max(min(y, self.maxy), 0)
+        if x != self.px or y != self.py:
+            self.px = x
+            self.py = y
+            self.parent.child_set_property(self, 'x', x)
+            self.parent.child_set_property(self, 'y', y)
+
+
+    def on_drag_end(self, widget, event):
+        # Snap to 20 x 20 px grid on drag drop
+        x = int(round(self.px / self.grid_size)) * self.grid_size
+        y = int(round(self.py / self.grid_size)) * self.grid_size
         self.parent.child_set_property(self, 'x', x)
         self.parent.child_set_property(self, 'y', y)
-        self.ha.hide()
+
+
+#==============
+#  Drag Resize
+#==============
+
+    def on_resize_begin(self, w, event):
+        self.parent = self.get_parent()
+        if event.button == 1:
+            self.initial_x = event.x_root
+            self.initial_y = event.y_root
+            self.initial_w = self.get_allocation().width
+            self.initial_h = self.get_allocation().height
+
+
+    def on_resize_x_motion(self, widget, event):
+        dx = event.x_root - self.initial_x
+        w = self.initial_w + dx
+        h = self.initial_h
+        self.set_size_request(w, h)
+
+
+    def on_resize_y_motion(self, widget, event):
+        dy = event.y_root - self.initial_y
+        w = self.initial_w
+        h = self.initial_h + dy
+        self.set_size_request(w, h)
+
+
+    def on_resize_motion(self, widget, event):
+        dx = event.x_root - self.initial_x
+        dy = event.y_root - self.initial_y
+        w = self.initial_w + dx
+        h = self.initial_h + dy
+        self.set_size_request(w, h)
+
+
+    def on_resize_end(self, widget, event):
+        w = self.get_allocation().width
+        h = self.get_allocation().height
+        # Snap to 20 x 20 px grid
+        w = int(round(float(w) / self.grid_size)) * self.grid_size
+        h = int(round(float(h) / self.grid_size)) * self.grid_size
+        self.set_size_request(w, h)
+
 
 
     def motion_notify_event(self, widget, event):
