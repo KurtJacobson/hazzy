@@ -57,9 +57,9 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self._Iren = vtk.vtkGenericRenderWindowInteractor()
         self._Iren.SetRenderWindow(self._RenderWindow)
 
-        self._Iren.AddObserver('CreateTimerEvent', self.CreateTimer)
-        self._Iren.AddObserver('DestroyTimerEvent', self.DestroyTimer)
-        self.ConnectSignals()
+        self._Iren.AddObserver('CreateTimerEvent', self.create_timer)
+        self._Iren.AddObserver('DestroyTimerEvent', self.destroy_timer)
+        self.connect_signals()
 
         # need this to be able to handle key_press events.
         self.set_can_focus(True)
@@ -72,17 +72,17 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self._Iren.SetSize(w, h)
         self._Iren.ConfigureEvent()
 
-    def ConnectSignals(self):
-        self.connect("realize", self.OnRealize)
-        self.connect("render", self.OnRender)
-        self.connect("configure-event", self.OnConfigure)
-        self.connect("button-press-event", self.OnButtonDown)
-        self.connect("button-release-event", self.OnButtonUp)
-        self.connect("motion-notify-event", self.OnMouseMove)
-        self.connect("enter-notify-event", self.OnEnter)
-        self.connect("leave-notify-event", self.OnLeave)
-        self.connect("key-press-event", self.OnKeyPress)
-        self.connect("delete-event", self.OnDestroy)
+    def connect_signals(self):
+        self.connect("realize", self.on_realize)
+        self.connect("render", self.on_render)
+        self.connect("configure-event", self.on_configure)
+        self.connect("button-press-event", self.on_button_down)
+        self.connect("button-release-event", self.on_button_up)
+        self.connect("motion-notify-event", self.on_mouse_move)
+        self.connect("enter-notify-event", self.on_enter)
+        self.connect("leave-notify-event", self.on_leave)
+        self.connect("key-press-event", self.on_key_press)
+        self.connect("delete-event", self.on_destroy)
 
         self.add_events(Gdk.EventMask.EXPOSURE_MASK |
                         Gdk.EventMask.BUTTON_PRESS_MASK |
@@ -104,21 +104,21 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
             raise AttributeError("{0}  has no attribute named {1}".format(
                 self.__class__.__name__, attr))
 
-    def CreateTimer(self, obj, event):
+    def create_timer(self, obj, event):
         GLib.timeout_add(10, self._Iren.TimerEvent)
 
-    def DestroyTimer(self, obj, event):
+    def destroy_timer(self, obj, event):
         """The timer is a one shot timer so will expire automatically."""
         return 1
 
-    def GetRenderWindow(self):
+    def get_render_window(self):
         return self._RenderWindow
 
-    def Render(self):
+    def render(self):
         if self.__Created:
             self._RenderWindow.Render()
 
-    def OnRealize(self, *args):
+    def on_realize(self, *args):
         if self.__Created == 0:
             # you can't get the xid without the window being realized.
             self.realize()
@@ -128,24 +128,24 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
             self.__Created = 1
         return True
 
-    def OnConfigure(self, wid, event=None):
+    def on_configure(self, wid, event=None):
         sz = self._RenderWindow.GetSize()
         if (event.width != sz[0]) or (event.height != sz[1]):
             self._Iren.SetSize(event.width, event.height)
             self._Iren.ConfigureEvent()
         return True
 
-    def OnRender(self, *args):
+    def on_render(self, *args):
         self.Render()
         return True
 
-    def OnDestroy(self, event=None):
+    def on_destroy(self, event=None):
         self.hide()
         del self._RenderWindow
         self.destroy()
         return True
 
-    def _GetCtrlShift(self, event):
+    def _get_ctrl_shift(self, event):
         ctrl, shift = 0, 0
         if (event.state & Gdk.ModifierType.CONTROL_MASK) == Gdk.ModifierType.CONTROL_MASK:
             ctrl = 1
@@ -153,10 +153,10 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
             shift = 1
         return ctrl, shift
 
-    def OnButtonDown(self, wid, event):
+    def on_button_down(self, wid, event):
         """Mouse button pressed."""
         m = self.get_pointer()
-        ctrl, shift = self._GetCtrlShift(event)
+        ctrl, shift = self._get_ctrl_shift(event)
         self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         button = event.button
         if button == 3:
@@ -171,10 +171,10 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         else:
             return False
 
-    def OnButtonUp(self, wid, event):
+    def on_button_up(self, wid, event):
         """Mouse button released."""
         m = self.get_pointer()
-        ctrl, shift = self._GetCtrlShift(event)
+        ctrl, shift = self._get_ctrl_shift(event)
         self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         button = event.button
         if button == 3:
@@ -189,32 +189,32 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
         return False
 
-    def OnMouseMove(self, wid, event):
+    def on_mouse_move(self, wid, event):
         """Mouse has moved."""
         m = self.get_pointer()
-        ctrl, shift = self._GetCtrlShift(event)
+        ctrl, shift = self._get_ctrl_shift(event)
         self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         self._Iren.MouseMoveEvent()
         return True
 
-    def OnEnter(self, wid, event):
+    def on_enter(self, wid, event):
         """Entering the vtkRenderWindow."""
         self.grab_focus()
         m = self.get_pointer()
-        ctrl, shift = self._GetCtrlShift(event)
+        ctrl, shift = self._get_ctrl_shift(event)
         self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         self._Iren.EnterEvent()
         return True
 
-    def OnLeave(self, wid, event):
+    def on_leave(self, wid, event):
         """Leaving the vtkRenderWindow."""
         m = self.get_pointer()
-        ctrl, shift = self._GetCtrlShift(event)
+        ctrl, shift = self._get_ctrl_shift(event)
         self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         self._Iren.LeaveEvent()
         return True
 
-    def OnKeyPress(self, wid, event):
+    def on_key_press(self, wid, event):
         """Key pressed."""
         m = self.get_pointer()
         ctrl, shift = self._GetCtrlShift(event)
@@ -227,7 +227,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self._Iren.CharEvent()
         return True
 
-    def OnKeyRelease(self, wid, event):
+    def on_key_release(self, wid, event):
         "Key released."
         m = self.get_pointer()
         ctrl, shift = self._GetCtrlShift(event)
@@ -239,7 +239,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self._Iren.KeyReleaseEvent()
         return True
 
-    def Initialize(self):
+    def initialize(self):
         if self.__Created:
             self._Iren.Initialize()
 
