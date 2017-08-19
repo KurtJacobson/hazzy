@@ -74,7 +74,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
     def ConnectSignals(self):
         self.connect("realize", self.OnRealize)
-        # self.connect("expose-event", self.OnExpose)
+        self.connect("render", self.OnRender)
         self.connect("configure-event", self.OnConfigure)
         self.connect("button-press-event", self.OnButtonDown)
         self.connect("button-release-event", self.OnButtonUp)
@@ -84,12 +84,14 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self.connect("key-press-event", self.OnKeyPress)
         self.connect("delete-event", self.OnDestroy)
 
-        self.add_events(Gdk.EventMask.EXPOSURE_MASK | Gdk.EventMask.BUTTON_PRESS_MASK |
+        self.add_events(Gdk.EventMask.EXPOSURE_MASK |
+                        Gdk.EventMask.BUTTON_PRESS_MASK |
                         Gdk.EventMask.BUTTON_RELEASE_MASK |
                         Gdk.EventMask.KEY_PRESS_MASK |
                         Gdk.EventMask.POINTER_MOTION_MASK |
                         Gdk.EventMask.POINTER_MOTION_HINT_MASK |
-                        Gdk.EventMask.ENTER_NOTIFY_MASK | Gdk.EventMask.LEAVE_NOTIFY_MASK)
+                        Gdk.EventMask.ENTER_NOTIFY_MASK |
+                        Gdk.EventMask.LEAVE_NOTIFY_MASK)
 
     def __getattr__(self, attr):
         """Makes the object behave like a
@@ -133,7 +135,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
             self._Iren.ConfigureEvent()
         return True
 
-    def OnExpose(self, *args):
+    def OnRender(self, *args):
         self.Render()
         return True
 
@@ -155,8 +157,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         """Mouse button pressed."""
         m = self.get_pointer()
         ctrl, shift = self._GetCtrlShift(event)
-        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift,
-                                            chr(0), 0, None)
+        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         button = event.button
         if button == 3:
             self._Iren.RightButtonPressEvent()
@@ -174,8 +175,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         """Mouse button released."""
         m = self.get_pointer()
         ctrl, shift = self._GetCtrlShift(event)
-        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift,
-                                            chr(0), 0, None)
+        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         button = event.button
         if button == 3:
             self._Iren.RightButtonReleaseEvent()
@@ -193,8 +193,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         """Mouse has moved."""
         m = self.get_pointer()
         ctrl, shift = self._GetCtrlShift(event)
-        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift,
-                                            chr(0), 0, None)
+        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         self._Iren.MouseMoveEvent()
         return True
 
@@ -203,8 +202,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self.grab_focus()
         m = self.get_pointer()
         ctrl, shift = self._GetCtrlShift(event)
-        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift,
-                                            chr(0), 0, None)
+        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         self._Iren.EnterEvent()
         return True
 
@@ -212,8 +210,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         """Leaving the vtkRenderWindow."""
         m = self.get_pointer()
         ctrl, shift = self._GetCtrlShift(event)
-        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift,
-                                            chr(0), 0, None)
+        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, chr(0), 0, None)
         self._Iren.LeaveEvent()
         return True
 
@@ -225,8 +222,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         key = chr(0)
         if keycode < 256:
             key = chr(keycode)
-        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift,
-                                            key, 0, keysym)
+        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, key, 0, keysym)
         self._Iren.KeyPressEvent()
         self._Iren.CharEvent()
         return True
@@ -239,8 +235,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         key = chr(0)
         if keycode < 256:
             key = chr(keycode)
-        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift,
-                                            key, 0, keysym)
+        self._Iren.SetEventInformationFlipY(m[0], m[1], ctrl, shift, key, 0, keysym)
         self._Iren.KeyReleaseEvent()
         return True
 
@@ -269,7 +264,6 @@ class Tremlin(Gtk.Box):
         self.gvtk.AddObserver("ExitEvent", lambda o, e, x=None: x)
 
     def test_cone(self):
-
         # The VTK stuff.
         cone = vtk.vtkConeSource()
         cone.SetResolution(80)
@@ -287,20 +281,16 @@ class Tremlin(Gtk.Box):
         ren.AddActor(coneActor)
 
 
-
 def main():
-    # The main window
     window = Gtk.Window(title="HAZZY VTK")
     window.connect("destroy", Gtk.main_quit)
-    window.connect("delete_event", Gtk.main_quit)
-    ## window.set_border_width(10)
+    window.connect("delete-event", Gtk.main_quit)
 
     tremlin = Tremlin()
     tremlin.test_cone()
 
     window.add(tremlin)
 
-    # show the main window and start event processing.
     window.show()
     Gtk.main()
 
