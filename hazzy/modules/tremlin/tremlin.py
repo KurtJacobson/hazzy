@@ -43,6 +43,9 @@ from vtk.vtkRenderingCorePython import vtkRenderer
 
 from vtk.vtkFiltersSourcesPython import vtkConeSource
 
+import gcode
+
+from rs274 import interpret
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
     """ Embeds a vtkRenderWindow into a pyGtk widget and uses
@@ -291,8 +294,12 @@ class Tremlin(Gtk.Box):
         # prevents 'q' from exiting the app.
         self.gvtk.AddObserver("ExitEvent", lambda o, e, x=None: x)
 
+        self.num_lines = None
+        self.result = None
+        self.seq = None
+
     def test_cone(self):
-        # The VTK stuff.
+        """ The Vtk test stuff """
         cone = vtkConeSource()
         cone.SetResolution(100)
 
@@ -306,14 +313,38 @@ class Tremlin(Gtk.Box):
         ren = self.gvtk.get_renderer()
         ren.AddActor(cone_actor)
 
+    def load_file(self, ngc_filename):
+
+        with open(ngc_filename, "r") as ngc_file:
+            self.num_lines = sum(bl.count("\n") for bl in self._blocks(ngc_file))
+
+            ngc_code = ngc_file.read()
+
+            self.result, self.seq = gcode.parse(ngc_code, canon)
+
+        print(self.num_lines)
+
+        print(self.result)
+        print(self.seq)
+
+    @staticmethod
+    def _blocks(files, size=65536):
+        while True:
+            b = files.read(size)
+            if not b:
+                break
+            yield b
+
 
 def main():
     window = Gtk.Window(title="HAZZY VTK")
     window.connect("destroy", Gtk.main_quit)
     window.connect("delete-event", Gtk.main_quit)
 
+
     tremlin = Tremlin()
     tremlin.test_cone()
+    tremlin.load_file("hazzy.ngc")
 
     window.add(tremlin)
 
