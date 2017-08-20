@@ -308,8 +308,7 @@ class Tremlin(Gtk.Box):
                 for line in lines:
                     gcode_line = Line(line)
 
-                    if gcode_line.block.gcodes:
-                        self.gcode_path.append(gcode_line.block.gcodes)
+                    self.gcode_path.append(gcode_line)
 
     def draw_cone(self):
         cone = vtkConeSource()
@@ -326,29 +325,16 @@ class Tremlin(Gtk.Box):
 
     def draw_path(self):
 
-        num_gcode_blocks = len(self.gcode_path)
-
         points = vtkPoints()
 
-        # points.SetNumberOfPoints(num_gcode_blocks)
-
         for i, line in enumerate(self.gcode_path):
-            line_type = type(line[0])
-            if line_type == GCodeLinearMove:
-                coord = self.proces_line(line[0])
-                # print("{0} Linear Move {1}".format(i, coord.values))
-                points.InsertNextPoint(coord.values["X"],
-                                       coord.values["Y"],
-                                       coord.values["Z"])
 
-            elif line_type == GCodeRapidMove:
-                coord = self.proces_line(line[0])
-                # print("{0} Rapid Move {1}".format(i, coord.values))
-                points.InsertNextPoint(coord.values["X"],
-                                       coord.values["Y"],
-                                       coord.values["Z"])
+            if line.block.gcodes or line.block.modal_params:
+                self.add_points(line, points)
 
         lines = vtkCellArray()
+
+        num_gcode_blocks = len(self.gcode_path)
 
         for i in range(num_gcode_blocks):
             line = vtkLine()
@@ -375,14 +361,19 @@ class Tremlin(Gtk.Box):
         path_actor.GetProperty().SetColor(1, 1, 1)  # (R,G,B)
 
         self.add_actor(path_actor)
-
+        
     def add_actor(self, actor):
         ren = self.gvtk.get_renderer()
         ren.AddActor(actor)
 
-    def proces_line(self, line):
-        self.machine.process_gcodes(line)
-        return self.machine.pos
+    def add_points(self, line, points):
+
+        self.machine.process_block(line.block)
+        coord = self.machine.pos
+        # print("{0} Linear Move {1}".format(i, coord.values))
+        points.InsertNextPoint(coord.values["X"],
+                               coord.values["Y"],
+                               coord.values["Z"])
 
 
 def main():
