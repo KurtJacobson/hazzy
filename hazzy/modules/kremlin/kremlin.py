@@ -327,49 +327,14 @@ class Kremlin(Gtk.Box):
 
                 if prev_postion is not None:
                     if isinstance(active_modal, GCodeLinearMove):
-                        for code in line.block.gcodes:
-                            pos = code.get_param_dict("XYZ")
 
-                            try:
-                                position[0] = pos["X"]
-                            except KeyError as e:
-                                pass
-                            try:
-                                position[1] = pos["Y"]
-                            except KeyError as e:
-                                pass
-
-                            try:
-                                position[2] = pos["Z"]
-                            except KeyError as e:
-                                pass
-
-                        for j, modal in enumerate(line.block.modal_params):
-                            position[j] = modal.value
+                        position = self.get_pos(line, position)
 
                         self.draw_line(prev_postion, position, line_color=(1, 1, 1))
 
                     elif isinstance(active_modal, GCodeRapidMove):
-                        for code in line.block.gcodes:
-                            pos = code.get_param_dict("XYZ")
 
-                            try:
-                                position[0] = pos["X"]
-                            except KeyError as e:
-                                pass
-
-                            try:
-                                position[1] = pos["Y"]
-                            except KeyError as e:
-                                pass
-
-                            try:
-                                position[2] = pos["Z"]
-                            except KeyError as e:
-                                pass
-
-                        for j, modal in enumerate(line.block.modal_params):
-                            position[j] = modal.value
+                        position = self.get_pos(line, position)
 
                         self.draw_line(prev_postion, position, line_color=(1, 0, 0))
 
@@ -390,6 +355,30 @@ class Kremlin(Gtk.Box):
     def draw_arc(self, pt1, pt2, r=None, cen=(1, 0, 1), cw=True, arc_color=(0, 1, 0)):
         arc = Arc(p1=(0, 0, 0), p2=(10,10,0), r=None, cen=(1, 0, 1), cw=True, arc_color=(0, 1, 0))
         self.vtk_window.add_actor(arc)
+
+    def get_pos(self, line, position):
+
+        for code in line.block.gcodes:
+            pos = code.get_param_dict("XYZ")
+
+            try:
+                position[0] = pos["X"]
+            except KeyError as e:
+                pass
+            try:
+                position[1] = pos["Y"]
+            except KeyError as e:
+                pass
+
+            try:
+                position[2] = pos["Z"]
+            except KeyError as e:
+                pass
+
+        for j, modal in enumerate(line.block.modal_params):
+            position[j] = modal.value
+
+        return position
 
 
 def main():
