@@ -334,10 +334,8 @@ class Tremlin(Gtk.Box):
         num_gcode_blocks = len(self.gcode_path)
 
         points = vtkPoints()
-        points.SetNumberOfPoints(num_gcode_blocks)
 
-        lines = vtkCellArray()
-        lines.InsertNextCell(num_gcode_blocks)
+        points.SetNumberOfPoints(num_gcode_blocks)
 
         for i, line in enumerate(self.gcode_path):
             line_type = type(line[0])
@@ -357,6 +355,11 @@ class Tremlin(Gtk.Box):
                                 coord.values["Y"],
                                 coord.values["Z"])
 
+        lines = vtkCellArray()
+
+        lines.InsertNextCell(num_gcode_blocks)
+
+        for i in range(num_gcode_blocks):
             lines.InsertCellPoint(i)
 
         path = vtkPolyData()
@@ -386,7 +389,6 @@ class Tremlin(Gtk.Box):
     def proces_line(self, line):
         self.machine.process_gcodes(line)
         return self.machine.pos
-
 
 
 def main():
