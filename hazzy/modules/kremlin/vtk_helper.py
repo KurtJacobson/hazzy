@@ -1,3 +1,11 @@
+"""@camvtk docstring
+This module provides classes for visualizing CAD/CAM algorithms using VTK.
+This module is part of OpenCAMLib (ocl), a toolpath-generation library.
+
+Copyright 2010-2011 Anders Wallin (anders.e.e.wallin "at" gmail.com)
+Published under the GNU General Public License, see http://www.gnu.org/licenses/
+"""
+
 import math
 
 from vtk.vtkCommonComputationalGeometryPython import vtkParametricSuperToroid
@@ -7,7 +15,7 @@ from vtk.vtkCommonTransformsPython import vtkTransform
 from vtk.vtkFiltersCorePython import vtkTubeFilter
 from vtk.vtkFiltersGeneralPython import vtkTransformPolyDataFilter, vtkAxes
 from vtk.vtkFiltersSourcesPython import vtkConeSource, vtkSphereSource, vtkCubeSource, vtkLineSource, vtkCylinderSource, \
-    vtkPointSource, vtkArrowSource, vtkParametricFunctionSource, vtkPlaneSource
+    vtkPointSource, vtkArrowSource, vtkParametricFunctionSource, vtkPlaneSource, vtkArcSource
 from vtk.vtkRenderingCorePython import vtkActor, vtkFollower, vtkPolyDataMapper, vtkTextActor
 
 # color definitions
@@ -34,6 +42,213 @@ blue2 = (float(0) / 255, float(188) / 255, float(255) / 255)
 cyan = (0, 1, 1)
 mag2 = (float(123) / 255, float(35) / 255, float(251) / 255)
 magenta = (float(153) / 255, float(42) / 255, float(165) / 255)
+
+
+# Examples
+
+
+def drawTriangles(myscreen, trianglelist):
+    # list of triangles
+    # [ [p1,p2,p3] ,
+    #   [p4,p5,p6] ,
+    #   ...
+    # ]
+    # this draws all triangles with the same color
+    triactor = STLSurf(triangleList=trianglelist, color=cyan)
+    # triactor.SetWireframe()
+    myscreen.addActor(triactor)
+
+
+def drawLines(myscreen, seglist):
+    n = 0
+    for seg in seglist:
+        print n
+        n = n + 1
+        drawLine(myscreen, seg[0], seg[1], cyan)
+
+
+def drawLine(myscreen, pt1, pt2, lineColor):
+    myscreen.addActor(Line(p1=(pt1.x, pt1.y, pt1.z), p2=(pt2.x, pt2.y, pt2.z), color=lineColor))
+
+
+def drawArc(myscreen, pt1, pt2, r, cen, cw, arcColor):
+    # draw arc as many line-segments
+    start = pt1 - cen
+    end = pt2 - cen
+    theta1 = math.atan2(start.x, start.y)
+    theta2 = math.atan2(end.x, end.y)
+    alfa = []  # the list of angles
+    da = 0.1
+    CIRCLE_FUZZ = 1e-9
+    # idea from emc2 / cutsim g-code interp G2/G3
+    if (cw == False):
+        while ((theta2 - theta1) > -CIRCLE_FUZZ):
+            theta2 -= 2 * math.pi
+    else:
+        while ((theta2 - theta1) < CIRCLE_FUZZ):
+            theta2 += 2 * math.pi
+
+    dtheta = theta2 - theta1
+    arclength = r * dtheta
+    dlength = min(0.01, arclength / 10)
+    steps = int(float(arclength) / float(dlength))
+    rsteps = float(1) / float(steps)
+    dc = math.cos(-dtheta * rsteps)  # delta-cos
+    ds = math.sin(-dtheta * rsteps)  # delta-sin
+
+    previous = pt1
+    tr = [start.x, start.y]
+    for i in range(steps):
+        # f = (i+1) * rsteps #; // varies from 1/rsteps..1 (?)
+        # theta = theta1 + i* dtheta
+        tr = rotate(tr[0], tr[1], dc, ds)  # ; // rotate center-start vector by a small amount
+        x = cen.x + tr[0]
+        y = cen.y + tr[1]
+        current = ovd.Point(x, y)
+        myscreen.addActor(Line(p1=(previous.x, previous.y, 0), p2=(current.x, current.y, 0), color=arcColor))
+        previous = current
+
+        # rotate by cos/sin. from emc2 gcodemodule.cc
+
+
+def rotate(x, y, c, s):
+    tx = x * c - y * s
+    y = x * s + y * c
+    x = tx
+    return [x, y]
+
+
+def drawOffsets(myscreen, ofs):
+    # draw loops
+    nloop = 0
+    lineColor = lgreen
+    arcColor = green  # grass
+    for lop in ofs:
+        n = 0
+        N = len(lop)
+        first_point = []
+        previous = []
+        for p in lop:
+            # p[0] is the Point
+            # p[1] is -1 for lines, and r for arcs
+            if n == 0:  # don't draw anything on the first iteration
+                previous = p[0]
+                # first_point = p[0]
+            else:
+                cw = p[3]
+                cen = p[2]
+                r = p[1]
+                p = p[0]
+                if r == -1:
+                    drawLine(myscreen, previous, p, lineColor)
+                else:
+                    drawArc(myscreen, previous, p, r, cen, cw, arcColor)
+                # myscreen.addActor( ovdvtk.Line(p1=(previous.x,previous.y,0),p2=(p.x,p.y,0),color=loopColor) )
+                previous = p
+            n = n + 1
+        print "rendered loop ", nloop, " with ", len(lop), " points"
+        nloop = nloop + 1
+
+
+def drawOCLtext(myscreen, rev_text=" "):
+    t = Text()
+    t.SetPos((myscreen.width - 250, myscreen.height - 70))
+    date_text = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    # rev_text = ovd.version()
+    t.SetText("OpenVoronoi\n" + rev_text + "\n" + date_text)
+    myscreen.addActor(t)
+
+
+def drawBB(myscreen, vol):
+    """ draw a bounding-box """
+    lines = []
+    lines.append(Line(p1=(vol.bb.minx, vol.bb.miny, vol.bb.minz), p2=(vol.bb.maxx, vol.bb.miny, vol.bb.minz)))
+    lines.append(Line(p1=(vol.bb.minx, vol.bb.maxy, vol.bb.minz), p2=(vol.bb.maxx, vol.bb.maxy, vol.bb.minz)))
+    lines.append(Line(p1=(vol.bb.minx, vol.bb.maxy, vol.bb.maxz), p2=(vol.bb.maxx, vol.bb.maxy, vol.bb.maxz)))
+    lines.append(Line(p1=(vol.bb.minx, vol.bb.miny, vol.bb.maxz), p2=(vol.bb.maxx, vol.bb.miny, vol.bb.maxz)))
+
+    lines.append(Line(p1=(vol.bb.minx, vol.bb.miny, vol.bb.minz), p2=(vol.bb.minx, vol.bb.miny, vol.bb.maxz)))
+    lines.append(Line(p1=(vol.bb.maxx, vol.bb.miny, vol.bb.minz), p2=(vol.bb.maxx, vol.bb.miny, vol.bb.maxz)))
+
+    lines.append(Line(p1=(vol.bb.minx, vol.bb.maxy, vol.bb.minz), p2=(vol.bb.minx, vol.bb.maxy, vol.bb.maxz)))
+    lines.append(Line(p1=(vol.bb.maxx, vol.bb.maxy, vol.bb.minz), p2=(vol.bb.maxx, vol.bb.maxy, vol.bb.maxz)))
+
+    lines.append(Line(p1=(vol.bb.minx, vol.bb.miny, vol.bb.minz), p2=(vol.bb.minx, vol.bb.maxy, vol.bb.minz)))
+    lines.append(Line(p1=(vol.bb.maxx, vol.bb.miny, vol.bb.minz), p2=(vol.bb.maxx, vol.bb.maxy, vol.bb.minz)))
+
+    lines.append(Line(p1=(vol.bb.minx, vol.bb.miny, vol.bb.maxz), p2=(vol.bb.minx, vol.bb.maxy, vol.bb.maxz)))
+    lines.append(Line(p1=(vol.bb.maxx, vol.bb.miny, vol.bb.maxz), p2=(vol.bb.maxx, vol.bb.maxy, vol.bb.maxz)))
+
+    for l in lines:
+        myscreen.addActor(l)
+
+
+def drawTree(myscreen, t, color=red, opacity=0.2, offset=(0, 0, 0)):
+    """ draw an octree """
+    nodes = t.get_nodes()
+    # nmax=len(nodes)
+    # i=0
+    for n in nodes:
+        cen = n.point()  # center of cube
+        scale = n.get_scale()  # scale of cube
+        cube = camvtk.Cube(center=(cen.x + offset[0], cen.y + offset[1], cen.z + offset[2]), length=scale, color=color)
+        cube.SetOpacity(opacity)
+        # cube.SetPhong()
+        cube.SetGouraud()
+        # cube.SetWireframe()
+        myscreen.addActor(cube)
+        # if (nmax>100):
+        #    print "i=", i
+        #    print "div=", (float(nmax)/10)
+        #    if ( (i % (float(nmax)/10))==0):
+        #        print ".",
+        # i=i+1
+        # print "done."
+
+
+def drawTree2(myscreen, t, color=red, opacity=0.2):
+    """ draw an octree as an STLSurface """
+    tlist = pyocl.octree2trilist(t)
+    surf = STLSurf(triangleList=tlist)
+    surf.SetColor(color)
+    surf.SetOpacity(opacity)
+    myscreen.addActor(surf)
+
+
+def drawArrows(myscreen, center=(0, 0, 0)):
+    # X Y Z arrows
+    arrowcenter = center
+    xar = Arrow(color=red, center=arrowcenter, rotXYZ=(0, 0, 0))
+    yar = Arrow(color=green, center=arrowcenter, rotXYZ=(0, 0, 90))
+    zar = Arrow(color=blue, center=arrowcenter, rotXYZ=(0, -90, 0))
+    myscreen.addActor(xar)
+    myscreen.addActor(yar)
+    myscreen.addActor(zar)
+
+
+def drawCylCutter(myscreen, c, p):
+    cyl = Cylinder(center=(p.x, p.y, p.z), radius=c.radius,
+                   height=c.length,
+                   rotXYZ=(90, 0, 0), color=grey)
+    cyl.SetWireframe()
+    myscreen.addActor(cyl)
+
+
+def drawBallCutter(myscreen, c, p):
+    cyl = Cylinder(center=(p.x, p.y, p.z + c.getRadius()), radius=c.getRadius(),
+                   height=c.getLength(),
+                   rotXYZ=(90, 0, 0), color=red)
+    # cyl.SetWireframe()
+    sph = Sphere(center=(p.x, p.y, p.z + c.getRadius()), radius=c.getRadius(), color=red)
+    myscreen.addActor(cyl)
+    myscreen.addActor(sph)
+    acts = []
+    acts.append(cyl)
+    acts.append(sph)
+
+    return acts
+
+# Classes
 
 
 class CamvtkActor(vtkActor):
@@ -241,6 +456,41 @@ class Line(CamvtkActor):
         self.SetMapper(self.mapper)
 
         self.SetColor(color)
+
+
+class Arc(CamvtkActor):
+    """ arc """
+
+    def __init__(self, p1=(0, 0, 0), p2=(10,10,0), r=None, cen=(1, 0, 1), cw=True, arc_color=(0, 1, 0)):
+        CamvtkActor.__init__(self)
+
+        """ arc """
+        self.src = vtkArcSource()
+
+        self.src.SetCenter(cen)
+        self.src.SetPoint1(p1)
+        self.src.SetPoint2(p2)
+
+        self.src.SetResolution(20)
+        # self.src.SetNegative(not cw)
+
+        self.mapper = vtkPolyDataMapper()
+
+        self.mapper.SetInputData(self.src.GetOutput())
+
+        """
+        self.src = vtkArcSource()
+
+        self.src.SetPoint1(pt1)
+        self.src.SetPoint2(pt2)
+
+        self.mapper = vtkPolyDataMapper()
+
+        self.mapper.SetInputConnection(self.src.GetOutputPort())
+
+        self.SetMapper(self.mapper)
+        """
+        self.SetColor(arc_color)
 
 
 class PolyLine(CamvtkActor):
@@ -667,3 +917,16 @@ class Plane(CamvtkActor):
         self.SetOrigin(center)
         # SetScaleFactor(double)
         # GetOrigin
+
+
+
+# TODO:
+# vtkArcSource
+# vtkDiskSource
+# vtkFrustumSource
+# vtkOutlineSource
+# vtkParametricFunctionSource
+# PlatonicSolid
+# ProgrammableSource (?)
+# PSphereSource
+# RegularPolygon

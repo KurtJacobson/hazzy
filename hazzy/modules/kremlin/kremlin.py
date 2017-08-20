@@ -18,10 +18,9 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+import copy
 
 import gi
-
-import math
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -32,21 +31,15 @@ from gi.repository import GLib
 
 from vtk.vtkRenderingCorePython import vtkRenderWindow, vtkCamera
 from vtk.vtkRenderingCorePython import vtkGenericRenderWindowInteractor
-from vtk.vtkRenderingCorePython import vtkPolyDataMapper
-from vtk.vtkRenderingCorePython import vtkActor
 from vtk.vtkRenderingCorePython import vtkRenderer
-
-from vtk.vtkFiltersSourcesPython import vtkConeSource
-
-from vtk.vtkCommonCorePython import vtkPoints, VTK_MAJOR_VERSION
-from vtk.vtkCommonDataModelPython import vtkPolyData, vtkCellArray, vtkLine
 
 from hazzy.modules.pygcode import Line as GLine
 from hazzy.modules.pygcode import GCodeLinearMove
 from hazzy.modules.pygcode import GCodeRapidMove
+from hazzy.modules.pygcode import GCodeArcMove, GCodeArcMoveCW, GCodeArcMoveCCW
 from hazzy.modules.pygcode import Machine
 
-from hazzy.modules.kremlin.vtk_helper import Cone, Line
+from hazzy.modules.kremlin.vtk_helper import Cone, Line, Arc
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -291,7 +284,7 @@ class Kremlin(Gtk.Box):
 
         self.vtk_window = GtkVTKRenderWindowInteractor()
 
-        # gvtk.SetDesiredUpdateRate(1000)
+        # self.vtk_window.SetDesiredUpdateRate(1000)
         self.vtk_window.set_usize(800, 600)
         self.pack_start(self.vtk_window, True, True, 0)
 
@@ -322,69 +315,81 @@ class Kremlin(Gtk.Box):
 
     def draw_path(self):
 
-        last_postion = None
-
+        position = [0, 0, 0]
+        prev_postion = [0, 0, 0]
         active_modal = None
 
         for i, line in enumerate(self.gcode_path):
             if line.block.gcodes or line.block.modal_params:
 
-                self.machine.process_block(line.block)
-                position = self.machine.pos.values
-
                 if line.block.gcodes:
                     active_modal = line.block.gcodes[0]
 
-                if last_postion is not None:
+                if prev_postion is not None:
                     if isinstance(active_modal, GCodeLinearMove):
-                        self.draw_line(last_postion, position, lineColor=(1, 0, 0))
+                        for code in line.block.gcodes:
+                            pos = code.get_param_dict("XYZ")
+
+                            try:
+                                position[0] = pos["X"]
+                            except KeyError as e:
+                                pass
+                            try:
+                                position[1] = pos["Y"]
+                            except KeyError as e:
+                                pass
+
+                            try:
+                                position[2] = pos["Z"]
+                            except KeyError as e:
+                                pass
+
+                        for j, modal in enumerate(line.block.modal_params):
+                            position[j] = modal.value
+
+                        self.draw_line(prev_postion, position, line_color=(1, 1, 1))
+
                     elif isinstance(active_modal, GCodeRapidMove):
-                        self.draw_line(last_postion, position, lineColor=(1, 1, 1))
+                        for code in line.block.gcodes:
+                            pos = code.get_param_dict("XYZ")
 
-                last_postion = position
+                            try:
+                                position[0] = pos["X"]
+                            except KeyError as e:
+                                pass
 
-    def draw_line(self, pt1, pt2, lineColor=(1, 1, 1)):
-        line = Line(p1=(pt1["X"], pt1["Y"], pt1["Z"]), p2=(pt2["X"], pt2["Y"], pt2["Z"]), color=lineColor)
+                            try:
+                                position[1] = pos["Y"]
+                            except KeyError as e:
+                                pass
+
+                            try:
+                                position[2] = pos["Z"]
+                            except KeyError as e:
+                                pass
+
+                        for j, modal in enumerate(line.block.modal_params):
+                            position[j] = modal.value
+
+                        self.draw_line(prev_postion, position, line_color=(1, 0, 0))
+
+                    elif isinstance(active_modal, GCodeArcMoveCW):
+                        color = (1, 1, 1)
+                        # self.draw_arc(last_postion, position)# r, cen, cw, arc_color=color)
+
+                    elif isinstance(active_modal, GCodeArcMoveCCW):
+                        color = (1, 1, 1)
+                        # self.draw_arc(last_postion, position)# r, cen, cw, arc_color=color)
+
+                prev_postion = copy.copy(position)
+
+    def draw_line(self, pt1, pt2, line_color=(1, 1, 1)):
+        line = Line(pt1, pt2, line_color)
         self.vtk_window.add_actor(line)
 
-    """
-    def draw_arc(self, myscreen, pt1, pt2, r, cen, cw, arcColor):
-        # draw arc as many line-segments
-        start = pt1 - cen
-        end = pt2 - cen
-        theta1 = math.atan2(start.x, start.y)
-        theta2 = math.atan2(end.x, end.y)
-        alfa = []  # the list of angles
-        da = 0.1
-        CIRCLE_FUZZ = 1e-9
-        # idea from emc2 / cutsim g-code interp G2/G3
-        if (cw == False):
-            while ((theta2 - theta1) > -CIRCLE_FUZZ):
-                theta2 -= 2 * math.pi
-        else:
-            while ((theta2 - theta1) < CIRCLE_FUZZ):
-                theta2 += 2 * math.pi
-
-        dtheta = theta2 - theta1
-        arclength = r * dtheta
-        dlength = min(0.01, arclength / 10)
-        steps = int(float(arclength) / float(dlength))
-        rsteps = float(1) / float(steps)
-        dc = math.cos(-dtheta * rsteps)  # delta-cos
-        ds = math.sin(-dtheta * rsteps)  # delta-sin
-
-        previous = pt1
-        tr = [start.x, start.y]
-        for i in range(steps):
-            # f = (i+1) * rsteps #; // varies from 1/rsteps..1 (?)
-            # theta = theta1 + i* dtheta
-            tr = rotate(tr[0], tr[1], dc, ds)  # ; // rotate center-start vector by a small amount
-            x = cen.x + tr[0]
-            y = cen.y + tr[1]
-            current = ovd.Point(x, y)
-            myscreen.addActor(Line(p1=(previous.x, previous.y, 0), p2=(current.x, current.y, 0), color=arcColor))
-            previous = current
-    """
+    def draw_arc(self, pt1, pt2, r=None, cen=(1, 0, 1), cw=True, arc_color=(0, 1, 0)):
+        arc = Arc(p1=(0, 0, 0), p2=(10,10,0), r=None, cen=(1, 0, 1), cw=True, arc_color=(0, 1, 0))
+        self.vtk_window.add_actor(arc)
 
 
 def main():
