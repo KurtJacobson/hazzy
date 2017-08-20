@@ -46,7 +46,7 @@ from vtk.vtkRenderingCorePython import vtkRenderer
 from vtk.vtkFiltersSourcesPython import vtkConeSource
 
 from vtk.vtkCommonCorePython import vtkPoints, VTK_MAJOR_VERSION
-from vtk.vtkCommonDataModelPython import vtkPolyData, vtkCellArray
+from vtk.vtkCommonDataModelPython import vtkPolyData, vtkCellArray, vtkLine
 
 from hazzy.modules.pygcode import Line
 from hazzy.modules.pygcode import GCodeLinearMove
@@ -335,32 +335,31 @@ class Tremlin(Gtk.Box):
 
         points = vtkPoints()
 
-        points.SetNumberOfPoints(num_gcode_blocks)
+        # points.SetNumberOfPoints(num_gcode_blocks)
 
         for i, line in enumerate(self.gcode_path):
             line_type = type(line[0])
             if line_type == GCodeLinearMove:
                 coord = self.proces_line(line[0])
                 # print("{0} Linear Move {1}".format(i, coord.values))
-                points.SetPoint(i,
-                                coord.values["X"],
-                                coord.values["Y"],
-                                coord.values["Z"])
+                points.InsertNextPoint(coord.values["X"],
+                                       coord.values["Y"],
+                                       coord.values["Z"])
 
             elif line_type == GCodeRapidMove:
                 coord = self.proces_line(line[0])
                 # print("{0} Rapid Move {1}".format(i, coord.values))
-                points.SetPoint(i,
-                                coord.values["X"],
-                                coord.values["Y"],
-                                coord.values["Z"])
+                points.InsertNextPoint(coord.values["X"],
+                                       coord.values["Y"],
+                                       coord.values["Z"])
 
         lines = vtkCellArray()
 
-        lines.InsertNextCell(num_gcode_blocks)
-
         for i in range(num_gcode_blocks):
-            lines.InsertCellPoint(i)
+            line = vtkLine()
+            line.GetPointIds().SetId(0, i)
+            line.GetPointIds().SetId(1, i + 1)
+            lines.InsertNextCell(line)
 
         path = vtkPolyData()
 
