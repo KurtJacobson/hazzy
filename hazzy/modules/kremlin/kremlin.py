@@ -21,6 +21,8 @@
 
 import gi
 
+import math
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
@@ -39,10 +41,12 @@ from vtk.vtkFiltersSourcesPython import vtkConeSource
 from vtk.vtkCommonCorePython import vtkPoints, VTK_MAJOR_VERSION
 from vtk.vtkCommonDataModelPython import vtkPolyData, vtkCellArray, vtkLine
 
-from hazzy.modules.pygcode import Line
+from hazzy.modules.pygcode import Line as GLine
 from hazzy.modules.pygcode import GCodeLinearMove
 from hazzy.modules.pygcode import GCodeRapidMove
 from hazzy.modules.pygcode import Machine
+
+from hazzy.modules.kremlin.vtk_helper import Cone, Line
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -276,6 +280,10 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self._iren.KeyReleaseEvent()
         return True
 
+    def add_actor(self, actor):
+        ren = self.get_renderer()
+        ren.AddActor(actor)
+
 
 class Kremlin(Gtk.Box):
     def __init__(self):
@@ -305,73 +313,78 @@ class Kremlin(Gtk.Box):
                 if not lines:
                     break
                 for line in lines:
-                    gcode_line = Line(str(line))
+                    gcode_line = GLine(str(line))
                     self.gcode_path.append(gcode_line)
 
     def draw_cone(self):
-        cone = vtkConeSource()
-        cone.SetResolution(100)
-
-        cone_mapper = vtkPolyDataMapper()
-        cone_mapper.SetInputConnection(cone.GetOutputPort())
-
-        cone_actor = vtkActor()
-        cone_actor.SetMapper(cone_mapper)
-        cone_actor.GetProperty().SetColor(0.5, 0.5, 1.0)
-
-        self.add_actor(cone_actor)
+        cone_actor = Cone()
+        self.vtk_window.add_actor(cone_actor)
 
     def draw_path(self):
 
-        points = vtkPoints()
+        last_postion = None
+
+        active_modal = None
 
         for i, line in enumerate(self.gcode_path):
             if line.block.gcodes or line.block.modal_params:
-                print(line)
-                self.add_points(line, points)
 
-        lines = vtkCellArray()
+                self.machine.process_block(line.block)
+                position = self.machine.pos.values
 
-        num_gcode_blocks = len(self.gcode_path)
+                if line.block.gcodes:
+                    active_modal = line.block.gcodes[0]
 
-        for i in range(num_gcode_blocks):
-            line = vtkLine()
-            line.GetPointIds().SetId(0, i)
-            line.GetPointIds().SetId(1, i + 1)
-            lines.InsertNextCell(line)
+                if last_postion is not None:
+                    if isinstance(active_modal, GCodeLinearMove):
+                        self.draw_line(last_postion, position, lineColor=(1, 0, 0))
+                    elif isinstance(active_modal, GCodeRapidMove):
+                        self.draw_line(last_postion, position, lineColor=(1, 1, 1))
 
-        path = vtkPolyData()
+                last_postion = position
 
-        path.SetPoints(points)
-        path.SetLines(lines)
+    def draw_line(self, pt1, pt2, lineColor=(1, 1, 1)):
+        line = Line(p1=(pt1["X"], pt1["Y"], pt1["Z"]), p2=(pt2["X"], pt2["Y"], pt2["Z"]), color=lineColor)
+        self.vtk_window.add_actor(line)
 
-        path_mapper = vtkPolyDataMapper()
-
-        if VTK_MAJOR_VERSION <= 5:
-            path_mapper.SetInputConnection(path.GetProducerPort())
+    """
+    def draw_arc(self, myscreen, pt1, pt2, r, cen, cw, arcColor):
+        # draw arc as many line-segments
+        start = pt1 - cen
+        end = pt2 - cen
+        theta1 = math.atan2(start.x, start.y)
+        theta2 = math.atan2(end.x, end.y)
+        alfa = []  # the list of angles
+        da = 0.1
+        CIRCLE_FUZZ = 1e-9
+        # idea from emc2 / cutsim g-code interp G2/G3
+        if (cw == False):
+            while ((theta2 - theta1) > -CIRCLE_FUZZ):
+                theta2 -= 2 * math.pi
         else:
-            path_mapper.SetInputData(path)
-            path_mapper.Update()
+            while ((theta2 - theta1) < CIRCLE_FUZZ):
+                theta2 += 2 * math.pi
 
-        path_actor = vtkActor()
+        dtheta = theta2 - theta1
+        arclength = r * dtheta
+        dlength = min(0.01, arclength / 10)
+        steps = int(float(arclength) / float(dlength))
+        rsteps = float(1) / float(steps)
+        dc = math.cos(-dtheta * rsteps)  # delta-cos
+        ds = math.sin(-dtheta * rsteps)  # delta-sin
 
-        path_actor.SetMapper(path_mapper)
-        path_actor.GetProperty().SetColor(1, 1, 1)  # (R,G,B)
-
-        self.add_actor(path_actor)
-
-    def add_actor(self, actor):
-        ren = self.vtk_window.get_renderer()
-        ren.AddActor(actor)
-
-    def add_points(self, line, points):
-
-        self.machine.process_block(line.block)
-        coord = self.machine.pos
-        # print("{0} Linear Move {1}".format(i, coord.values))
-        points.InsertNextPoint(coord.values["X"],
-                               coord.values["Y"],
-                               coord.values["Z"])
+        previous = pt1
+        tr = [start.x, start.y]
+        for i in range(steps):
+            # f = (i+1) * rsteps #; // varies from 1/rsteps..1 (?)
+            # theta = theta1 + i* dtheta
+            tr = rotate(tr[0], tr[1], dc, ds)  # ; // rotate center-start vector by a small amount
+            x = cen.x + tr[0]
+            y = cen.y + tr[1]
+            current = ovd.Point(x, y)
+            myscreen.addActor(Line(p1=(previous.x, previous.y, 0), p2=(current.x, current.y, 0), color=arcColor))
+            previous = current
+    """
 
 
 def main():
