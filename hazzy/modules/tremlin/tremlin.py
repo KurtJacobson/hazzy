@@ -51,6 +51,7 @@ from vtk.vtkCommonDataModelPython import vtkPolyData, vtkCellArray
 from hazzy.modules.pygcode import Line
 from hazzy.modules.pygcode import GCodeLinearMove
 from hazzy.modules.pygcode import GCodeRapidMove
+from hazzy.modules.pygcode import Machine
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -301,15 +302,11 @@ class Tremlin(Gtk.Box):
         # prevents 'q' from exiting the app.
         self.gvtk.AddObserver("ExitEvent", lambda o, e, x=None: x)
 
+        self.machine = Machine()
+
         self.gcode_path = []
 
     def load_file(self, ngc_filename):
-
-        """
-        with open(ngc_filename, "r") as ngc_file:
-            self.num_lines = sum(bl.count("\n") for bl in self._blocks(ngc_file))
-            print("{0} lines in program".format(self.num_lines))
-        """
 
         with open(ngc_filename, "r") as ngc_file:
             ngc_code = ngc_file.readlines()
@@ -318,16 +315,6 @@ class Tremlin(Gtk.Box):
 
                 if line.block.gcodes:
                     self.gcode_path.append(line.block.gcodes)
-
-    """
-    @staticmethod
-    def _blocks(files, size=65536):
-        while True:
-            b = files.read(size)
-            if not b:
-                break
-            yield b
-    """
 
     def draw_cone(self):
         cone = vtkConeSource()
@@ -346,36 +333,31 @@ class Tremlin(Gtk.Box):
 
         num_gcode_blocks = len(self.gcode_path)
 
-        print(num_gcode_blocks)
-
-        for line in self.gcode_path:
-            line_type = type(line[0])
-            if line_type == GCodeLinearMove:
-                print(line)
-            elif line_type == GCodeRapidMove:
-                print(line)
-        c = math.cos(math.pi / 6)  # helper variable
-
         points = vtkPoints()
-
-        points.SetNumberOfPoints(6)
-        points.SetPoint(0, 0.0, -1.0, 0.0)
-        points.SetPoint(1, c, -0.5, 0.0)
-        points.SetPoint(2, c, 0.5, 0.0)
-        points.SetPoint(3, 0.0, 1.0, 0.0)
-        points.SetPoint(4, -c, 0.5, 0.0)
-        points.SetPoint(5, -c, -0.5, 0.0)
+        points.SetNumberOfPoints(num_gcode_blocks)
 
         lines = vtkCellArray()
+        lines.InsertNextCell(num_gcode_blocks)
 
-        lines.InsertNextCell(7)
-        lines.InsertCellPoint(0)
-        lines.InsertCellPoint(1)
-        lines.InsertCellPoint(2)
-        lines.InsertCellPoint(3)
-        lines.InsertCellPoint(4)
-        lines.InsertCellPoint(5)
-        lines.InsertCellPoint(0)
+        for i, line in enumerate(self.gcode_path):
+            line_type = type(line[0])
+            if line_type == GCodeLinearMove:
+                coord = self.proces_line(line[0])
+                # print("{0} Linear Move {1}".format(i, coord.values))
+                points.SetPoint(i,
+                                coord.values["X"],
+                                coord.values["Y"],
+                                coord.values["Z"])
+
+            elif line_type == GCodeRapidMove:
+                coord = self.proces_line(line[0])
+                # print("{0} Rapid Move {1}".format(i, coord.values))
+                points.SetPoint(i,
+                                coord.values["X"],
+                                coord.values["Y"],
+                                coord.values["Z"])
+
+            lines.InsertCellPoint(i)
 
         path = vtkPolyData()
 
@@ -400,6 +382,11 @@ class Tremlin(Gtk.Box):
     def add_actor(self, actor):
         ren = self.gvtk.get_renderer()
         ren.AddActor(actor)
+
+    def proces_line(self, line):
+        self.machine.process_gcodes(line)
+        return self.machine.pos
+
 
 
 def main():
