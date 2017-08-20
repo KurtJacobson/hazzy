@@ -18,8 +18,16 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-import copy
 
+# Temporary, for silly people who don't use an IDE
+import os, sys
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
+if HAZZYDIR not in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
+
+import copy
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -87,19 +95,19 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self._iren.ConfigureEvent()
 
     def connect_signals(self):
-        self.connect("realize", self.on_realize)
-        self.connect("render", self.on_render)
-        self.connect("configure-event", self.on_configure)
-        self.connect("button-press-event", self.on_button_down)
-        self.connect("button-release-event", self.on_button_up)
+        self.connect('realize', self.on_realize)
+        self.connect('render', self.on_render)
+        self.connect('configure-event', self.on_configure)
+        self.connect('button-press-event', self.on_button_down)
+        self.connect('button-release-event', self.on_button_up)
         self.connect('scroll-event', self.on_scroll)
-        self.connect("motion-notify-event", self.on_mouse_move)
-        self.connect("enter-notify-event", self.on_enter)
-        self.connect("leave-notify-event", self.on_leave)
-        self.connect("key-press-event", self.on_key_press)
-        self.connect("key-release-event", self.on_key_release)
+        self.connect('motion-notify-event', self.on_mouse_move)
+        self.connect('enter-notify-event', self.on_enter)
+        self.connect('leave-notify-event', self.on_leave)
+        self.connect('key-press-event', self.on_key_press)
+        self.connect('key-release-event', self.on_key_release)
         self.connect('scroll-event', self.on_scroll)
-        self.connect("delete-event", self.on_destroy)
+        self.connect('delete-event', self.on_destroy)
 
         self.add_events(Gdk.EventMask.EXPOSURE_MASK |
                         Gdk.EventMask.BUTTON_PRESS_MASK |
@@ -292,7 +300,7 @@ class Kremlin(Gtk.Box):
         self.show_all()
 
         # prevents 'q' from exiting the app.
-        self.vtk_window.AddObserver("ExitEvent", lambda o, e, x=None: x)
+        self.vtk_window.AddObserver('ExitEvent', lambda o, e, x=None: x)
 
         self.machine = Machine()
 
@@ -300,7 +308,7 @@ class Kremlin(Gtk.Box):
 
     def load_file(self, ngc_filename):
         buf_size = 65536
-        with open(ngc_filename, "r") as ngc_file:
+        with open(ngc_filename, 'r') as ngc_file:
             while True:
                 lines = ngc_file.readlines(buf_size)
                 if not lines:
@@ -361,19 +369,9 @@ class Kremlin(Gtk.Box):
         for code in line.block.gcodes:
             pos = code.get_param_dict("XYZ")
 
-            try:
-                position[0] = pos["X"]
-            except KeyError as e:
-                pass
-            try:
-                position[1] = pos["Y"]
-            except KeyError as e:
-                pass
-
-            try:
-                position[2] = pos["Z"]
-            except KeyError as e:
-                pass
+            position[0] = pos.get("X", position[0])
+            position[1] = pos.get("Y", position[1])
+            position[2] = pos.get("Z", position[2])
 
         for j, modal in enumerate(line.block.modal_params):
             position[j] = modal.value
@@ -383,8 +381,8 @@ class Kremlin(Gtk.Box):
 
 def main():
     window = Gtk.Window(title="HAZZY VTK")
-    window.connect("destroy", Gtk.main_quit)
-    window.connect("delete-event", Gtk.main_quit)
+    window.connect('destroy', Gtk.main_quit)
+    window.connect('delete-event', Gtk.main_quit)
 
     kremlin = Kremlin()
     kremlin.draw_cone()
