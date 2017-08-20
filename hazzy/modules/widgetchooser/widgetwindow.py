@@ -1,16 +1,15 @@
+#!/usr/bin/env python
+
 import os
-import sys
 import gi
-import cairo
-
-
-from math import ceil as fceil
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+
+from math import ceil as fceil
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -28,7 +27,7 @@ def ceil(f):
 
 class WidgetWindow(Gtk.Box):
 
-    def __init__(self, widget, size, label, menu_callback):
+    def __init__(self, widget, size, label, menu_callback=None):
         Gtk.Box.__init__(self)
 
         builder = Gtk.Builder()
@@ -62,12 +61,8 @@ class WidgetWindow(Gtk.Box):
         self.dx_max = 0
         self.dy_max = 0
 
-
-        self.menu_btn.connect('pressed', menu_callback, self)
-
-        self.ha = HighLight(self)
-
-        #ha.Show()
+        if menu_callback:
+            self.menu_btn.connect('pressed', menu_callback, self)
 
         self.show_all()
 
@@ -126,6 +121,7 @@ class WidgetWindow(Gtk.Box):
             # maxx, maxy both relative to the parent
             self.maxx = self.parent.get_allocation().width - self.get_allocation().width
             self.maxy = self.parent.get_allocation().height - self.get_allocation().height
+            print self.maxx, self.maxy
 
 
     def on_move_motion(self, event):
@@ -201,72 +197,3 @@ class WidgetWindow(Gtk.Box):
         w = int(round(float(w) / self.grid_size)) * self.grid_size
         h = int(round(float(h) / self.grid_size)) * self.grid_size
         self.set_size_request(w, h)
-
-
-
-class HighLight(Gtk.Window):
-
-    def __init__(self, parent):
-        Gtk.Window.__init__(self, Gtk.WindowType.POPUP)
-
-        self.connect_after("draw", self.__onExpose)
-
-        # set RGBA visual for the window so transparency works
-        self.set_app_paintable(True)
-        visual = self.get_screen().get_rgba_visual()
-        if visual:
-            self.set_visual(visual)
-        self.myparent = parent
-
-
-
-    def Show(self):
-        alloc = self.myparent.get_allocation()
-        width = alloc.width
-        height = alloc.height
-        x_loc = alloc.x
-        y_loc = alloc.y
-
-        print width, height, x_loc, y_loc
-
-        x_loc, y_loc = self.translateCoords(int(x_loc), int(y_loc))
-        self.move(x_loc, y_loc)
-
-        self.resize(ceil(width), ceil(height))
-        self.show()
-
-
-    def __onExpose(self, self_, ctx):
-
-        print "exposed"
-        context = self.get_window().cairo_create()
-        a = self_.get_allocation()
-        context.rectangle(a.x, a.y, a.width, a.height)
-        sc = self.get_style_context()
-        color = Gdk.Color(.5, .5, 1)
-
-        if self.is_composited():
-            print "Composited"
-            context.set_operator(cairo.OPERATOR_CLEAR)
-            context.set_source_rgba(0, 0, 0, 0.0)
-            context.fill_preserve()
-            context.set_operator(cairo.OPERATOR_OVER)
-            context.set_source_rgba(color.red, color.green, color.blue, 0.5)
-            context.fill()
-        else:
-            context.set_source_rgba(color.red, color.green, color.blue)
-            context.set_operator(cairo.OPERATOR_OVER)
-            context.fill()
-
-
-    def translateCoords(self, x, y):
-        top_level = self.myparent.get_toplevel()
-        window = top_level.get_window()
-        if window is None:
-            print("   !!! get_window() returned None for", self.myparent, top_level)
-        else:
-            x_loc1, y_loc1 = window.get_position()
-            translate_x = self.myparent.translate_coordinates(top_level, x, y)
-            x = x_loc1 + translate_x[0]
-            y = y_loc1 + translate_x[1]
-            return x, y
