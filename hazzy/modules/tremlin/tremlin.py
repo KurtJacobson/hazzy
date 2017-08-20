@@ -49,6 +49,8 @@ from vtk.vtkCommonCorePython import vtkPoints, VTK_MAJOR_VERSION
 from vtk.vtkCommonDataModelPython import vtkPolyData, vtkCellArray
 
 from hazzy.modules.pygcode import Line
+from hazzy.modules.pygcode import GCodeLinearMove
+from hazzy.modules.pygcode import GCodeRapidMove
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -314,8 +316,8 @@ class Tremlin(Gtk.Box):
             for code_line in ngc_code:
                 line = Line(code_line)
 
-                print(line.block.gcodes)  # is your list of gcodes
-                self.gcode_path.append(line.block.gcodes)
+                if line.block.gcodes:
+                    self.gcode_path.append(line.block.gcodes)
 
     """
     @staticmethod
@@ -342,13 +344,16 @@ class Tremlin(Gtk.Box):
 
     def draw_polyline(self):
 
-        # num_gcode_blocks = len(self.gcode_path)
-        """
-        points.SetNumberOfPoints(num_gcode_blocks)
-        for i in range(num_gcode_blocks):
-            points.SetPoint(i, i)
-        """
+        num_gcode_blocks = len(self.gcode_path)
 
+        print(num_gcode_blocks)
+
+        for line in self.gcode_path:
+            line_type = type(line[0])
+            if line_type == GCodeLinearMove:
+                print(line)
+            elif line_type == GCodeRapidMove:
+                print(line)
         c = math.cos(math.pi / 6)  # helper variable
 
         points = vtkPoints()
