@@ -1,32 +1,23 @@
-"""
-Description:
+#!/usr/bin/env python
 
-  Provides a pyGtk vtkRenderWindowInteractor widget.  This embeds a
-  vtkRenderWindow inside a Gtk widget and uses the
-  vtkGenericRenderWindowInteractor for the event handling.  This is
-  based on vtkTkRenderWindow.py.
+#   Copyright (c) 2017 Kurt Jacobson
+#     <kurtjacobson@bellsouth.net>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-  The class uses the Gtkgl.GtkGLArea widget (Gtkglarea).  This avoids
-  a lot of problems with flicker.
-
-  There is a working example at the bottom.
-
-Created by Prabhu Ramachandran, April 2002.
-
-Bugs:
-
-  (*) There is a focus related problem.  Tkinter has a focus object
-  that handles focus events.  I don't know of an equivalent object
-  under Gtk.  So, when an 'enter_notify_event' is received on the
-  GtkVTKRenderWindow I grab the focus but I don't know what to do when
-  I get a 'leave_notify_event'.
-
-  (*) Will not work under Win32 because it uses the XID of a window in
-  OnRealize.  Suggestions to fix this will be appreciated.
-
-"""
-
-import math
 
 import gi
 
@@ -223,7 +214,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         return False
 
     def on_scroll(self, wid, event):
-
+        """Mouse scroll wheel changed position"""
         if event.direction == Gdk.ScrollDirection.UP:
             self.camera.Zoom(1.5)
             self._render_window.Render()
