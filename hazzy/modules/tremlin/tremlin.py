@@ -26,6 +26,8 @@ Bugs:
 
 """
 
+import math
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -43,9 +45,11 @@ from vtk.vtkRenderingCorePython import vtkRenderer
 
 from vtk.vtkFiltersSourcesPython import vtkConeSource
 
-import gcode
+from vtk.vtkCommonCorePython import vtkPoints, VTK_MAJOR_VERSION
+from vtk.vtkCommonDataModelPython import vtkPolyData, vtkCellArray
 
-from rs274 import interpret
+from hazzy.modules.pygcode import Line
+
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
     """ Embeds a vtkRenderWindow into a pyGtk widget and uses
@@ -64,6 +68,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
         self._renderer = vtkRenderer()
         self._renderer.SetActiveCamera(self.camera)
+        self._renderer.SetBackground(0.1, 0.2, 0.4)
 
         self._render_window = vtkRenderWindow()
         self._render_window.AddRenderer(self._renderer)
@@ -294,12 +299,35 @@ class Tremlin(Gtk.Box):
         # prevents 'q' from exiting the app.
         self.gvtk.AddObserver("ExitEvent", lambda o, e, x=None: x)
 
-        self.num_lines = None
-        self.result = None
-        self.seq = None
+        self.gcode_path = []
 
-    def test_cone(self):
-        """ The Vtk test stuff """
+    def load_file(self, ngc_filename):
+
+        """
+        with open(ngc_filename, "r") as ngc_file:
+            self.num_lines = sum(bl.count("\n") for bl in self._blocks(ngc_file))
+            print("{0} lines in program".format(self.num_lines))
+        """
+
+        with open(ngc_filename, "r") as ngc_file:
+            ngc_code = ngc_file.readlines()
+            for code_line in ngc_code:
+                line = Line(code_line)
+
+                print(line.block.gcodes)  # is your list of gcodes
+                self.gcode_path.append(line.block.gcodes)
+
+    """
+    @staticmethod
+    def _blocks(files, size=65536):
+        while True:
+            b = files.read(size)
+            if not b:
+                break
+            yield b
+    """
+
+    def draw_cone(self):
         cone = vtkConeSource()
         cone.SetResolution(100)
 
@@ -310,30 +338,63 @@ class Tremlin(Gtk.Box):
         cone_actor.SetMapper(cone_mapper)
         cone_actor.GetProperty().SetColor(0.5, 0.5, 1.0)
 
+        self.add_actor(cone_actor)
+
+    def draw_polyline(self):
+
+        # num_gcode_blocks = len(self.gcode_path)
+        """
+        points.SetNumberOfPoints(num_gcode_blocks)
+        for i in range(num_gcode_blocks):
+            points.SetPoint(i, i)
+        """
+
+        c = math.cos(math.pi / 6)  # helper variable
+
+        points = vtkPoints()
+
+        points.SetNumberOfPoints(6)
+        points.SetPoint(0, 0.0, -1.0, 0.0)
+        points.SetPoint(1, c, -0.5, 0.0)
+        points.SetPoint(2, c, 0.5, 0.0)
+        points.SetPoint(3, 0.0, 1.0, 0.0)
+        points.SetPoint(4, -c, 0.5, 0.0)
+        points.SetPoint(5, -c, -0.5, 0.0)
+
+        lines = vtkCellArray()
+
+        lines.InsertNextCell(7)
+        lines.InsertCellPoint(0)
+        lines.InsertCellPoint(1)
+        lines.InsertCellPoint(2)
+        lines.InsertCellPoint(3)
+        lines.InsertCellPoint(4)
+        lines.InsertCellPoint(5)
+        lines.InsertCellPoint(0)
+
+        path = vtkPolyData()
+
+        path.SetPoints(points)
+        path.SetLines(lines)
+
+        path_mapper = vtkPolyDataMapper()
+
+        if VTK_MAJOR_VERSION <= 5:
+            path_mapper.SetInputConnection(path.GetProducerPort())
+        else:
+            path_mapper.SetInputData(path)
+            path_mapper.Update()
+
+        path_actor = vtkActor()
+
+        path_actor.SetMapper(path_mapper)
+        path_actor.GetProperty().SetColor(1, 1, 1)  # (R,G,B)
+
+        self.add_actor(path_actor)
+
+    def add_actor(self, actor):
         ren = self.gvtk.get_renderer()
-        ren.AddActor(cone_actor)
-
-    def load_file(self, ngc_filename):
-
-        with open(ngc_filename, "r") as ngc_file:
-            self.num_lines = sum(bl.count("\n") for bl in self._blocks(ngc_file))
-
-            ngc_code = ngc_file.read()
-
-            self.result, self.seq = gcode.parse(ngc_code, canon)
-
-        print(self.num_lines)
-
-        print(self.result)
-        print(self.seq)
-
-    @staticmethod
-    def _blocks(files, size=65536):
-        while True:
-            b = files.read(size)
-            if not b:
-                break
-            yield b
+        ren.AddActor(actor)
 
 
 def main():
@@ -341,10 +402,10 @@ def main():
     window.connect("destroy", Gtk.main_quit)
     window.connect("delete-event", Gtk.main_quit)
 
-
     tremlin = Tremlin()
-    tremlin.test_cone()
+    tremlin.draw_cone()
     tremlin.load_file("hazzy.ngc")
+    tremlin.draw_polyline()
 
     window.add(tremlin)
 
