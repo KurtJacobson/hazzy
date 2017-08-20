@@ -277,37 +277,35 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         return True
 
 
-class Tremlin(Gtk.Box):
+class Kremlin(Gtk.Box):
     def __init__(self):
         Gtk.Box.__init__(self)
 
-        self.gvtk = GtkVTKRenderWindowInteractor()
+        self.vtk_window = GtkVTKRenderWindowInteractor()
 
         # gvtk.SetDesiredUpdateRate(1000)
-        self.gvtk.set_usize(800, 600)
-        self.pack_start(self.gvtk, True, True, 0)
+        self.vtk_window.set_usize(800, 600)
+        self.pack_start(self.vtk_window, True, True, 0)
 
-        self.gvtk.show_all()
+        self.vtk_window.show_all()
         self.show_all()
 
         # prevents 'q' from exiting the app.
-        self.gvtk.AddObserver("ExitEvent", lambda o, e, x=None: x)
+        self.vtk_window.AddObserver("ExitEvent", lambda o, e, x=None: x)
 
         self.machine = Machine()
 
         self.gcode_path = []
 
     def load_file(self, ngc_filename):
-
-        bufsize = 65536
-        with open(ngc_filename, "r") as infile:
+        buf_size = 65536
+        with open(ngc_filename, "r") as ngc_file:
             while True:
-                lines = infile.readlines(bufsize)
+                lines = ngc_file.readlines(buf_size)
                 if not lines:
                     break
                 for line in lines:
-                    gcode_line = Line(line)
-
+                    gcode_line = Line(str(line))
                     self.gcode_path.append(gcode_line)
 
     def draw_cone(self):
@@ -328,8 +326,8 @@ class Tremlin(Gtk.Box):
         points = vtkPoints()
 
         for i, line in enumerate(self.gcode_path):
-
             if line.block.gcodes or line.block.modal_params:
+                print(line)
                 self.add_points(line, points)
 
         lines = vtkCellArray()
@@ -361,9 +359,9 @@ class Tremlin(Gtk.Box):
         path_actor.GetProperty().SetColor(1, 1, 1)  # (R,G,B)
 
         self.add_actor(path_actor)
-        
+
     def add_actor(self, actor):
-        ren = self.gvtk.get_renderer()
+        ren = self.vtk_window.get_renderer()
         ren.AddActor(actor)
 
     def add_points(self, line, points):
@@ -381,12 +379,12 @@ def main():
     window.connect("destroy", Gtk.main_quit)
     window.connect("delete-event", Gtk.main_quit)
 
-    tremlin = Tremlin()
-    tremlin.draw_cone()
-    tremlin.load_file("hazzy.ngc")
-    tremlin.draw_path()
+    kremlin = Kremlin()
+    kremlin.draw_cone()
+    kremlin.load_file("hazzy.ngc")
+    kremlin.draw_path()
 
-    window.add(tremlin)
+    window.add(kremlin)
 
     window.show()
     Gtk.main()
