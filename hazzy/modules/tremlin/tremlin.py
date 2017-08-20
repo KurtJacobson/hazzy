@@ -299,13 +299,17 @@ class Tremlin(Gtk.Box):
 
     def load_file(self, ngc_filename):
 
-        with open(ngc_filename, "r") as ngc_file:
-            ngc_code = ngc_file.readlines()
-            for code_line in ngc_code:
-                line = Line(code_line)
+        bufsize = 65536
+        with open(ngc_filename, "r") as infile:
+            while True:
+                lines = infile.readlines(bufsize)
+                if not lines:
+                    break
+                for line in lines:
+                    gcode_line = Line(line)
 
-                if line.block.gcodes:
-                    self.gcode_path.append(line.block.gcodes)
+                    if gcode_line.block.gcodes:
+                        self.gcode_path.append(gcode_line.block.gcodes)
 
     def draw_cone(self):
         cone = vtkConeSource()
@@ -320,7 +324,7 @@ class Tremlin(Gtk.Box):
 
         self.add_actor(cone_actor)
 
-    def draw_polyline(self):
+    def draw_path(self):
 
         num_gcode_blocks = len(self.gcode_path)
 
@@ -389,7 +393,7 @@ def main():
     tremlin = Tremlin()
     tremlin.draw_cone()
     tremlin.load_file("hazzy.ngc")
-    tremlin.draw_polyline()
+    tremlin.draw_path()
 
     window.add(tremlin)
 
