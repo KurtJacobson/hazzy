@@ -15,6 +15,12 @@ from gi.repository import Gdk
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 
+# Actions
+MOVE = 0
+RESIZE_X = 1
+RESIZE_Y = 2
+RESIZE_XY = 3
+
 
 def ceil(f):
     return int(fceil(f))
@@ -66,12 +72,51 @@ class WidgetWindow(Gtk.Box):
         self.show_all()
 
 
+#===================================
+#  Drag to Move / Resize
+#===================================
+
+    def on_drag_begin(self, widget, event):
+
+        self.parent = self.get_parent()
+
+        w = widget.get_allocation().width
+        h = widget.get_allocation().height
+
+        if event.y <= 50:
+            self.action = MOVE
+            self.on_move_begin(event)
+        elif event.x >= w - 50 and event.y >= h -50:
+            self.action = RESIZE_XY
+            self.on_resize_begin(event)
+        elif event.x >= w - 50:
+            self.action = RESIZE_X
+            self.on_resize_begin(event)
+        elif event.y >= h -50:
+            self.action = RESIZE_Y
+            self.on_resize_begin(event)
+        else:
+            self.action = None
+
+
+    def on_drag_motion(self, widget, event):
+        if self.action == MOVE:
+            self.on_move_motion(event)
+        elif self.action >= RESIZE_X:
+            self.on_resize_motion(event)
+
+
+    def on_drag_end(self, widget, event):
+        if self.action == MOVE:
+            self.on_move_end()
+        elif self.action >= RESIZE_X:
+            self.on_resize_end()
+
 #==============
-#  Drag Move
+#  Move
 #==============
 
-    def on_drag_begin(self, w, event):
-        self.parent = self.get_parent()
+    def on_move_begin(self, event):
         if event.button == 1:
             # offset = distance of parent widget from edge of screen ...
             self.offsetx, self.offsety = self.get_window().get_position()
@@ -83,7 +128,7 @@ class WidgetWindow(Gtk.Box):
             self.maxy = self.parent.get_allocation().height - self.get_allocation().height
 
 
-    def on_drag_motion(self, widget, event):
+    def on_move_motion(self, event):
         # get starting values for x,y
         x = event.x_root - self.offsetx
         y = event.y_root - self.offsety
@@ -98,7 +143,7 @@ class WidgetWindow(Gtk.Box):
             self.parent.child_set_property(self, 'y', y)
 
 
-    def on_drag_end(self, widget, event):
+    def on_move_end(self):
         # Snap to 20 x 20 px grid on drag drop
         x = int(round(self.px / self.grid_size)) * self.grid_size
         y = int(round(self.py / self.grid_size)) * self.grid_size
@@ -107,11 +152,11 @@ class WidgetWindow(Gtk.Box):
 
 
 #==============
-#  Drag Resize
+#  Resize
 #==============
 
-    def on_resize_begin(self, widget, event):
-        self.parent = self.get_parent()
+    def on_resize_begin(self, event):
+
         pw = self.parent.get_allocation().width
         ph = self.parent.get_allocation().height
 
@@ -129,35 +174,27 @@ class WidgetWindow(Gtk.Box):
         self.initial_h = self.get_allocation().height
 
 
-    def on_resize_x_motion(self, widget, event):
-        dx = event.x_root - self.initial_x
-        if dx <= self.dx_max:
-            w = self.initial_w + dx
-            h = self.initial_h
-            self.set_size_request(w, h)
+    def on_resize_motion(self, event):
 
-
-    def on_resize_y_motion(self, widget, event):
-        dy = event.y_root - self.initial_y
-        if dy <= self.dy_max:
-            w = self.initial_w
-            h = self.initial_h + dy
-            self.set_size_request(w, h)
-
-
-    def on_resize_motion(self, widget, event):
         dx = event.x_root - self.initial_x
         dy = event.y_root - self.initial_y
+        w = self.initial_w
+        h = self.initial_h
+
+        # Limit size to maximum
         if dx > self.dx_max:
             dx = self.dx_max
         if dy > self.dy_max:
             dy = self.dy_max
-        w = self.initial_w + dx
-        h = self.initial_h + dy
+
+        if self.action == RESIZE_X or self.action == RESIZE_XY:
+            w += dx
+        if self.action == RESIZE_Y or self.action == RESIZE_XY:
+            h += dy
         self.set_size_request(w, h)
 
 
-    def on_resize_end(self, widget, event):
+    def on_resize_end(self):
         w = self.get_allocation().width
         h = self.get_allocation().height
         # Snap to 20 x 20 px grid

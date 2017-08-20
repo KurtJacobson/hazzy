@@ -2,57 +2,6 @@
 <!-- Generated with glade 3.20.0 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkBox">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="orientation">vertical</property>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <placeholder/>
-    </child>
-    <child>
-      <object class="GtkBox">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <object class="GtkEventBox">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="halign">end</property>
-                <property name="valign">end</property>
-                <property name="margin_bottom">10</property>
-                <property name="hexpand">False</property>
-                <property name="vexpand">False</property>
-                <property name="pixbuf">corner handle.png</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">2</property>
-      </packing>
-    </child>
-  </object>
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -210,113 +159,17 @@
       </packing>
     </child>
     <child type="overlay">
-      <object class="GtkGrid">
+      <object class="GtkEventBox">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="row_homogeneous">True</property>
-        <property name="column_homogeneous">True</property>
-        <child>
-          <object class="GtkEventBox" id="x_handle">
-            <property name="can_focus">False</property>
-            <property name="visible_window">False</property>
-            <signal name="button-press-event" handler="on_resize_begin" swapped="no"/>
-            <signal name="button-release-event" handler="on_resize_end" swapped="no"/>
-            <signal name="motion-notify-event" handler="on_resize_x_motion" swapped="no"/>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="left_attach">3</property>
-            <property name="top_attach">1</property>
-            <property name="height">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEventBox" id="y_handle">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <signal name="button-press-event" handler="on_resize_begin" swapped="no"/>
-            <signal name="button-release-event" handler="on_resize_end" swapped="no"/>
-            <signal name="motion-notify-event" handler="on_resize_y_motion" swapped="no"/>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="left_attach">1</property>
-            <property name="top_attach">3</property>
-            <property name="width">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEventBox">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <signal name="button-press-event" handler="on_drag_begin" swapped="no"/>
-            <signal name="button-release-event" handler="on_drag_end" swapped="no"/>
-            <signal name="motion-notify-event" handler="on_drag_motion" swapped="no"/>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
-            <property name="width">4</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEventBox">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <signal name="button-press-event" handler="on_resize_begin" swapped="no"/>
-            <signal name="button-release-event" handler="on_resize_end" swapped="no"/>
-            <signal name="motion-notify-event" handler="on_resize_motion" swapped="no"/>
-            <child>
-              <object class="GtkImage">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="halign">end</property>
-                <property name="valign">end</property>
-                <property name="margin_right">10</property>
-                <property name="margin_bottom">10</property>
-                <property name="hexpand">False</property>
-                <property name="vexpand">False</property>
-                <property name="pixbuf">corner handle.png</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="left_attach">3</property>
-            <property name="top_attach">3</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_drag_begin" swapped="no"/>
+        <signal name="button-release-event" handler="on_drag_end" swapped="no"/>
+        <signal name="motion-notify-event" handler="on_drag_motion" swapped="no"/>
         <child>
           <placeholder/>
         </child>
       </object>
-      <packing>
-        <property name="pass_through">True</property>
-      </packing>
     </child>
   </object>
 </interface>
