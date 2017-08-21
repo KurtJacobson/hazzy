@@ -45,19 +45,19 @@ class WidgetWindow(Gtk.Box):
         self.add(self.wwindow)
 
         self.parent = None
-        self.grid_size = 20 # px
+        self.grid_size = 20
 
-        self.offsetx = 0
-        self.offsety = 0
-        self.px = 0
-        self.py = 0
-        self.maxx = 0
-        self.maxy = 0
-
+        # Initial event pos
         self.initial_x = 0
         self.initial_y = 0
+
+        # Initial widget properties
+        self.initial_pos_x = 0
+        self.initial_pos_y = 0
         self.initial_w = 0
         self.initial_h = 0
+
+        # Maximum change in size/pos
         self.dx_max = 0
         self.dy_max = 0
 
@@ -72,9 +72,7 @@ class WidgetWindow(Gtk.Box):
 #===================================
 
     def on_drag_begin(self, widget, event):
-
         self.parent = self.get_parent()
-
         w = widget.get_allocation().width
         h = widget.get_allocation().height
 
@@ -112,47 +110,6 @@ class WidgetWindow(Gtk.Box):
 #==============
 
     def on_move_begin(self, event):
-        if event.button == 1:
-            # offset = distance of parent widget from edge of screen ...
-            self.offsetx, self.offsety = self.get_window().get_position()
-            # plus distance from pointer to edge of widget
-            self.offsetx += event.x
-            self.offsety += event.y
-            # maxx, maxy both relative to the parent
-            self.maxx = self.parent.get_allocation().width - self.get_allocation().width
-            self.maxy = self.parent.get_allocation().height - self.get_allocation().height
-            print self.maxx, self.maxy
-
-
-    def on_move_motion(self, event):
-        # get starting values for x,y
-        x = event.x_root - self.offsetx
-        y = event.y_root - self.offsety
-        # make sure the potential coordinates x,y:
-        # will not push any part of the widget outside of its parent container
-        x = max(min(x, self.maxx), 0)
-        y = max(min(y, self.maxy), 0)
-        if x != self.px or y != self.py:
-            self.px = x
-            self.py = y
-            self.parent.child_set_property(self, 'x', x)
-            self.parent.child_set_property(self, 'y', y)
-
-
-    def on_move_end(self):
-        # Snap to 20 x 20 px grid on drag drop
-        x = int(round(self.px / self.grid_size)) * self.grid_size
-        y = int(round(self.py / self.grid_size)) * self.grid_size
-        self.parent.child_set_property(self, 'x', x)
-        self.parent.child_set_property(self, 'y', y)
-
-
-#==============
-#  Resize
-#==============
-
-    def on_resize_begin(self, event):
-
         pw = self.parent.get_allocation().width
         ph = self.parent.get_allocation().height
 
@@ -166,22 +123,64 @@ class WidgetWindow(Gtk.Box):
 
         self.initial_x = event.x_root
         self.initial_y = event.y_root
-        self.initial_w = self.get_allocation().width
-        self.initial_h = self.get_allocation().height
+        self.initial_pos_x = x
+        self.initial_pos_y = y
+
+
+    def on_move_motion(self, event):
+        dx = event.x_root - self.initial_x
+        dy = event.y_root - self.initial_y
+
+        x = self.initial_pos_x + max(min(dx, self.dx_max), -self.initial_pos_x)
+        y = self.initial_pos_y + max(min(dy, self.dy_max), -self.initial_pos_y)
+
+        self.parent.child_set_property(self, 'x', x)
+        self.parent.child_set_property(self, 'y', y)
+
+
+    def on_move_end(self):
+        x = self.parent.child_get_property(self, 'x')
+        y = self.parent.child_get_property(self, 'y')
+
+        # Snap to 20 x 20 px grid on drag drop
+        x = int(round(float(x) / self.grid_size)) * self.grid_size
+        y = int(round(float(y) / self.grid_size)) * self.grid_size
+
+        self.parent.child_set_property(self, 'x', x)
+        self.parent.child_set_property(self, 'y', y)
+
+
+#==============
+#  Resize
+#==============
+
+    def on_resize_begin(self, event):
+        pw = self.parent.get_allocation().width
+        ph = self.parent.get_allocation().height
+
+        x = self.parent.child_get_property(self, 'x')
+        y = self.parent.child_get_property(self, 'y')
+        w = self.get_allocation().width
+        h = self.get_allocation().height
+
+        self.dx_max = pw - (x + w)
+        self.dy_max = ph - (y + h)
+
+        self.initial_x = event.x_root
+        self.initial_y = event.y_root
+        self.initial_w = w
+        self.initial_h = h
 
 
     def on_resize_motion(self, event):
-
         dx = event.x_root - self.initial_x
         dy = event.y_root - self.initial_y
         w = self.initial_w
         h = self.initial_h
 
         # Limit size to maximum
-        if dx > self.dx_max:
-            dx = self.dx_max
-        if dy > self.dy_max:
-            dy = self.dy_max
+        dx = min(dx, self.dx_max)
+        dy = min(dy, self.dy_max)
 
         if self.action == RESIZE_X or self.action == RESIZE_XY:
             w += dx
