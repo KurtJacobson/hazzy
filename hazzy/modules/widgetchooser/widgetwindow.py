@@ -45,6 +45,7 @@ class WidgetWindow(Gtk.Box):
         self.add(self.wwindow)
 
         self.parent = None
+        self.action = None
         self.grid_size = 20
 
         # Initial event pos
@@ -192,6 +193,7 @@ class WidgetWindow(Gtk.Box):
     def on_resize_end(self):
         w = self.get_allocation().width
         h = self.get_allocation().height
+
         # Snap to 20 x 20 px grid
         w = int(round(float(w) / self.grid_size)) * self.grid_size
         h = int(round(float(h) / self.grid_size)) * self.grid_size
