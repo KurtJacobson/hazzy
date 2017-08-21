@@ -5,8 +5,7 @@
 *.var.bak
 *.pref
 *.halscope
-*~
 .tmp*
 .idea/
-
-*.glade#
+*~
+*#

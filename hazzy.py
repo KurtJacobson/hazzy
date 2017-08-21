@@ -6,6 +6,7 @@ import datetime
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
+gi.require_version('Rsvg', '2.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -13,7 +14,7 @@ from gi.repository import Gdk
 from constants import Paths
 
 from hazzy.utilities import logger
-from hazzy.dashboard import HazzyWindow
+from hazzy.hazzywindow import HazzyWindow
 
 log = logger.get('HAZZY')
 
