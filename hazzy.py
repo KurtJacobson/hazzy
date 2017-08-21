@@ -14,7 +14,7 @@ from gi.repository import Gdk
 from constants import Paths
 
 from hazzy.utilities import logger
-from hazzy.dashboard import HazzyWindow
+from hazzy.hazzywindow import HazzyWindow
 
 log = logger.get('HAZZY')
 

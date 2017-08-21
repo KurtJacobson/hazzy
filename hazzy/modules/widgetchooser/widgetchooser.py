@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #   Copyright (c) 2017 Kurt Jacobson
-#       <kurtcjacobson@gmail.com>
+#      <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #
@@ -109,74 +109,13 @@ class DragSourcePanel(Gtk.IconView):
         self.get_model().append([text, pixbuf])
 
 
-class DropArea(Gtk.Box):
+class DropArea(Gtk.Fixed):
     def __init__(self):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
-
-        self.set_size_request(100, 300)
-
+        Gtk.Fixed.__init__(self)
         self.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
         self.connect("drag-data-received", self.on_drag_data_received)
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
         dro_widget = GcodeViewWidget()
-
         label = data.get_text()
-
         wwindow = WidgetWindow(dro_widget, label)
-
-        self.pack_start(wwindow, False, True, 0)
-
-
-class WidgetWindow(Gtk.Box):
-    def __init__(self, widget, label):
-        Gtk.Box.__init__(self)
-
-        builder = Gtk.Builder()
-        builder.add_from_file(os.path.join(PYDIR, 'ui', 'widgetwindow.ui'))
-
-        self.label = builder.get_object('label')
-        self.box = builder.get_object('box')
-        self.wwindow = builder.get_object('widgetwindow')
-
-        self.label.set_text(label)
-        self.box.add(widget)
-        self.add(self.wwindow)
-
-        self.show_all()
-
-
-# Testing Only
-def main():
-    style_provider = Gtk.CssProvider()
-
-    with open(os.path.join(Paths.STYLEDIR, "style.css"), 'rb') as css:
-        css_data = css.read()
-
-    style_provider.load_from_data(css_data)
-
-    Gtk.StyleContext.add_provider_for_screen(
-        Gdk.Screen.get_default(), style_provider,
-        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-    )
-
-    win = Gtk.Window()
-    win.connect('destroy', Gtk.main_quit)
-
-    box = Gtk.Box()
-
-    drop_area = DropArea()
-
-    chooser = WidgetChooser(drop_area)
-    box.pack_start(chooser, True, True, 0)
-
-    box.pack_start(drop_area, False, False, 0)
-
-    win.add(box)
-    win.show_all()
-
-    Gtk.main()
-
-
-if __name__ == "__main__":
-    main()
