@@ -50,37 +50,30 @@ from hazzy.modules.touchpads.keyboard import Keyboard
 log = logger.get("HAZZY.GCODEVIEW")
 
 
-class GcodeViewWidget(Gtk.Frame):
+class GcodeViewWidget(Gtk.ScrolledWindow):
 
     def __init__(self):
-        Gtk.Frame.__init__(self)
+        Gtk.ScrolledWindow.__init__(self)
 
         self.gcodeview = GcodeView(preview=True)
 
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.add(self.gcodeview.view)
-        scrolled.set_hexpand(True)
-        scrolled.set_vexpand(True)
-        self.add(scrolled)
+        self.add(self.gcodeview)
+        self.set_size_request(90, 100)
+        self.set_hexpand(True)
+        self.set_vexpand(True)
 
-        self.gcodeview.buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
+        buf = self.gcodeview.get_buffer()
+        buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
         self.gcodeview.highlight_line(3, 'motion')
 
         self.show_all()
 
 
-class GcodeView(GObject.GObject,):
-    __gtype_name__ = 'GcodeView'
-    __gsignals__ = {
-        'file-activated': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'selection-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'button-press-event': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
-        'error': (GObject.SignalFlags.RUN_FIRST, None, (str, str))
-    }
+class GcodeView(GtkSource.View):
 
     def __init__(self, preview=False):
+        GtkSource.View.__init__(self)
 
-        GObject.GObject.__init__(self)
         self.is_preview = preview
 
         # Module init
@@ -88,8 +81,7 @@ class GcodeView(GObject.GObject,):
         self.keyboard = Keyboard
 
         # create buffer
-        self.view = GtkSource.View()
-        self.buf = self.view.get_buffer()
+        self.buf = self.get_buffer()
 
         # setup style and lang managers
         self.lm = GtkSource.LanguageManager()
@@ -103,22 +95,22 @@ class GcodeView(GObject.GObject,):
 
         self.buf.set_max_undo_levels(20)
 
-        self.view.set_show_line_numbers(True)
-        self.view.set_show_line_marks(False)
-        self.view.set_highlight_current_line(False)
+        self.set_show_line_numbers(True)
+        self.set_show_line_marks(False)
+        self.set_highlight_current_line(False)
 
         # Only allow edit if gcode preview
-        self.view.set_editable(self.is_preview)
+        self.set_editable(self.is_preview)
 
         self.holder_text = "\t\t\t****No file to preview****"
 
         # Only highlight motion line if not preview
         if not self.is_preview:
-            self.view.set_can_focus(False)
+            self.set_can_focus(False)
             self.holder_text = ""
 
-        self.view.connect('button-press-event', self.on_button_press)
-        self.view.connect('key-press-event', self.on_key_press)
+        self.connect('button-press-event', self.on_button_press)
+        self.connect('key-press-event', self.on_key_press)
 
         # Set line highlight styles
         self.add_mark_category('error', '#ff7373')
@@ -130,7 +122,7 @@ class GcodeView(GObject.GObject,):
         self.current_file = None
         self.error_line =None
 
-        self.view.show()
+        self.show()
 
 
     def add_mark_category(self, category, bg_color):
@@ -138,7 +130,7 @@ class GcodeView(GObject.GObject,):
         color = Gdk.RGBA()
         color.parse(bg_color)
         att.set_background(color)
-        self.view.set_mark_attributes(category, att, 1)
+        self.set_mark_attributes(category, att, 1)
 
 
     def load_file(self, fn=None):
@@ -173,7 +165,7 @@ class GcodeView(GObject.GObject,):
             self.mark = self.buf.create_source_mark(style, style, iter)
         else:
             self.buf.move_mark(self.mark, iter)
-        self.view.scroll_to_mark(self.mark, 0, True, 0, 0.5)
+        self.scroll_to_mark(self.mark, 0, True, 0, 0.5)
 
     # Since Gremlin reports any errors before GStat emits the 'file-loaded'
     # signal, we have to save the error line here and then do the actual 
