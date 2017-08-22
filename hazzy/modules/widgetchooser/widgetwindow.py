@@ -184,9 +184,9 @@ class WidgetWindow(Gtk.Box):
         dy = min(dy, self.dy_max)
 
         if self.action == RESIZE_X or self.action == RESIZE_XY:
-            w += dx
+            w = max(w + dx, 0)
         if self.action == RESIZE_Y or self.action == RESIZE_XY:
-            h += dy
+            h = max(h + dy, 0)
         self.set_size_request(w, h)
 
 
