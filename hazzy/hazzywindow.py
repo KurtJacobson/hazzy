@@ -19,8 +19,6 @@ from constants import Paths
 from hazzy.utilities import logger
 from hazzy.modules.widgetchooser.widgetwindow import WidgetWindow
 
-#from hazzy.modules.gcodeview.gcodeview import GcodeViewWidget
-
 log = logger.get('HAZZY.DASHBOARD')
 
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -73,8 +71,8 @@ class HazzyWindow(Gtk.Window):
         name = info.get('display-name')
         size = info.get('default-size')
 
-        mod = importlib.import_module('.' + module_name, 'hazzy.modules.' + pakage)
-        widget = getattr(mod, class_name)
+        module = importlib.import_module('.' + module_name, 'hazzy.modules.' + pakage)
+        widget = getattr(module, class_name)
 
         wwindow = WidgetWindow(widget(), size, name)
         self.widget_area.put(wwindow, 0, 0)
@@ -109,14 +107,16 @@ class HazzyWindow(Gtk.Window):
         self.iconview.drag_source_add_text_targets()
 
 
-
-
 class DragSourcePanel(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
 
+        self.set_name('iconview')
+
         self.set_text_column(COLUMN_TEXT)
         self.set_pixbuf_column(COLUMN_PIXBUF)
+
+        self.set_item_width(120)
 
         model = Gtk.ListStore(str, GdkPixbuf.Pixbuf, str)
         self.set_model(model)
@@ -127,9 +127,17 @@ class DragSourcePanel(Gtk.IconView):
 
     def fill(self, data):
         for widget, i in data.iteritems():
-            p = Gtk.IconTheme.get_default().load_icon('image-missing', 16, 0)
+            icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
+            if i.get('image'):
+                path = os.path.join(WIDGET_DIR, i.get('module'), i.get('image'))
+                icon = GdkPixbuf.Pixbuf.new_from_file(path)
+                w, h = icon.get_width(), icon.get_height()
+                print w, h
+                scale = 200 / float(w)
+                print w * scale, h * scale
+                icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
             display_name = i.get('display-name')
-            self.get_model().append([display_name, p, widget])
+            self.get_model().append([display_name, icon, widget])
 
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
