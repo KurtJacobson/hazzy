@@ -1,0 +1,4 @@
+display-name: 'DRO'
+module: 'dro'
+class: 'Dro'
+default-size: [200, 250]
