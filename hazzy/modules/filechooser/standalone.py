@@ -21,7 +21,7 @@ import filechooser
 from hazzy.modules.touchpads.keyboard import Keyboard
 
 
-class Filechooser(object):
+class FileChooser(object):
 
     def __init__(self):
 
@@ -38,10 +38,9 @@ class Filechooser(object):
 
 
         # Filechooser setup
-        self.filechooser = filechooser.Filechooser()
+        self.filechooser = filechooser.FileChooser()
         box = self.builder.get_object("box")
-        filechooser_widget = self.filechooser.get_filechooser_widget()
-        box.add(filechooser_widget)
+        box.add(self.filechooser)
 
         # Initialize keyboard
         self.keyboard = Keyboard
@@ -115,5 +114,5 @@ def main():
 
 
 if __name__ == "__main__":
-    ui = Filechooser()
+    ui = FileChooser()
     main()

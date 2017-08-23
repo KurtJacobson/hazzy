@@ -58,50 +58,36 @@ from hazzy.utilities import logger
 log = logger.get("HAZZY.FILECHOOSER")
 
 
-class Filechooser(GObject.GObject):
-    __gtype_name__ = 'Filechooser'
+class FileChooser(Gtk.Box):
+    __gtype_name__ = 'FileChooser'
     __gsignals__ = {
         'file-activated': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
         'selection-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
         'filename-editing-started': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
-        'button-release-event': (GObject.SignalFlags.RUN_FIRST, None, ()),
+        'button-up-event': (GObject.SignalFlags.RUN_FIRST, None, ()),
         'error': (GObject.SignalFlags.RUN_FIRST, None, (str, str))
     }
 
     def __init__(self):
-
-        GObject.GObject.__init__(self)
+        Gtk.Box.__init__(self)
 
         # Glade setup
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, "filechooser_3.glade"))
         self.builder.connect_signals(self)
 
-
-        style_provider = Gtk.CssProvider()
-
-        with open(os.path.join(STYLEDIR, "style.css"), 'rb') as css:
-            css_data = css.read()
-
-        style_provider.load_from_data(css_data)
-
-        Gtk.StyleContext.add_provider_for_screen(
-            Gdk.Screen.get_default(), style_provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-        )
+        self.add(self.builder.get_object('filechooser'))
 
         # Retrieve frequently used objects
         self.nav_box = self.builder.get_object('nav_box')
         self.nav_btn_box = self.builder.get_object('nav_btn_box')
 
-        self.eject_column = self.builder.get_object('eject_col')
         file_adj = self.builder.get_object('fileview')
         self.file_vadj = file_adj.get_vadjustment()
         self.file_hadj = file_adj.get_hadjustment()
 
         # Retrieve data models
         self.file_liststore = self.builder.get_object("file_liststore")
-        self.bookmark_liststore = self.builder.get_object("bookmark_liststore")
 
         # Retrieve treeviews
         self.file_treeview = self.builder.get_object("file_treeview")
@@ -145,6 +131,8 @@ class Filechooser(GObject.GObject):
 
         # Initialize
         self._init_nav_buttons()
+
+        self.show_all()
 
 
     # Have to do this once realized so sizes will have been allocated
@@ -338,7 +326,7 @@ class Filechooser(GObject.GObject):
             # TODO add overwrite confirmation dialog
 
     def on_file_treeview_button_release_event(self, widget, data=None):
-        self.emit('button-release-event')
+        self.emit('button-up-event')
 
     # =======================================
     #   Methods to be called externally
@@ -746,10 +734,6 @@ class Filechooser(GObject.GObject):
         if name is None:
             return os.path.basename(path).lower()
         return name
-
-    # If name is None row should be a separator
-    def bookmark_separator(self, model, iter):
-        return self.bookmark_liststore.get_value(iter, 1) is None
 
     def on_bookmark_activated(self, widget, data=None):
         path = data.get_tooltip_text()
