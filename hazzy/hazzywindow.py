@@ -33,7 +33,7 @@ class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self)
 
-        gladefile = os.path.join(Paths.UIDIR, 'hazzy_3.ui')
+        gladefile = os.path.join(Paths.UIDIR, 'hazzy.ui')
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
@@ -46,7 +46,7 @@ class HazzyWindow(Gtk.Window):
         self.add(self.hazzy_window)
         self.set_titlebar(self.titlebar)
 
-        self.iconview = DragSourcePanel()
+        self.iconview = WidgetChoose()
         self.revealer_area.add(self.iconview)
 
         self.widget_data = {}
@@ -58,7 +58,7 @@ class HazzyWindow(Gtk.Window):
         self.widget_area.connect("drag-data-received", self.on_drag_data_received)
         self.add_targets()
 
-        self.set_size_request(400, 400)
+        self.set_size_request(900, 600)
         self.show_all()
 
 
@@ -107,7 +107,7 @@ class HazzyWindow(Gtk.Window):
         self.iconview.drag_source_add_text_targets()
 
 
-class DragSourcePanel(Gtk.IconView):
+class WidgetChoose (Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
 
@@ -132,9 +132,7 @@ class DragSourcePanel(Gtk.IconView):
                 path = os.path.join(WIDGET_DIR, i.get('module'), i.get('image'))
                 icon = GdkPixbuf.Pixbuf.new_from_file(path)
                 w, h = icon.get_width(), icon.get_height()
-                print w, h
                 scale = 200 / float(w)
-                print w * scale, h * scale
                 icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
             display_name = i.get('display-name')
             self.get_model().append([display_name, icon, widget])

@@ -24,26 +24,34 @@
 }
 */
 
-button {
-    background: None;
-}
+/*button {*/
+/*    background: lightgray;*/
+/*}*/
 
-button:active {
+/*button:active {*/
+/*    border-radius: 5px;*/
+/*    background: gray;*/
+/*}*/
+
+.widget_window {
     border-radius: 5px;
-    background: gray;
-}
-
-
-.frame {
-    border-radius: 7px;
     border-width: 2px;
+    background-color: #f3f3f3;
 }
-
 
 iconview {
     background-color: rgba(.5, .5, .5, .5);
 }
 
+window {
+    background-color: #555753;
+}
+
+.title_bar{
+    background: #d3d7cf;
+/*    border-radius: 5px;*/
+/*    background-image: linear-gradient(to top, #d3d7cf, #f3f3f3);*/
+}
 
 
 /***************
