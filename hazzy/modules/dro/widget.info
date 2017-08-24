@@ -1,4 +1,4 @@
-display-name: 'DRO'
+name: 'DRO'
 module: 'dro'
 class: 'Dro'
-default-size: [200, 250]
+size: [200, 250]

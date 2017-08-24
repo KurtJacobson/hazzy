@@ -1,5 +1,5 @@
-display-name: 'File Chooser'
+name: 'File Chooser'
 module: 'filechooser'
 class: 'FileChooser'
 image: 'filechooser.png'
-default-size: [400, 350]
+size: [400, 350]

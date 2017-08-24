@@ -1,0 +1,4 @@
+name: 'Tool Table'
+module: 'tool_table'
+class: 'ToolTable'
+size: [400, 300]

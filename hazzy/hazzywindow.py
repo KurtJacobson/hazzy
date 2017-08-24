@@ -46,7 +46,7 @@ class HazzyWindow(Gtk.Window):
         self.add(self.hazzy_window)
         self.set_titlebar(self.titlebar)
 
-        self.iconview = WidgetChoose()
+        self.iconview = WidgetChooser()
         self.revealer_area.add(self.iconview)
 
         self.widget_data = {}
@@ -66,16 +66,17 @@ class HazzyWindow(Gtk.Window):
 
         pakage = data.get_text()
         info = self.widget_data[pakage]
-        module_name = info.get('module')
-        class_name = info.get('class')
-        name = info.get('display-name')
-        size = info.get('default-size')
 
-        module = importlib.import_module('.' + module_name, 'hazzy.modules.' + pakage)
-        widget = getattr(module, class_name)
+        name = info.get('name')
+        module = info.get('module')
+        clas = info.get('class')
+        size = info.get('size')
+
+        module = importlib.import_module('.' + module, 'hazzy.modules.' + pakage)
+        widget = getattr(module, clas)
 
         wwindow = WidgetWindow(widget(), size, name)
-        self.widget_area.put(wwindow, 0, 0)
+        self.widget_area.put(wwindow, x, y)
 
 
     def get_widgets(self):
@@ -107,7 +108,7 @@ class HazzyWindow(Gtk.Window):
         self.iconview.drag_source_add_text_targets()
 
 
-class WidgetChoose (Gtk.IconView):
+class WidgetChooser(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
 
@@ -134,8 +135,8 @@ class WidgetChoose (Gtk.IconView):
                 w, h = icon.get_width(), icon.get_height()
                 scale = 200 / float(w)
                 icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
-            display_name = i.get('display-name')
-            self.get_model().append([display_name, icon, widget])
+            name = i.get('name')
+            self.get_model().append([name, icon, widget])
 
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
