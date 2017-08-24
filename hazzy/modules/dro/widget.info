@@ -1,4 +1,5 @@
 name: 'DRO'
 module: 'dro'
 class: 'Dro'
+image: 'dro.png'
 size: [200, 250]

@@ -40,8 +40,9 @@ class HazzyWindow(Gtk.Window):
 
         self.hazzy_window = self.builder.get_object('hazzy_window')
         self.titlebar = self.builder.get_object('titlebar')
-        self.revealer_area = self.builder.get_object('revealer_area')
         self.widget_area = self.builder.get_object('widget_area')
+        self.revealer_area = self.builder.get_object('revealer_area')
+
         self.iconview_scroller = self.builder.get_object('iconview_scroller')
         self.builder.connect_signals(self)
         self.add(self.hazzy_window)
@@ -51,7 +52,6 @@ class HazzyWindow(Gtk.Window):
         self.iconview_scroller.add(self.widgetchooser)
 
         self.widget_data = {}
-        self.get_widgets()
 
         self.widgetchooser.fill(self.get_widgets())
 
