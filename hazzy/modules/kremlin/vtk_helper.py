@@ -461,13 +461,17 @@ class Line(CamvtkActor):
 class Arc(CamvtkActor):
     """ arc """
 
-    def __init__(self, p1=(0, 0, 0), p2=(10,10,0), r=None, cen=(1, 0, 1), cw=True, arc_color=(0, 1, 0)):
+    def __init__(self, p1=(0, 0, 0), p2=(10,10,0), r=None, cen=None, cw=True, arc_color=(0, 1, 0)):
         CamvtkActor.__init__(self)
 
         """ arc """
         self.src = vtkArcSource()
 
-        self.src.SetCenter(cen)
+        if r:
+            self.src.SetRadius()
+        else:
+            self.src.SetCenter(cen)
+
         self.src.SetPoint1(p1)
         self.src.SetPoint2(p2)
 

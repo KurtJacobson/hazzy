@@ -42,6 +42,8 @@ from vtk.vtkRenderingCorePython import vtkGenericRenderWindowInteractor
 from vtk.vtkRenderingCorePython import vtkRenderer
 
 from hazzy.modules.pygcode import Line as GLine
+from hazzy.modules.pygcode import GCode
+from hazzy.modules.pygcode import GCodeMotion
 from hazzy.modules.pygcode import GCodeLinearMove
 from hazzy.modules.pygcode import GCodeRapidMove
 from hazzy.modules.pygcode import GCodeArcMove, GCodeArcMoveCW, GCodeArcMoveCCW
@@ -323,58 +325,69 @@ class Kremlin(Gtk.Box):
 
     def draw_path(self):
 
-        position = [0, 0, 0]
-        prev_postion = [0, 0, 0]
-        active_modal = None
+        position = [0, 0, 0, None]
+        prev_postion = [0, 0, 0, None]
 
         for i, line in enumerate(self.gcode_path):
             if line.block.gcodes or line.block.modal_params:
 
-                if line.block.gcodes:
-                    active_modal = line.block.gcodes[0]
+                for code in line.block.gcodes:
 
-                if prev_postion is not None:
-                    if isinstance(active_modal, GCodeLinearMove):
+                    if prev_postion is not None:
+                        if isinstance(code, GCodeLinearMove):
 
-                        position = self.get_pos(line, position)
+                            position = self.get_pos(line, position)
 
-                        self.draw_line(prev_postion, position, line_color=(1, 1, 1))
+                            self.draw_line(prev_postion, position, line_color=(1, 1, 1))
 
-                    elif isinstance(active_modal, GCodeRapidMove):
+                        elif isinstance(code, GCodeRapidMove):
 
-                        position = self.get_pos(line, position)
+                            position = self.get_pos(line, position)
 
-                        self.draw_line(prev_postion, position, line_color=(1, 0, 0))
+                            self.draw_line(prev_postion, position, line_color=(1, 0, 0))
 
-                    elif isinstance(active_modal, GCodeArcMoveCW):
-                        color = (1, 1, 1)
-                        # self.draw_arc(last_postion, position)# r, cen, cw, arc_color=color)
+                        elif isinstance(code, GCodeArcMoveCW):
+                            color = (1, 1, 1)
 
-                    elif isinstance(active_modal, GCodeArcMoveCCW):
-                        color = (1, 1, 1)
-                        # self.draw_arc(last_postion, position)# r, cen, cw, arc_color=color)
+                            position = self.get_pos(line, position)
+                            self.draw_arc(prev_postion, position, True)
 
-                prev_postion = copy.copy(position)
+                        elif isinstance(code, GCodeArcMoveCCW):
+                            color = (1, 1, 1)
+                            position = self.get_pos(line, position)
+                            self.draw_arc(prev_postion, position, False)
+                    prev_postion = copy.copy(position)
 
     def draw_line(self, pt1, pt2, line_color=(1, 1, 1)):
-        line = Line(pt1, pt2, line_color)
+
+        point_1 = pt1[0], pt1[1], pt1[2]
+        point_2 = pt2[0], pt2[1], pt2[2]
+
+        line = Line(point_1, point_2, line_color)
         self.vtk_window.add_actor(line)
 
-    def draw_arc(self, pt1, pt2, r=None, cen=(1, 0, 1), cw=True, arc_color=(0, 1, 0)):
-        arc = Arc(p1=(0, 0, 0), p2=(10,10,0), r=None, cen=(1, 0, 1), cw=True, arc_color=(0, 1, 0))
+    def draw_arc(self, pt1, pt2, cw=True):
+
+        point_1 = pt1[0], pt1[1], pt1[2]
+        point_2 = pt2[0], pt2[1], pt2[2]
+        radio = pt2[3]
+
+        print(radio)
+
+        arc = Arc(point_1, point_2, radio, cw)
         self.vtk_window.add_actor(arc)
 
     def get_pos(self, line, position):
 
         for code in line.block.gcodes:
-            pos = code.get_param_dict("XYZ")
+            if isinstance(code, GCodeMotion):
+                pos = code.get_param_dict("RXYZ")
 
-            position[0] = pos.get("X", position[0])
-            position[1] = pos.get("Y", position[1])
-            position[2] = pos.get("Z", position[2])
+                position[0] = pos.get("X", position[0])
+                position[1] = pos.get("Y", position[1])
+                position[2] = pos.get("Z", position[2])
 
-        for j, modal in enumerate(line.block.modal_params):
-            position[j] = modal.value
+                position[3] = pos.get("R", None)
 
         return position
 
@@ -386,7 +399,7 @@ def main():
 
     kremlin = Kremlin()
     kremlin.draw_cone()
-    kremlin.load_file("hazzy.ngc")
+    kremlin.load_file("arc.ngc")
     kremlin.draw_path()
 
     window.add(kremlin)
