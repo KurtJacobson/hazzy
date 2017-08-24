@@ -2,6 +2,8 @@
 
 import os
 import gi
+import ast
+import importlib
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -15,13 +17,13 @@ from constants import Paths
 
 # Import our own modules
 from hazzy.utilities import logger
-from hazzy.modules.widgetchooser.widgetchooser import DragSourcePanel
-
-from hazzy.modules.gcodeview.gcodeview import GcodeViewWidget
 from hazzy.modules.widgetchooser.widgetwindow import WidgetWindow
 
 log = logger.get('HAZZY.DASHBOARD')
 
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '..'))
+WIDGET_DIR = os.path.join(HAZZYDIR, 'hazzy/modules')
 
 (TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
 (COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
@@ -31,7 +33,7 @@ class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self)
 
-        gladefile = os.path.join(Paths.UIDIR, 'hazzy_3.ui')
+        gladefile = os.path.join(Paths.UIDIR, 'hazzy.ui')
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
@@ -44,32 +46,54 @@ class HazzyWindow(Gtk.Window):
         self.add(self.hazzy_window)
         self.set_titlebar(self.titlebar)
 
-        self.iconview = DragSourcePanel()
+        self.iconview = WidgetChoose()
         self.revealer_area.add(self.iconview)
+
+        self.widget_data = {}
+        self.get_widgets()
+
+        self.iconview.fill(self.get_widgets())
 
         self.widget_area.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
         self.widget_area.connect("drag-data-received", self.on_drag_data_received)
         self.add_targets()
 
-        # Widget No.1
-        widget = GcodeViewWidget()
-        size = [400, 300]
-        name = 'G-code'
-        wwindow = WidgetWindow(widget, size, name)
-        self.widget_area.put(wwindow, 0, 0)
-
+        self.set_size_request(900, 600)
         self.show_all()
 
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
-        dro_widget = GcodeViewWidget()
-        label = data.get_text()
-        widget = GcodeViewWidget()
-        size = [400, 300]
-        name = 'G-code'
-        wwindow = WidgetWindow(widget, size, name)
+
+        pakage = data.get_text()
+        info = self.widget_data[pakage]
+        module_name = info.get('module')
+        class_name = info.get('class')
+        name = info.get('display-name')
+        size = info.get('default-size')
+
+        module = importlib.import_module('.' + module_name, 'hazzy.modules.' + pakage)
+        widget = getattr(module, class_name)
+
+        wwindow = WidgetWindow(widget(), size, name)
         self.widget_area.put(wwindow, 0, 0)
 
+
+    def get_widgets(self):
+        dir_names = os.listdir(WIDGET_DIR)
+        for dir_name in dir_names:
+            path = os.path.join(WIDGET_DIR, dir_name, 'widget.info')
+            info_dict = {}
+            if os.path.exists(path):
+                #print "exists", path
+                with open(path, 'r') as fh:
+                    lines = fh.readlines()
+                for line in lines:
+                    key, value = line.split(':')
+                    value = ast.literal_eval(value.strip())
+                    #print key, value
+                    info_dict[key] = value
+                self.widget_data[dir_name] = info_dict
+        return self.widget_data
 
     def on_reveal_clicked(self, button):
         reveal = self.revealer_area.get_reveal_child()
@@ -83,38 +107,39 @@ class HazzyWindow(Gtk.Window):
         self.iconview.drag_source_add_text_targets()
 
 
-
-
-class DragSourcePanel(Gtk.IconView):
+class WidgetChoose (Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
+
+        self.set_name('iconview')
 
         self.set_text_column(COLUMN_TEXT)
         self.set_pixbuf_column(COLUMN_PIXBUF)
 
-        model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
+        self.set_item_width(120)
+
+        model = Gtk.ListStore(str, GdkPixbuf.Pixbuf, str)
         self.set_model(model)
 
-        self.add_item("Dro", "image-missing")
-        self.add_item("Code View", "help-about")
-        self.add_item("Code Editor", "edit-copy")
-
         self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY)
-
         self.connect("drag-data-get", self.on_drag_data_get)
+
+
+    def fill(self, data):
+        for widget, i in data.iteritems():
+            icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
+            if i.get('image'):
+                path = os.path.join(WIDGET_DIR, i.get('module'), i.get('image'))
+                icon = GdkPixbuf.Pixbuf.new_from_file(path)
+                w, h = icon.get_width(), icon.get_height()
+                scale = 200 / float(w)
+                icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
+            display_name = i.get('display-name')
+            self.get_model().append([display_name, icon, widget])
 
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
         selected_path = self.get_selected_items()[0]
         selected_iter = self.get_model().get_iter(selected_path)
-
-        if True:  # info == TARGET_ENTRY_TEXT:
-            text = self.get_model().get_value(selected_iter, COLUMN_TEXT)
-            data.set_text(text, -1)
-        elif info == TARGET_ENTRY_PIXBUF:
-            pixbuf = self.get_model().get_value(selected_iter, COLUMN_PIXBUF)
-            data.set_pixbuf(pixbuf)
-
-    def add_item(self, text, icon_name):
-        pixbuf = Gtk.IconTheme.get_default().load_icon(icon_name, 16, 0)
-        self.get_model().append([text, pixbuf])
+        text = self.get_model().get_value(selected_iter, 2)
+        data.set_text(text, -1)

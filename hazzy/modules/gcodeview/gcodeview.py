@@ -21,6 +21,7 @@
 import os
 import sys
 import gi
+import importlib
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -230,21 +231,11 @@ class GcodeView(GtkSource.View):
 # ==========================================================
 
 def main():
-
-    gcodeview = GcodeView(preview=True)
+    gcodeview = GcodeViewWidget()
     window = Gtk.Window()
-    scrolled = Gtk.ScrolledWindow()
-
-    window.connect('destroy', Gtk.main_quit)
-
-    scrolled.add(gcodeview.view)
-
-    window.add(scrolled)
+    window.add(gcodeview)
     window.set_default_size(350, 400)
-
-    gcodeview.buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
-    gcodeview.highlight_line(3, 'motion')
-
+    window.connect('destroy', Gtk.main_quit)
     window.show_all()
 
     Gtk.main()

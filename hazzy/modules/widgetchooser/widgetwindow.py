@@ -79,38 +79,38 @@ class WidgetWindow(Gtk.Box):
 
         if event.y <= 50:
             self.action = MOVE
-            self.on_move_begin(event)
+            self.do_move_begin(event)
         elif event.x >= w - 50 and event.y >= h -50:
             self.action = RESIZE_XY
-            self.on_resize_begin(event)
+            self.do_resize_begin(event)
         elif event.x >= w - 50:
             self.action = RESIZE_X
-            self.on_resize_begin(event)
+            self.do_resize_begin(event)
         elif event.y >= h -50:
             self.action = RESIZE_Y
-            self.on_resize_begin(event)
+            self.do_resize_begin(event)
         else:
             self.action = None
 
 
     def on_drag_motion(self, widget, event):
         if self.action == MOVE:
-            self.on_move_motion(event)
+            self.do_move_motion(event)
         elif self.action >= RESIZE_X:
-            self.on_resize_motion(event)
+            self.do_resize_motion(event)
 
 
     def on_drag_end(self, widget, event):
         if self.action == MOVE:
-            self.on_move_end()
+            self.do_move_end()
         elif self.action >= RESIZE_X:
-            self.on_resize_end()
+            self.do_resize_end()
 
 #==============
 #  Move
 #==============
 
-    def on_move_begin(self, event):
+    def do_move_begin(self, event):
         pw = self.parent.get_allocation().width
         ph = self.parent.get_allocation().height
 
@@ -119,8 +119,10 @@ class WidgetWindow(Gtk.Box):
         w = self.get_allocation().width
         h = self.get_allocation().height
 
-        self.dx_max = pw - (x + w)
-        self.dy_max = ph - (y + h)
+        # Subtract grid_size/2 to cause size to round down if near max
+        # Needed to prevent window from expanding
+        self.dx_max = pw - (x + w) - self.grid_size / 2
+        self.dy_max = ph - (y + h) - self.grid_size / 2
 
         self.initial_x = event.x_root
         self.initial_y = event.y_root
@@ -128,7 +130,7 @@ class WidgetWindow(Gtk.Box):
         self.initial_pos_y = y
 
 
-    def on_move_motion(self, event):
+    def do_move_motion(self, event):
         dx = event.x_root - self.initial_x
         dy = event.y_root - self.initial_y
 
@@ -139,7 +141,7 @@ class WidgetWindow(Gtk.Box):
         self.parent.child_set_property(self, 'y', y)
 
 
-    def on_move_end(self):
+    def do_move_end(self):
         x = self.parent.child_get_property(self, 'x')
         y = self.parent.child_get_property(self, 'y')
 
@@ -155,7 +157,7 @@ class WidgetWindow(Gtk.Box):
 #  Resize
 #==============
 
-    def on_resize_begin(self, event):
+    def do_resize_begin(self, event):
         pw = self.parent.get_allocation().width
         ph = self.parent.get_allocation().height
 
@@ -164,8 +166,10 @@ class WidgetWindow(Gtk.Box):
         w = self.get_allocation().width
         h = self.get_allocation().height
 
-        self.dx_max = pw - (x + w)
-        self.dy_max = ph - (y + h)
+        # Subtract grid_size/2 to cause size to round down if near max
+        # Needed to prevent window from expanding
+        self.dx_max = pw - (x + w) - self.grid_size / 2
+        self.dy_max = ph - (y + h) - self.grid_size / 2
 
         self.initial_x = event.x_root
         self.initial_y = event.y_root
@@ -173,7 +177,7 @@ class WidgetWindow(Gtk.Box):
         self.initial_h = h
 
 
-    def on_resize_motion(self, event):
+    def do_resize_motion(self, event):
         dx = event.x_root - self.initial_x
         dy = event.y_root - self.initial_y
         w = self.initial_w
@@ -190,7 +194,7 @@ class WidgetWindow(Gtk.Box):
         self.set_size_request(w, h)
 
 
-    def on_resize_end(self):
+    def do_resize_end(self):
         w = self.get_allocation().width
         h = self.get_allocation().height
 
