@@ -52,7 +52,7 @@ class ToolTable(Gtk.Box):
         Gtk.Box.__init__(self)
 
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(UIDIR, 'ToolTable.ui'))
+        self.builder.add_from_file(os.path.join(UIDIR, 'tool_table.ui'))
         self.builder.connect_signals(self)
 
         self.treeview = self.builder.get_object('treeview')
@@ -68,7 +68,8 @@ class ToolTable(Gtk.Box):
 
         self.eval = EntryEval().eval
 
-        self.tool_table = 'tool.tbl'
+        self.tool_table = os.path.join(PYDIR, 'tool.tbl')
+        print self.tool_table
         self.use_touchpad = False
 
 
@@ -202,6 +203,12 @@ class ToolTable(Gtk.Box):
     def on_save_tool_table_clicked(self, widget, data=None):
         self.save_tool_table()
 
+    def on_move_down_clicked(self, widget):
+        raise NotImplemented
+
+    def on_move_up_clicked(self, widget):
+        raise NotImplemented
+
     def on_tool_num_edited(self, widget, path, new_text):
         try:
             new_int = int(new_text)
@@ -303,7 +310,7 @@ if __name__ == '__main__':
     win = Gtk.Window()
     win.connect('destroy', Gtk.main_quit)
     tt = ToolTable()
-    tt.load_tool_table(tt.tool_table)
+    tt.load_tool_table()
     win.add(tt)
     win.show_all()
     main()

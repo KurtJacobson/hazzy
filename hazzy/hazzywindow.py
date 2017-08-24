@@ -42,17 +42,18 @@ class HazzyWindow(Gtk.Window):
         self.titlebar = self.builder.get_object('titlebar')
         self.revealer_area = self.builder.get_object('revealer_area')
         self.widget_area = self.builder.get_object('widget_area')
+        self.iconview_scroller = self.builder.get_object('iconview_scroller')
         self.builder.connect_signals(self)
         self.add(self.hazzy_window)
         self.set_titlebar(self.titlebar)
 
-        self.iconview = WidgetChooser()
-        self.revealer_area.add(self.iconview)
+        self.widgetchooser = WidgetChooser()
+        self.iconview_scroller.add(self.widgetchooser)
 
         self.widget_data = {}
         self.get_widgets()
 
-        self.iconview.fill(self.get_widgets())
+        self.widgetchooser.fill(self.get_widgets())
 
         self.widget_area.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
         self.widget_area.connect("drag-data-received", self.on_drag_data_received)
@@ -102,17 +103,20 @@ class HazzyWindow(Gtk.Window):
 
     def add_targets(self):
         self.widget_area.drag_dest_set_target_list(None)
-        self.iconview.drag_source_set_target_list(None)
+        self.widgetchooser.drag_source_set_target_list(None)
 
         self.widget_area.drag_dest_add_text_targets()
-        self.iconview.drag_source_add_text_targets()
+        self.widgetchooser.drag_source_add_text_targets()
 
 
 class WidgetChooser(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
 
-        self.set_name('iconview')
+        self.set_name('widgetchooser')
+
+        context = self.get_style_context()
+        context.add_class("widgetchooser");
 
         self.set_text_column(COLUMN_TEXT)
         self.set_pixbuf_column(COLUMN_PIXBUF)
@@ -127,6 +131,7 @@ class WidgetChooser(Gtk.IconView):
 
 
     def fill(self, data):
+        self.set_columns(len(data))
         for widget, i in data.iteritems():
             icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
             if i.get('image'):
