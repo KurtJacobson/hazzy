@@ -21,6 +21,9 @@
 
 # Temporary, for silly people who don't use an IDE
 import os, sys
+
+from vtk.vtkFiltersSourcesPython import vtkConeSource
+
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
 if HAZZYDIR not in sys.path:
@@ -49,7 +52,7 @@ from hazzy.modules.pygcode import GCodeRapidMove
 from hazzy.modules.pygcode import GCodeArcMove, GCodeArcMoveCW, GCodeArcMoveCCW
 from hazzy.modules.pygcode import Machine
 
-from hazzy.modules.kremlin.vtk_helper import Cone, Line, Arc, Axes
+from hazzy.modules.kremlin.vtk_helper import FollowerTool, Cone, Line, Arc, Axes
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -317,10 +320,6 @@ class Kremlin(Gtk.Box):
                     gcode_line = GLine(str(line))
                     self.gcode_path.append(gcode_line)
 
-    def draw_cone(self, x, y, z):
-        cone_actor = Cone(center=(x, y, z), radius=1, angle=45, height=1.5, color=(1, 1, 0), resolution=60)
-        self.vtk_window.add_actor(cone_actor)
-
     def draw_path(self):
 
         position = [0, 0, 0, None]
@@ -392,6 +391,19 @@ class Kremlin(Gtk.Box):
         axes = Axes(center=center, color=color)
         self.vtk_window.add_actor(axes)
 
+    def draw_tool(self, x, y, z):
+
+        color = (0, 0.5, 1)
+
+        tool_source = vtkConeSource()
+        tool_source.SetResolution(100)
+        tool_source.SetRadius(1.5)
+        tool_source.SetHeight(3)
+
+        tool_actor = FollowerTool(source=tool_source, color=color, center=(0, 0, 0), scale=1)
+
+        self.vtk_window.add_actor(tool_actor)
+
     def draw_line(self, pt1, pt2, color=(1, 1, 1)):
 
         point_1 = pt1[0], pt1[1], pt1[2]
@@ -435,7 +447,7 @@ def main():
 
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
-    kremlin.draw_cone(x=0, y=0, z=0)
+    kremlin.draw_tool(x=0, y=0, z=0)
     kremlin.load_file("hazzy.ngc")
     kremlin.draw_path()
 
@@ -447,7 +459,7 @@ def main():
 
     kremlin2 = Kremlin()
     kremlin2.draw_axes(x=0, y=0, z=0)
-    kremlin2.draw_cone(x=0, y=0, z=0)
+    kremlin2.draw_tool(x=0, y=0, z=0)
     kremlin2.load_file("arc.ngc")
     kremlin2.draw_path()
 

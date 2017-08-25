@@ -384,6 +384,38 @@ class FollowerText(vtkFollower):
         """ set color of actor"""
         self.GetProperty().SetColor(color)
 
+class FollowerTool(vtkFollower):
+    """ Tool Model """
+
+    def __init__(self, source, color=cyan, center=(0, 0, 0), scale=1):
+        self.source = source
+
+        self.scale = scale
+
+        self.transform = vtkTransform()
+
+        self.transform.Translate(center[0], center[1], center[2] + self.source.GetHeight() / 2)
+        self.transform.RotateY(90)
+        self.transform.Scale(self.scale, self.scale, self.scale)
+        self.transformFilter = vtkTransformPolyDataFilter()
+        self.transformFilter.SetTransform(self.transform)
+        self.transformFilter.SetInputConnection(self.source.GetOutputPort())
+        self.transformFilter.Update()
+
+        self.mapper = vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.transformFilter.GetOutputPort())
+        self.SetMapper(self.mapper)
+        self.SetColor(color)
+
+    def SetScale(self, scale):
+        self.scale = scale
+        self.transform.Scale(self.scale, self.scale, self.scale)
+        self.transformFilter.Update()
+
+    def SetColor(self, color):
+        """ set color of actor"""
+        self.GetProperty().SetColor(color)
+
 
 class Cone(CamvtkActor):
     """ a cone"""
