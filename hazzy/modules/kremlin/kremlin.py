@@ -340,14 +340,14 @@ class Kremlin(Gtk.Box):
 
                             position = self.get_pos(line, position)
 
-                            self.draw_line(prev_postion, position, line_color=color)
+                            self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(code, GCodeRapidMove):
                             color = (1, 0, 0)
 
                             position = self.get_pos(line, position)
 
-                            self.draw_line(prev_postion, position, line_color=color)
+                            self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(code, GCodeArcMoveCW):
                             color = (1, 1, 1)
