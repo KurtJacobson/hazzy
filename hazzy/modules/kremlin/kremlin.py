@@ -397,8 +397,7 @@ class Kremlin(Gtk.Box):
 
         color = (0, 0.5, 1)
 
-        self.tool = Cone(center=(x, y, z), radius=1, angle=-90, height=1.5, color=color, resolution=60)
-
+        self.tool = Cone(center=(x, y, z), radius=1, angle=-90, height=1.5, color=color, resolution=100)
 
         self.vtk_window.add_actor(self.tool)
 
@@ -456,20 +455,7 @@ def main():
 
     window.add(kremlin)
 
-    window2 = Gtk.Window(title="ARC VTK")
-    window2.connect('destroy', Gtk.main_quit)
-    window2.connect('delete-event', Gtk.main_quit)
-
-    kremlin2 = Kremlin()
-    kremlin2.draw_axes(x=0, y=0, z=0)
-    kremlin2.draw_tool(x=0, y=0, z=0)
-    kremlin2.load_file("arc.ngc")
-    kremlin2.draw_path()
-
-    window2.add(kremlin2)
-
     window.show()
-    window2.show()
     Gtk.main()
 
 
