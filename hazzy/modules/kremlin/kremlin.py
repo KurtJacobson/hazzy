@@ -22,7 +22,7 @@
 # Temporary, for silly people who don't use an IDE
 import os, sys
 
-from vtk.vtkFiltersSourcesPython import vtkConeSource
+from vtk.vtkCommonCorePython import VTK_MAJOR_VERSION
 
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
@@ -66,15 +66,20 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
         Gtk.GLArea.__init__(self)
 
+        print("VTK VERSION : {0}".format(VTK_MAJOR_VERSION))
+
+        self._render_window = vtkRenderWindow()
+
         self.camera = vtkCamera()
         self.camera.SetPosition(0, 0, 100)
         self.camera.SetFocalPoint(0, 0, 0)
 
         self._renderer = vtkRenderer()
+        self._renderer.SetBackground(0, 0, 0)
+        self._renderer.SetBackground2(0.1, 0.2, 0.4)
+        self._renderer.SetGradientBackground(1)
         self._renderer.SetActiveCamera(self.camera)
-        self._renderer.SetBackground(0.1, 0.2, 0.4)
 
-        self._render_window = vtkRenderWindow()
         self._render_window.AddRenderer(self._renderer)
 
         # private attributes
@@ -85,6 +90,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
         self._iren.AddObserver('CreateTimerEvent', self.create_timer)
         self._iren.AddObserver('DestroyTimerEvent', self.destroy_timer)
+
         self.connect_signals()
 
         # need this to be able to handle key_press events.
