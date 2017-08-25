@@ -336,44 +336,46 @@ class Kremlin(Gtk.Box):
                     active_modal = code
                     if prev_postion is not None:
                         if isinstance(code, GCodeLinearMove):
-                            
+                            color = (1, 1, 1)
+
                             position = self.get_pos(line, position)
 
-                            self.draw_line(prev_postion, position, line_color=(1, 1, 1))
+                            self.draw_line(prev_postion, position, line_color=color)
 
                         elif isinstance(code, GCodeRapidMove):
+                            color = (1, 0, 0)
 
                             position = self.get_pos(line, position)
 
-                            self.draw_line(prev_postion, position, line_color=(1, 0, 0))
+                            self.draw_line(prev_postion, position, line_color=color)
 
                         elif isinstance(code, GCodeArcMoveCW):
                             color = (1, 1, 1)
 
                             position = self.get_pos(line, position)
-                            self.draw_arc(prev_postion, position, True)
+                            self.draw_arc(prev_postion, position, True, color=color)
 
                         elif isinstance(code, GCodeArcMoveCCW):
                             color = (1, 1, 1)
                             position = self.get_pos(line, position)
-                            self.draw_arc(prev_postion, position, False)
+                            self.draw_arc(prev_postion, position, False, color=color)
                     prev_postion = copy.copy(position)
 
             elif line.block.modal_params:
                 for modal_param in line.block.modal_params:
                     if prev_postion is not None:
                         if isinstance(active_modal, GCodeLinearMove):
-                            print("Linear Move")
+                            color = (1, 0, 0)
                             position = self.get_pos(line, position)
 
-                            self.draw_line(prev_postion, position, line_color=(1, 1, 1))
+                            self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(active_modal, GCodeRapidMove):
-                            print("Rapid Move")
+                            color = (1, 0, 0)
 
                             position = self.get_pos(line, position)
 
-                            self.draw_line(prev_postion, position, line_color=(1, 0, 0))
+                            self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(active_modal, GCodeArcMoveCW):
                             color = (1, 1, 1)
@@ -387,21 +389,21 @@ class Kremlin(Gtk.Box):
                             self.draw_arc(prev_postion, position, False)
                     prev_postion = copy.copy(position)
 
-    def draw_line(self, pt1, pt2, line_color=(1, 1, 1)):
+    def draw_line(self, pt1, pt2, color=(1, 1, 1)):
 
         point_1 = pt1[0], pt1[1], pt1[2]
         point_2 = pt2[0], pt2[1], pt2[2]
 
-        line = Line(point_1, point_2, line_color)
+        line = Line(point_1, point_2, color=color)
         self.vtk_window.add_actor(line)
 
-    def draw_arc(self, pt1, pt2, cw):
+    def draw_arc(self, pt1, pt2, cw, color=(1, 1, 1)):
 
         point_1 = pt1[0], pt1[1], pt1[2]
         point_2 = pt2[0], pt2[1], pt2[2]
-        radio = pt2[3]
+        r = pt2[3]
 
-        arc = Arc(point_1, point_2, radio, cw)
+        arc = Arc(point_1, point_2, r=r, cen=None, cw=cw, arc_color=color)
         self.vtk_window.add_actor(arc)
 
     def get_pos(self, line, position):
