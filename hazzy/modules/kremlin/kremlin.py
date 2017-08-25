@@ -437,7 +437,20 @@ def main():
 
     window.add(kremlin)
 
+    window2 = Gtk.Window(title="ARC VTK")
+    window2.connect('destroy', Gtk.main_quit)
+    window2.connect('delete-event', Gtk.main_quit)
+
+    kremlin2 = Kremlin()
+    kremlin2.draw_cone()
+    kremlin2.load_file("arc.ngc")
+    kremlin2.draw_path()
+
+    window2.add(kremlin2)
+
+
     window.show()
+    window2.show()
     Gtk.main()
 
 
