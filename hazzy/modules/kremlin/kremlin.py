@@ -79,7 +79,6 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
         # private attributes
         self.__Created = 0
-        self._active_button = 0
 
         self._iren = vtkGenericRenderWindowInteractor()
         self._iren.SetRenderWindow(self._render_window)
@@ -451,7 +450,7 @@ def main():
     kremlin.draw_tool(x=0, y=0, z=0)
     kremlin.load_file("hazzy.ngc")
     kremlin.draw_path()
-    kremlin.move_tool(1, 2, 0)
+    kremlin.move_tool(0, 0, 0)
 
     window.add(kremlin)
 
