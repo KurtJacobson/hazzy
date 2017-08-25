@@ -43,6 +43,56 @@ cyan = (0, 1, 1)
 mag2 = (float(123) / 255, float(35) / 255, float(251) / 255)
 magenta = (float(153) / 255, float(42) / 255, float(165) / 255)
 
+from collections import namedtuple
+from math import sqrt
+
+Pt = namedtuple('Pt', 'x, y')
+Circle = Cir = namedtuple('Circle', 'x, y, r')
+
+
+def circles_from_p1p2r(p1, p2, r):
+    'Following explanation at http://mathforum.org/library/drmath/view/53027.html'
+    if r == 0.0:
+        raise ValueError('radius of zero')
+    (x1, y1), (x2, y2) = p1, p2
+    if p1 == p2:
+        raise ValueError('coincident points gives infinite number of Circles')
+    # delta x, delta y between points
+    dx, dy = x2 - x1, y2 - y1
+    # dist between points
+    q = sqrt(dx ** 2 + dy ** 2)
+    if q > 2.0 * r:
+        raise ValueError('separation of points > diameter')
+    # halfway point
+    x3, y3 = (x1 + x2) / 2, (y1 + y2) / 2
+    # distance along the mirror line
+    d = sqrt(r ** 2 - (q / 2) ** 2)
+    # One answer
+    c1 = Cir(x=x3 - d * dy / q,
+             y=y3 + d * dx / q,
+             r=abs(r))
+    # The other answer
+    c2 = Cir(x=x3 + d * dy / q,
+             y=y3 - d * dx / q,
+             r=abs(r))
+    return c1, c2
+
+
+"""
+if __name__ == '__main__':
+    for p1, p2, r in [(Pt(0.1234, 0.9876), Pt(0.8765, 0.2345), 2.0),
+                      (Pt(0.0000, 2.0000), Pt(0.0000, 0.0000), 1.0),
+                      (Pt(0.1234, 0.9876), Pt(0.1234, 0.9876), 2.0),
+                      (Pt(0.1234, 0.9876), Pt(0.8765, 0.2345), 0.5),
+                      (Pt(0.1234, 0.9876), Pt(0.1234, 0.9876), 0.0)]:
+        print('Through points:\n  %r,\n  %r\n  and radius %f\nYou can construct the following circles:'
+              % (p1, p2, r))
+        try:
+            print('  %r\n  %r\n' % circles_from_p1p2r(p1, p2, r))
+        except ValueError as v:
+            print('  ERROR: %s\n' % (v.args[0],))
+"""
+
 
 # Examples
 
@@ -247,6 +297,7 @@ def drawBallCutter(myscreen, c, p):
     acts.append(sph)
 
     return acts
+
 
 # Classes
 
@@ -461,39 +512,36 @@ class Line(CamvtkActor):
 class Arc(CamvtkActor):
     """ arc """
 
-    def __init__(self, p1=(0, 0, 0), p2=(10,10,0), r=None, cen=None, cw=True, arc_color=(0, 1, 0)):
+    def __init__(self, p1=(0, 0, 0), p2=(10, 10, 0), r=None, cen=None, cw=True, arc_color=(0, 1, 0)):
         CamvtkActor.__init__(self)
 
         """ arc """
         self.src = vtkArcSource()
 
-        if r:
-            self.src.SetRadius()
-        else:
-            self.src.SetCenter(cen)
-
         self.src.SetPoint1(p1)
         self.src.SetPoint2(p2)
 
+        if r:
+
+            pt1 = Pt(p1[0], p1[1])
+            pt2 = Pt(p2[0], p2[1])
+
+            center = circles_from_p1p2r(pt1, pt2, r)
+
+            if cw:
+                self.src.SetCenter(center[0].x, center[0].y, 0)
+            else:
+                self.src.SetCenter(center[0].x, center[0].y, 0)
+        else:
+            self.src.SetCenter(cen)
+
         self.src.SetResolution(20)
-        # self.src.SetNegative(not cw)
-
-        self.mapper = vtkPolyDataMapper()
-
-        self.mapper.SetInputData(self.src.GetOutput())
-
-        """
-        self.src = vtkArcSource()
-
-        self.src.SetPoint1(pt1)
-        self.src.SetPoint2(pt2)
 
         self.mapper = vtkPolyDataMapper()
 
         self.mapper.SetInputConnection(self.src.GetOutputPort())
 
         self.SetMapper(self.mapper)
-        """
         self.SetColor(arc_color)
 
 
@@ -633,7 +681,6 @@ class Arrow(CamvtkActor):
     def __init__(self, center=(0, 0, 0), color=(0, 0, 1), rotXYZ=(0, 0, 0)):
         CamvtkActor.__init__(self)
 
-
         """ arrow """
         self.src = vtkArrowSource()
         # self.src.SetCenter(center)
@@ -658,7 +705,6 @@ class Text(vtkTextActor):
     """ 2D text, HUD-type"""
 
     def __init__(self, text="text", size=18, color=(1, 1, 1), pos=(100, 100)):
-
         """create text"""
         self.SetText(text)
         self.properties = self.GetTextProperty()
@@ -688,7 +734,6 @@ class Text3D(vtkFollower):
     """ 3D text rendered in the scene"""
 
     def __init__(self, color=(1, 1, 1), center=(0, 0, 0), text="hello", scale=1, camera=[]):
-
         """ create text """
         self.src = vtkVectorText()
         self.SetText(text)
@@ -921,8 +966,6 @@ class Plane(CamvtkActor):
         self.SetOrigin(center)
         # SetScaleFactor(double)
         # GetOrigin
-
-
 
 # TODO:
 # vtkArcSource

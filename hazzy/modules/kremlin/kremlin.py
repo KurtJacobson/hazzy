@@ -366,13 +366,11 @@ class Kremlin(Gtk.Box):
         line = Line(point_1, point_2, line_color)
         self.vtk_window.add_actor(line)
 
-    def draw_arc(self, pt1, pt2, cw=True):
+    def draw_arc(self, pt1, pt2, cw):
 
         point_1 = pt1[0], pt1[1], pt1[2]
         point_2 = pt2[0], pt2[1], pt2[2]
         radio = pt2[3]
-
-        print(radio)
 
         arc = Arc(point_1, point_2, radio, cw)
         self.vtk_window.add_actor(arc)
