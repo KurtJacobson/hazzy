@@ -92,6 +92,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         # default size
         self.set_usize(800, 600)
 
+
     def set_usize(self, w, h):
         self.set_size_request(w, h)
         self._render_window.SetSize(w, h)
@@ -169,7 +170,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         return True
 
     def on_render(self, *args):
-        self.Render()
+        self.render()
         return True
 
     def on_destroy(self, event=None):
