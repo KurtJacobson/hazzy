@@ -365,7 +365,7 @@ class Kremlin(Gtk.Box):
                 for modal_param in line.block.modal_params:
                     if prev_postion is not None:
                         if isinstance(active_modal, GCodeLinearMove):
-                            color = (1, 0, 0)
+                            color = (1, 1, 1)
                             position = self.get_pos(line, position)
 
                             self.draw_line(prev_postion, position, color=color)
@@ -433,7 +433,7 @@ def main():
 
     kremlin = Kremlin()
     kremlin.draw_cone()
-    kremlin.load_file("arc.ngc")
+    kremlin.load_file("hazzy.ngc")
     kremlin.draw_path()
 
     window.add(kremlin)
