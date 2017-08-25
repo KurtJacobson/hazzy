@@ -362,32 +362,31 @@ class Kremlin(Gtk.Box):
                     prev_postion = copy.copy(position)
 
             elif line.block.modal_params:
-                for modal_param in line.block.modal_params:
-                    if prev_postion is not None:
-                        if isinstance(active_modal, GCodeLinearMove):
-                            color = (1, 1, 1)
-                            position = self.get_pos(line, position)
+                if prev_postion is not None:
+                    if isinstance(active_modal, GCodeLinearMove):
+                        color = (1, 1, 1)
+                        position = self.get_pos(line, position)
 
-                            self.draw_line(prev_postion, position, color=color)
+                        self.draw_line(prev_postion, position, color=color)
 
-                        elif isinstance(active_modal, GCodeRapidMove):
-                            color = (1, 0, 0)
+                    elif isinstance(active_modal, GCodeRapidMove):
+                        color = (1, 0, 0)
 
-                            position = self.get_pos(line, position)
+                        position = self.get_pos(line, position)
 
-                            self.draw_line(prev_postion, position, color=color)
+                        self.draw_line(prev_postion, position, color=color)
 
-                        elif isinstance(active_modal, GCodeArcMoveCW):
-                            color = (1, 1, 1)
+                    elif isinstance(active_modal, GCodeArcMoveCW):
+                        color = (1, 1, 1)
 
-                            position = self.get_pos(line, position)
-                            self.draw_arc(prev_postion, position, True)
+                        position = self.get_pos(line, position)
+                        self.draw_arc(prev_postion, position, True)
 
-                        elif isinstance(active_modal, GCodeArcMoveCCW):
-                            color = (1, 1, 1)
-                            position = self.get_pos(line, position)
-                            self.draw_arc(prev_postion, position, False)
-                    prev_postion = copy.copy(position)
+                    elif isinstance(active_modal, GCodeArcMoveCCW):
+                        color = (1, 1, 1)
+                        position = self.get_pos(line, position)
+                        self.draw_arc(prev_postion, position, False)
+                prev_postion = copy.copy(position)
 
     def draw_line(self, pt1, pt2, color=(1, 1, 1)):
 
