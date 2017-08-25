@@ -317,8 +317,8 @@ class Kremlin(Gtk.Box):
                     gcode_line = GLine(str(line))
                     self.gcode_path.append(gcode_line)
 
-    def draw_cone(self):
-        cone_actor = Cone()
+    def draw_cone(self, x, y, z):
+        cone_actor = Cone(center=(x, y, z), radius=1, angle=45, height=1.5, color=(1, 1, 0), resolution=60)
         self.vtk_window.add_actor(cone_actor)
 
     def draw_path(self):
@@ -435,7 +435,7 @@ def main():
 
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
-    kremlin.draw_cone()
+    kremlin.draw_cone(x=0, y=0, z=0)
     kremlin.load_file("hazzy.ngc")
     kremlin.draw_path()
 
@@ -447,7 +447,7 @@ def main():
 
     kremlin2 = Kremlin()
     kremlin2.draw_axes(x=0, y=0, z=0)
-    kremlin2.draw_cone()
+    kremlin2.draw_cone(x=0, y=0, z=0)
     kremlin2.load_file("arc.ngc")
     kremlin2.draw_path()
 
