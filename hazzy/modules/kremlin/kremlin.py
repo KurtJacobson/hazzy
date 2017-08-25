@@ -330,17 +330,18 @@ class Kremlin(Gtk.Box):
 
         for i, line in enumerate(self.gcode_path):
             if line.block.gcodes or line.block.modal_params:
-
                 for code in line.block.gcodes:
-
                     if prev_postion is not None:
+                        print(code)
                         if isinstance(code, GCodeLinearMove):
-
+                            print("Linear Move")
                             position = self.get_pos(line, position)
+                            print(position)
 
                             self.draw_line(prev_postion, position, line_color=(1, 1, 1))
 
                         elif isinstance(code, GCodeRapidMove):
+                            print("Rapid Move")
 
                             position = self.get_pos(line, position)
 
@@ -378,6 +379,7 @@ class Kremlin(Gtk.Box):
     def get_pos(self, line, position):
 
         for code in line.block.gcodes:
+            print(code)
             if isinstance(code, GCodeMotion):
                 pos = code.get_param_dict("RXYZ")
 
@@ -386,6 +388,9 @@ class Kremlin(Gtk.Box):
                 position[2] = pos.get("Z", position[2])
 
                 position[3] = pos.get("R", None)
+
+        for j, modal in enumerate(line.block.modal_params):
+            position[j] = modal.value
 
         return position
 
