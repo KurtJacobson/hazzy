@@ -384,12 +384,13 @@ class FollowerText(vtkFollower):
         """ set color of actor"""
         self.GetProperty().SetColor(color)
 
+
+
 class FollowerTool(vtkFollower):
     """ Tool Model """
 
     def __init__(self, source, color=cyan, center=(0, 0, 0), scale=1):
         self.source = source
-
         self.scale = scale
 
         self.transform = vtkTransform()

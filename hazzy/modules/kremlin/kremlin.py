@@ -309,6 +309,8 @@ class Kremlin(Gtk.Box):
 
         self.gcode_path = []
 
+        self.tool = None
+
     def load_file(self, ngc_filename):
         buf_size = 65536
         with open(ngc_filename, 'r') as ngc_file:
@@ -395,14 +397,10 @@ class Kremlin(Gtk.Box):
 
         color = (0, 0.5, 1)
 
-        tool_source = vtkConeSource()
-        tool_source.SetResolution(100)
-        tool_source.SetRadius(1.5)
-        tool_source.SetHeight(3)
+        self.tool = Cone(center=(x, y, z), radius=1, angle=-90, height=1.5, color=color, resolution=60)
 
-        tool_actor = FollowerTool(source=tool_source, color=color, center=(0, 0, 0), scale=1)
 
-        self.vtk_window.add_actor(tool_actor)
+        self.vtk_window.add_actor(self.tool)
 
     def draw_line(self, pt1, pt2, color=(1, 1, 1)):
 
@@ -439,6 +437,10 @@ class Kremlin(Gtk.Box):
 
         return position
 
+    def move_tool(self, x, y, z):
+        if self.tool is not None:
+            self.tool.SetPosition(x, y, z)
+
 
 def main():
     window = Gtk.Window(title="HAZZY VTK")
@@ -450,6 +452,7 @@ def main():
     kremlin.draw_tool(x=0, y=0, z=0)
     kremlin.load_file("hazzy.ngc")
     kremlin.draw_path()
+    kremlin.move_tool(1, 2, 0)
 
     window.add(kremlin)
 
@@ -464,7 +467,6 @@ def main():
     kremlin2.draw_path()
 
     window2.add(kremlin2)
-
 
     window.show()
     window2.show()
