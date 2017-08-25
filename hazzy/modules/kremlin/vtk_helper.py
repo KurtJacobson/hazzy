@@ -777,7 +777,9 @@ class Axes(vtkActor):
         # self.src.SetCenter(center)
 
         self.mapper = vtkPolyDataMapper()
-        self.mapper.SetInput(self.src.GetOutput())
+
+        self.mapper.SetInputConnection(self.src.GetOutputPort())
+
         self.SetMapper(self.mapper)
 
         self.SetColor(color)

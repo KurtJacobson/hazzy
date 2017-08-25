@@ -49,7 +49,7 @@ from hazzy.modules.pygcode import GCodeRapidMove
 from hazzy.modules.pygcode import GCodeArcMove, GCodeArcMoveCW, GCodeArcMoveCCW
 from hazzy.modules.pygcode import Machine
 
-from hazzy.modules.kremlin.vtk_helper import Cone, Line, Arc
+from hazzy.modules.kremlin.vtk_helper import Cone, Line, Arc, Axes
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -304,8 +304,6 @@ class Kremlin(Gtk.Box):
         # prevents 'q' from exiting the app.
         self.vtk_window.AddObserver('ExitEvent', lambda o, e, x=None: x)
 
-        self.machine = Machine()
-
         self.gcode_path = []
 
     def load_file(self, ngc_filename):
@@ -388,6 +386,12 @@ class Kremlin(Gtk.Box):
                         self.draw_arc(prev_postion, position, False)
                 prev_postion = copy.copy(position)
 
+    def draw_axes(self, x, y, z):
+        center = (x, y, z)
+        color = (1, 0, 0)
+        axes = Axes(center=center, color=color)
+        self.vtk_window.add_actor(axes)
+
     def draw_line(self, pt1, pt2, color=(1, 1, 1)):
 
         point_1 = pt1[0], pt1[1], pt1[2]
@@ -419,7 +423,6 @@ class Kremlin(Gtk.Box):
                 position[3] = pos.get("R", None)
 
         for j, modal in enumerate(line.block.modal_params):
-            print(modal)
             position[j] = modal.value
 
         return position
@@ -431,6 +434,7 @@ def main():
     window.connect('delete-event', Gtk.main_quit)
 
     kremlin = Kremlin()
+    kremlin.draw_axes(x=0, y=0, z=0)
     kremlin.draw_cone()
     kremlin.load_file("hazzy.ngc")
     kremlin.draw_path()
@@ -442,6 +446,7 @@ def main():
     window2.connect('delete-event', Gtk.main_quit)
 
     kremlin2 = Kremlin()
+    kremlin2.draw_axes(x=0, y=0, z=0)
     kremlin2.draw_cone()
     kremlin2.load_file("arc.ngc")
     kremlin2.draw_path()
