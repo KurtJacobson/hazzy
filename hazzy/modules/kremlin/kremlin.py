@@ -538,7 +538,7 @@ def main():
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
     kremlin.draw_tool(x=0, y=0, z=0)
-    kremlin.load_file("codes/vertical_slot.ngc")
+    kremlin.load_file("codes/smile.ngc")
     kremlin.draw_path()
     kremlin.move_tool(0, 0, 0)
 
