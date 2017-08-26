@@ -230,8 +230,6 @@
     </columns>
   </object>
   <object class="GtkScrolledWindow" id="treeview">
-    <property name="width_request">500</property>
-    <property name="height_request">400</property>
     <property name="visible">True</property>
     <property name="can_focus">True</property>
     <property name="hexpand">True</property>
@@ -243,6 +241,8 @@
       <object class="GtkTreeView" id="tooltable_treeview">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
+        <property name="hexpand">True</property>
+        <property name="vexpand">True</property>
         <property name="model">tool_liststore</property>
         <property name="rules_hint">True</property>
         <property name="search_column">1</property>
