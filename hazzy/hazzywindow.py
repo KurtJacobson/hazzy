@@ -132,7 +132,7 @@ class WidgetChooserView(Gtk.IconView):
         Gtk.IconView.__init__(self)
 
         context = self.get_style_context()
-        context.add_class("widgetchooser");
+        context.add_class("widget_chooser");
 
         self.set_text_column(0)
         self.set_pixbuf_column(1)
