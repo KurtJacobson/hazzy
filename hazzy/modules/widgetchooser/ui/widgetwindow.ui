@@ -5,7 +5,7 @@
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="icon_name">open-menu-symbolic</property>
+    <property name="pixbuf">menu.png</property>
   </object>
   <object class="GtkOverlay" id="widgetwindow">
     <property name="visible">True</property>
@@ -94,7 +94,7 @@
                       </object>
                       <packing>
                         <property name="expand">False</property>
-                        <property name="fill">True</property>
+                        <property name="fill">False</property>
                         <property name="position">1</property>
                       </packing>
                     </child>
@@ -159,7 +159,7 @@
       </packing>
     </child>
     <child type="overlay">
-      <object class="GtkEventBox">
+      <object class="GtkEventBox" id="overlay">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="visible_window">False</property>
@@ -170,6 +170,9 @@
           <placeholder/>
         </child>
       </object>
+      <packing>
+        <property name="pass_through">True</property>
+      </packing>
     </child>
   </object>
 </interface>
