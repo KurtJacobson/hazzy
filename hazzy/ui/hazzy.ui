@@ -101,6 +101,7 @@
         <property name="can_focus">True</property>
         <property name="receives_default">True</property>
         <property name="relief">none</property>
+        <property name="active">True</property>
         <signal name="toggled" handler="on_edit_layout_toggled" swapped="no"/>
         <child>
           <object class="GtkImage">

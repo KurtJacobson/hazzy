@@ -1,3 +1,7 @@
+/***************
+* WidgetChooser *
+***************/
+
 .widget_window {
     border-radius: 5px;
     border-width: 2px;
@@ -8,7 +12,6 @@
 .title_bar{
     background: #eeeeec;
     border-radius: 5px;
-/*    background-image: linear-gradient(to top, #d3d7cf, #f3f3f3);*/
 }
 
 .widget_chooser {

@@ -66,8 +66,8 @@ class HazzyWindow(Gtk.Window):
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
 
         pakage = data.get_text()
-        info = self.widget_data[pakage]
 
+        info = self.widget_data[pakage]
         name = info.get('name')
         module = info.get('module')
         clas = info.get('class')
@@ -152,10 +152,11 @@ class WidgetChooserView(Gtk.IconView):
             icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
             if i.get('image'):
                 path = os.path.join(WIDGET_DIR, pakage, i.get('image'))
-                icon = GdkPixbuf.Pixbuf.new_from_file(path)
-                w, h = icon.get_width(), icon.get_height()
-                scale = 200 / float(w)
-                icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
+                if os.path.exists(path):
+                    icon = GdkPixbuf.Pixbuf.new_from_file(path)
+                    w, h = icon.get_width(), icon.get_height()
+                    scale = 200 / float(w)
+                    icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
             name = i.get('name')
             self.get_model().append([name, icon, pakage])
 

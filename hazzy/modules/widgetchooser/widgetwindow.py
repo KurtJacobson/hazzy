@@ -67,7 +67,6 @@ class WidgetWindow(Gtk.Box):
             self.menu_btn.connect('pressed', menu_callback, self)
 
         self.show_all()
-        self.overlay.hide()
 
     def show_overlay(self, setting):
         if setting:
