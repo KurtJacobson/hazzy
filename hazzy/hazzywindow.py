@@ -76,8 +76,18 @@ class HazzyWindow(Gtk.Window):
         module = importlib.import_module('.' + module, 'hazzy.modules.' + pakage)
         widget = getattr(module, clas)
 
-        wwindow = WidgetWindow(widget(), size, name)
-        self.widget_area.put(wwindow, x-size[0]/2, y-size[1]/2)
+        # Snap to grid
+        x = int(round(float(x - size[0]/2) / 20)) * 20
+        y = int(round(float(y - size[1]/2) / 20)) * 20
+        print x, y
+
+        # Snap to 20 x 20 px grid
+        w = int(round(float(size[0]) / 20)) * 20
+        h = int(round(float(size[1]) / 20)) * 20
+        print w, h
+
+        wwindow = WidgetWindow(widget(), [w, h], name)
+        self.widget_area.put(wwindow, x, y)
 
     def get_widgets(self):
         pakages = os.listdir(WIDGET_DIR)
@@ -102,7 +112,6 @@ class HazzyWindow(Gtk.Window):
         reveal = self.revealer_area.get_reveal_child()
         self.revealer_area.set_reveal_child(not reveal)
 
-
     def on_edit_layout_toggled(self, widget):
         edit = widget.get_active()
         # Hide eventbox used for drag/resize
@@ -118,13 +127,10 @@ class HazzyWindow(Gtk.Window):
         self.widgetchooser.drag_source_add_text_targets()
 
 
-
 class WidgetChooser(Gtk.ScrolledWindow):
     def __init__(self):
         Gtk.ScrolledWindow.__init__(self)
-
         pass
-
 
 
 class WidgetChooserView(Gtk.IconView):
