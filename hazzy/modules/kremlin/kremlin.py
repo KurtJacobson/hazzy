@@ -49,7 +49,7 @@ from hazzy.modules.pygcode import GCode
 from hazzy.modules.pygcode import GCodeMotion
 from hazzy.modules.pygcode import GCodeLinearMove
 from hazzy.modules.pygcode import GCodeRapidMove
-from hazzy.modules.pygcode import GCodeArcMove, GCodeArcMoveCW, GCodeArcMoveCCW
+from hazzy.modules.pygcode import GCodeArcMove, GCodeArcMoveCW, GCodeArcMoveCCW, GCodeAbsoluteArcDistanceMode, GCodeIncrementalArcDistanceMode
 from hazzy.modules.pygcode import Machine
 
 from hazzy.modules.kremlin.vtk_helper import FollowerTool, Cone, Line, Arc, Axes
@@ -330,15 +330,24 @@ class Kremlin(Gtk.Box):
 
     def draw_path(self):
 
-        position = [0, 0, 0, None]
-        prev_postion = [0, 0, 0, None]
+        position = dict([('X', 0), ('Y', 0), ('Z', 0),
+                         ('I', 0), ('J', 0), ('K', 0),
+                         ('R', 0)])
+        prev_postion = None
 
         active_modal = None
+        arc_mode = None
 
         for i, line in enumerate(self.gcode_path):
             if line.block.gcodes:
                 for code in line.block.gcodes:
                     active_modal = code
+
+                    if isinstance(code, GCodeIncrementalArcDistanceMode):
+                        arc_mode = GCodeIncrementalArcDistanceMode
+                    elif isinstance(code, GCodeAbsoluteArcDistanceMode):
+                        arc_mode = GCodeAbsoluteArcDistanceMode
+
                     if prev_postion is not None:
                         if isinstance(code, GCodeLinearMove):
                             color = (1, 1, 1)
@@ -357,12 +366,12 @@ class Kremlin(Gtk.Box):
                         elif isinstance(code, GCodeArcMoveCW):
                             color = (1, 1, 1)
 
-                            position = self.get_pos(line, position)
+                            position = self.get_pos(line, position, arc_mode)
                             self.draw_arc(prev_postion, position, True, color=color)
 
                         elif isinstance(code, GCodeArcMoveCCW):
                             color = (1, 1, 1)
-                            position = self.get_pos(line, position)
+                            position = self.get_pos(line, position, arc_mode)
                             self.draw_arc(prev_postion, position, False, color=color)
                     prev_postion = copy.copy(position)
 
@@ -391,6 +400,7 @@ class Kremlin(Gtk.Box):
                         color = (1, 1, 1)
                         position = self.get_pos(line, position)
                         self.draw_arc(prev_postion, position, False)
+
                 prev_postion = copy.copy(position)
 
     def draw_axes(self, x, y, z):
@@ -409,36 +419,64 @@ class Kremlin(Gtk.Box):
 
     def draw_line(self, pt1, pt2, color=(1, 1, 1)):
 
-        point_1 = pt1[0], pt1[1], pt1[2]
-        point_2 = pt2[0], pt2[1], pt2[2]
+        point_1 = pt1.get("X"), pt1.get("Y"), pt1.get("Z")
+        point_2 = pt2.get("X"), pt2.get("Y"), pt2.get("Z")
 
         line = Line(point_1, point_2, color=color)
         self.vtk_window.add_actor(line)
 
     def draw_arc(self, pt1, pt2, cw, color=(1, 1, 1)):
 
-        point_1 = pt1[0], pt1[1], pt1[2]
-        point_2 = pt2[0], pt2[1], pt2[2]
-        r = pt2[3]
+        point_1 = pt1.get("X"), pt1.get("Y"), pt1.get("Z")
+        point_2 = pt2.get("X"), pt2.get("Y"), pt2.get("Z")
 
-        arc = Arc(point_1, point_2, r=r, cen=None, cw=cw, arc_color=color)
+        i = pt2.get("I")
+        j = pt2.get("J")
+        k = pt2.get("K")
+
+        r = pt2.get("R")
+
+        arc = Arc(point_1, point_2, r=r, cen=(i, j, k), cw=cw, arc_color=color)
         self.vtk_window.add_actor(arc)
 
-    def get_pos(self, line, position):
+    def get_pos(self, line, position, arc_mode=GCodeAbsoluteArcDistanceMode):
 
         for code in line.block.gcodes:
 
-            if isinstance(code, GCodeMotion):
-                pos = code.get_param_dict("RXYZ")
+            if isinstance(code, GCodeLinearMove) and isinstance(code, GCodeRapidMove):
+                pos = code.get_param_dict("XYZ")
 
-                position[0] = pos.get("X", position[0])
-                position[1] = pos.get("Y", position[1])
-                position[2] = pos.get("Z", position[2])
+                position["X"] = pos.get("X", position["X"])
+                position["Y"] = pos.get("Y", position["Y"])
+                position["Z"] = pos.get("Z", position["Z"])
 
-                position[3] = pos.get("R", None)
+            elif isinstance(code, GCodeArcMove):
+                pos = code.get_param_dict("IJKXYZ")
+
+                position["X"] = pos.get("X", position["X"])
+                position["Y"] = pos.get("Y", position["Y"])
+                position["Z"] = pos.get("Z", position["Z"])
+
+                if isinstance(arc_mode, GCodeAbsoluteArcDistanceMode):
+
+                    position["I"] = pos.get("I")
+                    position["J"] = pos.get("J", position["Y"])
+
+                elif isinstance(arc_mode, GCodeIncrementalArcDistanceMode):
+
+                    position["I"] = pos.get("I") + position["X"]
+                    position["J"] = pos.get("J") + position["Y"]
+                    position["K"] = pos.get("K") + position["Z"]
+
+                # position["R"] = pos.get("R")
 
         for j, modal in enumerate(line.block.modal_params):
-            position[j] = modal.value
+            if j == 1:
+                position["X"] = modal.value
+            elif j == 2:
+                position["Y"] = modal.value
+            elif j == 3:
+                position["Z"] = modal.value
 
         return position
 
@@ -455,7 +493,7 @@ def main():
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
     kremlin.draw_tool(x=0, y=0, z=0)
-    kremlin.load_file("hazzy.ngc")
+    kremlin.load_file("codes/smile.ngc")
     kremlin.draw_path()
     kremlin.move_tool(0, 0, 0)
 

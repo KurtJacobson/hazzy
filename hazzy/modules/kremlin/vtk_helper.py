@@ -564,11 +564,11 @@ class Arc(CamvtkActor):
             if cw:
                 self.src.SetCenter(center[0].x, center[0].y, 0)
             else:
-                self.src.SetCenter(center[0].x, center[0].y, 0)
+                self.src.SetCenter(center[1].x, center[1].y, 0)
         else:
             self.src.SetCenter(cen)
 
-        self.src.SetResolution(20)
+        self.src.SetResolution(100)
 
         self.mapper = vtkPolyDataMapper()
 
