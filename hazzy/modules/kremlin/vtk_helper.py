@@ -545,7 +545,7 @@ class Line(CamvtkActor):
 class Arc(CamvtkActor):
     """ arc """
 
-    def __init__(self, p1=(0, 0, 0), p2=(10, 10, 0), r=None, cen=None, cw=True, arc_color=(0, 1, 0)):
+    def __init__(self, p1=(0, 0, 0), p2=(10, 10, 0), r=False, cen=False, cw=True, arc_color=(0, 1, 0)):
         CamvtkActor.__init__(self)
 
         """ arc """

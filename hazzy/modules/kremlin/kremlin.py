@@ -20,15 +20,8 @@
 
 
 # Temporary, for silly people who don't use an IDE
-import os, sys
-
-from vtk.vtkCommonCorePython import VTK_MAJOR_VERSION
-
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
+import os
+import sys
 
 import copy
 import gi
@@ -40,19 +33,32 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GLib
 
+
+from vtk.vtkCommonCorePython import VTK_MAJOR_VERSION
+
 from vtk.vtkRenderingCorePython import vtkRenderWindow, vtkCamera
 from vtk.vtkRenderingCorePython import vtkGenericRenderWindowInteractor
 from vtk.vtkRenderingCorePython import vtkRenderer
 
+
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
+if HAZZYDIR not in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
+from constants import Paths
+from hazzy.utilities import logger
+
 from hazzy.modules.pygcode import Line as GLine
-from hazzy.modules.pygcode import GCode
-from hazzy.modules.pygcode import GCodeMotion
 from hazzy.modules.pygcode import GCodeLinearMove
 from hazzy.modules.pygcode import GCodeRapidMove
 from hazzy.modules.pygcode import GCodeArcMove, GCodeArcMoveCW, GCodeArcMoveCCW, GCodeAbsoluteArcDistanceMode, GCodeIncrementalArcDistanceMode
-from hazzy.modules.pygcode import Machine
 
-from hazzy.modules.kremlin.vtk_helper import FollowerTool, Cone, Line, Arc, Axes
+
+from hazzy.modules.kremlin.vtk_helper import Cone, Line, Arc, Axes
+
+
+log = logger.get("HAZZY.KREMLIN")
 
 
 class GtkVTKRenderWindowInteractor(Gtk.GLArea):
@@ -66,7 +72,7 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
 
         Gtk.GLArea.__init__(self)
 
-        print("VTK VERSION : {0}".format(VTK_MAJOR_VERSION))
+        log.debug("VTK VERSION : {0}".format(VTK_MAJOR_VERSION))
 
         self._render_window = vtkRenderWindow()
 
@@ -97,7 +103,6 @@ class GtkVTKRenderWindowInteractor(Gtk.GLArea):
         self.set_can_focus(True)
         # default size
         self.set_usize(800, 600)
-
 
     def set_usize(self, w, h):
         self.set_size_request(w, h)
@@ -345,21 +350,23 @@ class Kremlin(Gtk.Box):
 
                     if isinstance(code, GCodeIncrementalArcDistanceMode):
                         arc_mode = GCodeIncrementalArcDistanceMode
+                        log.debug("ARC INCREMENTAL MODE")
                     elif isinstance(code, GCodeAbsoluteArcDistanceMode):
                         arc_mode = GCodeAbsoluteArcDistanceMode
+                        log.debug("ARC ABSOLUTE MODE")
 
                     if prev_postion is not None:
                         if isinstance(code, GCodeLinearMove):
                             color = (1, 1, 1)
 
-                            position = self.get_pos(line, position)
+                            position = self.get_pos(line, position, arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(code, GCodeRapidMove):
                             color = (1, 0, 0)
 
-                            position = self.get_pos(line, position)
+                            position = self.get_pos(line, position, arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
 
@@ -376,31 +383,34 @@ class Kremlin(Gtk.Box):
                     prev_postion = copy.copy(position)
 
             elif line.block.modal_params:
-                if prev_postion is not None:
-                    if isinstance(active_modal, GCodeLinearMove):
-                        color = (1, 1, 1)
-                        position = self.get_pos(line, position)
+                log.debug("MODAL_PARAM - {0}"-format(line.block.modal_params))
+                for param in line.block.gcodes:
+                    log.debug("PARAM - {0}"-format(param))
+                    if prev_postion is not None:
+                        if isinstance(active_modal, GCodeLinearMove):
+                            color = (1, 1, 1)
+                            position = self.get_pos(line, position, arc_mode)
 
-                        self.draw_line(prev_postion, position, color=color)
+                            self.draw_line(prev_postion, position, color=color)
 
-                    elif isinstance(active_modal, GCodeRapidMove):
-                        color = (1, 0, 0)
+                        elif isinstance(active_modal, GCodeRapidMove):
+                            color = (1, 0, 0)
 
-                        position = self.get_pos(line, position)
+                            position = self.get_pos(line, position, arc_mode)
 
-                        self.draw_line(prev_postion, position, color=color)
+                            self.draw_line(prev_postion, position, color=color)
+                        """
+                        elif isinstance(active_modal, GCodeArcMoveCW):
+                            color = (1, 1, 1)
 
-                    elif isinstance(active_modal, GCodeArcMoveCW):
-                        color = (1, 1, 1)
+                            position = self.get_pos(line, position, arc_mode)
+                            self.draw_arc(prev_postion, position, True)
 
-                        position = self.get_pos(line, position)
-                        self.draw_arc(prev_postion, position, True)
-
-                    elif isinstance(active_modal, GCodeArcMoveCCW):
-                        color = (1, 1, 1)
-                        position = self.get_pos(line, position)
-                        self.draw_arc(prev_postion, position, False)
-
+                        elif isinstance(active_modal, GCodeArcMoveCCW):
+                            color = (1, 1, 1)
+                            position = self.get_pos(line, position, arc_mode)
+                            self.draw_arc(prev_postion, position, False)
+                        """
                 prev_postion = copy.copy(position)
 
     def draw_axes(self, x, y, z):
@@ -439,7 +449,8 @@ class Kremlin(Gtk.Box):
         arc = Arc(point_1, point_2, r=r, cen=(i, j, k), cw=cw, arc_color=color)
         self.vtk_window.add_actor(arc)
 
-    def get_pos(self, line, position, arc_mode=GCodeAbsoluteArcDistanceMode):
+    @staticmethod
+    def get_pos(line, position, arc_mode):
 
         for code in line.block.gcodes:
 
@@ -451,22 +462,56 @@ class Kremlin(Gtk.Box):
                 position["Z"] = pos.get("Z", position["Z"])
 
             elif isinstance(code, GCodeArcMove):
-                pos = code.get_param_dict("IJKXYZ")
+                pos = code.get_param_dict("IJKRXYZ")
 
                 position["X"] = pos.get("X", position["X"])
                 position["Y"] = pos.get("Y", position["Y"])
                 position["Z"] = pos.get("Z", position["Z"])
 
-                if isinstance(arc_mode, GCodeAbsoluteArcDistanceMode):
+                if issubclass(arc_mode, GCodeAbsoluteArcDistanceMode):
+                    log.debug("ARC MOVE {0} - {1}".format("ABS", code))
 
                     position["I"] = pos.get("I")
                     position["J"] = pos.get("J", position["Y"])
+                    position["K"] = pos.get("K", position["Z"])
 
-                elif isinstance(arc_mode, GCodeIncrementalArcDistanceMode):
+                elif issubclass(arc_mode, GCodeIncrementalArcDistanceMode):
+                    log.debug("ARC MOVE {0} - {1}".format("INC", code))
 
-                    position["I"] = pos.get("I") + position["X"]
-                    position["J"] = pos.get("J") + position["Y"]
-                    position["K"] = pos.get("K") + position["Z"]
+                    if isinstance(code, GCodeArcMoveCW):
+
+                        position["I"] = pos.get("I", None) + position["X"]
+                        
+                        position["J"] = pos.get("J", None)
+
+                        if position["J"] is None:
+                            position["J"] = position["Y"]
+                        else:
+                            position["J"] += position["Y"]
+
+                        position["K"] = pos.get("K", None)
+
+                        if position["K"] is None:
+                            position["K"] = position["Z"]
+                        else:
+                            position["K"] += position["Z"]
+
+                    elif isinstance(code, GCodeArcMoveCCW):
+
+                        position["I"] = pos.get("I", None) + position["X"]
+                        position["J"] = pos.get("J", None)
+
+                        if position["J"] is None:
+                            position["J"] = position["Y"]
+                        else:
+                            position["J"] += position["Y"]
+
+                        position["K"] = pos.get("K", None)
+
+                        if position["K"] is None:
+                            position["K"] = position["Z"]
+                        else:
+                            position["K"] += position["Z"]
 
                 # position["R"] = pos.get("R")
 
