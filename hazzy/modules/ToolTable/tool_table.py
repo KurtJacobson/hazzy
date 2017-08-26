@@ -61,15 +61,17 @@ class ToolTable(Gtk.Box):
 
         box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
 
-        box.pack_start(self.toolbar, True, False, 0)
-        box.pack_start(self.treeview, True, False, 0)
+        #box.pack_start(self.toolbar, True, False, 0)
+        #box.pack_start(self.treeview, True, False, 0)
 
-        self.add(box)
+        #self.add(box)
+
+        self.add(self.treeview)
 
         self.eval = EntryEval().eval
 
         self.tool_table = os.path.join(PYDIR, 'tool.tbl')
-        print self.tool_table
+        self.load_tool_table()
         self.use_touchpad = False
 
 

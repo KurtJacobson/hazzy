@@ -2,4 +2,4 @@ name: 'Gcode View'
 module: 'gcodeview'
 class: 'GcodeViewWidget'
 image: 'gcodeview.png'
-size: [200, 250]
+size: [200, 260]

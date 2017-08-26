@@ -27,22 +27,23 @@ def ceil(f):
 
 class WidgetWindow(Gtk.Box):
 
-    def __init__(self, widget, size, label, menu_callback=None):
+    def __init__(self, widget, size, title, menu_callback=None):
         Gtk.Box.__init__(self)
 
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(PYDIR, 'ui', 'widgetwindow.ui'))
         builder.connect_signals(self)
 
-        self.menu_btn = builder.get_object('menu_button')
-        self.label = builder.get_object('label')
-        self.box = builder.get_object('box')
-        self.wwindow = builder.get_object('widgetwindow')
+        menu_btn = builder.get_object('menu_button')
+        label = builder.get_object('label')
+        box = builder.get_object('box')
+        wwindow = builder.get_object('widgetwindow')
+        self.overlay = builder.get_object('overlay')
 
+        label.set_text(title)
+        box.add(widget)
         self.set_size_request(size[0], size[1])
-        self.label.set_text(label)
-        self.box.add(widget)
-        self.add(self.wwindow)
+        self.add(wwindow)
 
         self.parent = None
         self.action = None
@@ -67,6 +68,11 @@ class WidgetWindow(Gtk.Box):
 
         self.show_all()
 
+    def show_overlay(self, setting):
+        if setting:
+            self.overlay.show()
+        else:
+            self.overlay.hide()
 
 #===================================
 #  Drag to Move / Resize

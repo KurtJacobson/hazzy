@@ -8,11 +8,26 @@
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
     <child>
-      <object class="GtkFixed" id="widget_area">
+      <object class="GtkStack">
+        <property name="name">widget_staked</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <child>
+          <object class="GtkFixed" id="widget_area">
+            <property name="name">widget_area</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <style>
+              <class name="widgetarea"/>
+            </style>
+          </object>
+          <packing>
+            <property name="name">page0</property>
+            <property name="title" translatable="yes">page0</property>
+          </packing>
+        </child>
         <style>
-          <class name="widget_area"/>
+          <class name="widget_staked"/>
         </style>
       </object>
       <packing>
@@ -42,9 +57,6 @@
         <property name="pass_through">True</property>
       </packing>
     </child>
-    <style>
-      <class name="main_window"/>
-    </style>
   </object>
   <object class="GtkHeaderBar" id="titlebar">
     <property name="visible">True</property>
@@ -75,12 +87,33 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="pixel_size">24</property>
-            <property name="icon_name">document-edit-symbolic.symbolic</property>
+            <property name="icon_name">applications-engineering</property>
           </object>
         </child>
       </object>
       <packing>
         <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkToggleButton">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="relief">none</property>
+        <property name="active">True</property>
+        <signal name="toggled" handler="on_edit_layout_toggled" swapped="no"/>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixel_size">24</property>
+            <property name="icon_name">document-edit-symbolic.symbolic</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="position">2</property>
       </packing>
     </child>
     <child>
@@ -99,7 +132,7 @@
         </child>
       </object>
       <packing>
-        <property name="position">2</property>
+        <property name="position">3</property>
       </packing>
     </child>
   </object>
