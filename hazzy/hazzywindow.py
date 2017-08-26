@@ -48,7 +48,7 @@ class HazzyWindow(Gtk.Window):
         self.add(self.hazzy_window)
         self.set_titlebar(self.titlebar)
 
-        self.widgetchooser = WidgetChooser()
+        self.widgetchooser = WidgetChooserView()
         self.iconview_scroller.add(self.widgetchooser)
 
         self.widget_data = {}
@@ -77,29 +77,38 @@ class HazzyWindow(Gtk.Window):
         widget = getattr(module, clas)
 
         wwindow = WidgetWindow(widget(), size, name)
-        self.widget_area.put(wwindow, x, y)
-
+        self.widget_area.put(wwindow, x-size[0]/2, y-size[1]/2)
 
     def get_widgets(self):
-        dir_names = os.listdir(WIDGET_DIR)
-        for dir_name in dir_names:
-            path = os.path.join(WIDGET_DIR, dir_name, 'widget.info')
+        pakages = os.listdir(WIDGET_DIR)
+        for pakage in pakages:
+            path = os.path.join(WIDGET_DIR, pakage, 'widget.info')
             info_dict = {}
             if os.path.exists(path):
                 #print "exists", path
                 with open(path, 'r') as fh:
                     lines = fh.readlines()
                 for line in lines:
+                    if line.startswith('#'):
+                        continue
                     key, value = line.split(':')
                     value = ast.literal_eval(value.strip())
                     #print key, value
                     info_dict[key] = value
-                self.widget_data[dir_name] = info_dict
+                self.widget_data[pakage] = info_dict
         return self.widget_data
 
     def on_reveal_clicked(self, button):
         reveal = self.revealer_area.get_reveal_child()
         self.revealer_area.set_reveal_child(not reveal)
+
+
+    def on_edit_layout_toggled(self, widget):
+        edit = widget.get_active()
+        # Hide eventbox used for drag/resize
+        widgets = self.widget_area.get_children()
+        for widget in widgets:
+            widget.show_overlay(edit)
 
     def add_targets(self):
         self.widget_area.drag_dest_set_target_list(None)
@@ -109,17 +118,24 @@ class HazzyWindow(Gtk.Window):
         self.widgetchooser.drag_source_add_text_targets()
 
 
-class WidgetChooser(Gtk.IconView):
+
+class WidgetChooser(Gtk.ScrolledWindow):
+    def __init__(self):
+        Gtk.ScrolledWindow.__init__(self)
+
+        pass
+
+
+
+class WidgetChooserView(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
-
-        self.set_name('widgetchooser')
 
         context = self.get_style_context()
         context.add_class("widgetchooser");
 
-        self.set_text_column(COLUMN_TEXT)
-        self.set_pixbuf_column(COLUMN_PIXBUF)
+        self.set_text_column(0)
+        self.set_pixbuf_column(1)
 
         self.set_item_width(120)
 
@@ -132,16 +148,16 @@ class WidgetChooser(Gtk.IconView):
 
     def fill(self, data):
         self.set_columns(len(data))
-        for widget, i in data.iteritems():
+        for pakage, i in data.iteritems():
             icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
             if i.get('image'):
-                path = os.path.join(WIDGET_DIR, i.get('module'), i.get('image'))
+                path = os.path.join(WIDGET_DIR, pakage, i.get('image'))
                 icon = GdkPixbuf.Pixbuf.new_from_file(path)
                 w, h = icon.get_width(), icon.get_height()
                 scale = 200 / float(w)
                 icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
             name = i.get('name')
-            self.get_model().append([name, icon, widget])
+            self.get_model().append([name, icon, pakage])
 
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
