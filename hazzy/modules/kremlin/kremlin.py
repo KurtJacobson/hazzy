@@ -383,7 +383,7 @@ class Kremlin(Gtk.Box):
                     prev_postion = copy.copy(position)
 
             elif line.block.modal_params:
-                log.debug("MODAL_PARAM - {0}"-format(line.block.modal_params))
+                log.debug("MODAL_PARAM - {0}".format(line.block.modal_params))
                 for param in line.block.gcodes:
                     log.debug("PARAM - {0}"-format(param))
                     if prev_postion is not None:
@@ -468,50 +468,50 @@ class Kremlin(Gtk.Box):
                 position["Y"] = pos.get("Y", position["Y"])
                 position["Z"] = pos.get("Z", position["Z"])
 
-                if issubclass(arc_mode, GCodeAbsoluteArcDistanceMode):
+                if isinstance(arc_mode, GCodeAbsoluteArcDistanceMode):
                     log.debug("ARC MOVE {0} - {1}".format("ABS", code))
 
                     position["I"] = pos.get("I")
                     position["J"] = pos.get("J", position["Y"])
                     position["K"] = pos.get("K", position["Z"])
 
-                elif issubclass(arc_mode, GCodeIncrementalArcDistanceMode):
+                elif isinstance(arc_mode, GCodeIncrementalArcDistanceMode):
                     log.debug("ARC MOVE {0} - {1}".format("INC", code))
 
                     if isinstance(code, GCodeArcMoveCW):
 
-                        position["I"] = pos.get("I", None) + position["X"]
-                        
-                        position["J"] = pos.get("J", None)
+                        position["I"] = pos.get("I") + position["X"]
 
-                        if position["J"] is None:
-                            position["J"] = position["Y"]
-                        else:
+                        position["J"] = pos.get("J")
+
+                        if position["J"]:
                             position["J"] += position["Y"]
-
-                        position["K"] = pos.get("K", None)
-
-                        if position["K"] is None:
-                            position["K"] = position["Z"]
                         else:
+                            position["J"] = position["Y"]
+
+                        position["K"] = pos.get("K")
+
+                        if position["K"]:
                             position["K"] += position["Z"]
+                        else:
+                            position["K"] = position["Z"]
 
                     elif isinstance(code, GCodeArcMoveCCW):
 
-                        position["I"] = pos.get("I", None) + position["X"]
-                        position["J"] = pos.get("J", None)
+                        position["I"] = pos.get("I") + position["X"]
+                        position["J"] = pos.get("J")
 
-                        if position["J"] is None:
-                            position["J"] = position["Y"]
-                        else:
+                        if position["J"]:
                             position["J"] += position["Y"]
-
-                        position["K"] = pos.get("K", None)
-
-                        if position["K"] is None:
-                            position["K"] = position["Z"]
                         else:
+                            position["J"] = position["Y"]
+
+                        position["K"] = pos.get("K")
+
+                        if position["K"]:
                             position["K"] += position["Z"]
+                        else:
+                            position["K"] = position["Z"]
 
                 # position["R"] = pos.get("R")
 
@@ -538,7 +538,7 @@ def main():
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
     kremlin.draw_tool(x=0, y=0, z=0)
-    kremlin.load_file("codes/smile.ngc")
+    kremlin.load_file("codes/vertical_slot.ngc")
     kremlin.draw_path()
     kremlin.move_tool(0, 0, 0)
 
