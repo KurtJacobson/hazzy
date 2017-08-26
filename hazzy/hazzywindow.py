@@ -17,7 +17,7 @@ from constants import Paths
 
 # Import our own modules
 from hazzy.utilities import logger
-from hazzy.modules.widgetchooser.widgetwindow import WidgetWindow
+from widgets.widgetwindow import WidgetWindow
 
 log = logger.get('HAZZY.DASHBOARD')
 
