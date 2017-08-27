@@ -443,7 +443,7 @@ class Kremlin(Gtk.Box):
 
         for code in line.block.gcodes:
 
-            if isinstance(code, GCodeLinearMove) and isinstance(code, GCodeRapidMove):
+            if isinstance(code, GCodeLinearMove) or isinstance(code, GCodeRapidMove):
                 pos = code.get_param_dict("XYZ")
 
                 position["X"] = pos.get("X", position["X"])
@@ -493,7 +493,7 @@ def main():
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
     kremlin.draw_tool(x=0, y=0, z=0)
-    kremlin.load_file("codes/smile.ngc")
+    kremlin.load_file("codes/arcs.ngc")
     kremlin.draw_path()
     kremlin.move_tool(0, 0, 0)
 
