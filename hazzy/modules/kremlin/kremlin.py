@@ -454,14 +454,14 @@ class Kremlin(Gtk.Box):
     def get_pos(line, prev_postion, position, arc_mode):
 
         for code in line.block.gcodes:
-            print code
-            print arc_mode
-            print 'GCodeLinearMove: ', isinstance(code, GCodeLinearMove)
-            print 'GCodeRapidMove: ', isinstance(code, GCodeRapidMove)
-            print 'GCodeArcMove: ', isinstance(code, GCodeArcMove)
-            print 'GCodeAbsoluteArcDistanceMode: ', isinstance(arc_mode, GCodeAbsoluteArcDistanceMode)
-            print 'GCodeIncrementalArcDistanceMode: ', isinstance(arc_mode, GCodeIncrementalArcDistanceMode)
-            print '\r\r'
+            log.debug(code)
+            log.debug(arc_mode)
+            log.debug('GCodeLinearMove: {}'.format(isinstance(code, GCodeLinearMove)))
+            log.debug('GCodeRapidMove: {}'.format(isinstance(code, GCodeRapidMove)))
+            log.debug('GCodeArcMove: {}'.format(isinstance(code, GCodeArcMove)))
+            log.debug('GCodeAbsoluteArcDistanceMode: {}'.format(isinstance(arc_mode, GCodeAbsoluteArcDistanceMode)))
+            log.debug('GCodeIncrementalArcDistanceMode: {}'.format(isinstance(arc_mode, GCodeIncrementalArcDistanceMode)))
+            log.debug('###################################################')
 
             if isinstance(code, GCodeLinearMove) or isinstance(code, GCodeRapidMove):
                 pos = code.get_param_dict("XYZ")
@@ -477,23 +477,19 @@ class Kremlin(Gtk.Box):
                 position["Y"] = pos.get("Y", position["Y"])
                 position["Z"] = pos.get("Z", position["Z"])
 
+                position["R"] = pos.get("R")
+
                 if isinstance(arc_mode, GCodeAbsoluteArcDistanceMode):
-                    log.debug("ARC MOVE {0} - {1}".format("ABS", code))
 
                     position["I"] = pos.get("I", position["X"])
                     position["J"] = pos.get("J", position["Y"])
                     position["K"] = pos.get("K", position["Z"])
 
                 elif isinstance(arc_mode, GCodeIncrementalArcDistanceMode):
-                    log.debug("ARC MOVE {0} - {1}".format("INC", code))
 
-                    if isinstance(code, GCodeArcMoveCW) or isinstance(code, GCodeArcMoveCCW):
-
-                        position["I"] = prev_postion["X"] + pos.get("I", 0)
-                        position["J"] = prev_postion["Y"] + pos.get("J", 0)
-                        position["K"] = prev_postion["Z"] + pos.get("K", 0)
-
-                # position["R"] = pos.get("R")
+                    position["I"] = prev_postion["X"] + pos.get("I", 0)
+                    position["J"] = prev_postion["Y"] + pos.get("J", 0)
+                    position["K"] = prev_postion["Z"] + pos.get("K", 0)
 
         for j, modal in enumerate(line.block.modal_params):
             if j == 1:
@@ -518,7 +514,7 @@ def main():
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
     kremlin.draw_tool(x=0, y=0, z=0)
-    kremlin.load_file("codes/smile.ngc")
+    kremlin.load_file("codes/Horse2.tap")
     kremlin.draw_path()
     kremlin.move_tool(0, 0, 0)
 
