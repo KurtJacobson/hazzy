@@ -341,7 +341,7 @@ class Kremlin(Gtk.Box):
         prev_postion = None
 
         active_modal = None
-        arc_mode = None
+        self.arc_mode = None
 
         for i, line in enumerate(self.gcode_path):
             if line.block.gcodes:
@@ -349,36 +349,36 @@ class Kremlin(Gtk.Box):
                     active_modal = code
 
                     if isinstance(code, GCodeIncrementalArcDistanceMode):
-                        arc_mode = GCodeIncrementalArcDistanceMode
+                        self.arc_mode = GCodeIncrementalArcDistanceMode()
                         log.debug("ARC INCREMENTAL MODE")
                     elif isinstance(code, GCodeAbsoluteArcDistanceMode):
-                        arc_mode = GCodeAbsoluteArcDistanceMode
+                        self.arc_mode = GCodeAbsoluteArcDistanceMode()
                         log.debug("ARC ABSOLUTE MODE")
 
                     if prev_postion is not None:
                         if isinstance(code, GCodeLinearMove):
                             color = (1, 1, 1)
 
-                            position = self.get_pos(line, position, arc_mode)
+                            position = self.get_pos(line, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(code, GCodeRapidMove):
                             color = (1, 0, 0)
 
-                            position = self.get_pos(line, position, arc_mode)
+                            position = self.get_pos(line, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(code, GCodeArcMoveCW):
                             color = (1, 1, 1)
 
-                            position = self.get_pos(line, position, arc_mode)
+                            position = self.get_pos(line, position, self.arc_mode)
                             self.draw_arc(prev_postion, position, True, color=color)
 
                         elif isinstance(code, GCodeArcMoveCCW):
                             color = (1, 1, 1)
-                            position = self.get_pos(line, position, arc_mode)
+                            position = self.get_pos(line, position, self.arc_mode)
                             self.draw_arc(prev_postion, position, False, color=color)
                     prev_postion = copy.copy(position)
 
@@ -389,14 +389,14 @@ class Kremlin(Gtk.Box):
                     if prev_postion is not None:
                         if isinstance(active_modal, GCodeLinearMove):
                             color = (1, 1, 1)
-                            position = self.get_pos(line, position, arc_mode)
+                            position = self.get_pos(line, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(active_modal, GCodeRapidMove):
                             color = (1, 0, 0)
 
-                            position = self.get_pos(line, position, arc_mode)
+                            position = self.get_pos(line, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
                         """
@@ -453,6 +453,14 @@ class Kremlin(Gtk.Box):
     def get_pos(line, position, arc_mode):
 
         for code in line.block.gcodes:
+            print code
+            print arc_mode
+            print 'GCodeLinearMove: ', isinstance(code, GCodeLinearMove)
+            print 'GCodeRapidMove: ', isinstance(code, GCodeRapidMove)
+            print 'GCodeArcMove: ', isinstance(code, GCodeArcMove)
+            print 'GCodeAbsoluteArcDistanceMode: ', isinstance(arc_mode, GCodeAbsoluteArcDistanceMode)
+            print 'GCodeIncrementalArcDistanceMode: ', isinstance(arc_mode, GCodeIncrementalArcDistanceMode)
+            print '\r\r'
 
             if isinstance(code, GCodeLinearMove) and isinstance(code, GCodeRapidMove):
                 pos = code.get_param_dict("XYZ")
