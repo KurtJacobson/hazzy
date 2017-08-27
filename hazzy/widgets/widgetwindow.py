@@ -89,7 +89,7 @@ class WidgetWindow(Gtk.Box):
             print("child rectangles = X:{0} Y:{1} H:{2} W:{3}".format(rectangle.x,
                                                                       rectangle.y,
                                                                       rectangle.height,
-                                                                      rectangle.height))
+                                                                      rectangle.width))
 
         if event.y <= 50:
             self.action = MOVE
@@ -117,8 +117,8 @@ class WidgetWindow(Gtk.Box):
             print("child rectangles = X:{0} Y:{1} H:{2} W:{3}".format(rectangle.x,
                                                                       rectangle.y,
                                                                       rectangle.height,
-                                                                      rectangle.height))
-            
+                                                                      rectangle.width))
+
         if self.action == MOVE:
             self.do_move_motion(event)
         elif self.action >= RESIZE_X:
