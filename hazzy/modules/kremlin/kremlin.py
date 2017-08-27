@@ -351,10 +351,8 @@ class Kremlin(Gtk.Box):
 
                     if isinstance(code, GCodeIncrementalArcDistanceMode):
                         self.arc_mode = GCodeIncrementalArcDistanceMode()
-                        log.debug("ARC INCREMENTAL MODE")
                     elif isinstance(code, GCodeAbsoluteArcDistanceMode):
                         self.arc_mode = GCodeAbsoluteArcDistanceMode()
-                        log.debug("ARC ABSOLUTE MODE")
 
                     if prev_postion is not None:
                         if isinstance(code, GCodeLinearMove):
@@ -375,18 +373,16 @@ class Kremlin(Gtk.Box):
                             color = (1, 1, 1)
 
                             position = self.get_pos(line, prev_postion, position, self.arc_mode)
-                            self.draw_arc(prev_postion, position, True, color=color)
+                            self.draw_arc(prev_postion, position, False, color=color)
 
                         elif isinstance(code, GCodeArcMoveCCW):
                             color = (1, 1, 1)
                             position = self.get_pos(line, prev_postion, position, self.arc_mode)
-                            self.draw_arc(prev_postion, position, False, color=color)
+                            self.draw_arc(prev_postion, position, True, color=color)
                     prev_postion = copy.copy(position)
 
             elif line.block.modal_params:
-                log.debug("MODAL_PARAM - {0}".format(line.block.modal_params))
                 for param in line.block.gcodes:
-                    log.debug("PARAM - {0}"-format(param))
                     if prev_postion is not None:
                         if isinstance(active_modal, GCodeLinearMove):
                             color = (1, 1, 1)
@@ -400,18 +396,7 @@ class Kremlin(Gtk.Box):
                             position = self.get_pos(line, prev_postion, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
-                        """
-                        elif isinstance(active_modal, GCodeArcMoveCW):
-                            color = (1, 1, 1)
 
-                            position = self.get_pos(line, prev_postion, position, arc_mode)
-                            self.draw_arc(prev_postion, position, True)
-
-                        elif isinstance(active_modal, GCodeArcMoveCCW):
-                            color = (1, 1, 1)
-                            position = self.get_pos(line, prev_postion, position, arc_mode)
-                            self.draw_arc(prev_postion, position, False)
-                        """
                 prev_postion = copy.copy(position)
 
     def draw_axes(self, x, y, z):
@@ -461,7 +446,6 @@ class Kremlin(Gtk.Box):
             log.debug('GCodeArcMove: {}'.format(isinstance(code, GCodeArcMove)))
             log.debug('GCodeAbsoluteArcDistanceMode: {}'.format(isinstance(arc_mode, GCodeAbsoluteArcDistanceMode)))
             log.debug('GCodeIncrementalArcDistanceMode: {}'.format(isinstance(arc_mode, GCodeIncrementalArcDistanceMode)))
-            log.debug('###################################################')
 
             if isinstance(code, GCodeLinearMove) or isinstance(code, GCodeRapidMove):
                 pos = code.get_param_dict("XYZ")
@@ -492,12 +476,15 @@ class Kremlin(Gtk.Box):
                     position["K"] = prev_postion["Z"] + pos.get("K", 0)
 
         for j, modal in enumerate(line.block.modal_params):
+            log.debug("MODAL_PARAM - {0}".format(modal))
             if j == 1:
                 position["X"] = modal.value
             elif j == 2:
                 position["Y"] = modal.value
             elif j == 3:
                 position["Z"] = modal.value
+
+        log.debug('###################################################')
 
         return position
 
@@ -514,7 +501,7 @@ def main():
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
     kremlin.draw_tool(x=0, y=0, z=0)
-    kremlin.load_file("codes/Horse2.tap")
+    kremlin.load_file("codes/Smiley001.nc")
     kremlin.draw_path()
     kremlin.move_tool(0, 0, 0)
 
