@@ -19,7 +19,6 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-# Temporary, for silly people who don't use an IDE
 import os
 import sys
 
