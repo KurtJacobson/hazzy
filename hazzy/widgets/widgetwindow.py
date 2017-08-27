@@ -111,13 +111,16 @@ class WidgetWindow(Gtk.Box):
 
         self.parent = self.get_parent()
 
+        prev_rectangle = None
+
         for child in self.parent.get_children():
             rectangle = child.get_allocation()
 
-            print("child rectangles = X:{0} Y:{1} H:{2} W:{3}".format(rectangle.x,
-                                                                      rectangle.y,
-                                                                      rectangle.height,
-                                                                      rectangle.width))
+            if prev_rectangle is not None:
+                if prev_rectangle.intersect(rectangle)[0]:
+                    print("WAIT COLLISION ALERT")
+
+            prev_rectangle = rectangle
 
         if self.action == MOVE:
             self.do_move_motion(event)
