@@ -109,20 +109,11 @@ class WidgetWindow(Gtk.Box):
 
     def on_drag_motion(self, widget, event):
 
-        my_rectangle = self.get_allocation()
 
-        for child in self.parent.get_children():
-            if child == self:
-                continue
-            rectangle = child.get_allocation()
-
-            if my_rectangle.intersect(rectangle)[0]:
-                print("WAIT COLLISION ALERT")
-            else:
-                if self.action == MOVE:
-                    self.do_move_motion(event)
-                elif self.action >= RESIZE_X:
-                    self.do_resize_motion(event)
+        if self.action == MOVE:
+            self.do_move_motion(event)
+        elif self.action >= RESIZE_X:
+            self.do_resize_motion(event)
 
 
     def on_drag_end(self, widget, event):
@@ -156,11 +147,26 @@ class WidgetWindow(Gtk.Box):
 
 
     def do_move_motion(self, event):
+
         dx = event.x_root - self.initial_x
         dy = event.y_root - self.initial_y
 
         x = self.initial_pos_x + max(min(dx, self.dx_max), -self.initial_pos_x)
         y = self.initial_pos_y + max(min(dy, self.dy_max), -self.initial_pos_y)
+
+        my_rectangle = self.get_allocation()
+
+        for child in self.parent.get_children():
+            if child != self:
+                rectangle = child.get_allocation()
+                if my_rectangle.intersect(rectangle)[0]:
+                    width_exceded = my_rectangle.intersect(rectangle)[1].width
+                    height_exceded = my_rectangle.intersect(rectangle)[1].height
+
+                    if width_exceded > height_exceded:
+                        x += width_exceded
+                    else:
+                        y += height_exceded
 
         self.parent.child_set_property(self, 'x', x)
         self.parent.child_set_property(self, 'y', y)
