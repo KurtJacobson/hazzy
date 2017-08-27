@@ -109,23 +109,20 @@ class WidgetWindow(Gtk.Box):
 
     def on_drag_motion(self, widget, event):
 
-        self.parent = self.get_parent()
-
-        prev_rectangle = None
+        my_rectangle = self.get_allocation()
 
         for child in self.parent.get_children():
+            if child == self:
+                continue
             rectangle = child.get_allocation()
 
-            if prev_rectangle is not None:
-                if prev_rectangle.intersect(rectangle)[0]:
-                    print("WAIT COLLISION ALERT")
-
-            prev_rectangle = rectangle
-
-        if self.action == MOVE:
-            self.do_move_motion(event)
-        elif self.action >= RESIZE_X:
-            self.do_resize_motion(event)
+            if my_rectangle.intersect(rectangle)[0]:
+                print("WAIT COLLISION ALERT")
+            else:
+                if self.action == MOVE:
+                    self.do_move_motion(event)
+                elif self.action >= RESIZE_X:
+                    self.do_resize_motion(event)
 
 
     def on_drag_end(self, widget, event):
