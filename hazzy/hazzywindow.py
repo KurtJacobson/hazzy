@@ -17,16 +17,12 @@ from constants import Paths
 
 # Import our own modules
 from hazzy.utilities import logger
-from widgets.widgetwindow import WidgetWindow
+from widgets.widget_window import WidgetWindow
+from widgets.widget_area import WidgetArea
+from widgets.widget_manager import WidgetManager
+from widgets.widget_chooser import WidgetChooser
 
 log = logger.get('HAZZY.DASHBOARD')
-
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '..'))
-WIDGET_DIR = os.path.join(HAZZYDIR, 'hazzy/modules')
-
-(TARGET_ENTRY_TEXT, TARGET_ENTRY_PIXBUF) = range(2)
-(COLUMN_TEXT, COLUMN_PIXBUF) = range(2)
 
 
 class HazzyWindow(Gtk.Window):
@@ -40,7 +36,7 @@ class HazzyWindow(Gtk.Window):
 
         self.hazzy_window = self.builder.get_object('hazzy_window')
         self.titlebar = self.builder.get_object('titlebar')
-        self.widget_area = self.builder.get_object('widget_area')
+        self.widget_stack = self.builder.get_object('widget_stack')
         self.revealer_area = self.builder.get_object('revealer_area')
 
         self.iconview_scroller = self.builder.get_object('iconview_scroller')
@@ -48,65 +44,14 @@ class HazzyWindow(Gtk.Window):
         self.add(self.hazzy_window)
         self.set_titlebar(self.titlebar)
 
-        self.widgetchooser = WidgetChooserView()
-        self.iconview_scroller.add(self.widgetchooser)
+        self.iconview_scroller.add(WidgetChooser())
 
-        self.widget_data = {}
-
-        self.widgetchooser.fill(self.get_widgets())
-
-        self.widget_area.drag_dest_set(Gtk.DestDefaults.ALL, [], Gdk.DragAction.COPY)
-        self.widget_area.connect("drag-data-received", self.on_drag_data_received)
-        self.add_targets()
+        self.widget_area = WidgetArea()
+        self.widget_stack.add_named(self.widget_area, 'Page 1')
+        self.widget_stack.set_visible_child_name('Page 1')
 
         self.set_size_request(900, 600)
         self.show_all()
-
-
-    def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
-
-        pakage = data.get_text()
-
-        info = self.widget_data[pakage]
-        name = info.get('name')
-        module = info.get('module')
-        clas = info.get('class')
-        size = info.get('size')
-
-        module = importlib.import_module('.' + module, 'hazzy.modules.' + pakage)
-        widget = getattr(module, clas)
-
-        # Snap to grid
-        x = int(round(float(x - size[0]/2) / 20)) * 20
-        y = int(round(float(y - size[1]/2) / 20)) * 20
-        print x, y
-
-        # Snap to 20 x 20 px grid
-        w = int(round(float(size[0]) / 20)) * 20
-        h = int(round(float(size[1]) / 20)) * 20
-        print w, h
-
-        wwindow = WidgetWindow(widget(), [w, h], name)
-        self.widget_area.put(wwindow, x, y)
-
-    def get_widgets(self):
-        pakages = os.listdir(WIDGET_DIR)
-        for pakage in pakages:
-            path = os.path.join(WIDGET_DIR, pakage, 'widget.info')
-            info_dict = {}
-            if os.path.exists(path):
-                #print "exists", path
-                with open(path, 'r') as fh:
-                    lines = fh.readlines()
-                for line in lines:
-                    if line.startswith('#'):
-                        continue
-                    key, value = line.split(':')
-                    value = ast.literal_eval(value.strip())
-                    #print key, value
-                    info_dict[key] = value
-                self.widget_data[pakage] = info_dict
-        return self.widget_data
 
     def on_reveal_clicked(self, button):
         reveal = self.revealer_area.get_reveal_child()
@@ -119,56 +64,3 @@ class HazzyWindow(Gtk.Window):
         for widget in widgets:
             widget.show_overlay(edit)
 
-    def add_targets(self):
-        self.widget_area.drag_dest_set_target_list(None)
-        self.widgetchooser.drag_source_set_target_list(None)
-
-        self.widget_area.drag_dest_add_text_targets()
-        self.widgetchooser.drag_source_add_text_targets()
-
-
-class WidgetChooser(Gtk.ScrolledWindow):
-    def __init__(self):
-        Gtk.ScrolledWindow.__init__(self)
-        pass
-
-
-class WidgetChooserView(Gtk.IconView):
-    def __init__(self):
-        Gtk.IconView.__init__(self)
-
-        context = self.get_style_context()
-        context.add_class("widget_chooser");
-
-        self.set_text_column(0)
-        self.set_pixbuf_column(1)
-
-        self.set_item_width(120)
-
-        model = Gtk.ListStore(str, GdkPixbuf.Pixbuf, str)
-        self.set_model(model)
-
-        self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY)
-        self.connect("drag-data-get", self.on_drag_data_get)
-
-
-    def fill(self, data):
-        self.set_columns(len(data))
-        for pakage, i in data.iteritems():
-            icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
-            if i.get('image'):
-                path = os.path.join(WIDGET_DIR, pakage, i.get('image'))
-                if os.path.exists(path):
-                    icon = GdkPixbuf.Pixbuf.new_from_file(path)
-                    w, h = icon.get_width(), icon.get_height()
-                    scale = 200 / float(w)
-                    icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
-            name = i.get('name')
-            self.get_model().append([name, icon, pakage])
-
-
-    def on_drag_data_get(self, widget, drag_context, data, info, time):
-        selected_path = self.get_selected_items()[0]
-        selected_iter = self.get_model().get_iter(selected_path)
-        text = self.get_model().get_value(selected_iter, 2)
-        data.set_text(text, -1)

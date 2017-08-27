@@ -8,23 +8,12 @@
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
     <child>
-      <object class="GtkStack">
+      <object class="GtkStack" id="widget_stack">
         <property name="name">widget_staked</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>
-          <object class="GtkFixed" id="widget_area">
-            <property name="name">widget_area</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <style>
-              <class name="widgetarea"/>
-            </style>
-          </object>
-          <packing>
-            <property name="name">page0</property>
-            <property name="title" translatable="yes">page0</property>
-          </packing>
+          <placeholder/>
         </child>
         <style>
           <class name="widget_staked"/>

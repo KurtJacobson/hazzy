@@ -1,2 +1,5 @@
 __init__.pyc
-widgetchooser.pyc
+widget_area.pyc
+widget_window.pyc
+widget_chooser.pyc
+widget_manager.pyc
