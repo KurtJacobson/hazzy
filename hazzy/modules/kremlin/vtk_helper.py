@@ -9,7 +9,7 @@ Published under the GNU General Public License, see http://www.gnu.org/licenses/
 import math
 
 from vtk.vtkCommonComputationalGeometryPython import vtkParametricSuperToroid
-from vtk.vtkCommonCorePython import vtkPoints, vtkUnsignedCharArray, VTK_MAJOR_VERSION
+from vtk.vtkCommonCorePython import vtkPoints, vtkUnsignedCharArray
 from vtk.vtkCommonDataModelPython import vtkCellArray, vtkLine, vtkPolyData, vtkTriangle, vtkVertex
 from vtk.vtkCommonTransformsPython import vtkTransform
 from vtk.vtkFiltersCorePython import vtkTubeFilter
@@ -17,7 +17,6 @@ from vtk.vtkFiltersGeneralPython import vtkTransformPolyDataFilter, vtkAxes
 from vtk.vtkFiltersSourcesPython import vtkConeSource, vtkSphereSource, vtkCubeSource, vtkLineSource, vtkCylinderSource, \
     vtkPointSource, vtkArrowSource, vtkParametricFunctionSource, vtkPlaneSource, vtkArcSource
 from vtk.vtkRenderingCorePython import vtkActor, vtkFollower, vtkPolyDataMapper, vtkTextActor
-
 # color definitions
 from vtk.vtkRenderingFreeTypePython import vtkVectorText
 

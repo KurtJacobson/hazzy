@@ -19,11 +19,10 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import os
-import sys
-
 import copy
 import gi
+import os
+import sys
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -45,7 +44,6 @@ HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
-from constants import Paths
 from hazzy.utilities import logger
 
 from hazzy.modules.pygcode import Line as GLine
@@ -483,6 +481,8 @@ class Kremlin(Gtk.Box):
             elif j == 3:
                 position["Z"] = modal.value
 
+        log.debug(position)
+
         log.debug('###################################################')
 
         return position
@@ -500,7 +500,7 @@ def main():
     kremlin = Kremlin()
     kremlin.draw_axes(x=0, y=0, z=0)
     kremlin.draw_tool(x=0, y=0, z=0)
-    kremlin.load_file("codes/Smiley001.nc")
+    kremlin.load_file("codes/hazzy.ngc")
     kremlin.draw_path()
     kremlin.move_tool(0, 0, 0)
 
