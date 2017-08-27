@@ -321,6 +321,7 @@ class Kremlin(Gtk.Box):
         self.gcode_path = []
 
         self.tool = None
+        self.arc_mode = None
 
     def load_file(self, ngc_filename):
         buf_size = 65536
@@ -341,7 +342,7 @@ class Kremlin(Gtk.Box):
         prev_postion = None
 
         active_modal = None
-        self.arc_mode = None
+        # arc_mode = None
 
         for i, line in enumerate(self.gcode_path):
             if line.block.gcodes:
