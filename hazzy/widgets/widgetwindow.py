@@ -83,6 +83,14 @@ class WidgetWindow(Gtk.Box):
         w = widget.get_allocation().width
         h = widget.get_allocation().height
 
+        for child in self.parent.get_children():
+            rectangle = child.get_allocation()
+
+            print("child rectangles = X:{0} Y:{1} H:{2} W:{3}".format(rectangle.x,
+                                                                      rectangle.y,
+                                                                      rectangle.height,
+                                                                      rectangle.height))
+
         if event.y <= 50:
             self.action = MOVE
             self.do_move_begin(event)
@@ -100,6 +108,17 @@ class WidgetWindow(Gtk.Box):
 
 
     def on_drag_motion(self, widget, event):
+
+        self.parent = self.get_parent()
+
+        for child in self.parent.get_children():
+            rectangle = child.get_allocation()
+
+            print("child rectangles = X:{0} Y:{1} H:{2} W:{3}".format(rectangle.x,
+                                                                      rectangle.y,
+                                                                      rectangle.height,
+                                                                      rectangle.height))
+            
         if self.action == MOVE:
             self.do_move_motion(event)
         elif self.action >= RESIZE_X:

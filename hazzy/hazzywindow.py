@@ -79,12 +79,12 @@ class HazzyWindow(Gtk.Window):
         # Snap to grid
         x = int(round(float(x - size[0]/2) / 20)) * 20
         y = int(round(float(y - size[1]/2) / 20)) * 20
-        print x, y
+        print(x, y)
 
         # Snap to 20 x 20 px grid
         w = int(round(float(size[0]) / 20)) * 20
         h = int(round(float(size[1]) / 20)) * 20
-        print w, h
+        print(w, h)
 
         wwindow = WidgetWindow(widget(), [w, h], name)
         self.widget_area.put(wwindow, x, y)
@@ -138,7 +138,7 @@ class WidgetChooserView(Gtk.IconView):
         Gtk.IconView.__init__(self)
 
         context = self.get_style_context()
-        context.add_class("widget_chooser");
+        context.add_class("widget_chooser")
 
         self.set_text_column(0)
         self.set_pixbuf_column(1)
