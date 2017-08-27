@@ -360,26 +360,26 @@ class Kremlin(Gtk.Box):
                         if isinstance(code, GCodeLinearMove):
                             color = (1, 1, 1)
 
-                            position = self.get_pos(line, position, self.arc_mode)
+                            position = self.get_pos(line, prev_postion, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(code, GCodeRapidMove):
                             color = (1, 0, 0)
 
-                            position = self.get_pos(line, position, self.arc_mode)
+                            position = self.get_pos(line, prev_postion, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(code, GCodeArcMoveCW):
                             color = (1, 1, 1)
 
-                            position = self.get_pos(line, position, self.arc_mode)
+                            position = self.get_pos(line, prev_postion, position, self.arc_mode)
                             self.draw_arc(prev_postion, position, True, color=color)
 
                         elif isinstance(code, GCodeArcMoveCCW):
                             color = (1, 1, 1)
-                            position = self.get_pos(line, position, self.arc_mode)
+                            position = self.get_pos(line, prev_postion, position, self.arc_mode)
                             self.draw_arc(prev_postion, position, False, color=color)
                     prev_postion = copy.copy(position)
 
@@ -390,26 +390,26 @@ class Kremlin(Gtk.Box):
                     if prev_postion is not None:
                         if isinstance(active_modal, GCodeLinearMove):
                             color = (1, 1, 1)
-                            position = self.get_pos(line, position, self.arc_mode)
+                            position = self.get_pos(line, prev_postion, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
 
                         elif isinstance(active_modal, GCodeRapidMove):
                             color = (1, 0, 0)
 
-                            position = self.get_pos(line, position, self.arc_mode)
+                            position = self.get_pos(line, prev_postion, position, self.arc_mode)
 
                             self.draw_line(prev_postion, position, color=color)
                         """
                         elif isinstance(active_modal, GCodeArcMoveCW):
                             color = (1, 1, 1)
 
-                            position = self.get_pos(line, position, arc_mode)
+                            position = self.get_pos(line, prev_postion, position, arc_mode)
                             self.draw_arc(prev_postion, position, True)
 
                         elif isinstance(active_modal, GCodeArcMoveCCW):
                             color = (1, 1, 1)
-                            position = self.get_pos(line, position, arc_mode)
+                            position = self.get_pos(line, prev_postion, position, arc_mode)
                             self.draw_arc(prev_postion, position, False)
                         """
                 prev_postion = copy.copy(position)
@@ -451,7 +451,7 @@ class Kremlin(Gtk.Box):
         self.vtk_window.add_actor(arc)
 
     @staticmethod
-    def get_pos(line, position, arc_mode):
+    def get_pos(line, prev_postion, position, arc_mode):
 
         for code in line.block.gcodes:
             print code
@@ -463,7 +463,7 @@ class Kremlin(Gtk.Box):
             print 'GCodeIncrementalArcDistanceMode: ', isinstance(arc_mode, GCodeIncrementalArcDistanceMode)
             print '\r\r'
 
-            if isinstance(code, GCodeLinearMove) and isinstance(code, GCodeRapidMove):
+            if isinstance(code, GCodeLinearMove) or isinstance(code, GCodeRapidMove):
                 pos = code.get_param_dict("XYZ")
 
                 position["X"] = pos.get("X", position["X"])
@@ -480,47 +480,18 @@ class Kremlin(Gtk.Box):
                 if isinstance(arc_mode, GCodeAbsoluteArcDistanceMode):
                     log.debug("ARC MOVE {0} - {1}".format("ABS", code))
 
-                    position["I"] = pos.get("I")
+                    position["I"] = pos.get("I", position["X"])
                     position["J"] = pos.get("J", position["Y"])
                     position["K"] = pos.get("K", position["Z"])
 
                 elif isinstance(arc_mode, GCodeIncrementalArcDistanceMode):
                     log.debug("ARC MOVE {0} - {1}".format("INC", code))
 
-                    if isinstance(code, GCodeArcMoveCW):
+                    if isinstance(code, GCodeArcMoveCW) or isinstance(code, GCodeArcMoveCCW):
 
-                        position["I"] = pos.get("I") + position["X"]
-
-                        position["J"] = pos.get("J")
-
-                        if position["J"]:
-                            position["J"] += position["Y"]
-                        else:
-                            position["J"] = position["Y"]
-
-                        position["K"] = pos.get("K")
-
-                        if position["K"]:
-                            position["K"] += position["Z"]
-                        else:
-                            position["K"] = position["Z"]
-
-                    elif isinstance(code, GCodeArcMoveCCW):
-
-                        position["I"] = pos.get("I") + position["X"]
-                        position["J"] = pos.get("J")
-
-                        if position["J"]:
-                            position["J"] += position["Y"]
-                        else:
-                            position["J"] = position["Y"]
-
-                        position["K"] = pos.get("K")
-
-                        if position["K"]:
-                            position["K"] += position["Z"]
-                        else:
-                            position["K"] = position["Z"]
+                        position["I"] = prev_postion["X"] + pos.get("I", 0)
+                        position["J"] = prev_postion["Y"] + pos.get("J", 0)
+                        position["K"] = prev_postion["Z"] + pos.get("K", 0)
 
                 # position["R"] = pos.get("R")
 
