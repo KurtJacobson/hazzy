@@ -17,13 +17,20 @@ class WidgetStack(Gtk.Stack):
     def __init__(self):
         Gtk.Stack.__init__(self)
 
-        self.set_homogenious(True)
+        # Add style class
+        context = self.get_style_context()
+        context.add_class("widget_stack")
+
+        self.set_homogeneous(True)
+
+        self.show_all()
 
 
-    def add_by_name(self, name):
-        pass
+    def add_screen(self, screen, name):
+        self.add_named(screen, name)
+        self.show_all()
 
 
-    def show_child(self, name):
+    def show_screen(self, name):
         self.set_visible_child_name(name)
 

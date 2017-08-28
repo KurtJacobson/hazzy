@@ -16,11 +16,12 @@ from gi.repository import GdkPixbuf
 from constants import Paths
 
 # Import our own modules
-from hazzy.utilities import logger
-from widgets.widget_window import WidgetWindow
-from widgets.widget_area import WidgetArea
 from widgets.widget_manager import WidgetManager
 from widgets.widget_chooser import WidgetChooser
+from widgets.widget_window import WidgetWindow
+from widgets.widget_stack import WidgetStack
+from widgets.widget_area import WidgetArea
+from hazzy.utilities import logger
 
 log = logger.get('HAZZY.DASHBOARD')
 
@@ -36,19 +37,21 @@ class HazzyWindow(Gtk.Window):
 
         self.hazzy_window = self.builder.get_object('hazzy_window')
         self.titlebar = self.builder.get_object('titlebar')
-        self.widget_stack = self.builder.get_object('widget_stack')
         self.revealer_area = self.builder.get_object('revealer_area')
-
         self.iconview_scroller = self.builder.get_object('iconview_scroller')
+
         self.builder.connect_signals(self)
         self.add(self.hazzy_window)
         self.set_titlebar(self.titlebar)
 
-        self.iconview_scroller.add(WidgetChooser())
+        self.widget_chooser = WidgetChooser()
+        self.iconview_scroller.add(self.widget_chooser)
 
-        self.widget_area = WidgetArea()
-        self.widget_stack.add_named(self.widget_area, 'Page 1')
-        self.widget_stack.set_visible_child_name('Page 1')
+        self.widget_stack = WidgetStack()
+        self.hazzy_window.add(self.widget_stack)
+
+        self.widget_stack.add_screen(WidgetArea(), 'Screen 1')
+        self.widget_stack.show_screen('Screen 1')
 
         self.set_size_request(900, 600)
         self.show_all()
@@ -60,7 +63,8 @@ class HazzyWindow(Gtk.Window):
     def on_edit_layout_toggled(self, widget):
         edit = widget.get_active()
         # Hide eventbox used for drag/resize
-        widgets = self.widget_area.get_children()
-        for widget in widgets:
-            widget.show_overlay(edit)
-
+        screens = self.widget_stack.get_children()
+        for screen in screens:
+            widgets = screen.get_children()
+            for widget in widgets:
+                widget.show_overlay(edit)
