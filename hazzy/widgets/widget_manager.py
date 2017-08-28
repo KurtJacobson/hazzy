@@ -32,10 +32,11 @@ class WidgetManager:
         name = info.get('name')
         module = info.get('module')
         clas = info.get('class')
-        size = info.get('size')
+        size = info.get('size', [0, 0])
 
         module = importlib.import_module('.' + module, 'hazzy.modules.' + pakage)
         widget = getattr(module, clas)
+
         return widget(), name, size
 
 
@@ -45,7 +46,6 @@ class WidgetManager:
             path = os.path.join(WIDGET_DIR, pakage, 'widget.info')
             info_dict = {}
             if os.path.exists(path):
-                #print "exists", path
                 with open(path, 'r') as fh:
                     lines = fh.readlines()
                 for line in lines:
@@ -53,7 +53,6 @@ class WidgetManager:
                         continue
                     key, value = line.split(':')
                     value = ast.literal_eval(value.strip())
-                    #print key, value
                     info_dict[key] = value
                 self.widget_data[pakage] = info_dict
         return self.widget_data

@@ -54,18 +54,45 @@ class WidgetArea(Gtk.Fixed):
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
         pakage = data.get_text()
 
-        widget, name, size = self.widget_manager.get_widget(pakage)
+        widget, title, size = self.widget_manager.get_widget(pakage)
+        min_size = widget.get_preferred_size()[0]
+        min_w, min_h = min_size.width, min_size.height
+
+        w = max(size[0], min_w)
+        h = max(size[1], min_h)
+        x = x - w / 2
+        y = y - h / 2
+
+        wwindow = WidgetWindow(widget, title)
+        self.put(wwindow, x, y)
+        wwindow.set_size_request(w, h)
+        self.snap_to_grid(wwindow)
+
+
+    def snap_to_grid(self, widget):
+
+        x = self.child_get_property(widget, 'x')
+        y = self.child_get_property(widget, 'y')
+        w = widget.get_size_request().width
+        h = widget.get_size_request().height
 
         # Snap to grid
-        x = int(round(float(x - size[0]/2) / 20)) * 20
-        y = int(round(float(y - size[1]/2) / 20)) * 20
+        x = int(round(float(x) / GRID_SIZE)) * GRID_SIZE
+        y = int(round(float(y) / GRID_SIZE)) * GRID_SIZE
+        print x, y
+        self.child_set_property(widget, 'x', x)
+        self.child_set_property(widget, 'y', y)
 
-        # Snap to 20 x 20 px grid
-        w = int(round(float(size[0]) / 20)) * 20
-        h = int(round(float(size[1]) / 20)) * 20
+        w = int(round(float(w) / GRID_SIZE)) * GRID_SIZE
+        h = int(round(float(h) / GRID_SIZE)) * GRID_SIZE
+        print w, h
+        widget.set_size_request(w, h)
 
-        wwindow = WidgetWindow(widget, [w, h], name)
-        self.put(wwindow, x, y)
+
+    def put_widget(self, widget, x, y, w, h):
+        self.put(widget, x, y)
+        widget.set_size_request(w, h)
+
 
 #===================================
 #  Child Drag Move

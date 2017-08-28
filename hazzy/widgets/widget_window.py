@@ -23,7 +23,7 @@ RESIZE_XY = 3
 
 class WidgetWindow(Gtk.Box):
 
-    def __init__(self, widget, size, title, menu_callback=None):
+    def __init__(self, widget, title, menu_callback=None):
         Gtk.Box.__init__(self)
 
         builder = Gtk.Builder()
@@ -38,7 +38,7 @@ class WidgetWindow(Gtk.Box):
 
         label.set_text(title)
         box.add(widget)
-        self.set_size_request(size[0], size[1])
+
         self.add(wwindow)
 
         if menu_callback:
