@@ -12,11 +12,9 @@ from gi.repository import Gdk
 from constants import Paths
 
 # Import our own modules
-from widgets.widget_manager import WidgetManager
 from widgets.widget_chooser import WidgetChooser
 from widgets.screen_chooser import ScreenChooser
-from widgets.widget_window import WidgetWindow
-from widgets.widget_stack import WidgetStack
+from widgets.screen_stack import ScreenStack
 from widgets.widget_area import WidgetArea
 
 
@@ -35,8 +33,8 @@ class HazzyWindow(Gtk.Window):
         self.overlay = Gtk.Overlay()
         self.add(self.overlay)
 
-        self.widget_stack = WidgetStack()
-        self.overlay.add(self.widget_stack)
+        self.screen_stack = ScreenStack()
+        self.overlay.add(self.screen_stack)
 
         self.widget_chooser = WidgetChooser()
         self.overlay.add_overlay(self.widget_chooser)
@@ -45,8 +43,8 @@ class HazzyWindow(Gtk.Window):
         self.screen_chooser = ScreenChooser()
         self.overlay.add_overlay(self.screen_chooser)
 
-        self.widget_stack.add_screen(WidgetArea(), 'Screen 1')
-        self.widget_stack.show_screen('Screen 1')
+        self.screen_stack.add_screen(WidgetArea(), 'Screen 1')
+        self.screen_stack.show_screen('Screen 1')
 
         self.set_size_request(900, 600)
         self.show_all()
@@ -62,7 +60,7 @@ class HazzyWindow(Gtk.Window):
     def on_edit_layout_toggled(self, widget):
         edit = widget.get_active()
         # Hide eventbox used for drag/resize
-        screens = self.widget_stack.get_children()
+        screens = self.screen_stack.get_children()
         for screen in screens:
             widgets = screen.get_children()
             for widget in widgets:

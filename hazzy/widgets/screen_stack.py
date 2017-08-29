@@ -13,7 +13,7 @@ from gi.repository import Gdk
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 
 
-class WidgetStack(Gtk.Stack):
+class ScreenStack(Gtk.Stack):
     def __init__(self):
         Gtk.Stack.__init__(self)
 

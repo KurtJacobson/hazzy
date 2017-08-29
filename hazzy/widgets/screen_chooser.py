@@ -27,7 +27,7 @@ class ScreenChooser(Gtk.Revealer):
         self.set_valign(Gtk.Align.CENTER)
         self.set_halign(Gtk.Align.CENTER)
 
-        view = WidgetView()
+        view = ScreenView()
         self.add(view)
 
     def get_visible(self):
@@ -45,11 +45,16 @@ class ScreenView(Gtk.IconView):
         context = self.get_style_context()
         context.add_class("widget_chooser")
 
+        self.connect('item-activated', self.on_screen_clicked)
+        self.set_activate_on_single_click(True)
+
         self.set_text_column(0)
         self.set_pixbuf_column(1)
 
         self.set_columns(3)
         self.set_item_width(120)
+
+        self.do_unselect_all(self)
 
         model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
         self.set_model(model)
@@ -63,8 +68,11 @@ class ScreenView(Gtk.IconView):
         for name in names:
             self.get_model().append([name, icon])
 
-    def on_drag_data_get(self, widget, drag_context, data, info, time):
-        selected_path = self.get_selected_items()[0]
-        selected_iter = self.get_model().get_iter(selected_path)
-        text = self.get_model().get_value(selected_iter, 2)
-        data.set_text(text, -1)
+        icon = Gtk.IconTheme.get_default().load_icon('list-add', 100, 0)
+        self.get_model().append(['Add Screen', icon])
+
+    def on_screen_clicked(self, widget, path):
+        text = self.get_model()[path][0]
+        print text
+        if text == "Add Screen":
+            pass

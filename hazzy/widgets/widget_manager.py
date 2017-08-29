@@ -23,6 +23,7 @@ class WidgetManager:
     def __init__(self):
 
         self.widget_data = {}
+        self.widget_positions = {}
         self.get_widgets()
 
 
@@ -56,3 +57,7 @@ class WidgetManager:
                     info_dict[key] = value
                 self.widget_data[pakage] = info_dict
         return self.widget_data
+
+
+    def record_position(self, screen, widget, x, y, w, h):
+        pass
