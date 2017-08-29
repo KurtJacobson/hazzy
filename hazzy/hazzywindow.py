@@ -2,28 +2,22 @@
 
 import os
 import gi
-import ast
-import importlib
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
-from gi.repository import GObject
-from gi.repository import GdkPixbuf
 
 from constants import Paths
 
 # Import our own modules
 from widgets.widget_manager import WidgetManager
 from widgets.widget_chooser import WidgetChooser
+from widgets.screen_chooser import ScreenChooser
 from widgets.widget_window import WidgetWindow
 from widgets.widget_stack import WidgetStack
 from widgets.widget_area import WidgetArea
-from hazzy.utilities import logger
-
-log = logger.get('HAZZY.DASHBOARD')
 
 
 class HazzyWindow(Gtk.Window):
@@ -46,6 +40,10 @@ class HazzyWindow(Gtk.Window):
 
         self.widget_chooser = WidgetChooser()
         self.overlay.add_overlay(self.widget_chooser)
+        self.overlay.set_overlay_pass_through(self.widget_chooser, True)
+
+        self.screen_chooser = ScreenChooser()
+        self.overlay.add_overlay(self.screen_chooser)
 
         self.widget_stack.add_screen(WidgetArea(), 'Screen 1')
         self.widget_stack.show_screen('Screen 1')
@@ -53,9 +51,13 @@ class HazzyWindow(Gtk.Window):
         self.set_size_request(900, 600)
         self.show_all()
 
-    def on_reveal_clicked(self, button):
+    def on_show_widget_choser_clicked(self, widget):
         visible = self.widget_chooser.get_visible()
         self.widget_chooser.set_visible(not visible)
+
+    def on_show_screen_choser_clicked(self, widget):
+        visible = self.screen_chooser.get_visible()
+        self.screen_chooser.set_visible(not visible)
 
     def on_edit_layout_toggled(self, widget):
         edit = widget.get_active()

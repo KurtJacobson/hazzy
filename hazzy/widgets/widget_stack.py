@@ -28,7 +28,6 @@ class WidgetStack(Gtk.Stack):
 
     def add_screen(self, screen, name):
         self.add_named(screen, name)
-        self.show_all()
 
 
     def show_screen(self, name):
