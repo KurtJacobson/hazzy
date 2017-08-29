@@ -35,20 +35,17 @@ class HazzyWindow(Gtk.Window):
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
 
-        self.hazzy_window = self.builder.get_object('hazzy_window')
         self.titlebar = self.builder.get_object('titlebar')
-        self.revealer_area = self.builder.get_object('revealer_area')
-        self.iconview_scroller = self.builder.get_object('iconview_scroller')
-
-        self.builder.connect_signals(self)
-        self.add(self.hazzy_window)
         self.set_titlebar(self.titlebar)
 
-        self.widget_chooser = WidgetChooser()
-        self.iconview_scroller.add(self.widget_chooser)
+        self.overlay = Gtk.Overlay()
+        self.add(self.overlay)
 
         self.widget_stack = WidgetStack()
-        self.hazzy_window.add(self.widget_stack)
+        self.overlay.add(self.widget_stack)
+
+        self.widget_chooser = WidgetChooser()
+        self.overlay.add_overlay(self.widget_chooser)
 
         self.widget_stack.add_screen(WidgetArea(), 'Screen 1')
         self.widget_stack.show_screen('Screen 1')
@@ -57,8 +54,8 @@ class HazzyWindow(Gtk.Window):
         self.show_all()
 
     def on_reveal_clicked(self, button):
-        reveal = self.revealer_area.get_reveal_child()
-        self.revealer_area.set_reveal_child(not reveal)
+        visible = self.widget_chooser.get_visible()
+        self.widget_chooser.set_visible(not visible)
 
     def on_edit_layout_toggled(self, widget):
         edit = widget.get_active()

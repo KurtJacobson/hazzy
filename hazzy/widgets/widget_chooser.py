@@ -19,7 +19,31 @@ HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 WIDGET_DIR = os.path.join(HAZZYDIR, 'hazzy/modules')
 
 
-class WidgetChooser(Gtk.IconView):
+class WidgetChooser(Gtk.Revealer):
+    def __init__(self):
+        Gtk.Revealer.__init__(self)
+
+        self.set_reveal_child(False)
+        self.set_valign(Gtk.Align.START)
+
+        # Scrolled Window
+        self.scrolled = Gtk.ScrolledWindow()
+        self.scrolled.set_propagate_natural_height(True)
+        self.scrolled.set_overlay_scrolling(False)
+        self.scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
+
+        view = WidgetView()
+        self.scrolled.add(view)
+        self.add(self.scrolled)
+
+    def get_visible(self):
+        return self.get_reveal_child()
+
+    def set_visible(self, visible):
+        self.set_reveal_child(visible)
+
+
+class WidgetView(Gtk.IconView):
     def __init__(self):
         Gtk.IconView.__init__(self)
 
@@ -44,7 +68,6 @@ class WidgetChooser(Gtk.IconView):
         self.widget_manager = WidgetManager()
         self.fill_iconview(self.widget_manager.get_widgets())
 
-
     def fill_iconview(self, data):
         self.set_columns(len(data))
         for pakage, i in data.iteritems():
@@ -58,7 +81,6 @@ class WidgetChooser(Gtk.IconView):
                     icon = icon.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
             name = i.get('name')
             self.get_model().append([name, icon, pakage])
-
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
         selected_path = self.get_selected_items()[0]
