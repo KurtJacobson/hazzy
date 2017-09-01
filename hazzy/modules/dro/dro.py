@@ -50,7 +50,8 @@ class Dro(Gtk.Box):
         self.add(self.display)
         self.show_all()
 
-    def update_dros(self, widget, pos, rel, dtg):
+    def update_dros(self, widget, positions):
+        pos, rel, dtg = positions
         self.x.set_text(str(rel[0]))
         self.y.set_text(str(rel[1]))
         self.z.set_text(str(rel[2]))
