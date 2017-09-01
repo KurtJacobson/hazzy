@@ -61,12 +61,18 @@ The _axis-position_ signal is emitted every cycle and returns a tuple of
 three tuples of floats representing:
 
 1. Current absolute axis positions in machine units, taking into account the 
-  setting of [DISPLAY] POSITION_FEEDBACK in the INI
+  setting of `[DISPLAY] POSITION_FEEDBACK` in the INI
 
 2. Current g5x relative position in machine units, taking into account any
   active g92 offsets, rotation in the XY plane, and/or tool offsets
 
 3. Remaining distance of the current move, as reported by the trajectory planner
+
+!!! note
+    Only the position values for used axes are calculated, the positions of all
+    unused axes will be reported as 0. Status.py uses the the value of
+    linuxcnc.axis_mask do determine which axes are in use. This should reflect
+    the axes as defined by `[TRAJ] COORDINATES` in the INI.
 
 
 ### joint-positions
@@ -75,7 +81,7 @@ The _joint-positions_ signal is emitted every cycle and returns a tuple of
 floats representing:
 
 * Current absolute joint positions in machine units, taking into account the
-  setting of [DISPLAY] POSITION_FEEDBACK in the INI
+  setting of `[DISPLAY] POSITION_FEEDBACK` in the INI
 
 
 ### formated-gcodes
