@@ -55,6 +55,8 @@ MOTION = {
     linuxcnc.TRAJ_MODE_TELEOP: 'TELEOP'
 }
 
+# These signals should cause an update
+# when they are connected to a callback
 SIGNALS = {
     'formated-gcodes': 'gcodes',
     'formated-mcodes': 'mcodes',
@@ -63,7 +65,6 @@ SIGNALS = {
 
 def singleton(cls):
     return cls()
-
 
 @singleton
 class Status(GObject.GObject):
