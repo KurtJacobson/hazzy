@@ -73,7 +73,7 @@ class Status(GObject.GObject):
         'formated-mcodes': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
         'file-loaded': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
         'joint-positions': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
-        'axis-positions': (GObject.SignalFlags.RUN_FIRST, None, (object, object, object)),
+        'axis-positions': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
     }
 
     def __init__(self, stat=None):
@@ -106,7 +106,7 @@ class Status(GObject.GObject):
 
         self.on_value_changed('file', self._update_file, True)
 
-        GObject.timeout_add(50, self.periodic)
+        GObject.timeout_add(50, self._periodic)
 
     # This allows monitoring any of the linuxcnc.stat attributes
     # and connecting a callback to be called on attribute value change
@@ -135,7 +135,7 @@ class Status(GObject.GObject):
         else:
             log.warning('linuxcnc.stat does not have attribute "{}"'.format(attribute))
 
-    def periodic(self):
+    def _periodic(self):
         try:
             self.stat.poll()
 
@@ -235,7 +235,7 @@ class Status(GObject.GObject):
         for axis in self.axis_list:
             rel[axis] -= g92_offset[axis]
 
-        self.emit('axis-positions', pos, tuple(rel), tuple(dtg))
+        self.emit('axis-positions', tuple([pos, tuple(rel), tuple(dtg)]))
 
     def _update_joint_positions(self):
 
