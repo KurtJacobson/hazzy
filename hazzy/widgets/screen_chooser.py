@@ -12,6 +12,7 @@ from gi.repository import GObject
 from gi.repository import GdkPixbuf
 
 from hazzy.widgets.widget_manager import WidgetManager
+from hazzy.widgets.widget_area import WidgetArea
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -63,7 +64,7 @@ class ScreenView(Gtk.IconView):
         self.fill_iconview(self.widget_manager.get_widgets())
 
     def fill_iconview(self, data):
-        names = ['Screen 1', 'Screen 2', 'Screen 3', 'Screen 4', 'Screen 5']
+        names = ['Screen 1',]
         icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
         for name in names:
             self.get_model().append([name, icon])
@@ -73,6 +74,16 @@ class ScreenView(Gtk.IconView):
 
     def on_screen_clicked(self, widget, path):
         text = self.get_model()[path][0]
+        stack = self.get_parent().get_parent().get_child()
         print text
         if text == "Add Screen":
-            pass
+            text = 'Screen {}'.format(len(stack.get_children()))
+            stack.add_screen(WidgetArea(), text)
+            stack.show_screen(text)
+            icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
+            self.get_model().append([text, icon])
+        else:
+            stack.show_screen(text)
+        stack.set_visible_child_name(text)
+        print stack.get_children()
+        print stack.get_visible_child_name()

@@ -38,7 +38,6 @@ class HazzyWindow(Gtk.Window):
 
         self.widget_chooser = WidgetChooser()
         self.overlay.add_overlay(self.widget_chooser)
-        self.overlay.set_overlay_pass_through(self.widget_chooser, True)
 
         self.screen_chooser = ScreenChooser()
         self.overlay.add_overlay(self.screen_chooser)
