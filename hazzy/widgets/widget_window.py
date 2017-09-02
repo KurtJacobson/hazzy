@@ -87,5 +87,3 @@ class WidgetWindow(Gtk.Box):
             self.parent.move_end(self)
         elif self.action >= RESIZE_X:
             self.parent.resize_end(self)
-
-        print self.get_parent()

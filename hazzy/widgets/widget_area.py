@@ -79,13 +79,11 @@ class WidgetArea(Gtk.Fixed):
         # Snap to grid
         x = int(round(float(x) / GRID_SIZE)) * GRID_SIZE
         y = int(round(float(y) / GRID_SIZE)) * GRID_SIZE
-        print x, y
         self.child_set_property(widget, 'x', x)
         self.child_set_property(widget, 'y', y)
 
         w = int(round(float(w) / GRID_SIZE)) * GRID_SIZE
         h = int(round(float(h) / GRID_SIZE)) * GRID_SIZE
-        print w, h
         widget.set_size_request(w, h)
 
 
