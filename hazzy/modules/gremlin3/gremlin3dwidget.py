@@ -40,7 +40,7 @@ pydir = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(pydir, "ui")
 
 log = logging.getLogger("HAZZY.GREMLIN")
-# log.setLevel(logging.INFO)
+
 log.setLevel(logging.DEBUG)
 
 
@@ -97,14 +97,14 @@ class Area3D(gremlin3d.Gremlin3D):
 
         # Add progress label
         self.label = Gtk.Label()
-        self.label.modify_font(Pango.FontDescription('FreeSans 11'))
-        self.label.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('White'))
+        # self.label.modify_font(Pango.FontDescription('FreeSans 11'))
+        # self.label.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('White'))
 
-        labelbox = Gtk.EventBox()
-        labelbox.modify_bg(Gtk.StateType.NORMAL, Gdk.Color('Black'))
-        labelbox.set_size_request(-1, 20)
-        labelbox.add(self.label)
-        fixed.put(labelbox, 0, self.height - 20)
+        # labelbox = Gtk.EventBox()
+        # labelbox.modify_bg(Gtk.StateType.NORMAL, Gdk.Color('Black'))
+        # labelbox.set_size_request(-1, 20)
+        # labelbox.add(self.label)
+        # fixed.put(labelbox, 0, self.height - 20)
 
     #    def fileloading(self, current_line):
     #        self.progressbar.show()
