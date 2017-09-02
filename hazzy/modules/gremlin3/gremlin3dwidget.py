@@ -50,7 +50,7 @@ class Gremlin3DWidget(Gtk.Box):
         Gtk.Box.__init__(self)
         if os.environ["INI_FILE_NAME"]:
             inifile = linuxcnc.ini(os.environ["INI_FILE_NAME"])
-            Area3D(inifile, 400, 600)
+            area3d = Area3D(inifile, 400, 600)
 
 
 class Area3D(gremlin3d.Gremlin3D):
@@ -74,7 +74,7 @@ class Area3D(gremlin3d.Gremlin3D):
         self.zoom_in_pressed = False
         self.zoom_out_pressed = False
 
-        self.set_display_units('in')
+        self.set_display_units('mm')
 
         # Gremlin3D width = width - 40 to allow room for the controls
         self.set_size_request(self.width - 40, self.height)
@@ -99,6 +99,7 @@ class Area3D(gremlin3d.Gremlin3D):
         self.label = Gtk.Label()
         self.label.modify_font(Pango.FontDescription('FreeSans 11'))
         self.label.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('White'))
+
         labelbox = Gtk.EventBox()
         labelbox.modify_bg(Gtk.StateType.NORMAL, Gdk.Color('Black'))
         labelbox.set_size_request(-1, 20)
