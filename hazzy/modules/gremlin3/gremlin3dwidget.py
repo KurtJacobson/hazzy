@@ -28,11 +28,10 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
-
-import pango
+from gi.repository import Pango
 
 import gcode
-import gremlin
+import gremlin3d
 import logging
 
 pydir = os.path.abspath(os.path.dirname(__file__))
@@ -43,7 +42,7 @@ log = logging.getLogger("HAZZY.GREMLIN")
 log.setLevel(logging.DEBUG)
 
 
-class Gremline3dWidget(gremlin.Gremlin):
+class Gremlin3DWidget(gremlin3d.Gremlin):
     __gtype_name__ = "HazzyGremlin"
     __gsignals__ = {
         'line-clicked': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (GObject.TYPE_INT,)),
@@ -54,7 +53,7 @@ class Gremline3dWidget(gremlin.Gremlin):
 
     def __init__(self, inifile, width, height):
         GObject.__init__(self)
-        gremlin.Gremlin.__init__(self, inifile)
+        gremlin3d.Gremlin.__init__(self, inifile)
 
         self.width = width
         self.height = height
@@ -87,7 +86,7 @@ class Gremline3dWidget(gremlin.Gremlin):
 
         # Add progress label
         self.label = Gtk.Label()
-        self.label.modify_font(pango.FontDescription('FreeSans 11'))
+        self.label.modify_font(Pango.FontDescription('FreeSans 11'))
         self.label.modify_fg(Gtk.StateType.STATE_NORMAL, Gdk.Color('White'))
         labelbox = Gtk.EventBox()
         labelbox.modify_bg(Gtk.StateType.STATE_NORMAL, Gdk.Color('Black'))
