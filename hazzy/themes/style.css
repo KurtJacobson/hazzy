@@ -9,6 +9,10 @@
     box-shadow: 2px 2px 2px #555753;
 }
 
+button#menu_button {
+    padding: 0px;
+}
+
 .title_bar{
     background: #eeeeec;
     border-radius: 5px;
