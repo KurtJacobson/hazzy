@@ -79,13 +79,13 @@ class StatCanon(glcanon.GLCanon, interpret.StatMixin):
         interpret.StatMixin.change_tool(self, pocket)
 
 
-class Gremlin3D(Gtk.DrawingArea, glnav3.GlNavBase,
+class Gremlin3D(Gtk.GLArea, glnav3.GlNavBase,
                 glcanon.GlCanonDraw):
     rotation_vectors = [(1., 0., 0.), (0., 0., 1.)]
 
     def __init__(self, inifile):
 
-        Gtk.DrawingArea.__init__(self)
+        Gtk.GLArea.__init__(self)
         glnav3.GlNavBase.__init__(self)
 
         def get_color(s):
@@ -169,7 +169,7 @@ class Gremlin3D(Gtk.DrawingArea, glnav3.GlNavBase,
         self.num_joints = int(inifile.find("KINS", "JOINTS") or live_axis_count)
 
     def activate(self):
-        glcontext = Gtk.GLArea.widget_get_gl_context(self)
+        glcontext = Gtk.GLArea.get_context(self)
         gldrawable = Gtk.GLArea.widget_get_gl_drawable(self)
 
         return gldrawable and glcontext and gldrawable.gl_begin(glcontext)
