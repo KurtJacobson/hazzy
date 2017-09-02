@@ -51,6 +51,7 @@ class Gremlin3DWidget(Gtk.Box):
         if os.environ["INI_FILE_NAME"]:
             inifile = linuxcnc.ini(os.environ["INI_FILE_NAME"])
             area3d = Area3D(inifile, 400, 600)
+            self.add(area3d.gremlin_view)
 
 
 class Area3D(gremlin3d.Gremlin3D):
