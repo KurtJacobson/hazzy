@@ -59,7 +59,7 @@ class HazzyGremlin(gremlin.Gremlin):
 
         self.set_display_units('in')
 
-        # Gremlin width = width - 40 to allow room for the controls
+        # Gremlin3D width = width - 40 to allow room for the controls
         self.set_size_request(self.width - 40, self.height)
 
         # Add gremlin back-plot

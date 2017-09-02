@@ -79,8 +79,8 @@ class StatCanon(glcanon.GLCanon, interpret.StatMixin):
         interpret.StatMixin.change_tool(self, pocket)
 
 
-class Gremlin(Gtk.DrawingArea, glnav3.GlNavBase,
-              glcanon.GlCanonDraw):
+class Gremlin3D(Gtk.DrawingArea, glnav3.GlNavBase,
+                glcanon.GlCanonDraw):
     rotation_vectors = [(1., 0., 0.), (0., 0., 1.)]
 
     def __init__(self, inifile):

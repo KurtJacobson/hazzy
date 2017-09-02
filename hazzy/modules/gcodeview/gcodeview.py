@@ -168,7 +168,7 @@ class GcodeView(GtkSource.View):
             self.buf.move_mark(self.mark, iter)
         self.scroll_to_mark(self.mark, 0, True, 0, 0.5)
 
-    # Since Gremlin reports any errors before GStat emits the 'file-loaded'
+    # Since Gremlin3D reports any errors before GStat emits the 'file-loaded'
     # signal, we have to save the error line here and then do the actual 
     # highlighting after we have loaded the sourceview in 'self.load_file'
     def highlight_error_line(self, lnum):

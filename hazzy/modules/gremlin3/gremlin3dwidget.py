@@ -50,11 +50,10 @@ class Gremlin3DWidget(Gtk.Box):
         Gtk.Box.__init__(self)
         if os.environ["INI_FILE_NAME"]:
             inifile = linuxcnc.ini(os.environ["INI_FILE_NAME"])
-            Gremlin3D(inifile, 400, 600)
+            Area3D(inifile, 400, 600)
 
 
-
-class Gremlin3D(gremlin3d.Gremlin):
+class Area3D(gremlin3d.Gremlin3D):
     __gtype_name__ = "HazzyGremlin"
     __gsignals__ = {
         'line-clicked': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (GObject.TYPE_INT,)),
@@ -65,7 +64,7 @@ class Gremlin3D(gremlin3d.Gremlin):
 
     def __init__(self, inifile, width, height):
         #GObject.__init__(self)
-        gremlin3d.Gremlin.__init__(self, inifile)
+        gremlin3d.Gremlin3D.__init__(self, inifile)
 
         self.width = width
         self.height = height
@@ -77,7 +76,7 @@ class Gremlin3D(gremlin3d.Gremlin):
 
         self.set_display_units('in')
 
-        # Gremlin width = width - 40 to allow room for the controls
+        # Gremlin3D width = width - 40 to allow room for the controls
         self.set_size_request(self.width - 40, self.height)
 
         # Add gremlin back-plot
@@ -99,9 +98,9 @@ class Gremlin3D(gremlin3d.Gremlin):
         # Add progress label
         self.label = Gtk.Label()
         self.label.modify_font(Pango.FontDescription('FreeSans 11'))
-        self.label.modify_fg(Gtk.StateType.STATE_NORMAL, Gdk.Color('White'))
+        self.label.modify_fg(Gtk.StateType.NORMAL, Gdk.Color('White'))
         labelbox = Gtk.EventBox()
-        labelbox.modify_bg(Gtk.StateType.STATE_NORMAL, Gdk.Color('Black'))
+        labelbox.modify_bg(Gtk.StateType.NORMAL, Gdk.Color('Black'))
         labelbox.set_size_request(-1, 20)
         labelbox.add(self.label)
         fixed.put(labelbox, 0, self.height - 20)
@@ -118,11 +117,11 @@ class Gremlin3D(gremlin3d.Gremlin):
     #            self.emit('loading_progress', percent)
 
     def realize(self, widget):
-        gremlin.Gremlin.realize(widget)
+        gremlin3d.Gremlin3D.realize(widget)
         self.label.hide()
 
     def posstrs(self):
-        l, h, p, d = gremlin.Gremlin.posstrs(self)
+        l, h, p, d = gremlin3d.Gremlin3D.posstrs(self)
         return l, h, [''], ['']
 
     def set_display_units(self, units):
