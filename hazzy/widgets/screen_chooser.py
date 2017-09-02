@@ -28,6 +28,8 @@ class ScreenChooser(Gtk.Revealer):
         self.set_valign(Gtk.Align.CENTER)
         self.set_halign(Gtk.Align.CENTER)
 
+        self.set_transition_type(Gtk.RevealerTransitionType.NONE)
+
         view = ScreenView()
         self.add(view)
 
@@ -46,7 +48,7 @@ class ScreenView(Gtk.IconView):
         context = self.get_style_context()
         context.add_class("widget_chooser")
 
-        self.connect('item-activated', self.on_screen_clicked)
+        self.connect('item-activated', self.on_icon_clicked)
         self.set_activate_on_single_click(True)
 
         self.set_text_column(0)
@@ -64,26 +66,17 @@ class ScreenView(Gtk.IconView):
         self.fill_iconview(self.widget_manager.get_widgets())
 
     def fill_iconview(self, data):
-        names = ['Screen 1',]
-        icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
-        for name in names:
-            self.get_model().append([name, icon])
-
-        icon = Gtk.IconTheme.get_default().load_icon('list-add', 100, 0)
+        theme = Gtk.IconTheme.get_default()
+        icon = theme.load_icon('list-add', 56, Gtk.IconLookupFlags.FORCE_SIZE)
         self.get_model().append(['Add Screen', icon])
 
-    def on_screen_clicked(self, widget, path):
-        text = self.get_model()[path][0]
+    def on_icon_clicked(self, widget, path):
+        name = self.get_model()[path][0]
         stack = self.get_parent().get_parent().get_child()
-        print text
-        if text == "Add Screen":
-            text = 'Screen {}'.format(len(stack.get_children()))
-            stack.add_screen(WidgetArea(), text)
-            stack.show_screen(text)
-            icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
-            self.get_model().append([text, icon])
-        else:
-            stack.show_screen(text)
-        stack.set_visible_child_name(text)
-        print stack.get_children()
-        print stack.get_visible_child_name()
+        if name == "Add Screen":
+            name = 'Screen {}'.format(len(stack.get_children()) + 1)
+            icon = Gtk.IconTheme.get_default().load_icon('image-missing', 56, 0)
+            self.get_model().append([name, icon])
+            stack.add_screen(WidgetArea(), name)
+        stack.show_screen(name)
+        self.get_parent().set_reveal_child(False)

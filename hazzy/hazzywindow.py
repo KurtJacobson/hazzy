@@ -42,9 +42,6 @@ class HazzyWindow(Gtk.Window):
         self.screen_chooser = ScreenChooser()
         self.overlay.add_overlay(self.screen_chooser)
 
-        self.screen_stack.add_screen(WidgetArea(), 'Screen 1')
-        self.screen_stack.show_screen('Screen 1')
-
         self.set_size_request(900, 600)
         self.show_all()
 
