@@ -400,10 +400,10 @@ class Gremlin3D(Gtk.DrawingArea, glnav3.GlNavBase,
     def motion(self, widget, event):
         if not self.use_default_controls:
             return
-        button1 = event.state & Gdk.EventMask.BUTTON1_MASK
-        button2 = event.state & Gdk.EventMask.BUTTON2_MASK
-        button3 = event.state & Gdk.EventMask.BUTTON3_MASK
-        shift = event.state & Gdk.EventMask.SHIFT_MASK
+        button1 = event.get_state() & Gdk.ModifierType.BUTTON1_MASK
+        button2 = event.get_state() & Gdk.ModifierType.BUTTON2_MASK
+        button3 = event.get_state() & Gdk.ModifierType.BUTTON3_MASK
+        shift = event.get_state() & Gdk.ModifierType.SHIFT_MASK
         # for lathe or plasmas rotation is not used, so we check for it
         # recomended to use mode 6 for that type of machines
         cancel = bool(self.lathe_option)
