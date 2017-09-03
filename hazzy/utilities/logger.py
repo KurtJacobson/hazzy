@@ -25,7 +25,7 @@ import logging
 
 from constants import Paths
 
-from hazzy.utilities.colored_log import ColoredFormatter
+from utilities.colored_log import ColoredFormatter
 
 
 # TODO Get log file path from INI

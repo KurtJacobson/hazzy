@@ -35,7 +35,7 @@ class WidgetManager:
         clas = info.get('class')
         size = info.get('size', [0, 0])
 
-        module = importlib.import_module('.' + module, 'hazzy.modules.' + pakage)
+        module = importlib.import_module('.' + module, 'modules.' + pakage)
         widget = getattr(module, clas)
 
         return widget(), name, size

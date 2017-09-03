@@ -35,7 +35,7 @@
 import os
 import ConfigParser
 
-from hazzy.utilities import logger
+from utilities import logger
 
 log = logger.get("HAZZY.PREFS")
 

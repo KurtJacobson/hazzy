@@ -10,6 +10,6 @@ class Paths(enumerate):
     HAZZYDIR = os.path.dirname(os.path.realpath(__file__))
     MAINDIR = os.path.dirname(HAZZYDIR)
 
-    UIDIR = os.path.join(HAZZYDIR, 'hazzy', 'ui')
-    MODULEDIR = os.path.join(HAZZYDIR, 'hazzy', 'modules')
-    STYLEDIR = os.path.join(HAZZYDIR, 'hazzy', 'themes')
+    UIDIR = os.path.join(HAZZYDIR, 'ui')
+    MODULEDIR = os.path.join(HAZZYDIR, 'modules')
+    STYLEDIR = os.path.join(HAZZYDIR, 'themes')

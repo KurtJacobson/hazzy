@@ -33,7 +33,7 @@ from gi.repository import GObject
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
@@ -42,7 +42,7 @@ UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 from constants import Paths
-from hazzy.utilities import logger
+from utilities import logger
 
 
 # Setup logging

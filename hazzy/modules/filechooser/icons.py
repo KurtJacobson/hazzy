@@ -28,7 +28,7 @@ from gi.repository import Gio
 
 import mimetypes
 
-from hazzy.modules.filechooser import userdirectories
+import userdirectories
 
 ICONSIZE = 24
 

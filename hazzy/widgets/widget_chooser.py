@@ -11,7 +11,7 @@ from gi.repository import Gdk
 from gi.repository import GObject
 from gi.repository import GdkPixbuf
 
-from hazzy.widgets.widget_manager import WidgetManager
+from widgets.widget_manager import WidgetManager
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))

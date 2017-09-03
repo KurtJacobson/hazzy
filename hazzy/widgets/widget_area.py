@@ -9,8 +9,8 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
-from hazzy.widgets.widget_manager import WidgetManager
-from hazzy.widgets.widget_window import WidgetWindow
+from widgets.widget_manager import WidgetManager
+from widgets.widget_window import WidgetWindow
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
