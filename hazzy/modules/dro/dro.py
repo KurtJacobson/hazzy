@@ -23,7 +23,7 @@ from utilities import logger
 from constants import Paths
 
 # Setup logging
-log = logger.get("HAZZY.KEYBOARD")
+log = logger.get("HAZZY.WIDGETS.DRO")
 
 
 class Dro(Gtk.Box):

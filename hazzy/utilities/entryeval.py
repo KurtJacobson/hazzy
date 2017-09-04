@@ -3,6 +3,10 @@
 from simpleeval import SimpleEval
 from getiniinfo import GetIniInfo
 
+import logger
+
+log = logger.get('HAZZY.UTILITIES.ENTRY_EVAL')
+
 
 class EntryEval:
 
@@ -15,6 +19,7 @@ class EntryEval:
         except:
             # GetIniInfo instance has no __call__ method
             self.machine_metric = False
+            log.info('INI file not available, assuming machine units inch')
 
     # Evaluate expressions in numeric entries
     def eval(self, data):
