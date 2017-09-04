@@ -38,11 +38,11 @@ if HAZZYDIR not in sys.path:
 UIDIR = os.path.join(PYDIR, 'ui')
 
 # Setup logging
-from constants import Paths
 from utilities import logger
 from utilities.status import Status
+from utilities.constants import Paths
 from utilities.entryeval import EntryEval
-#from hazzy.utilities.getiniinfo import GetIniInfo
+#from utilities.getiniinfo import GetIniInfo
 
 log = logger.get("HAZZY.TOOL_TABLE")
 

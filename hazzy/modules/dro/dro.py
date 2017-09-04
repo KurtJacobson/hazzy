@@ -18,9 +18,9 @@ HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
-from utilities.status import Status
 from utilities import logger
-from constants import Paths
+from utilities.status import Status
+from utilities.constants import Paths
 
 # Setup logging
 log = logger.get("HAZZY.WIDGETS.DRO")
