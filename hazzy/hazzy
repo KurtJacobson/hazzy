@@ -8,6 +8,7 @@ import os
 import sys
 import gi
 import datetime
+import linuxcnc
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -24,6 +25,13 @@ log = logger.get('HAZZY')
 
 BASE = None
 INIFILE = None
+
+# Check LinuxCNC Version
+major, minor, micro = os.environ.get('LINUXCNCVERSION').split('.')
+if (int(major), int(minor)) < (2, 8):
+    log.error("LinuxCNC is version {}.{}.{} but hazzy requires LinuxCNC 2.8 or above"
+        .format(major, minor, micro))
+    sys.exit()
 
 # Check GTK+ Version
 major, minor, micro = Gtk.MAJOR_VERSION, Gtk.MINOR_VERSION, Gtk.MICRO_VERSION
