@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 # hazzy startup script.
-# This script sets up the system/enviroment and shows the main window.
+# This script checks package requirements, sets up the system/enviroment
+# and shows the main window.
 
 import os
 import sys
@@ -24,12 +25,17 @@ log = logger.get('HAZZY')
 BASE = None
 INIFILE = None
 
+# Check GTK+ Version
+major, minor, micro = Gtk.MAJOR_VERSION, Gtk.MINOR_VERSION, Gtk.MICRO_VERSION
+if (major, minor) < (3, 20):
+    log.error("GTK+ is version {}.{}.{} but hazzy requires GTK+ 3.20 or above"
+        .format(major, minor, micro))
+    sys.exit()
+
 
 def main(argv):
 
     BASE = os.path.abspath(os.path.dirname(argv[0]))
-
-    print "BASE ", BASE
 
     if sys.argv[1] != "-ini":
         raise SystemExit("-ini must be first argument")
