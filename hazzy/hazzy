@@ -45,8 +45,9 @@ def main(argv):
 
     BASE = os.path.abspath(os.path.dirname(argv[0]))
 
-    if sys.argv[1] != "-ini":
-        raise SystemExit("-ini must be first argument")
+    if sys.argv[1] != '-ini':
+        log.error("-ini must be first argument")
+        sys.exit()
 
     INIFILE = argv[2]
 
