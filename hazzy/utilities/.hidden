@@ -7,3 +7,4 @@ preferences.pyc
 logger.pyc
 status.pyc
 entryeval.pyc
+constants.pyc

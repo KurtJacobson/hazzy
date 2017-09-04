@@ -9,20 +9,20 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
-from constants import Paths
+from utilities.constants import Paths
 
 # Import our own modules
-from widgets.widget_chooser import WidgetChooser
-from widgets.screen_chooser import ScreenChooser
-from widgets.screen_stack import ScreenStack
-from widgets.widget_area import WidgetArea
+from widget_chooser import WidgetChooser
+from screen_chooser import ScreenChooser
+from screen_stack import ScreenStack
+from widget_area import WidgetArea
 
 
 class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self)
 
-        gladefile = os.path.join(Paths.UIDIR, 'hazzy.ui')
+        gladefile = os.path.join(os.path.dirname(__file__), 'ui', 'hazzy.ui')
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)

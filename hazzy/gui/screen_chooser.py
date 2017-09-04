@@ -11,8 +11,8 @@ from gi.repository import Gdk
 from gi.repository import GObject
 from gi.repository import GdkPixbuf
 
-from widgets.widget_manager import WidgetManager
-from widgets.widget_area import WidgetArea
+from widget_manager import WidgetManager
+from widget_area import WidgetArea
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))

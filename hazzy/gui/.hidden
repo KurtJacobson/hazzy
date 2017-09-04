@@ -3,3 +3,6 @@ widget_area.pyc
 widget_window.pyc
 widget_chooser.pyc
 widget_manager.pyc
+screen_chooser.pyc
+screen_stack.pyc
+hazzywindow.pyc
