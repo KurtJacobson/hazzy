@@ -71,6 +71,7 @@ class WidgetView(Gtk.IconView):
     def fill_iconview(self, data):
         self.set_columns(len(data))
         for pakage, i in data.iteritems():
+        for pakage, i in data.items():
             icon = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
             if i.get('image'):
                 path = os.path.join(WIDGET_DIR, pakage, i.get('image'))
