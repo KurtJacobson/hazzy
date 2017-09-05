@@ -41,7 +41,7 @@ if HAZZYDIR not in sys.path:
 UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
-from constants import Paths
+from utilities.constants import Paths
 from utilities import logger
 
 
