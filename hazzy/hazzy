@@ -20,7 +20,7 @@ from gi.repository import Gdk
 
 from utilities import logger
 from utilities.constants import Paths
-from gui.hazzywindow import HazzyWindow
+from gui.hazzy_window import HazzyWindow
 
 log = logger.get('HAZZY')
 
