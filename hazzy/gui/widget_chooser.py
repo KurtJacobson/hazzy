@@ -65,8 +65,7 @@ class WidgetView(Gtk.IconView):
         self.drag_source_set_target_list(None)
         self.drag_source_add_text_targets()
 
-        self.widget_manager = WidgetManager()
-        self.fill_iconview(self.widget_manager.get_widgets())
+        self.fill_iconview(WidgetManager.get_widgets())
 
     def fill_iconview(self, data):
         self.set_columns(len(data))
