@@ -62,7 +62,8 @@ class ScreenView(Gtk.IconView):
         model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
         self.set_model(model)
 
-        self.fill_iconview(WidgetManager.get_widgets())
+        self.widget_manager = WidgetManager()
+        self.fill_iconview(self.widget_manager.get_widgets())
 
     def fill_iconview(self, data):
         theme = Gtk.IconTheme.get_default()

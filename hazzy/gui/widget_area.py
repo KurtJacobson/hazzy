@@ -34,6 +34,8 @@ class WidgetArea(Gtk.Fixed):
         self.drag_dest_set_target_list(None)
         self.drag_dest_add_text_targets()
 
+        self.widget_manager = WidgetManager()
+
         # Initial event pos
         self.initial_x = 0
         self.initial_y = 0
@@ -52,7 +54,7 @@ class WidgetArea(Gtk.Fixed):
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
         pakage = data.get_text()
 
-        widget, title, size = WidgetManager.get_widget(pakage)
+        widget, title, size = self.widget_manager.get_widget(pakage)
         min_size = widget.get_preferred_size()[0]
         min_w, min_h = min_size.width, min_size.height
 

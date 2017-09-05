@@ -12,13 +12,12 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
-from utilities.constants import Paths
 
+# Setup paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+WIDGET_DIR = os.path.join(HAZZYDIR, 'hazzy/modules')
 
-def singleton(cls):
-    return cls()
-
-@singleton
 class WidgetManager:
 
     def __init__(self):
@@ -26,8 +25,6 @@ class WidgetManager:
         self.widget_data = {}
         self.widget_positions = {}
         self.get_widgets()
-
-        self.widget_positions = {}
 
 
     def get_widget(self, pakage):
@@ -40,19 +37,14 @@ class WidgetManager:
 
         module = importlib.import_module('.' + module, 'modules.' + pakage)
         widget = getattr(module, clas)
-        widget = widget()
 
-        self.widget_positions[widget] = {'x':0, 'y':0, 'w':size[0], 'h':size[1]}
-
-        print self.widget_positions
-
-        return widget, name, size
+        return widget(), name, size
 
 
     def get_widgets(self):
-        pakages = os.listdir(Paths.MODULEDIR)
+        pakages = os.listdir(WIDGET_DIR)
         for pakage in pakages:
-            path = os.path.join(Paths.MODULEDIR, pakage, 'widget.info')
+            path = os.path.join(WIDGET_DIR, pakage, 'widget.info')
             info_dict = {}
             if os.path.exists(path):
                 with open(path, 'r') as fh:
