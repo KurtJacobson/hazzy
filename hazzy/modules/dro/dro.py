@@ -33,9 +33,7 @@ class Dro(Gtk.Box):
 
         self.stat = Status
 
-        self.stat.on_value_changed('axis_positions', self.update_dros)
-        self.stat.on_value_changed('formated_gcodes', self.update_gcodes)
-        self.stat.on_value_changed('formated_mcodes', self.update_mcodes)
+        self.stat.on_value_changed('axis_positions', self.update_dros, False)
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'dro.ui'))
@@ -54,9 +52,3 @@ class Dro(Gtk.Box):
         self.x.set_text(str(rel[0]))
         self.y.set_text(str(rel[1]))
         self.z.set_text(str(rel[2]))
-
-    def update_gcodes(self, widget, gcodes):
-        print "G-codes: ", " ".join(gcodes)
-
-    def update_mcodes(self, widget, mcodes):
-        print "M-codes: ", " ".join(mcodes)

@@ -82,7 +82,6 @@ class HazzyWindow(Gtk.Window):
         screens = []
 
         for screen in root.iter('screen'):
-            print screen.get('name')
             screen_obj = WidgetArea()
             screen_name = screen.get('name')
             self.screen_stack.add_screen(screen_obj, screen_name)
