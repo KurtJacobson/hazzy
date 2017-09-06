@@ -30,10 +30,9 @@ class ScreenStack(Gtk.Stack):
         self.show_all()
 
 
-    def add_screen(self, screen, name):
+    def add_screen(self, screen, name, title=''):
         self.name = name
-        # self.add_named(screen, name)
-        self.add_titled(screen, name, "screen 1")
+        self.add_titled(screen, name, title or '')
 
     def show_screen(self, name):
         self.set_visible_child_name(name)
