@@ -65,6 +65,7 @@ def main(argv):
     )
 
     hazzy_window = HazzyWindow()
+    hazzy_window.load_from_xml()
     hazzy_window.show_all()
 
     hazzy_window.connect('delete-event', quit, hazzy_window)
@@ -83,7 +84,7 @@ def main(argv):
 
 def quit(window, event, data):
     try:
-        window.on_quit()
+        window.save_to_xml()
     except Exception as e:
         log.exception(e)
     Gtk.main_quit()

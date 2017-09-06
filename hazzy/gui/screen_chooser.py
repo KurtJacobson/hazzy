@@ -30,8 +30,8 @@ class ScreenChooser(Gtk.Revealer):
 
         self.set_transition_type(Gtk.RevealerTransitionType.NONE)
 
-        view = ScreenView()
-        self.add(view)
+        self.view = ScreenView()
+        self.add(self.view)
 
     def get_visible(self):
         return self.get_reveal_child()
@@ -65,8 +65,14 @@ class ScreenView(Gtk.IconView):
         self.widget_manager = WidgetManager()
         self.fill_iconview(self.widget_manager.get_widgets())
 
-    def fill_iconview(self, data):
+    def fill_iconview(self, screens):
+        model = self.get_model()
+        model.clear()
         theme = Gtk.IconTheme.get_default()
+        icon = theme.load_icon('image-missing', 56, 0)
+        for screen in screens:
+            model.append([screen, icon])
+
         icon = theme.load_icon('list-add', 56, Gtk.IconLookupFlags.FORCE_SIZE)
         self.get_model().append(['Add Screen', icon])
 

@@ -14,15 +14,20 @@ from lxml import etree
 from utilities.constants import Paths
 
 # Import our own modules
+from widget_manager import WidgetManager
 from widget_chooser import WidgetChooser
 from screen_chooser import ScreenChooser
+from widget_window import WidgetWindow
 from screen_stack import ScreenStack
 from widget_area import WidgetArea
+
 
 
 class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self)
+
+        self.widget_manager = WidgetManager()
 
         gladefile = os.path.join(os.path.dirname(__file__), 'ui', 'hazzy.ui')
         self.builder = Gtk.Builder()
@@ -64,7 +69,41 @@ class HazzyWindow(Gtk.Window):
             for widget in widgets:
                 widget.show_overlay(edit)
 
-    def on_quit(self):
+
+
+    def load_from_xml(self):
+
+        if not os.path.exists(Paths.XML_FILE):
+            return
+
+        tree = etree.parse(Paths.XML_FILE)
+        root = tree.getroot()
+
+        screens = []
+
+        for screen in root.iter('screen'):
+            print screen.get('name')
+            screen_obj = WidgetArea()
+            screen_name = screen.get('name')
+            self.screen_stack.add_screen(screen_obj, screen_name)
+            screens.append(screen_name)
+
+            for widget in screen.iter('widget'):
+                package = widget.get('name')
+                obj, title, size = self.widget_manager.get_widget(package)
+                wwindow = WidgetWindow(package, obj, title)
+
+                props = {}
+                for prop in widget.iter('property'):
+                    props[prop.get('name')] = prop.text
+
+                screen_obj.put(wwindow, int(props['x']), int(props['y']))
+                wwindow.set_size_request(int(props['w']), int(props['h']))
+
+        self.screen_chooser.view.fill_iconview(screens)
+
+
+    def save_to_xml(self):
         screens = self.screen_stack.get_children()
         data = []
 
@@ -73,7 +112,7 @@ class HazzyWindow(Gtk.Window):
         root.append(etree.Comment('Last modified: 8/5/2017'))
 
         for screen in screens:
-            screen_name = self.screen_stack.child_get_property(screen, 'title')
+            screen_name = self.screen_stack.child_get_property(screen, 'name')
             screen_pos = self.screen_stack.child_get_property(screen, 'position')
 
             scr = etree.SubElement(root, "screen")
@@ -98,4 +137,3 @@ class HazzyWindow(Gtk.Window):
 
         with open(Paths.XML_FILE, 'wb') as fh:
             fh.write(etree.tostring(root, pretty_print=True))
-
