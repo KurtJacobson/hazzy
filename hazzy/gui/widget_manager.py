@@ -57,7 +57,3 @@ class WidgetManager:
                     info_dict[key] = value
                 self.widget_data[pakage] = info_dict
         return self.widget_data
-
-
-    def record_position(self, screen, widget, x, y, w, h):
-        pass

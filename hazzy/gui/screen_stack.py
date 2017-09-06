@@ -17,6 +17,8 @@ class ScreenStack(Gtk.Stack):
     def __init__(self):
         Gtk.Stack.__init__(self)
 
+        self.name = None
+
         # Add style class
         context = self.get_style_context()
         context.add_class("widget_stack")
@@ -29,7 +31,9 @@ class ScreenStack(Gtk.Stack):
 
 
     def add_screen(self, screen, name):
-        self.add_named(screen, name)
+        self.name = name
+        # self.add_named(screen, name)
+        self.add_titled(screen, name, "screen 1")
 
     def show_screen(self, name):
         self.set_visible_child_name(name)

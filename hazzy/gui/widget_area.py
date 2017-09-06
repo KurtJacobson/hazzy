@@ -52,9 +52,9 @@ class WidgetArea(Gtk.Fixed):
 
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
-        pakage = data.get_text()
+        package = data.get_text()
 
-        widget, title, size = self.widget_manager.get_widget(pakage)
+        widget, title, size = self.widget_manager.get_widget(package)
         min_size = widget.get_preferred_size()[0]
         min_w, min_h = min_size.width, min_size.height
 
@@ -63,7 +63,7 @@ class WidgetArea(Gtk.Fixed):
         x = x - w / 2
         y = y - h / 2
 
-        wwindow = WidgetWindow(widget, title)
+        wwindow = WidgetWindow(package, widget, title)
         self.put(wwindow, x, y)
         wwindow.set_size_request(w, h)
         self.snap_to_grid(wwindow)

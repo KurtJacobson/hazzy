@@ -67,7 +67,7 @@ def main(argv):
     hazzy_window = HazzyWindow()
     hazzy_window.show_all()
 
-    hazzy_window.connect('delete-event', Gtk.main_quit)
+    hazzy_window.connect('delete-event', quit, hazzy_window)
 
     start_time = datetime.datetime.now()
 
@@ -79,6 +79,14 @@ def main(argv):
 
     run_time = datetime.datetime.now() - start_time
     log.info("Total session duration: {}".format(run_time))
+
+
+def quit(window, event, data):
+    try:
+        window.on_quit()
+    except Exception as e:
+        log.exception(e)
+    Gtk.main_quit()
 
 
 if __name__ == "__main__":

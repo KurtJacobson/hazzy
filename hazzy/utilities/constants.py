@@ -13,3 +13,4 @@ class Paths(enumerate):
     UIDIR = os.path.join(HAZZYDIR, 'ui')
     MODULEDIR = os.path.join(HAZZYDIR, 'modules')
     STYLEDIR = os.path.join(HAZZYDIR, 'themes')
+    XML_FILE = os.path.join(HAZZYDIR, 'interface.xml')

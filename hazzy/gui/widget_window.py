@@ -22,8 +22,11 @@ RESIZE_XY = 3
 
 class WidgetWindow(Gtk.Box):
 
-    def __init__(self, widget, title, menu_callback=None):
+    def __init__(self, package, widget, title, menu_callback=None):
         Gtk.Box.__init__(self)
+
+        self.package = package
+        self.title = title
 
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(PYDIR, 'ui', 'widgetwindow.ui'))
