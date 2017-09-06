@@ -28,6 +28,8 @@ class WidgetWindow(Gtk.Box):
         self.package = package
         self.title = title
 
+        self.action = None
+
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(PYDIR, 'ui', 'widgetwindow.ui'))
         builder.connect_signals(self)
