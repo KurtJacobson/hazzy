@@ -31,18 +31,18 @@ from gi.repository import GObject
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 UIDIR = os.path.join(PYDIR, 'ui')
 
 # Setup logging
-from constants import Paths
-from hazzy.utilities import logger
-from hazzy.utilities.status import Status
-from hazzy.utilities.entryeval import EntryEval
-#from hazzy.utilities.getiniinfo import GetIniInfo
+from utilities import logger
+from utilities.status import Status
+from utilities.constants import Paths
+from utilities.entryeval import EntryEval
+#from utilities.getiniinfo import GetIniInfo
 
 log = logger.get("HAZZY.TOOL_TABLE")
 

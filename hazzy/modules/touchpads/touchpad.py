@@ -41,7 +41,7 @@ UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
 # Setup logging
-from hazzy.utilities import logger
+from utilities import logger
 
 log = logger.get("HAZZY.KEYBOARD")
 

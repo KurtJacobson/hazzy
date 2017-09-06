@@ -37,7 +37,7 @@ from datetime import datetime
 
 
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
@@ -45,15 +45,15 @@ UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'hazzy', 'themes')
 
 # Import our own modules
-from hazzy.modules.filechooser.move2trash import move2trash
-from hazzy.modules.filechooser.userdirectories import UserDirectories
-from hazzy.modules.filechooser.bookmarks import BookMarks
-from hazzy.modules.filechooser.icons import Icons
+from move2trash import move2trash
+from userdirectories import UserDirectories
+from bookmarks import BookMarks
+from icons import Icons
 
 #from hazzy.modules.dialogs.dialogs import Dialogs, DialogTypes
 
 # Setup logging
-from hazzy.utilities import logger
+from utilities import logger
 
 log = logger.get("HAZZY.FILECHOOSER")
 

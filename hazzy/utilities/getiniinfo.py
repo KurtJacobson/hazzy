@@ -32,7 +32,7 @@ from linuxcnc import ini
 import os
 import sys
 
-from hazzy.utilities import logger
+from utilities import logger
 
 log = logger.get("HAZZY.GETINI")
 

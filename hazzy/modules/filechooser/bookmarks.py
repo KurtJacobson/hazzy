@@ -21,7 +21,7 @@
 import os
 import logging
 
-from hazzy.utilities import logger
+from utilities import logger
 
 log = logger.get("HAZZY.FILECHOOSER.BOOKMARKS")
 

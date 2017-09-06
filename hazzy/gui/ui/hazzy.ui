@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkHeaderBar" id="titlebar">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="title">Hazzy</property>
+    <property name="subtitle">A UI for LinuxCNC</property>
+    <property name="show_close_button">True</property>
+    <child>
+      <object class="GtkMenuButton" id="reaver">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="relief">none</property>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <child>
+      <object class="GtkButton" id="revealer_button">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="relief">none</property>
+        <signal name="clicked" handler="on_show_widget_choser_clicked" swapped="no"/>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixel_size">24</property>
+            <property name="icon_name">applications-engineering</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkToggleButton">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="relief">none</property>
+        <property name="active">True</property>
+        <signal name="toggled" handler="on_edit_layout_toggled" swapped="no"/>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixel_size">24</property>
+            <property name="icon_name">document-edit-symbolic.symbolic</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkButton">
+        <property name="visible">True</property>
+        <property name="can_focus">True</property>
+        <property name="receives_default">True</property>
+        <property name="relief">none</property>
+        <signal name="clicked" handler="on_show_screen_choser_clicked" swapped="no"/>
+        <child>
+          <object class="GtkImage">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixel_size">24</property>
+            <property name="icon_name">view-app-grid-symbolic.symbolic</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="position">3</property>
+      </packing>
+    </child>
+  </object>
+</interface>

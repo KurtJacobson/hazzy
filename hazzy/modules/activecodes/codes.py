@@ -13,15 +13,15 @@ from gi.repository import GObject
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../../..'))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 UIDIR = os.path.join(PYDIR)
 STYLEDIR = os.path.join(HAZZYDIR, 'hazzy', 'themes')
 
-from hazzy.utilities.status import Status
-from hazzy.utilities import logger
+from utilities.status import Status
+from utilities import logger
 
 # Setup logging
 log = logger.get("HAZZY.ACTIVE_CODES_WIDGET")
