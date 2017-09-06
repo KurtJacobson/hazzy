@@ -97,9 +97,7 @@ class HazzyWindow(Gtk.Window):
             window_name = window.get('name')
             window_title = window.get('title')
 
-            props = {}
-            for prop in window.iterchildren('property'):
-                props[prop.get('name')] = prop.text
+            props = self.get_propertys(window)
 
             self.set_default_size(int(props['w']), int(props['h']))
             self.move(int(props['x']), int(props['y']))
@@ -122,9 +120,7 @@ class HazzyWindow(Gtk.Window):
                     obj, title, size = self.widget_manager.get_widget(package)
                     wwindow = WidgetWindow(package, obj, title)
 
-                    props = {}
-                    for prop in widget.iterchildren('property'):
-                        props[prop.get('name')] = prop.text
+                    props = self.get_propertys(widget)
 
                     screen_obj.put(wwindow, int(props['x']), int(props['y']))
                     wwindow.set_size_request(int(props['w']), int(props['h']))
@@ -193,6 +189,12 @@ class HazzyWindow(Gtk.Window):
         prop = etree.SubElement(parent, 'property')
         prop.set('name', name)
         prop.text = str(value)
+
+    def get_propertys(self, parent):
+        props = {}
+        for prop in parent.iterchildren('property'):
+            props[prop.get('name')] = prop.text
+        return props
 
     def set_maximized(self, maximized):
         if maximized == 'True':
