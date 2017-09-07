@@ -1,0 +1,4 @@
+name: 'Viedo'
+module: 'video'
+class: 'VideoWidget'
+image: 'dro.png'
