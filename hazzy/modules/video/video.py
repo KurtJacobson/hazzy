@@ -20,7 +20,7 @@ Gst.init(None)
 class Video:
     def __init__(self):
 
-        self.drawingarea = Gtk.DrawingArea()
+        self.drawing_area = Gtk.DrawingArea()
 
         # Create GStreamer pipeline
         self.pipeline = Gst.Pipeline()
@@ -49,7 +49,7 @@ class Video:
         # in the on_sync_message() handler because threading issues will cause
         # segfaults there.
 
-        self.xid = self.drawingarea.get_property('window').get_xid()
+        self.xid = self.drawing_area.get_property('window').get_xid()
         self.pipeline.set_state(Gst.State.PLAYING)
 
     def quit(self, window):
@@ -65,7 +65,7 @@ class Video:
         print('on_error():', msg.parse_error())
 
     def get_drawing_area(self):
-        return self.drawingarea
+        return self.drawing_area
 
 
 class VideoWidget(Gtk.Box):
@@ -75,9 +75,8 @@ class VideoWidget(Gtk.Box):
         self.webcam = Video()
         drawing_area = self.webcam.get_drawing_area()
 
-        self.add(drawing_area)
+        self.pack_start(drawing_area, True, True, 0)
 
-        self.webcam.run()
 
 
 def main():
@@ -85,9 +84,10 @@ def main():
 
     video_widget = VideoWidget()
     window.add(video_widget)
-    webcam = video_widget.get_webcam()
-
     window.show_all()
+
+    video_widget.webcam.run()
+
     Gtk.main()
 
 if __name__ == "__main__":
