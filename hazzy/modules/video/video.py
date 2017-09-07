@@ -88,9 +88,9 @@ class VideoWidget(Gtk.Box):
 
     def on_video_toggled(self, button, name):
         if button.get_active():
-            self.webcam.quit(None)
-        else:
             self.webcam.run()
+        else:
+            self.webcam.quit(None)
 
 
 def main():
