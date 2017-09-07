@@ -119,6 +119,9 @@ class HazzyWindow(Gtk.Window):
                 # Add widgets
                 for widget in screen.iter('widget'):
                     package = widget.get('package')
+                    if not self.widget_manager.check_exist(package):
+                        log.error('The package "{}" could not be found'.format(package))
+                        continue
                     obj, title, size = self.widget_manager.get_widget(package)
                     wwindow = WidgetWindow(package, obj, title)
 

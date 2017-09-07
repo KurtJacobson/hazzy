@@ -43,6 +43,10 @@ class WidgetManager:
 
         return widget(), name, size
 
+    def check_exist(self, package):
+        info = self.widget_data.get(package)
+        return bool(info)
+
 
     def get_widgets(self):
         pakages = os.listdir(WIDGET_DIR)
