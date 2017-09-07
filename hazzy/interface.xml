@@ -1,11 +1,11 @@
 <hazzy_interface>
   <!--Interface for: RF45 Milling Machine-->
-  <!--Last modified: 2017-09-06 15:20:28-->
+  <!--Last modified: 2017-09-06 20:08:31-->
   <window name="Window 1" title="Main Window">
-    <property name="maximize">False</property>
+    <property name="maximize">True</property>
     <property name="fullscreen">False</property>
-    <property name="x">283</property>
-    <property name="y">105</property>
+    <property name="x">264</property>
+    <property name="y">125</property>
     <property name="w">912</property>
     <property name="h">759</property>
     <screen name="Screen 1" title="" position="0">
@@ -15,19 +15,19 @@
         <property name="w">500</property>
         <property name="h">320</property>
       </widget>
-      <widget package="dro">
+      <widget package="Dro">
         <property name="x">500</property>
         <property name="y">0</property>
         <property name="w">360</property>
         <property name="h">160</property>
       </widget>
-      <widget package="dro">
+      <widget package="Dro">
         <property name="x">500</property>
         <property name="y">160</property>
         <property name="w">360</property>
         <property name="h">160</property>
       </widget>
-      <widget package="gcodeview">
+      <widget package="GcodeView">
         <property name="x">0</property>
         <property name="y">320</property>
         <property name="w">860</property>
@@ -35,11 +35,17 @@
       </widget>
     </screen>
     <screen name="Screen 2" title="" position="1">
-      <widget package="gcodeview">
+      <widget package="GcodeView">
         <property name="x">0</property>
         <property name="y">0</property>
-        <property name="w">840</property>
-        <property name="h">340</property>
+        <property name="w">860</property>
+        <property name="h">400</property>
+      </widget>
+      <widget package="FileChooser">
+        <property name="x">0</property>
+        <property name="y">300</property>
+        <property name="w">860</property>
+        <property name="h">360</property>
       </widget>
     </screen>
   </window>

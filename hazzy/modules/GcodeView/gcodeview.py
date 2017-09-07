@@ -44,7 +44,7 @@ STYLEDIR = os.path.join(PYDIR, 'gcode_highlight', "styles")
 # Import our own modules
 from utilities import logger
 from utilities.preferences import Preferences
-from modules.touchpads.keyboard import Keyboard
+from modules.TouchPads.keyboard import Keyboard
 
 
 # Setup logger

@@ -12,6 +12,9 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+from utilities import logger
+
+log = logger.get('HAZZY.WIDGET_MANAGER')
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
