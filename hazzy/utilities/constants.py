@@ -10,7 +10,14 @@ class Paths(enumerate):
     HAZZYDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     MAINDIR = os.path.dirname(HAZZYDIR)
 
+    CONFIGDIR = os.environ['CONFIG_DIR']
+
     UIDIR = os.path.join(HAZZYDIR, 'ui')
     MODULEDIR = os.path.join(HAZZYDIR, 'modules')
     STYLEDIR = os.path.join(HAZZYDIR, 'themes')
-    XML_FILE = os.path.join(HAZZYDIR, 'interface.xml')
+
+    # File Paths
+    XML_FILE = os.path.join(CONFIGDIR, 'interface.xml')
+    NC_FILE_DIR = os.environ['LINUXCNC_NCFILES_DIR']
+
+
