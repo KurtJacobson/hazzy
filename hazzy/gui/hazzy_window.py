@@ -110,8 +110,10 @@ class HazzyWindow(Gtk.Window):
                 screen_obj = WidgetArea()
                 screen_name = screen.get('name')
                 screen_title = screen.get('title')
+                screen_pos = int(screen.get('position'))
 
                 self.screen_stack.add_screen(screen_obj, screen_name, screen_title)
+                self.screen_stack.child_set_property(screen_obj, 'position', screen_pos)
                 screens.append(screen_name)
 
                 # Add widgets
@@ -209,9 +211,7 @@ class HazzyWindow(Gtk.Window):
             self.unfullscreen()
 
     def on_window_state_event(self, widget, event):
-
         if event.new_window_state & Gdk.WindowState.FULLSCREEN:
             self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
-
         if event.new_window_state & Gdk.WindowState.MAXIMIZED:
             self.is_maximized = bool(event.new_window_state & Gdk.WindowState.MAXIMIZED)
