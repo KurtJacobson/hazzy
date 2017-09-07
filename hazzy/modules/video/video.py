@@ -70,13 +70,27 @@ class Video:
 
 class VideoWidget(Gtk.Box):
     def __init__(self):
-        Gtk.Box.__init__(self)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+
+        self.set_size_request(320, 240)
+
+        self.video_button = Gtk.ToggleButton("Video")
+        self.video_button.connect("toggled", self.on_video_toggled, "1")
 
         self.webcam = Video()
         drawing_area = self.webcam.get_drawing_area()
 
         self.pack_start(drawing_area, True, True, 0)
+        self.pack_start(self.video_button, True, True, 0)
 
+    def stop(self, *args, **kwargs):
+        self.webcam.quit(None)
+
+    def on_video_toggled(self, button, name):
+        if button.get_active():
+            self.webcam.quit(None)
+        else:
+            self.webcam.run()
 
 
 def main():
@@ -86,7 +100,7 @@ def main():
     window.add(video_widget)
     window.show_all()
 
-    video_widget.webcam.run()
+    window.connect('delete-event', video_widget.stop)
 
     Gtk.main()
 
