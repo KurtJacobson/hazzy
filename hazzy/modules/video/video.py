@@ -81,7 +81,7 @@ class VideoWidget(Gtk.Box):
         drawing_area = self.webcam.get_drawing_area()
 
         self.pack_start(drawing_area, True, True, 0)
-        self.pack_start(self.video_button, True, True, 0)
+        self.pack_start(self.video_button, False, True, 0)
 
     def stop(self, *args, **kwargs):
         self.webcam.quit(None)
