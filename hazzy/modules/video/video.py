@@ -59,18 +59,9 @@ class GstWidget(Gtk.Box):
 
     def run(self):
 
-        if self.gtksink_widget:
-            self.gtksink_widget.destroy()
-            self.stop()
+        pipeline = 'v4l2src device=/dev/video0 ! video/x-raw ! videoconvert !' \
+                   ' gtksink name=imagesink'
 
-        p = "v4l2src device=/dev/video0 \n"
-        p += " ! tee name=t \n"
-        p += "       t. ! videoconvert \n"
-        p += ("                 ! gtksink "
-              "name=imagesink "
-              )
-
-        pipeline = p
         log.info("Launching pipeline %s", pipeline)
         pipeline = Gst.parse_launch(pipeline)
 
