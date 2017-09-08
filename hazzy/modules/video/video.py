@@ -61,7 +61,7 @@ class GstWidget(Gtk.Box):
             self.gtksink_widget.destroy()
             self.stop()
 
-        p = "autovideosrc  \n"
+        p = "v4l2src device=/dev/video0  \n"
         p += " ! tee name=t \n"
         p += "       t. ! queue ! videoconvert \n"
         p += "                  ! zbar cache=true attach_frame=true \n"
