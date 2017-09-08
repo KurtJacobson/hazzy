@@ -16,9 +16,22 @@ Gst.init_check(None)
 
 class GstWidget(Gtk.Box):
     def __init__(self, *args, **kwargs):
-        Gtk.Box.__init__(self)
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.connect('unmap', self.on_unmap)
         self.connect('map', self.on_map)
+
+        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        button_start = Gtk.Button("Start")
+        button_pause = Gtk.Button("Pause")
+        button_stop = Gtk.Button("Stop")
+
+        button_box.pack_start(button_start, True, True, 0)
+        button_box.pack_start(button_pause, True, True, 0)
+        button_box.pack_start(button_stop, True, True, 0)
+
+        self.pack_end(button_box, False, True, 0)
+
 
     def on_message(self, bus, message):
         # log.debug("Message: %s", message)
@@ -58,13 +71,7 @@ class GstWidget(Gtk.Box):
 
         self.imagesink = pipeline.get_by_name('imagesink')
         self.gtksink_widget = self.imagesink.get_property("widget")
-        log.info("About to remove children from %r", self)
-        for child in self.get_children():
-            log.info("About to remove child: %r", child)
-            self.remove(child)
-        # self.gtksink_widget.set_property("expand", False)
-        log.info("Adding sink widget: %r", self.gtksink_widget)
-        # self.add(self.gtksink_widget)
+
         self.pack_start(self.gtksink_widget, True, True, 0)
         self.gtksink_widget.show()
 
@@ -76,6 +83,11 @@ class GstWidget(Gtk.Box):
 
         pipeline.set_state(Gst.State.PLAYING)
 
+    def stop(self):
+        self.pipeline.set_state(Gst.State.PAUSED)
+        # Actually, we stop the thing for real
+        self.pipeline.set_state(Gst.State.NULL)
+
     def pause(self):
         self.pipeline.set_state(Gst.State.PAUSED)
 
@@ -86,9 +98,7 @@ class GstWidget(Gtk.Box):
     def on_unmap(self, *args, **kwargs):
         '''Hopefully called when this widget is hidden,
         e.g. when the tab of a notebook has changed'''
-        self.pipeline.set_state(Gst.State.PAUSED)
-        # Actually, we stop the thing for real
-        self.pipeline.set_state(Gst.State.NULL)
+        self.stop()
 
 
 def main():
