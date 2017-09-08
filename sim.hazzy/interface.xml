@@ -1,65 +1,43 @@
 <hazzy_interface>
   <!--Interface for: RF45 Milling Machine-->
-  <!--Last modified: 2017-09-07 14:31:41-->
+  <!--Last modified: 2017-09-08 00:23:30-->
   <window name="Window 1" title="Main Window">
     <property name="maximize">False</property>
     <property name="fullscreen">False</property>
-    <property name="x">219</property>
-    <property name="y">99</property>
-    <property name="w">912</property>
-    <property name="h">759</property>
-    <screen name="Screen 3" title="" position="0">
-      <widget package="Dro">
-        <property name="x">0</property>
-        <property name="y">0</property>
-        <property name="w">320</property>
-        <property name="h">160</property>
-      </widget>
+    <property name="x">277</property>
+    <property name="y">166</property>
+    <property name="w">900</property>
+    <property name="h">600</property>
+    <screen name="Screen 1" title="Screen 1" position="0">
       <widget package="BasicControls">
         <property name="x">0</property>
-        <property name="y">160</property>
-        <property name="w">320</property>
-        <property name="h">140</property>
+        <property name="y">340</property>
+        <property name="w">260</property>
+        <property name="h">160</property>
       </widget>
-    </screen>
-    <screen name="Screen 1" title="" position="1">
+      <widget package="GcodeView">
+        <property name="x">500</property>
+        <property name="y">240</property>
+        <property name="w">340</property>
+        <property name="h">260</property>
+      </widget>
+      <widget package="Dro">
+        <property name="x">500</property>
+        <property name="y">0</property>
+        <property name="w">340</property>
+        <property name="h">240</property>
+      </widget>
       <widget package="ToolTable">
         <property name="x">0</property>
         <property name="y">0</property>
         <property name="w">500</property>
-        <property name="h">320</property>
-      </widget>
-      <widget package="Dro">
-        <property name="x">500</property>
-        <property name="y">0</property>
-        <property name="w">360</property>
-        <property name="h">160</property>
-      </widget>
-      <widget package="Dro">
-        <property name="x">500</property>
-        <property name="y">160</property>
-        <property name="w">360</property>
-        <property name="h">160</property>
-      </widget>
-      <widget package="GcodeView">
-        <property name="x">0</property>
-        <property name="y">320</property>
-        <property name="w">860</property>
         <property name="h">340</property>
       </widget>
-    </screen>
-    <screen name="Screen 2" title="" position="2">
-      <widget package="GcodeView">
-        <property name="x">0</property>
-        <property name="y">0</property>
-        <property name="w">860</property>
-        <property name="h">400</property>
-      </widget>
-      <widget package="FileChooser">
-        <property name="x">0</property>
-        <property name="y">300</property>
-        <property name="w">860</property>
-        <property name="h">360</property>
+      <widget package="BasicControls">
+        <property name="x">260</property>
+        <property name="y">340</property>
+        <property name="w">240</property>
+        <property name="h">160</property>
       </widget>
     </screen>
   </window>

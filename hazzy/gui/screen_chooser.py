@@ -59,30 +59,28 @@ class ScreenView(Gtk.IconView):
 
         self.do_unselect_all(self)
 
-        model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
-        self.set_model(model)
-
-        self.widget_manager = WidgetManager()
-        self.fill_iconview(self.widget_manager.get_widgets())
+        self.model = Gtk.ListStore(str, GdkPixbuf.Pixbuf)
+        self.set_model(self.model)
+        self.fill_iconview(None)
 
     def fill_iconview(self, screens):
-        model = self.get_model()
-        model.clear()
+        self.model.clear()
         theme = Gtk.IconTheme.get_default()
         icon = theme.load_icon('image-missing', 56, 0)
-        for screen in screens:
-            model.append([screen, icon])
+        if screens:
+            for screen in screens:
+                self.model.append([screen, icon])
 
         icon = theme.load_icon('list-add', 56, Gtk.IconLookupFlags.FORCE_SIZE)
         self.get_model().append(['Add Screen', icon])
 
     def on_icon_clicked(self, widget, path):
-        name = self.get_model()[path][0]
+        name = self.model[path][0]
         stack = self.get_parent().get_parent().get_child()
         if name == "Add Screen":
             name = 'Screen {}'.format(len(stack.get_children()) + 1)
             icon = Gtk.IconTheme.get_default().load_icon('image-missing', 56, 0)
             self.get_model().append([name, icon])
-            stack.add_screen(WidgetArea(), name)
+            stack.add_screen(WidgetArea(), name, name)
         stack.show_screen(name)
         self.get_parent().set_reveal_child(False)

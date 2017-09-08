@@ -50,6 +50,9 @@ class HazzyWindow(Gtk.Window):
         self.screen_stack = ScreenStack()
         self.overlay.add(self.screen_stack)
 
+        self.switcher = self.builder.get_object('stack_switcher')
+        self.switcher.set_stack(self.screen_stack)
+
         self.widget_chooser = WidgetChooser()
         self.overlay.add_overlay(self.widget_chooser)
 
