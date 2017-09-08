@@ -18,7 +18,7 @@ class GstWidget(Gtk.Box):
     def __init__(self, *args, **kwargs):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.connect('unmap', self.on_unmap)
-        # self.connect('map', self.on_map)
+        self.connect('map', self.on_map)
 
         self.set_size_request(320, 280)
         self.set_hexpand(True)
@@ -37,10 +37,9 @@ class GstWidget(Gtk.Box):
 
     def on_button_start_toggled(self, button, name):
         if button.get_active():
-            self.run()
+            self.resume()
         else:
             self.pause()
-
 
     def on_message(self, bus, message):
         # log.debug("Message: %s", message)
@@ -77,16 +76,16 @@ class GstWidget(Gtk.Box):
         bus.connect('message', self.on_message)
         bus.add_signal_watch()
 
-        pipeline.set_state(Gst.State.PLAYING)
-
     def stop(self):
         self.pipeline.set_state(Gst.State.PAUSED)
         # Actually, we stop the thing for real
         self.pipeline.set_state(Gst.State.NULL)
 
-
     def pause(self):
-        self.pipeline.set_state(Gst.State.PAUSED)
+        self.pipeline.set_state(Gst.State.NULL)
+
+    def resume(self):
+        self.pipeline.set_state(Gst.State.PLAYING)
 
     def on_map(self, *args, **kwargs):
         '''It seems this is called when the widget is becoming visible'''
