@@ -18,19 +18,26 @@ class GstWidget(Gtk.Box):
     def __init__(self, *args, **kwargs):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.connect('unmap', self.on_unmap)
-        self.connect('map', self.on_map)
+        # self.connect('map', self.on_map)
+
+        self.set_size_request(320, 280)
 
         button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
-        button_start = Gtk.Button("Start")
-        button_pause = Gtk.Button("Pause")
-        button_stop = Gtk.Button("Stop")
+        button_start = Gtk.ToggleButton("Start")
+
+        button_start.connect("toggled", self.on_button_start_toggled, "1")
 
         button_box.pack_start(button_start, True, True, 0)
-        button_box.pack_start(button_pause, True, True, 0)
-        button_box.pack_start(button_stop, True, True, 0)
 
         self.pack_end(button_box, False, True, 0)
+        self.gtksink_widget = None
+
+    def on_button_start_toggled(self, button, name):
+        if button.get_active():
+            self.run()
+        else:
+            self.pause()
 
 
     def on_message(self, bus, message):
@@ -49,9 +56,12 @@ class GstWidget(Gtk.Box):
                     log.warning('GstWarning: %s, %s', err, debug)
 
     def run(self):
+
+        if self.gtksink_widget:
+            self.gtksink_widget.destroy()
+            self.stop()
+
         p = "autovideosrc  \n"
-        # p = "uridecodebin uri=file:///tmp/qr.png "
-        # p = "uridecodebin uri=file:///tmp/v.webm "
         p += " ! tee name=t \n"
         p += "       t. ! queue ! videoconvert \n"
         p += "                  ! zbar cache=true attach_frame=true \n"
@@ -87,6 +97,7 @@ class GstWidget(Gtk.Box):
         self.pipeline.set_state(Gst.State.PAUSED)
         # Actually, we stop the thing for real
         self.pipeline.set_state(Gst.State.NULL)
+
 
     def pause(self):
         self.pipeline.set_state(Gst.State.PAUSED)
