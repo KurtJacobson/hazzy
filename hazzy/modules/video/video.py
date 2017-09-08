@@ -21,6 +21,8 @@ class GstWidget(Gtk.Box):
         # self.connect('map', self.on_map)
 
         self.set_size_request(320, 280)
+        self.set_hexpand(True)
+        self.set_vexpand(True)
 
         button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
