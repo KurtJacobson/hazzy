@@ -6,8 +6,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 
-from gi.repository import Gtk, Gst, GdkPixbuf
-from gi.repository import GObject
+from gi.repository import Gtk, Gst
 
 log = logging.getLogger(__name__)
 
@@ -16,16 +15,6 @@ Gst.init_check(None)
 
 
 class GstWidget(Gtk.Box):
-    __gsignals__ = {
-        str('barcode'): (GObject.SIGNAL_RUN_LAST, None,
-                         (str,  # The barcode string
-                          Gst.Message.__gtype__,  # The GStreamer message itself
-                          GdkPixbuf.Pixbuf.__gtype__,  # The pixbuf which caused
-                          # the above string to be decoded
-                          ),
-                         )
-    }
-
     def __init__(self, *args, **kwargs):
         Gtk.Box.__init__(self)
         self.connect('unmap', self.on_unmap)
