@@ -1,4 +1,4 @@
-name: 'Viedo'
+name: 'She Works! (kinda)'
 module: 'video'
-class: 'VideoWidget'
+class: 'GstWidget'
 image: 'dro.png'
