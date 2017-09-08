@@ -65,16 +65,9 @@ class GstWidget(Gtk.Box):
 
         p = "v4l2src device=/dev/video0  \n"
         p += " ! tee name=t \n"
-        p += "       t. ! queue ! videoconvert \n"
-        p += "                  ! zbar cache=true attach_frame=true \n"
-        p += "                  ! fakesink \n"
-        p += "       t. ! queue ! videoconvert \n"
+        p += "       t. ! videoconvert \n"
         p += ("                 ! gtksink "
-              "sync=false "
               "name=imagesink "
-              # "max-lateness=2000000000000  "
-              "enable-last-sample=false "
-              "\n"
               )
 
         pipeline = p
