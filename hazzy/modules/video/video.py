@@ -63,7 +63,7 @@ class GstWidget(Gtk.Box):
             self.gtksink_widget.destroy()
             self.stop()
 
-        p = "v4l2src device=/dev/video0  \n"
+        p = "v4l2src device=/dev/video0 \n"
         p += " ! tee name=t \n"
         p += "       t. ! videoconvert \n"
         p += ("                 ! gtksink "
