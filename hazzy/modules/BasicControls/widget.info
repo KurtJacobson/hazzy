@@ -1,3 +1,4 @@
 name: 'Basic Controls'
 module: 'basic_controls'
 class: 'BasicControls'
+image: 'basic_controls.png'
