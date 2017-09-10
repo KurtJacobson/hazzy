@@ -20,23 +20,41 @@ class GstWidget(Gtk.Box):
         self.connect('unmap', self.on_unmap)
         self.connect('map', self.on_map)
 
+        self.config_stack = False
+
         self.set_size_request(320, 280)
         self.set_hexpand(True)
         self.set_vexpand(True)
 
-        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        self.stack.set_transition_duration(1000)
+
+        self.widget_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         button_start = Gtk.ToggleButton("Start")
-
         button_start.connect("toggled", self.on_button_start_toggled, "1")
 
-        button_box.pack_start(button_start, True, True, 0)
+        self.widget_box.pack_end(button_start, False, True, 0)
 
-        self.pack_end(button_box, False, True, 0)
+        self.stack.add_titled(self.widget_box, "widget", "Widget View")
+        self.stack.add_titled(self.config_box, "config", "Widget Config")
+
+        self.pack_start(self.stack, True, True, 0)
+
         self.gtksink_widget = None
 
     def on_settings_button_pressed(self, button):
         print("Video Widget says: The settings button was presed, I should do somthing")
+        if self.config_stack:
+            self.config_stack = False
+            self.stack.set_visible_child_name("widget")
+        else:
+            self.config_stack = True
+            self.stack.set_visible_child_name("config")
+
+
 
     def on_button_start_toggled(self, button, name):
         if button.get_active():
@@ -70,7 +88,7 @@ class GstWidget(Gtk.Box):
         self.imagesink = pipeline.get_by_name('imagesink')
         self.gtksink_widget = self.imagesink.get_property("widget")
 
-        self.pack_start(self.gtksink_widget, True, True, 0)
+        self.widget_box.pack_start(self.gtksink_widget, True, True, 0)
         self.gtksink_widget.show()
 
         self.pipeline = pipeline
