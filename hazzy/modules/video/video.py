@@ -35,7 +35,7 @@ class GstWidget(Gtk.Box):
         self.pack_end(button_box, False, True, 0)
         self.gtksink_widget = None
 
-    def on_settings_button_presed(self, button):
+    def on_settings_button_pressed(self, button):
         print("Video Widget says: The settings button was presed, I should do somthing")
 
     def on_button_start_toggled(self, button, name):

@@ -39,8 +39,8 @@ class WidgetWindow(Gtk.Box):
         wwindow = builder.get_object('widgetwindow')
         self.overlay = builder.get_object('overlay')
 
-        if hasattr(self.module_widget, 'on_settings_button_presed'):
-            menu_btn.connect('clicked', self.module_widget.on_settings_button_presed)
+        if hasattr(self.module_widget, 'on_settings_button_pressed'):
+            menu_btn.connect('clicked', self.module_widget.on_settings_button_pressed)
 
         label.set_text(title)
         box.add(self.module_widget)
