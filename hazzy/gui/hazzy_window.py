@@ -174,7 +174,7 @@ class HazzyWindow(Gtk.Window):
             widgets = screen.get_children()
             for widget in widgets:
                 wid = etree.SubElement(scr, "widget")
-                wid.set('package', widget.package)
+                wid.set('package', widget.module_package)
 
                 x = screen.child_get_property(widget, 'x')
                 y = screen.child_get_property(widget, 'y')
