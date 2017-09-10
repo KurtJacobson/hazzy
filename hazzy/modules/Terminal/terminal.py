@@ -15,27 +15,29 @@ PYDIR = os.path.join(os.path.dirname(__file__))
 
 print "PYDIR", PYDIR
 
-class Terminal(Vte.Terminal):
+class Terminal(Gtk.ScrolledWindow):
 
     def __init__(self):
-        Vte.Terminal.__init__(self)
+        Gtk.ScrolledWindow.__init__(self)
 
-        self.spawn_sync(
-            Vte.PtyFlags.DEFAULT,
-            PYDIR,                                  # working directory
-            ["/usr/bin/python"],
-            None,
-            GLib.SpawnFlags.CHILD_INHERITS_STDIN,
-            None,
-            None,
-            )
+        self.terminal=Vte.Terminal()
+        self.terminal.spawn_sync(
+                Vte.PtyFlags.DEFAULT,   # depreciated, does nothing?
+                os.environ['HOME'],     # where to start the command?
+                ["/bin/bash"],          # where is the emulator?
+                [],                     # it's ok to leave this list empty
+                GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                None,                   # at least None is required
+                None,
+                )
+
+        self.terminal.set_font_scale(1.1)
 
         self.set_size_request(200, 200)
         self.set_hexpand(True)
         self.set_vexpand(True)
 
-        self.set_font_scale(1.25)
-
+        self.add(self.terminal)
 
 def main():
     win = Gtk.Window()
