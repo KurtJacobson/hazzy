@@ -25,8 +25,9 @@ class WidgetWindow(Gtk.Box):
     def __init__(self, package, widget, title):
         Gtk.Box.__init__(self)
 
-        self.package = package
-        self.title = title
+        self.module_package = package
+        self.module_widget = widget
+        self.module_title = title
 
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(PYDIR, 'ui', 'widgetwindow.ui'))
@@ -38,23 +39,14 @@ class WidgetWindow(Gtk.Box):
         wwindow = builder.get_object('widgetwindow')
         self.overlay = builder.get_object('overlay')
 
-        menu_btn.connect('clicked', self.on_settings_button_presed)
+        if hasattr(self.module_widget, 'on_settings_button_presed'):
+            menu_btn.connect('clicked', self.module_widget.on_settings_button_presed)
 
         label.set_text(title)
-        box.add(widget)
-
-        self.callback = None
-        if hasattr(widget, 'on_settings_button_presed'):
-            self.callback = widget.on_settings_button_presed
+        box.add(self.module_widget)
 
         self.add(wwindow)
         self.show_all()
-
-
-    def on_settings_button_presed(self, widget):
-        print 'WidgetWindow says: my settings button was pressed'
-        if self.callback:
-            self.callback()
 
 
     def show_overlay(self, setting):

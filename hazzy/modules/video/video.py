@@ -35,6 +35,9 @@ class GstWidget(Gtk.Box):
         self.pack_end(button_box, False, True, 0)
         self.gtksink_widget = None
 
+    def on_settings_button_presed(self, button):
+        print("Video Widget says: The settings button was presed, I should do somthing")
+
     def on_button_start_toggled(self, button, name):
         if button.get_active():
             self.resume()
@@ -95,9 +98,6 @@ class GstWidget(Gtk.Box):
         '''Hopefully called when this widget is hidden,
         e.g. when the tab of a notebook has changed'''
         self.stop()
-
-    def on_settings_button_presed(self):
-        print "Video Widget says: The settings button was presed, I should do somthing"
 
 
 def main():
