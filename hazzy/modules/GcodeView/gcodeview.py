@@ -36,6 +36,8 @@ HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 if not HAZZYDIR in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
+UI = os.path.join(PYDIR, 'ui', 'gcode_view.ui')
+
 # Import our own modules
 from gcode_view import GcodeView
 
@@ -43,21 +45,27 @@ from gcode_view import GcodeView
 #log = logger.get("HAZZY.GCODEVIEW")
 
 
-class GcodeViewWidget(Gtk.ScrolledWindow):
+class GcodeViewWidget(Gtk.Box):
 
     def __init__(self):
-        Gtk.ScrolledWindow.__init__(self)
+        Gtk.Box.__init__(self)
+
+        self.set_size_request(200, 160)
+
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(UI)
+        self.builder.connect_signals(self)
+
+        self.add(self.builder.get_object('main'))
+        self.scrolled = self.builder.get_object('gcode_scroller')
 
         self.gcode_view = GcodeView(preview=True)
-
-        self.add(self.gcode_view)
-        self.set_size_request(90, 100)
-        self.set_hexpand(True)
-        self.set_vexpand(True)
-
         buf = self.gcode_view.get_buffer()
         buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
         self.gcode_view.highlight_line(3, 'motion')
 
+        self.scrolled.add(self.gcode_view)
+
         self.show_all()
+
 
