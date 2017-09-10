@@ -45,6 +45,10 @@ class WidgetWindow(Gtk.Box):
         label.set_text(title)
         box.add(self.module_widget)
 
+        self.callback = None
+        if hasattr(widget, 'on_settings_button_presed'):
+            self.callback = widget.on_settings_button_presed
+
         self.add(wwindow)
         self.show_all()
 
