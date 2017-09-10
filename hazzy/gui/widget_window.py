@@ -22,7 +22,7 @@ RESIZE_XY = 3
 
 class WidgetWindow(Gtk.Box):
 
-    def __init__(self, package, widget, title, menu_callback=None):
+    def __init__(self, package, widget, title):
         Gtk.Box.__init__(self)
 
         self.package = package
@@ -38,15 +38,24 @@ class WidgetWindow(Gtk.Box):
         wwindow = builder.get_object('widgetwindow')
         self.overlay = builder.get_object('overlay')
 
+        menu_btn.connect('clicked', self.on_settings_button_presed)
+
         label.set_text(title)
         box.add(widget)
 
+        self.callback = None
+        if hasattr(widget, 'on_settings_button_presed'):
+            self.callback = widget.on_settings_button_presed
+
         self.add(wwindow)
-
-        if menu_callback:
-            self.menu_btn.connect('pressed', menu_callback, self)
-
         self.show_all()
+
+
+    def on_settings_button_presed(self, widget):
+        print 'WidgetWindow says: my settings button was pressed'
+        if self.callback:
+            self.callback()
+
 
     def show_overlay(self, setting):
         if setting:

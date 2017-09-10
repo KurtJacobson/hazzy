@@ -96,6 +96,9 @@ class GstWidget(Gtk.Box):
         e.g. when the tab of a notebook has changed'''
         self.stop()
 
+    def on_settings_button_presed(self):
+        print "Video Widget says: The settings button was presed, I should do somthing"
+
 
 def main():
 
