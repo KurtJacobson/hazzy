@@ -28,7 +28,7 @@ class GstWidget(Gtk.Box):
 
         self.stack = Gtk.Stack()
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-        self.stack.set_transition_duration(1000)
+        self.stack.set_transition_duration(500)
 
         self.widget_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -38,6 +38,11 @@ class GstWidget(Gtk.Box):
 
         self.widget_box.pack_end(button_start, False, True, 0)
 
+        self.video_device_entry = Gtk.Entry()
+        self.video_device_entry.set_text("/dev/video0")
+
+        self.config_box.pack_start(self.video_device_entry, False, True, 0)
+
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
         self.stack.add_titled(self.config_box, "config", "Widget Config")
 
@@ -46,15 +51,12 @@ class GstWidget(Gtk.Box):
         self.gtksink_widget = None
 
     def on_settings_button_pressed(self, button):
-        print("Video Widget says: The settings button was presed, I should do somthing")
         if self.config_stack:
             self.config_stack = False
             self.stack.set_visible_child_name("widget")
         else:
             self.config_stack = True
             self.stack.set_visible_child_name("config")
-
-
 
     def on_button_start_toggled(self, button, name):
         if button.get_active():
@@ -119,7 +121,6 @@ class GstWidget(Gtk.Box):
 
 
 def main():
-
     window = Gtk.Window()
     window.connect('destroy', Gtk.main_quit)
 
@@ -131,6 +132,7 @@ def main():
     window.show_all()
 
     Gtk.main()
+
 
 if __name__ == "__main__":
     main()
