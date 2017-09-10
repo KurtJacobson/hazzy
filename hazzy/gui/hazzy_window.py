@@ -50,6 +50,9 @@ class HazzyWindow(Gtk.Window):
         self.screen_stack = ScreenStack()
         self.overlay.add(self.screen_stack)
 
+        self.switcher = self.builder.get_object('stack_switcher')
+        self.switcher.set_stack(self.screen_stack)
+
         self.widget_chooser = WidgetChooser()
         self.overlay.add_overlay(self.widget_chooser)
 
@@ -97,9 +100,7 @@ class HazzyWindow(Gtk.Window):
             window_name = window.get('name')
             window_title = window.get('title')
 
-            props = {}
-            for prop in window.iterchildren('property'):
-                props[prop.get('name')] = prop.text
+            props = self.get_propertys(window)
 
             self.set_default_size(int(props['w']), int(props['h']))
             self.move(int(props['x']), int(props['y']))
@@ -112,19 +113,22 @@ class HazzyWindow(Gtk.Window):
                 screen_obj = WidgetArea()
                 screen_name = screen.get('name')
                 screen_title = screen.get('title')
+                screen_pos = int(screen.get('position'))
 
                 self.screen_stack.add_screen(screen_obj, screen_name, screen_title)
+                self.screen_stack.child_set_property(screen_obj, 'position', screen_pos)
                 screens.append(screen_name)
 
                 # Add widgets
                 for widget in screen.iter('widget'):
                     package = widget.get('package')
+                    if not self.widget_manager.check_exist(package):
+                        log.error('The package "{}" could not be found'.format(package))
+                        continue
                     obj, title, size = self.widget_manager.get_widget(package)
                     wwindow = WidgetWindow(package, obj, title)
 
-                    props = {}
-                    for prop in widget.iterchildren('property'):
-                        props[prop.get('name')] = prop.text
+                    props = self.get_propertys(widget)
 
                     screen_obj.put(wwindow, int(props['x']), int(props['y']))
                     wwindow.set_size_request(int(props['w']), int(props['h']))
@@ -194,6 +198,12 @@ class HazzyWindow(Gtk.Window):
         prop.set('name', name)
         prop.text = str(value)
 
+    def get_propertys(self, parent):
+        props = {}
+        for prop in parent.iterchildren('property'):
+            props[prop.get('name')] = prop.text
+        return props
+
     def set_maximized(self, maximized):
         if maximized == 'True':
             self.maximize()
@@ -207,9 +217,7 @@ class HazzyWindow(Gtk.Window):
             self.unfullscreen()
 
     def on_window_state_event(self, widget, event):
-
         if event.new_window_state & Gdk.WindowState.FULLSCREEN:
             self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
-
         if event.new_window_state & Gdk.WindowState.MAXIMIZED:
             self.is_maximized = bool(event.new_window_state & Gdk.WindowState.MAXIMIZED)

@@ -19,55 +19,18 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sys
 import gi
-import importlib
 
-gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('GtkSource', '3.0')
 
-from gi.repository import GObject
-from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GtkSource
 
 # Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if not HAZZYDIR in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
 LANGDIR = os.path.join(PYDIR, 'gcode_highlight', "language-specs")
 STYLEDIR = os.path.join(PYDIR, 'gcode_highlight', "styles")
-
-# Import our own modules
-from utilities import logger
-from utilities.preferences import Preferences
-from modules.touchpads.keyboard import Keyboard
-
-
-# Setup logger
-log = logger.get("HAZZY.GCODEVIEW")
-
-
-class GcodeViewWidget(Gtk.ScrolledWindow):
-
-    def __init__(self):
-        Gtk.ScrolledWindow.__init__(self)
-
-        self.gcodeview = GcodeView(preview=True)
-
-        self.add(self.gcodeview)
-        self.set_size_request(90, 100)
-        self.set_hexpand(True)
-        self.set_vexpand(True)
-
-        buf = self.gcodeview.get_buffer()
-        buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
-        self.gcodeview.highlight_line(3, 'motion')
-
-        self.show_all()
 
 
 class GcodeView(GtkSource.View):
@@ -76,10 +39,6 @@ class GcodeView(GtkSource.View):
         GtkSource.View.__init__(self)
 
         self.is_preview = preview
-
-        # Module init
-        self.prefs = Preferences
-        self.keyboard = Keyboard
 
         # create buffer
         self.buf = self.get_buffer()
@@ -110,14 +69,12 @@ class GcodeView(GtkSource.View):
             self.set_can_focus(False)
             self.holder_text = ""
 
-        self.connect('button-press-event', self.on_button_press)
         self.connect('key-press-event', self.on_key_press)
 
         # Set line highlight styles
         self.add_mark_category('error', '#ff7373')
         self.add_mark_category('motion', '#c5c5c5')
         self.add_mark_category('selected', '#96fef6')
-
 
         self.mark = None
         self.current_file = None
@@ -186,24 +143,6 @@ class GcodeView(GtkSource.View):
     def get_program_length(self):
         return self.buf.get_line_count()
 
-
-    # Toggle line numbers on double click
-    def on_button_press(self, widget, event):
-        if event.type == Gdk.EventType.DOUBLE_BUTTON_PRESS:
-            if widget.get_show_line_numbers():
-                widget.set_show_line_numbers(False)
-            else:
-                widget.set_show_line_numbers(True)
-        elif event.button == 3:
-            return True
-
-        if self.is_preview:
-            if self.current_file is None:
-                pass #self.load_file(self.prefs.getpref("FILE PATHS", "NEW_PROGRAM_TEMPLATE", "", str))
-            if True: #self.prefs.getpref("POP-UP KEYPAD", "USE_ON_EDIT", "YES"):
-                self.keyboard.show(widget, True)
-
-
     # If no "save as" file name specified save to the current file in preview
     def save(self, fn=None):
         if fn is None:
@@ -216,29 +155,9 @@ class GcodeView(GtkSource.View):
         self.buf.set_modified(False)
         log.info('Saved file as "{0}"'.format(fn))
 
-
     # ctrl+s to save the file
     def on_key_press(self, widget, event):
         kv = event.keyval
         if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
             if kv == Gdk.KEY_s:
                 self.save()
-
-
-
-# ==========================================================
-# For standalone testing
-# ==========================================================
-
-def main():
-    gcodeview = GcodeViewWidget()
-    window = Gtk.Window()
-    window.add(gcodeview)
-    window.set_default_size(350, 400)
-    window.connect('destroy', Gtk.main_quit)
-    window.show_all()
-
-    Gtk.main()
-
-if __name__ == "__main__":
-    main()

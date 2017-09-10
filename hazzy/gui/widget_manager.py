@@ -12,6 +12,9 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+from utilities import logger
+
+log = logger.get('HAZZY.WIDGET_MANAGER')
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -39,6 +42,10 @@ class WidgetManager:
         widget = getattr(module, clas)
 
         return widget(), name, size
+
+    def check_exist(self, package):
+        info = self.widget_data.get(package)
+        return bool(info)
 
 
     def get_widgets(self):
