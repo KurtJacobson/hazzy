@@ -81,34 +81,33 @@ class GstWidget(Gtk.Box):
 
     def run(self):
 
-        pipeline = 'v4l2src device=/dev/video0 ! video/x-raw ! videoconvert !' \
+        pipeline = 'v4l2src device=/dev/video0 !' \
+                   ' video/x-raw !' \
+                   ' videoconvert !' \
                    ' gtksink name=imagesink'
 
-        log.info("Launching pipeline %s", pipeline)
-        pipeline = Gst.parse_launch(pipeline)
+        self.player = Gst.parse_launch(pipeline)
 
-        self.imagesink = pipeline.get_by_name('imagesink')
+        self.imagesink = self.player.get_by_name('imagesink')
         self.gtksink_widget = self.imagesink.get_property("widget")
 
         self.widget_box.pack_start(self.gtksink_widget, True, True, 0)
         self.gtksink_widget.show()
 
-        self.pipeline = pipeline
-
-        bus = pipeline.get_bus()
+        bus = self.player.get_bus()
         bus.connect('message', self.on_message)
         bus.add_signal_watch()
 
     def stop(self):
-        self.pipeline.set_state(Gst.State.PAUSED)
+        self.player.set_state(Gst.State.PAUSED)
         # Actually, we stop the thing for real
-        self.pipeline.set_state(Gst.State.NULL)
+        self.player.set_state(Gst.State.NULL)
 
     def pause(self):
-        self.pipeline.set_state(Gst.State.NULL)
+        self.player.set_state(Gst.State.NULL)
 
     def resume(self):
-        self.pipeline.set_state(Gst.State.PLAYING)
+        self.player.set_state(Gst.State.PLAYING)
 
     def on_map(self, *args, **kwargs):
         '''It seems this is called when the widget is becoming visible'''
