@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
-import logging
+import os
+import sys
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -8,7 +8,22 @@ gi.require_version('Gst', '1.0')
 
 from gi.repository import Gtk, Gst
 
-log = logging.getLogger(__name__)
+# Setup paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
+if HAZZYDIR not in sys.path:
+    sys.path.insert(1, HAZZYDIR)
+
+
+UIDIR = os.path.join(PYDIR, 'ui')
+STYLEDIR = os.path.join(HAZZYDIR, 'themes')
+
+from utilities.constants import Paths
+from utilities import logger
+
+
+# Setup logging
+log = logger.get("HAZZY.VIDEO")
 
 Gst.init(None)
 Gst.init_check(None)
@@ -48,6 +63,7 @@ class GstWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
+        self.player  = None
         self.gtksink_widget = None
 
     def on_settings_button_pressed(self, button):
@@ -74,17 +90,18 @@ class GstWidget(Gtk.Box):
 
                 if struct_name == 'GstMessageError':
                     err, debug = message.parse_error()
-                    log.error('GstError: %s, %s', err, debug)
+                    log.error('GstError: {}, {}'.format(err, debug))
                 elif struct_name == 'GstMessageWarning':
                     err, debug = message.parse_warning()
-                    log.warning('GstWarning: %s, %s', err, debug)
+                    log.warning('GstWarning: {}, {}'.format(err, debug))
 
     def run(self):
 
         pipeline = 'v4l2src device=/dev/video0 !' \
-                   ' video/x-raw !' \
-                   ' videoconvert !' \
-                   ' gtksink name=imagesink'
+                   ' tee name=t !' \
+                   ' queue ! video/x-raw ! videoconvert ! gtksink name=imagesink t. !' \
+                   ' queue ! video/x-raw ! jpegenc ! rtpjpegpay !' \
+                   ' tcpserversink host=0.0.0.0 port=5000'
 
         self.player = Gst.parse_launch(pipeline)
 
