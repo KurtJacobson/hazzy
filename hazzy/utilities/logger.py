@@ -34,6 +34,7 @@ log_file = os.path.join(Paths.HAZZYDIR, 'hazzy.log')
 
 # Get logger for module with name 'name'
 def get(name):
+    name = 'HAZZY.' + name.upper()
     return logging.getLogger(name)
 
 
@@ -62,5 +63,5 @@ fh.setFormatter(ff)
 base_log.addHandler(fh)
 
 # Get logger for logger
-log = get('HAZZY.LOGGER')
+log = get(__name__)
 log.info('Logging to "{}"'.format(log_file))
