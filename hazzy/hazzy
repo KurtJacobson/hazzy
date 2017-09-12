@@ -82,7 +82,7 @@ def main(argv):
 
     Gtk.main()
 
-    log.info("red$Quiting")
+    log.info("red$Quitting")
 
     run_time = datetime.datetime.now() - start_time
     log.info("Total session duration: {}".format(run_time))
