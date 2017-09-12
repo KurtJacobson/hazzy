@@ -6,9 +6,11 @@
 
 import os
 import sys
-import gi
 import datetime
 import linuxcnc
+import traceback
+
+import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -27,20 +29,27 @@ log = logger.get('HAZZY')
 BASE = None
 INIFILE = None
 
+# Log exceptions
+def excepthook(exc_type, exc_value, exc_traceback):
+    message = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    log.critical("".join(message))
+
+# Connect our excepthook handler
+sys.excepthook = excepthook
+
 # Check LinuxCNC Version
 major, minor, micro = os.environ.get('LINUXCNCVERSION').split('.')
 if (int(major), int(minor)) < (2, 8):
-    log.error("LinuxCNC is version {}.{}.{} but hazzy requires LinuxCNC 2.8 or above"
+    log.critical("LinuxCNC is version {}.{}.{} but hazzy requires LinuxCNC 2.8 or above"
         .format(major, minor, micro))
     sys.exit()
 
 # Check GTK+ Version
 major, minor, micro = Gtk.MAJOR_VERSION, Gtk.MINOR_VERSION, Gtk.MICRO_VERSION
 if (major, minor) < (3, 20):
-    log.error("GTK+ is version {}.{}.{} but hazzy requires GTK+ 3.20 or above"
+    log.critical("GTK+ is version {}.{}.{} but hazzy requires GTK+ 3.20 or above"
         .format(major, minor, micro))
     sys.exit()
-
 
 def main(argv):
 
