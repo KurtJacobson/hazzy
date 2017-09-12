@@ -188,9 +188,9 @@ class HazzyWindow(Gtk.Window):
                 for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
                     self.set_property(wid, prop, value)
 
-                if hasattr(widget, preferences):
-                    for pref, value in widget.preferences.items():
-                        self.set_preferance(wid, pref, value)
+#                if hasattr(widget, preferences):
+#                    for pref, value in widget.preferences.items():
+#                        self.set_preferance(wid, pref, value)
 
         with open(Paths.XML_FILE, 'wb') as fh:
             fh.write(etree.tostring(root, pretty_print=True))
