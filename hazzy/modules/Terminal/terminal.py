@@ -13,8 +13,6 @@ from gi.repository import Vte, GLib
 
 PYDIR = os.path.join(os.path.dirname(__file__))
 
-print "PYDIR", PYDIR
-
 class Terminal(Gtk.ScrolledWindow):
 
     def __init__(self):
