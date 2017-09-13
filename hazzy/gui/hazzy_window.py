@@ -188,10 +188,6 @@ class HazzyWindow(Gtk.Window):
                 for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
                     self.set_property(wid, prop, value)
 
-#                if hasattr(widget, preferences):
-#                    for pref, value in widget.preferences.items():
-#                        self.set_preferance(wid, pref, value)
-
         with open(Paths.XML_FILE, 'wb') as fh:
             fh.write(etree.tostring(root, pretty_print=True))
 
@@ -207,11 +203,6 @@ class HazzyWindow(Gtk.Window):
         for prop in parent.iterchildren('property'):
             props[prop.get('name')] = prop.text
         return props
-
-    def set_preferance(self, parent, name, value):
-        prop = etree.SubElement(parent, 'preference')
-        prop.set('name', name)
-        prop.text = str(value)
 
     def set_maximized(self, maximized):
         if maximized == 'True':
