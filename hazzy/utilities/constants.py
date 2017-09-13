@@ -1,23 +1,35 @@
 import os
-
+from linuxcnc import ini
 
 class Paths(enumerate):
 
-    # Path to TCL for external programs eg. halshow
-    # TCLPATH = os.environ['LINUXCNC_TCL_DIR']  # unsused for now
-
-    # Get actual paths so we can run from any location
+    # Hazzy Paths
     HAZZYDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     MAINDIR = os.path.dirname(HAZZYDIR)
-
-    CONFIGDIR = os.environ['CONFIG_DIR']
 
     UIDIR = os.path.join(HAZZYDIR, 'ui')
     MODULEDIR = os.path.join(HAZZYDIR, 'modules')
     STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
-    # File Paths
-    XML_FILE = os.path.join(CONFIGDIR, 'interface.xml')
+
+    # LinuxCNC Paths
+    INI_FILE = os.environ['INI_FILE_NAME']
+    CONFIGDIR = os.environ['CONFIG_DIR']
     NC_FILE_DIR = os.environ['LINUXCNC_NCFILES_DIR']
+    TCLPATH = os.environ['LINUXCNC_TCL_DIR']
 
+    ini = ini(INI_FILE)
 
+    MACHINE_NAME = ini.find("EMC", "MACHINE") or "HAZZY"
+
+    LOG_FILE = ini.find("DISPLAY", "LOG_FILE_PATH") \
+        or os.path.join(CONFIGDIR, MACHINE_NAME.replace(' ', '_') + '.log')
+
+    PREF_FILE = ini.find("DISPLAY", "PREFERENCE_FILE_PATH") \
+        or os.path.join(CONFIGDIR, MACHINE_NAME.replace(' ', '_') + '.pref')
+
+    XML_FILE = ini.find("DISPLAY", "XML_FILE") \
+        or os.path.join(CONFIGDIR, 'hazzy.xml')
+
+    OPEN_FILE = ini.find("DISPLAY", "OPEN_FILE") \
+        or os.path.join(HAZZYDIR, "sim.hazzy/example_gcode/hazzy.ngc")
