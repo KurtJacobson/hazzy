@@ -63,7 +63,20 @@ class GstWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
-        self.player  = None
+        self.pipeline = Gst.Pipeline()
+        self.video_source = None
+        self.caps = None
+        self.camera_filter = None
+        self.video_enc = None
+        self.video_dec = None
+        self.video_rtp_pay = None
+        self.video_rtp_depay = None
+        self.video_format_converter = None
+        self.gtksink = None
+        self.tee = None
+        self.queue_1 = None
+        self.queue_2 = None
+
         self.gtksink_widget = None
 
     def on_settings_button_pressed(self, button):
@@ -97,34 +110,76 @@ class GstWidget(Gtk.Box):
 
     def run(self):
 
+        # pipeline keep as note
         pipeline = 'v4l2src device=/dev/video0 !' \
                    ' tee name=t !' \
                    ' queue ! video/x-raw ! videoconvert ! gtksink name=imagesink t. !' \
                    ' queue ! video/x-raw ! jpegenc ! rtpjpegpay !' \
                    ' tcpserversink host=0.0.0.0 port=5000'
 
-        self.player = Gst.parse_launch(pipeline)
+        self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
+        self.video_source.set_property("device", "/dev/video0")
+        self.pipeline.add(self.video_source)
 
-        self.imagesink = self.player.get_by_name('imagesink')
-        self.gtksink_widget = self.imagesink.get_property("widget")
+        self.caps = Gst.Caps.from_string("video/x-raw, width=320,height=240")
+        self.camera_filter = Gst.ElementFactory.make("capsfilter", "filter1")
+        self.camera_filter.set_property("caps", self.caps)
+        self.pipeline.add(self.camera_filter)
+
+        self.video_enc = Gst.ElementFactory.make("theoraenc", None)
+        self.pipeline.add(self.video_enc)
+
+        self.video_dec = Gst.ElementFactory.make("theoradec", None)
+        self.pipeline.add(self.video_dec)
+
+        self.video_rtp_pay = Gst.ElementFactory.make("rtptheorapay", None)
+        self.pipeline.add(self.video_rtp_pay)
+
+        self.video_rtp_depay = Gst.ElementFactory.make("rtptheoradepay", None)
+        self.pipeline.add(self.video_rtp_depay)
+
+        self.video_format_converter = Gst.ElementFactory.make('videoconvert', None)
+        self.pipeline.add(self.video_format_converter)
+
+        self.gtksink = Gst.ElementFactory.make('gtksink', None)
+        self.pipeline.add(self.gtksink)
+
+        self.tee = Gst.ElementFactory.make('tee', None)
+        self.pipeline.add(self.tee)
+
+        self.queue_1 = Gst.ElementFactory.make('queue', "GtkSink")
+        self.queue_2 = Gst.ElementFactory.make('queue', "RtpSink")
+        self.pipeline.add(self.queue_1)
+
+        self.video_source.link(self.camera_filter)
+        self.camera_filter.link(self.video_format_converter)
+        self.video_format_converter.link(self.tee)
+
+        self.tee.link(self.queue_1)
+        self.queue_1.link(self.gtksink)
+
+        # self.tee.link(self.queue_2)
+        # self.queue_2.link()
+
+        self.gtksink_widget = self.gtksink.get_property("widget")
 
         self.widget_box.pack_start(self.gtksink_widget, True, True, 0)
         self.gtksink_widget.show()
 
-        bus = self.player.get_bus()
+        bus = self.pipeline.get_bus()
         bus.connect('message', self.on_message)
         bus.add_signal_watch()
 
     def stop(self):
-        self.player.set_state(Gst.State.PAUSED)
+        self.pipeline.set_state(Gst.State.PAUSED)
         # Actually, we stop the thing for real
-        self.player.set_state(Gst.State.NULL)
+        self.pipeline.set_state(Gst.State.NULL)
 
     def pause(self):
-        self.player.set_state(Gst.State.NULL)
+        self.pipeline.set_state(Gst.State.NULL)
 
     def resume(self):
-        self.player.set_state(Gst.State.PLAYING)
+        self.pipeline.set_state(Gst.State.PLAYING)
 
     def on_map(self, *args, **kwargs):
         '''It seems this is called when the widget is becoming visible'''
