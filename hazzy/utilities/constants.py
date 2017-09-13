@@ -20,7 +20,7 @@ class Paths(enumerate):
 
     ini = ini(INI_FILE)
 
-    MACHINE_NAME = ini.find("EMC", "MACHINE") or "HAZZY"
+    MACHINE_NAME = ini.find("EMC", "MACHINE") or "hazzy"
 
     LOG_FILE = ini.find("DISPLAY", "LOG_FILE_PATH") \
         or os.path.join(CONFIGDIR, MACHINE_NAME.replace(' ', '_') + '.log')
@@ -29,7 +29,7 @@ class Paths(enumerate):
         or os.path.join(CONFIGDIR, MACHINE_NAME.replace(' ', '_') + '.pref')
 
     XML_FILE = ini.find("DISPLAY", "XML_FILE") \
-        or os.path.join(CONFIGDIR, 'hazzy.xml')
+        or os.path.join(CONFIGDIR, MACHINE_NAME.replace(' ', '_') + '.xml')
 
     OPEN_FILE = ini.find("DISPLAY", "OPEN_FILE") \
         or os.path.join(HAZZYDIR, "sim.hazzy/example_gcode/hazzy.ngc")
