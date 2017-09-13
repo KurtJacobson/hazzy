@@ -26,8 +26,7 @@ from gi.repository import GObject
 
 # Setup logging
 from utilities import logger
-
-log = logger.get("HAZZY.STATUS")
+log = logger.get(__name__)
 
 STATES = {
     linuxcnc.STATE_ESTOP: 'ESTOP',

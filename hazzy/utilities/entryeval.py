@@ -3,9 +3,9 @@
 from simpleeval import SimpleEval
 from getiniinfo import GetIniInfo
 
-import logger
-
-log = logger.get('HAZZY.UTILITIES.ENTRY_EVAL')
+# Setup logging
+from utilities import logger
+log = logger.get(__name__)
 
 
 class EntryEval:

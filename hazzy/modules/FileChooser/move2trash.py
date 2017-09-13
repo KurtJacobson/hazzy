@@ -27,8 +27,9 @@ import os
 import shutil
 from datetime import datetime
 
+# Setup logging
 from utilities import logger
-log = logger.get("HAZZY.FILCHOOSER.MOVE2TRASH")
+log = logger.get(__name__)
 
 XDG_DATA_HOME = os.path.expanduser(os.environ.get('XDG_DATA_HOME', '~/.local/share'))
 HOMETRASH = os.path.join(XDG_DATA_HOME, 'Trash')

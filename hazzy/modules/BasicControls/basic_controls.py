@@ -14,6 +14,10 @@ import linuxcnc
 from utilities.status import Status, STATES, MODES, INTERP, MOTION
 from utilities.commands import Commands
 
+# Setup logging
+from utilities import logger
+log = logger.get(__name__)
+
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(PYDIR, 'ui')
 

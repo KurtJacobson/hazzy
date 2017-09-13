@@ -38,13 +38,14 @@ if HAZZYDIR not in sys.path:
 UIDIR = os.path.join(PYDIR, 'ui')
 
 # Setup logging
-from utilities import logger
 from utilities.status import Status
 from utilities.constants import Paths
 from utilities.entryeval import EntryEval
 #from utilities.getiniinfo import GetIniInfo
 
-log = logger.get("HAZZY.TOOL_TABLE")
+# Setup logging
+from utilities import logger
+log = logger.get(__name__)
 
 
 class ToolTable(Gtk.Box):
