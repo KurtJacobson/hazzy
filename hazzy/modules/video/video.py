@@ -66,11 +66,14 @@ class GstWidget(Gtk.Box):
 
         self.pipeline = None
 
+        self.bus = None
+
         self.camera_filter = None
 
         self.video_source = None
         self.video_enc = None
         self.video_parse = None
+        self.video_mux = None
         self.video_rtp_pay = None
         self.video_converter = None
 
@@ -98,21 +101,21 @@ class GstWidget(Gtk.Box):
         self.video_source.set_property("device", "/dev/video0")
         self.pipeline.add(self.video_source)
 
-        caps = Gst.Caps.from_string("video/x-raw, width=320,height=240")
-        self.camera_filter = Gst.ElementFactory.make("capsfilter", "filter1")
+        caps = Gst.Caps.from_string("video/x-raw")
+        self.camera_filter = Gst.ElementFactory.make("capsfilter", "gtk-sink-filter")
         self.camera_filter.set_property("caps", caps)
         self.pipeline.add(self.camera_filter)
 
-        self.video_enc = Gst.ElementFactory.make("x264enc", None)
+        self.video_enc = Gst.ElementFactory.make("vp8enc", None)
         self.pipeline.add(self.video_enc)
 
         self.video_parse = Gst.ElementFactory.make("h264parse", None)
         self.pipeline.add(self.video_parse)
 
-        self.video_mux = Gst.ElementFactory.make('mpegtsmux', None)
+        self.video_mux = Gst.ElementFactory.make('matroskamux', None)
         self.pipeline.add(self.video_mux)
 
-        self.video_rtp_pay = Gst.ElementFactory.make("rtpmp2tpay", None)
+        self.video_rtp_pay = Gst.ElementFactory.make("rtpvp8pay", None)
         self.pipeline.add(self.video_rtp_pay)
 
         self.video_converter = Gst.ElementFactory.make('videoconvert', None)
@@ -121,10 +124,12 @@ class GstWidget(Gtk.Box):
         self.gtk_sink = Gst.ElementFactory.make('gtksink', None)
         self.pipeline.add(self.gtk_sink)
 
+        """
         self.udp_sink = Gst.ElementFactory.make('udpsink', None)
-        self.udp_sink.set_property('host', '127.0.0.1')
-        self.udp_sink.set_property('port', 5000)
-        # self.pipeline.add(self.udp_sink)
+        self.udp_sink.set_property('host', '0.0.0.0')
+        self.udp_sink.set_property('port', 1331)
+        self.pipeline.add(self.udp_sink)
+        """
 
         self.tee = Gst.ElementFactory.make('tee', None)
         self.pipeline.add(self.tee)
@@ -132,8 +137,10 @@ class GstWidget(Gtk.Box):
         self.queue_1 = Gst.ElementFactory.make('queue', "GtkSink")
         self.pipeline.add(self.queue_1)
 
+        """
         self.queue_2 = Gst.ElementFactory.make('queue', "RtpSink")
         self.pipeline.add(self.queue_2)
+        """
 
         self.video_source.link(self.camera_filter)
         self.camera_filter.link(self.video_converter)
@@ -145,8 +152,8 @@ class GstWidget(Gtk.Box):
         """
         self.tee.link(self.queue_2)
         self.queue_2.link(self.video_enc)
-        self.video_enc.link(self.video_mux)
-        self.video_mux.link(self.udp_sink)
+        self.video_enc.link(self.video_rtp_pay)
+        self.video_rtp_pay.link(self.udp_sink)
         """
 
         self.gtksink_widget = self.gtk_sink.get_property("widget")
@@ -189,15 +196,15 @@ class GstWidget(Gtk.Box):
         self.stop()
 
     def _on_eos(self, bus, msg):
-        print('on_eos')
+        log.info('on_eos')
 
     def _on_tag(self, bus, msg):
         taglist = msg.parse_tag()
-        print('on_tag:')
+        log.info('on_tag:')
         for key in taglist.keys():
-            print('\t{0} = {1}'.format(key, taglist[key]))
+            log.info('\t{0} = {1}'.format(key, taglist[key]))
 
     def _on_error(self, bus, msg):
         error = msg.parse_error()
-        print('on_error: {0}'.format(error[1]))
+        log.error('on_error: {0}'.format(error[1]))
 
