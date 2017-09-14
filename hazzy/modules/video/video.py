@@ -124,7 +124,7 @@ class GstWidget(Gtk.Box):
         self.udp_sink = Gst.ElementFactory.make('udpsink', None)
         self.udp_sink.set_property('host', '127.0.0.1')
         self.udp_sink.set_property('port', 5000)
-        self.pipeline.add(self.udp_sink)
+        # self.pipeline.add(self.udp_sink)
 
         self.tee = Gst.ElementFactory.make('tee', None)
         self.pipeline.add(self.tee)
