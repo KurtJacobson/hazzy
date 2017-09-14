@@ -32,10 +32,11 @@ Gst.init_check(None)
 class GstWidget(Gtk.Box):
     def __init__(self, *args, **kwargs):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
-        self.connect('unmap', self.on_unmap)
-        self.connect('map', self.on_map)
+        self.connect('unmap', self._on_unmap)
+        self.connect('map', self._on_map)
 
         self.config_stack = False
+        self.playing = False
 
         self.set_size_request(320, 280)
         self.set_hexpand(True)
@@ -49,7 +50,7 @@ class GstWidget(Gtk.Box):
         self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         button_start = Gtk.ToggleButton("Start")
-        button_start.connect("toggled", self.on_button_start_toggled, "1")
+        button_start.connect("toggled", self._on_button_start_toggled, "1")
 
         self.widget_box.pack_end(button_start, False, True, 0)
 
@@ -63,112 +64,95 @@ class GstWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
-        self.pipeline = Gst.Pipeline()
-        self.video_source = None
-        self.caps = None
+        self.pipeline = None
+
         self.camera_filter = None
+
+        self.video_source = None
         self.video_enc = None
-        self.video_dec = None
+        self.video_parse = None
         self.video_rtp_pay = None
-        self.video_rtp_depay = None
-        self.video_format_converter = None
-        self.gtksink = None
+        self.video_converter = None
+
+        self.gtk_sink = None
+        self.udp_sink = None
+
         self.tee = None
+
         self.queue_1 = None
         self.queue_2 = None
 
         self.gtksink_widget = None
 
-    def on_settings_button_pressed(self, button):
-        if self.config_stack:
-            self.config_stack = False
-            self.stack.set_visible_child_name("widget")
-        else:
-            self.config_stack = True
-            self.stack.set_visible_child_name("config")
-
-    def on_button_start_toggled(self, button, name):
-        if button.get_active():
-            self.resume()
-        else:
-            self.pause()
-
-    def on_message(self, bus, message):
-        # log.debug("Message: %s", message)
-        if message:
-            struct = message.get_structure()
-            if struct:
-                struct_name = struct.get_name()
-                # log.debug('Message name: %s', struct_name)
-
-                if struct_name == 'GstMessageError':
-                    err, debug = message.parse_error()
-                    log.error('GstError: {}, {}'.format(err, debug))
-                elif struct_name == 'GstMessageWarning':
-                    err, debug = message.parse_warning()
-                    log.warning('GstWarning: {}, {}'.format(err, debug))
-
     def run(self):
 
-        # pipeline keep as note
-        pipeline = 'v4l2src device=/dev/video0 !' \
-                   ' tee name=t !' \
-                   ' queue ! video/x-raw ! videoconvert ! gtksink name=imagesink t. !' \
-                   ' queue ! video/x-raw ! jpegenc ! rtpjpegpay !' \
-                   ' tcpserversink host=0.0.0.0 port=5000'
+        self.pipeline = Gst.Pipeline()
+
+        self.bus = self.pipeline.get_bus()
+        self.bus.add_signal_watch()
+        self.bus.connect('message::eos', self._on_eos)
+        self.bus.connect('message::tag', self._on_tag)
+        self.bus.connect('message::error', self._on_error)
 
         self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
         self.video_source.set_property("device", "/dev/video0")
         self.pipeline.add(self.video_source)
 
-        self.caps = Gst.Caps.from_string("video/x-raw, width=320,height=240")
+        caps = Gst.Caps.from_string("video/x-raw, width=320,height=240")
         self.camera_filter = Gst.ElementFactory.make("capsfilter", "filter1")
-        self.camera_filter.set_property("caps", self.caps)
+        self.camera_filter.set_property("caps", caps)
         self.pipeline.add(self.camera_filter)
 
-        self.video_enc = Gst.ElementFactory.make("theoraenc", None)
+        self.video_enc = Gst.ElementFactory.make("x264enc", None)
         self.pipeline.add(self.video_enc)
 
-        self.video_dec = Gst.ElementFactory.make("theoradec", None)
-        self.pipeline.add(self.video_dec)
+        self.video_parse = Gst.ElementFactory.make("h264parse", None)
+        self.pipeline.add(self.video_parse)
 
-        self.video_rtp_pay = Gst.ElementFactory.make("rtptheorapay", None)
+        self.video_mux = Gst.ElementFactory.make('mpegtsmux', None)
+        self.pipeline.add(self.video_mux)
+
+        self.video_rtp_pay = Gst.ElementFactory.make("rtpmp2tpay", None)
         self.pipeline.add(self.video_rtp_pay)
 
-        self.video_rtp_depay = Gst.ElementFactory.make("rtptheoradepay", None)
-        self.pipeline.add(self.video_rtp_depay)
+        self.video_converter = Gst.ElementFactory.make('videoconvert', None)
+        self.pipeline.add(self.video_converter)
 
-        self.video_format_converter = Gst.ElementFactory.make('videoconvert', None)
-        self.pipeline.add(self.video_format_converter)
+        self.gtk_sink = Gst.ElementFactory.make('gtksink', None)
+        self.pipeline.add(self.gtk_sink)
 
-        self.gtksink = Gst.ElementFactory.make('gtksink', None)
-        self.pipeline.add(self.gtksink)
+        self.udp_sink = Gst.ElementFactory.make('udpsink', None)
+        self.udp_sink.set_property('host', '127.0.0.1')
+        self.udp_sink.set_property('port', 5000)
+        self.pipeline.add(self.udp_sink)
 
         self.tee = Gst.ElementFactory.make('tee', None)
         self.pipeline.add(self.tee)
 
         self.queue_1 = Gst.ElementFactory.make('queue', "GtkSink")
-        self.queue_2 = Gst.ElementFactory.make('queue', "RtpSink")
         self.pipeline.add(self.queue_1)
 
+        self.queue_2 = Gst.ElementFactory.make('queue', "RtpSink")
+        self.pipeline.add(self.queue_2)
+
         self.video_source.link(self.camera_filter)
-        self.camera_filter.link(self.video_format_converter)
-        self.video_format_converter.link(self.tee)
+        self.camera_filter.link(self.video_converter)
+        self.video_converter.link(self.tee)
 
         self.tee.link(self.queue_1)
-        self.queue_1.link(self.gtksink)
+        self.queue_1.link(self.gtk_sink)
 
-        # self.tee.link(self.queue_2)
-        # self.queue_2.link()
+        """
+        self.tee.link(self.queue_2)
+        self.queue_2.link(self.video_enc)
+        self.video_enc.link(self.video_mux)
+        self.video_mux.link(self.udp_sink)
+        """
 
-        self.gtksink_widget = self.gtksink.get_property("widget")
+        self.gtksink_widget = self.gtk_sink.get_property("widget")
+        self.gtksink_widget.show_all()
 
         self.widget_box.pack_start(self.gtksink_widget, True, True, 0)
-        self.gtksink_widget.show()
-
-        bus = self.pipeline.get_bus()
-        bus.connect('message', self.on_message)
-        bus.add_signal_watch()
 
     def stop(self):
         self.pipeline.set_state(Gst.State.PAUSED)
@@ -181,29 +165,39 @@ class GstWidget(Gtk.Box):
     def resume(self):
         self.pipeline.set_state(Gst.State.PLAYING)
 
-    def on_map(self, *args, **kwargs):
-        '''It seems this is called when the widget is becoming visible'''
+    def on_settings_button_pressed(self, button):
+        if self.config_stack:
+            self.config_stack = False
+            self.stack.set_visible_child_name("widget")
+        else:
+            self.config_stack = True
+            self.stack.set_visible_child_name("config")
+
+    def _on_button_start_toggled(self, button, name):
+        if button.get_active():
+            self.resume()
+        else:
+            self.pause()
+
+    def _on_map(self, *args, **kwargs):
+        """It seems this is called when the widget is becoming visible"""
         self.run()
 
-    def on_unmap(self, *args, **kwargs):
-        '''Hopefully called when this widget is hidden,
-        e.g. when the tab of a notebook has changed'''
+    def _on_unmap(self, *args, **kwargs):
+        """Hopefully called when this widget is hidden,
+        e.g. when the tab of a notebook has changed"""
         self.stop()
 
+    def _on_eos(self, bus, msg):
+        print('on_eos')
 
-def main():
-    window = Gtk.Window()
-    window.connect('destroy', Gtk.main_quit)
+    def _on_tag(self, bus, msg):
+        taglist = msg.parse_tag()
+        print('on_tag:')
+        for key in taglist.keys():
+            print('\t{0} = {1}'.format(key, taglist[key]))
 
-    # Create a gstreamer pipeline with no sink.
-    # A sink will be created inside the GstWidget.
-    widget = GstWidget()
+    def _on_error(self, bus, msg):
+        error = msg.parse_error()
+        print('on_error: {0}'.format(error[1]))
 
-    window.add(widget)
-    window.show_all()
-
-    Gtk.main()
-
-
-if __name__ == "__main__":
-    main()
