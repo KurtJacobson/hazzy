@@ -7,5 +7,8 @@
         456, 
         456
     ], 
-    "vedio device": "/dev/video0"
+    "video_device": "/dev/video0", 
+    "video_height": 240, 
+    "video_source": "webcam", 
+    "video_width": 320
 }

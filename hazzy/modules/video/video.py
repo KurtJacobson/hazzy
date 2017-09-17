@@ -3,13 +3,13 @@
 import os
 import sys
 import json
-import os
 import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
 
-from gi.repository import Gtk, Gst
+from gi.repository import Gtk
+from gi.repository import Gst
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -20,6 +20,8 @@ if HAZZYDIR not in sys.path:
 
 UIDIR = os.path.join(PYDIR, 'ui')
 STYLEDIR = os.path.join(HAZZYDIR, 'themes')
+PYDIR = os.path.dirname(os.path.abspath(__file__))
+SETTINGS_FILE = os.path.join(PYDIR, 'settings.json')
 
 from utilities.constants import Paths
 from utilities import logger
@@ -28,8 +30,6 @@ from utilities import logger
 # Setup logging
 log = logger.get("HAZZY.VIDEO")
 
-PYDIR = os.path.dirname(os.path.abspath(__file__))
-SETTINGS_FILE = os.path.join(PYDIR, 'settings.json')
 
 Gst.init(None)
 Gst.init_check(None)
@@ -44,9 +44,10 @@ class GstWidget(Gtk.Box):
         self.settings = self.load_settings()
 
         self.config_stack = False
-        self.playing = False
 
-        self.set_size_request(320, 280)
+        self.set_size_request(self.settings["video_width"],
+                              self.settings["video_height"])
+
         self.set_hexpand(True)
         self.set_vexpand(True)
 
@@ -54,18 +55,17 @@ class GstWidget(Gtk.Box):
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.stack.set_transition_duration(500)
 
-        self.widget_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.widget_box = Gtk.VBox()
+        self.config_box = Gtk.VBox()
 
         button_start = Gtk.ToggleButton("Start")
         button_start.connect("toggled", self._on_button_start_toggled, "1")
 
         self.widget_box.pack_end(button_start, False, True, 0)
 
-        self.video_device_entry = Gtk.Entry()
-        self.video_device_entry.set_text("/dev/video0")
-
-        self.config_box.pack_start(self.video_device_entry, False, True, 0)
+        self.add_config_field("Device", "video_device")
+        self.add_config_field("Width", "video_width")
+        self.add_config_field("height", "video_height")
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
         self.stack.add_titled(self.config_box, "config", "Widget Config")
@@ -95,6 +95,22 @@ class GstWidget(Gtk.Box):
         self.queue_2 = None
 
         self.gtksink_widget = None
+
+    def add_config_field(self, name, key):
+
+        field_box = Gtk.HBox()
+
+        label = '{:{align}{width}}'.format(name, align='^', width='25')
+        entry_label = Gtk.Label(label)
+
+        entry = Gtk.Entry()
+        entry.set_name(key)
+        entry.set_text(str(self.settings[key]))
+
+        field_box.pack_start(entry_label, False, True, 0)
+        field_box.pack_start(entry, True, True, 0)
+
+        self.config_box.pack_start(field_box, False, True, 0)
 
     def save_settings(self, widget=None):
         with open(SETTINGS_FILE, 'w') as fh:
