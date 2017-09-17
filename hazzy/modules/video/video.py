@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import os
 import sys
 import json
@@ -71,23 +72,9 @@ class GstWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
-        self.pipeline = None
-
         self.connect('destroy', self.save_settings)
 
-    def save_settings(self, widget=None):
-        with open(SETTINGS_FILE, 'w') as fh:
-            json.dump(self.settings, fh, indent=4, sort_keys=True)
-
-    def load_settings(self):
-        if not os.path.exists(SETTINGS_FILE):
-            return dict()
-        with open(SETTINGS_FILE, 'r') as fh:
-            try:
-                return json.load(fh)
-            except ValueError:
-                return dict()
-
+        self.pipeline = None
         self.bus = None
 
         self.camera_filter = None
@@ -108,6 +95,19 @@ class GstWidget(Gtk.Box):
         self.queue_2 = None
 
         self.gtksink_widget = None
+
+    def save_settings(self, widget=None):
+        with open(SETTINGS_FILE, 'w') as fh:
+            json.dump(self.settings, fh, indent=4, sort_keys=True)
+
+    def load_settings(self):
+        if not os.path.exists(SETTINGS_FILE):
+            return dict()
+        with open(SETTINGS_FILE, 'r') as fh:
+            try:
+                return json.load(fh)
+            except ValueError:
+                return dict()
 
     def run(self):
 
