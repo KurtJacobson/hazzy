@@ -18,17 +18,14 @@ if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 
-UIDIR = os.path.join(PYDIR, 'ui')
-STYLEDIR = os.path.join(HAZZYDIR, 'themes')
-PYDIR = os.path.dirname(os.path.abspath(__file__))
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+
 SETTINGS_FILE = os.path.join(PYDIR, 'settings.json')
 
-from utilities.constants import Paths
 from utilities import logger
 
-
 # Setup logging
-log = logger.get("HAZZY.VIDEO")
+log = logger.get(__name__)
 
 
 Gst.init(None)
@@ -139,22 +136,34 @@ class GstWidget(Gtk.Box):
         self.video_source.set_property("device", "/dev/video0")
         self.pipeline.add(self.video_source)
 
-        caps = Gst.Caps.from_string("video/x-raw")
-        self.camera_filter = Gst.ElementFactory.make("capsfilter", "gtk-sink-filter")
-        self.camera_filter.set_property("caps", caps)
-        self.pipeline.add(self.camera_filter)
+        caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
+        self.camera_gtk_filter = Gst.ElementFactory.make("capsfilter", "gtk-filter")
+        self.camera_gtk_filter.set_property("caps", caps)
+        self.pipeline.add(self.camera_gtk_filter)
+
+        caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
+        self.camera_stream_filter = Gst.ElementFactory.make("capsfilter", "stream-filter")
+        self.camera_stream_filter.set_property("caps", caps)
+        self.pipeline.add(self.camera_stream_filter)
+
+        self.video_converter = Gst.ElementFactory.make('videoconvert', None)
+        self.pipeline.add(self.video_converter)
 
         self.video_enc = Gst.ElementFactory.make("vp8enc", None)
         self.pipeline.add(self.video_enc)
 
+        """
         self.video_parse = Gst.ElementFactory.make("h264parse", None)
         self.pipeline.add(self.video_parse)
-
-        self.video_mux = Gst.ElementFactory.make('matroskamux', None)
+        """
+        """
+        self.video_mux = Gst.ElementFactory.make('oggmux', None)
         self.pipeline.add(self.video_mux)
+        """
 
-        self.video_rtp_pay = Gst.ElementFactory.make("rtpvp8pay", None)
-        self.pipeline.add(self.video_rtp_pay)
+        self.video_pay = Gst.ElementFactory.make("gdppay", None)
+        self.pipeline.add(self.video_pay)
+
 
         self.video_converter = Gst.ElementFactory.make('videoconvert', None)
         self.pipeline.add(self.video_converter)
@@ -162,12 +171,10 @@ class GstWidget(Gtk.Box):
         self.gtk_sink = Gst.ElementFactory.make('gtksink', None)
         self.pipeline.add(self.gtk_sink)
 
-        """
-        self.udp_sink = Gst.ElementFactory.make('udpsink', None)
-        self.udp_sink.set_property('host', '0.0.0.0')
-        self.udp_sink.set_property('port', 1331)
-        self.pipeline.add(self.udp_sink)
-        """
+        self.tcp_sink = Gst.ElementFactory.make('tcpserversink', None)
+        self.tcp_sink.set_property('host', '127.0.0.1')
+        self.tcp_sink.set_property('port', 5000)
+        self.pipeline.add(self.tcp_sink)
 
         self.tee = Gst.ElementFactory.make('tee', None)
         self.pipeline.add(self.tee)
@@ -175,24 +182,22 @@ class GstWidget(Gtk.Box):
         self.queue_1 = Gst.ElementFactory.make('queue', "GtkSink")
         self.pipeline.add(self.queue_1)
 
-        """
-        self.queue_2 = Gst.ElementFactory.make('queue', "RtpSink")
+        self.queue_2 = Gst.ElementFactory.make('queue', "StreamSink")
         self.pipeline.add(self.queue_2)
-        """
 
-        self.video_source.link(self.camera_filter)
-        self.camera_filter.link(self.video_converter)
-        self.video_converter.link(self.tee)
+        self.video_source.link(self.tee)
 
         self.tee.link(self.queue_1)
-        self.queue_1.link(self.gtk_sink)
+        self.queue_1.link(self.video_converter)
+        self.video_converter.link(self.camera_gtk_filter)
+        self.camera_gtk_filter.link(self.gtk_sink)
 
-        """
         self.tee.link(self.queue_2)
-        self.queue_2.link(self.video_enc)
-        self.video_enc.link(self.video_rtp_pay)
-        self.video_rtp_pay.link(self.udp_sink)
-        """
+        self.queue_2.link(self.video_converter)
+        self.video_converter.link(self.camera_stream_filter)
+        self.camera_stream_filter.link(self.video_enc)
+        self.video_enc.link(self.video_pay)
+        self.video_pay.link(self.tcp_sink)
 
         self.gtksink_widget = self.gtk_sink.get_property("widget")
         self.gtksink_widget.show_all()
