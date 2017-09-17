@@ -54,8 +54,7 @@ from icons import Icons
 
 # Setup logging
 from utilities import logger
-
-log = logger.get("HAZZY.FILECHOOSER")
+log = logger.get(__name__)
 
 
 class FileChooser(Gtk.Box):

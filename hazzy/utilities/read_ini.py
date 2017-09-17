@@ -26,15 +26,13 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-
-from linuxcnc import ini
-
 import os
 import sys
 
+from linuxcnc import ini
 from utilities import logger
 
-log = logger.get("HAZZY.GETINI")
+log = logger.get(__name__)
 
 CONFIGPATH = os.environ.get('CONFIG_DIR', None)
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -45,22 +43,14 @@ def singleton(cls):
     return cls()
 
 @singleton
-class GetIniInfo:
+class ReadIni:
 
     def __init__(self):
         inipath = os.environ["INI_FILE_NAME"]
         self.inifile = ini(inipath)
         if not self.inifile:
-            log.error("No INI File given!")
+            log.critical("Could not find INI file")
             sys.exit()
-
-    def get_cycle_time(self):
-        temp = self.inifile.find("DISPLAY", "CYCLE_TIME")
-        try:
-            return int(temp)
-        except:
-            log.info("Missing entry [DISPLAY] CYCLE_TIME in INI file. Using 50ms")
-            return 50
 
     def get_postgui_halfile(self):
         postgui_halfile = self.inifile.find("HAL", "POSTGUI_HALFILE")
@@ -68,7 +58,7 @@ class GetIniInfo:
             postgui_halfile = None
         return postgui_halfile
 
-    def get_preference_file_path(self):
+    def get_display_preference_file_path(self):
         # we get the preference file, if there is none given in the INI
         # we use hazzy.pref in the config dir
         temp = self.inifile.find("DISPLAY", "PREFERENCE_FILE_PATH")
@@ -78,11 +68,11 @@ class GetIniInfo:
                 temp = os.path.join(CONFIGPATH, "hazzy.pref")
             else:
                 machinename = machinename.replace(" ", "_")
-                temp = os.path.join(CONFIGPATH, "%s.pref" % machinename)
-        log.info("Preference file path: %s" % temp)
+                temp = os.path.join(CONFIGPATH, "{}.pref".format(machinename))
+        log.info("Preference file path: {}".format(temp))
         return temp
 
-    def get_log_file_path(self):
+    def get_display_log_file_path(self):
         # we get the log file, if there is none given in the INI
         # we use hazzy.log in the config dir
         temp = self.inifile.find("DISPLAY", "LOG_FILE_PATH")
@@ -92,11 +82,11 @@ class GetIniInfo:
                 temp = os.path.join(CONFIGPATH, "hazzy.log")
             else:
                 machinename = machinename.replace(" ", "_")
-                temp = os.path.join(CONFIGPATH, "%s.log" % machinename)
-        log.info("Log file path: %s" % temp)
+                temp = os.path.join(CONFIGPATH, "{}.log".format(machinename))
+        log.info("Log file path: {}".format(temp))
         return temp
 
-    def get_open_file(self):
+    def get_display_open_file(self):
         temp = self.inifile.find("DISPLAY", "OPEN_FILE")
         if not temp:
             temp = os.path.join(MAINDIR, "sim.hazzy/example_gcode/hazzy.ngc")
@@ -105,7 +95,7 @@ class GetIniInfo:
             return
         return temp
 
-    def get_coordinates(self):
+    def get_traj_coordinates(self):
         temp = self.inifile.find("TRAJ", "COORDINATES")
         # Get rid of any spaces
         temp = temp.replace(' ','')
@@ -115,7 +105,7 @@ class GetIniInfo:
             temp = "XYZ"
         return temp.upper()
 
-    def get_joints(self):
+    def get_kins_joints(self):
         temp = self.inifile.find("KINS", "JOINTS")
         if not temp:
             log.warning("No JOINTS entry found in [KINS] of INI file, using 3")
@@ -131,7 +121,7 @@ class GetIniInfo:
             axis_list.append(axisletter)
         return axis_list
 
-    def get_machine_metric(self):
+    def get_traj_linear_units(self):
         temp = self.inifile.find("TRAJ", "LINEAR_UNITS")
         if not temp:
             # Then get the X axis units
@@ -224,28 +214,6 @@ class GetIniInfo:
             log.warning("No MAX_FEED_OVERRIDE entry found in [DISPLAY] of INI file. Using 1.0")
         return float(temp)
 
-    def get_embedded_tabs(self):
-        # Check INI file for embed commands
-        # NAME is used as the tab label if a notebook is used
-        # LOCATION is the widgets name from the gladefile.
-        # COMMAND is the actual program command
-        # if no location is specified the main notebook is used
-
-        tab_names = self.inifile.findall("DISPLAY", "EMBED_TAB_NAME")
-        tab_location = self.inifile.findall("DISPLAY", "EMBED_TAB_LOCATION")
-        tab_cmd = self.inifile.findall("DISPLAY", "EMBED_TAB_COMMAND")
-
-        if len(tab_names) != len(tab_cmd):
-            return False, False, False
-        if len(tab_location) != len(tab_names):
-            for num, i in enumerate(tab_names):
-                try:
-                    if tab_location[num]:
-                        continue
-                except:
-                    tab_location.append("notebook_mode")
-        return tab_names, tab_location, tab_cmd
-
     def get_parameter_file(self):
         temp = self.inifile.find("RS274NGC", "PARAMETER_FILE")
         if not temp:
@@ -300,43 +268,6 @@ class GetIniInfo:
             return False
         return temp
 
-    def get_tool_sensor_data(self):
-        xpos = self.inifile.find("TOOLSENSOR", "X")
-        ypos = self.inifile.find("TOOLSENSOR", "Y")
-        zpos = self.inifile.find("TOOLSENSOR", "Z")
-        maxprobe = self.inifile.find("TOOLSENSOR", "MAXPROBE")
-        return xpos, ypos, zpos, maxprobe
-
-    def get_macros(self):
-        # lets look in the ini File, if there are any entries
-        macros = self.inifile.findall("MACROS", "MACRO")
-        # If there are no entries we will return False
-        if not macros:
-            return False
-
-        # we need the subroutine paths to check where to search for the macro files
-        subroutine_paths = self.get_subroutine_paths()
-        if not subroutine_paths:
-            return False
-
-        # we do check, if the corresponding files to the macros do exist
-        checked_macros =[]
-        for macro in macros:
-            found = False
-            for path in subroutine_paths.split(":"):
-                file = path + "/" + macro.split()[0] + ".ngc"
-                if os.path.isfile(file):
-                    checked_macros.append(macro)
-                    found = True
-                    break
-            if not found: # report error!
-                message = ("\n**** GMOCCAPY INFO ****\n")
-                message += ("File %s of the macro %s could not be found ****\n" %((str(macro.split()[0]) + ".ngc"),[macro]))
-                message += ("we searched in subdirectories: %s" %subroutine_paths.split(":"))
-                print (message)
-
-        return checked_macros
-
     def get_subroutine_paths(self):
         subroutines_paths = self.inifile.find("RS274NGC", "SUBROUTINE_PATH")
         if not subroutines_paths:
@@ -345,12 +276,6 @@ class GetIniInfo:
         if not subroutines_paths:
             return False
         return subroutines_paths
-
-    def get_axis_2_min_limit(self):
-        temp = self.inifile.find("AXIS_2", "MIN_LIMIT")
-        if not temp:
-            return False
-        return float(temp)
 
     def get_RS274_start_code(self):
         temp = self.inifile.find("RS274NGC", "RS274NGC_STARTUP_CODE")

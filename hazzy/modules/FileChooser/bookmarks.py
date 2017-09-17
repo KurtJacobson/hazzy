@@ -19,11 +19,10 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import logging
 
+# Setup logging
 from utilities import logger
-
-log = logger.get("HAZZY.FILECHOOSER.BOOKMARKS")
+log = logger.get(__name__)
 
 GTK_BOOKMARKS = os.path.expanduser("~/.gtk-bookmarks")  #FIXME use XDG env
 

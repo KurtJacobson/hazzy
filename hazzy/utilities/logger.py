@@ -3,7 +3,7 @@
 #   Base logging module
 
 #   Copyright (c) 2017 Kurt Jacobson
-#        <kcjengr@gmail.com>
+#      <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #
@@ -24,18 +24,17 @@ import os
 import logging
 
 from constants import Paths
-
 from utilities.colored_log import ColoredFormatter
 
+# Get log file path
+log_file = Paths.LOG_FILE
+if not os.path.isabs(log_file):
+    log_file = os.path.join(Paths.CONFIGDIR, log_file)
 
-# TODO Get log file path from INI
-log_file = os.path.join(Paths.HAZZYDIR, 'hazzy.log')
-
-
-# Get logger for module with name 'name'
+# Get logger for module.__name__
 def get(name):
+    name = 'HAZZY.' + name.upper()
     return logging.getLogger(name)
-
 
 # Set global logging level
 def set_level(level):
@@ -53,8 +52,7 @@ cf = ColoredFormatter("[%(name)s][%(levelname)s]  %(message)s (%(filename)s:%(li
 ch.setFormatter(cf)
 base_log.addHandler(ch)
 
-# Add file handler 
-# TODO add support for setting log file path
+# Add file handler
 fh = logging.FileHandler(log_file)
 fh.setLevel(logging.DEBUG)
 ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -62,5 +60,5 @@ fh.setFormatter(ff)
 base_log.addHandler(fh)
 
 # Get logger for logger
-log = get('HAZZY.LOGGER')
+log = get(__name__)
 log.info('Logging to "{}"'.format(log_file))

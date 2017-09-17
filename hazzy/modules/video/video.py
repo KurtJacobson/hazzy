@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import os
 import sys
+import json
+import os
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -25,6 +27,9 @@ from utilities import logger
 # Setup logging
 log = logger.get("HAZZY.VIDEO")
 
+PYDIR = os.path.dirname(os.path.abspath(__file__))
+SETTINGS_FILE = os.path.join(PYDIR, 'settings.json')
+
 Gst.init(None)
 Gst.init_check(None)
 
@@ -34,6 +39,8 @@ class GstWidget(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.connect('unmap', self._on_unmap)
         self.connect('map', self._on_map)
+
+        self.settings = self.load_settings()
 
         self.config_stack = False
         self.playing = False
@@ -65,6 +72,21 @@ class GstWidget(Gtk.Box):
         self.pack_start(self.stack, True, True, 0)
 
         self.pipeline = None
+
+        self.connect('destroy', self.save_settings)
+
+    def save_settings(self, widget=None):
+        with open(SETTINGS_FILE, 'w') as fh:
+            json.dump(self.settings, fh, indent=4, sort_keys=True)
+
+    def load_settings(self):
+        if not os.path.exists(SETTINGS_FILE):
+            return dict()
+        with open(SETTINGS_FILE, 'r') as fh:
+            try:
+                return json.load(fh)
+            except ValueError:
+                return dict()
 
         self.bus = None
 

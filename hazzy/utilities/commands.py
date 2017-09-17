@@ -2,6 +2,10 @@
 
 import linuxcnc
 
+# Setup logging
+from utilities import logger
+log = logger.get(__name__)
+
 class Commands():
     def __init__(self):
         self.stat = linuxcnc.stat()

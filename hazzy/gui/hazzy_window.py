@@ -29,6 +29,11 @@ class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self)
 
+        # Get log file path
+        self.xml_file = Paths.XML_FILE
+        if not os.path.isabs(self.xml_file):
+            self.xml_file = os.path.join(Paths.CONFIGDIR, self.xml_file)
+
         self.widget_manager = WidgetManager()
 
         self.is_fullscreen = False
@@ -83,11 +88,11 @@ class HazzyWindow(Gtk.Window):
 
     def load_from_xml(self):
 
-        if not os.path.exists(Paths.XML_FILE):
+        if not os.path.exists(self.xml_file):
             return
 
         try:
-            tree = etree.parse(Paths.XML_FILE)
+            tree = etree.parse(self.xml_file)
         except etree.XMLSyntaxError as e:
             error_str = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
             log.error(error_str)
@@ -140,7 +145,7 @@ class HazzyWindow(Gtk.Window):
 
         # Create XML root element & comment
         root = etree.Element("hazzy_interface")
-        root.append(etree.Comment('Interface for: RF45 Milling Machine'))
+        root.append(etree.Comment('Interface for: {}'.format(Paths.MACHINE_NAME)))
 
         # Add time stamp
         time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -188,7 +193,7 @@ class HazzyWindow(Gtk.Window):
                 for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
                     self.set_property(wid, prop, value)
 
-        with open(Paths.XML_FILE, 'wb') as fh:
+        with open(self.xml_file, 'wb') as fh:
             fh.write(etree.tostring(root, pretty_print=True))
 
 # Helpers

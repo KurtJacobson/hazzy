@@ -11,20 +11,15 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
 
-# Setup paths
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
-UIDIR = os.path.join(PYDIR)
-STYLEDIR = os.path.join(HAZZYDIR, 'hazzy', 'themes')
-
 from utilities.status import Status
-from utilities import logger
 
 # Setup logging
-log = logger.get("HAZZY.ACTIVE_CODES_WIDGET")
+from utilities import logger
+log = logger.get(__name__)
+
+# Setup paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+UIDIR = os.path.join(PYDIR)
 
 VERTICAL = Gtk.Orientation.VERTICAL
 HORIZONTAL = Gtk.Orientation.HORIZONTAL
