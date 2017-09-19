@@ -57,7 +57,7 @@ def get_preference_file():
     if not temp:
         fname = MACHINE_NAME.replace(' ', '_') + '.pref'
         return os.path.join(CONFIG_DIR, fname)
-    if not os.pathisabs(temp):
+    if not os.path.isabs(temp):
         return os.path.join(CONFIG_DIR, temp)
     else:
         return os.path.realpath(temp)
