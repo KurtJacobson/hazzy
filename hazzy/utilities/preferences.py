@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #   Copyright (c) 2017 Kurt Jacobson
-#     <kurtjacobson@bellsouth.net>
+#      <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #   It is a class from Gmoccapy that has been heavily modified to support sections.
@@ -22,89 +22,81 @@
 
 #                   ***USEAGE***
 
-# [SETTING PREFERENCE]
-# self.prefs.setpref("section", "option", "value", type)
-# self.prefs.setpref("DROs", "dec_places", 4 , int)
+# Setting Preference
+#    set_pref("section", "option", "value", type)
+#    set_pref("DROs", "dec_places", 4 , int)
 
-# [RETREVING PREFERENCE] 
-# self.prefs.getpref("section", "option", "default_val", type)
-# dro_places = self.prefs.getpref("DROs", "dec_places", 3, int)
-
-# If the file specified by path does not exist it will be created using default values
+# Getting Preference
+#    get_pref("section", "option", "default_val", type)
+#    dro_places = get_pref("DROs", "dec_places", 3, int)
 
 import os
 import ConfigParser
 
+from utilities import ini_info
+
 from utilities import logger
+log = logger.get(__name__)
 
-log = logger.get("HAZZY.PREFS")
 
-cp = ConfigParser.RawConfigParser
-cp.optionxform = str  # Needed to maintain option case
+class Preferences(ConfigParser.RawConfigParser):
 
-def singleton(cls):
-    return cls()
+    def __init__(self):
+        ConfigParser.RawConfigParser.__init__(self)
 
-@singleton
-class Preferences(cp):
-    types = {
-        bool: cp.getboolean,
-        float: cp.getfloat,
-        int: cp.getint,
-        str: cp.get,
-        repr: lambda self, section, option: eval(cp.get(self, section, option)),
-    }
+        self.types = {
+            bool: self.getboolean,
+            float: self.getfloat,
+            int: self.getint,
+            str: self.get,
+            repr: lambda section, option: eval(self.get(section, option)),
+        }
 
-    def __init__(self, path = None):
-        cp.__init__(self)
+        self.optionxform = str  # Needed to maintain options case
 
-    def set_file_path(self, path):
-        if not path:
-            path = "~/.hazzy_preferences"
-        self.fn = os.path.expanduser(path)    
+        self.fn = ini_info.get_preference_file()
         if not os.path.isfile(self.fn):
-            log.info("No preference file found, creating one...")
-            log.info("Preference file: {}".format(self.fn))
+            log.info("No preference file exists, creating: {}".format(self.fn))
+
         self.read(self.fn)
 
-
-    # Get the pref form the section
-    def getpref(self, section, option, default_val = False, opt_type = bool):
-        self.read(self.fn)
+    def get_pref(self, section, option, default_val = False, opt_type = bool):
         rtn_type = self.types.get(opt_type)
         try:
-            value = rtn_type(self, section, option)
-        # If the section does not exist add it and the option
+            value = rtn_type(section, option)
+            return value
         except ConfigParser.NoSectionError:
-            log.debug("[getpref] Adding missing section [%s]" % section)
+            # Add the section and the option
+            log.debug("Adding missing section [{0}]".format(section))
             self.add_section(section)
-            log.debug('[getpref] Adding missing option [%s] "%s"' % (section, option))
+            log.debug('Adding missing option [{0}] "{1}"'.format(section, option))
             self.set(section, option, default_val)
-            self.write(open(self.fn, "w"))
-            if type in(bool, float, int):
-                value = type(default_val)
-            else:
-                value = default_val
-        # If the option does not exist in the section add it
         except ConfigParser.NoOptionError:
-            log.debug('[getpref] Adding missing option [%s] "%s"' % (section, option))
+            # Add the option
+            log.debug('Adding missing option [{0}] "{1}"'.format(section, option))
             self.set(section, option, default_val)
-            self.write(open(self.fn, "w"))
-            if type in(bool, float, int):
-                value = type(default_val)
-            else:
-                value = default_val
-        return value
 
+        with open(self.fn, "w") as fh:
+            self.write(fh)
 
-    # Set the pref in the specified section, if not section add it
-    def setpref(self, section, option, value, opt_type = bool):
+        return default_val
+
+    def set_pref(self, section, option, value, opt_type=bool):
         try:
             self.set(section, option, opt_type(value))
-            self.write(open(self.fn, "w"))
         except ConfigParser.NoSectionError:
-            log.debug('[setpref] Adding missing option [%s] "%s"' % (section, option))
+            # Add the section and the option
+            log.debug('Adding missing option [{0}] "{1}"'.format(section, option))
             self.add_section(section)
             self.set(section, option, opt_type(value))
-            self.write(open(self.fn, "w"))
 
+        with open(self.fn, "w") as fh:
+            self.write(fh)
+
+prefs = Preferences()
+
+def set_pref(section, option, value, opt_type=bool):
+    prefs.set_pref(section, option, value, opt_type)
+
+def get_pref(section, option, value, opt_type=bool):
+    return prefs.get_pref(section, option, value, opt_type)
