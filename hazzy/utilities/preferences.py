@@ -23,14 +23,16 @@
 #                   ***USEAGE***
 
 # Setting Preference
-#    set_pref("section", "option", "value", type)
-#    set_pref("DROs", "dec_places", 4 , int)
+#    set("section", "option", "value", type)
+#    set("DROs", "dec_places", 4 , int)
 
 # Getting Preference
-#    get_pref("section", "option", "default_val", type)
-#    dro_places = get_pref("DROs", "dec_places", 3, int)
+#    get("section", "option", "default_val", type)
+#    dro_places = get("DROs", "dec_places", 3, int)
 
 import os
+import ast
+
 import ConfigParser
 
 from utilities import ini_info
@@ -44,12 +46,13 @@ class Preferences(ConfigParser.RawConfigParser):
     def __init__(self):
         ConfigParser.RawConfigParser.__init__(self)
 
-        self.types = {
-            bool: self.getboolean,
-            float: self.getfloat,
-            int: self.getint,
-            str: self.get,
-            repr: lambda section, option: eval(self.get(section, option)),
+        self.getters = {
+            bool: self.get_boolean,
+            float: self.get_float,
+            int: self.get_int,
+            list: self.get_list,
+            dict: self.get_dict,
+            str: self.get_str,
         }
 
         self.optionxform = str  # Needed to maintain options case
@@ -60,10 +63,10 @@ class Preferences(ConfigParser.RawConfigParser):
 
         self.read(self.fn)
 
-    def get_pref(self, section, option, default_val = False, opt_type = bool):
-        rtn_type = self.types.get(opt_type)
+    def get_pref(self, section, option, default_val=None, opt_type=None):
         try:
-            value = rtn_type(section, option)
+            getter = self.getters.get(opt_type)
+            value = getter(section, option, default_val)
             return value
         except ConfigParser.NoSectionError:
             # Add the section and the option
@@ -81,22 +84,68 @@ class Preferences(ConfigParser.RawConfigParser):
 
         return default_val
 
-    def set_pref(self, section, option, value, opt_type=bool):
+    def set_pref(self, section, option, value):
         try:
-            self.set(section, option, opt_type(value))
+            self.set(section, option, str(value))
         except ConfigParser.NoSectionError:
             # Add the section and the option
             log.debug('Adding missing option [{0}] "{1}"'.format(section, option))
             self.add_section(section)
-            self.set(section, option, opt_type(value))
+            self.set(section, option, str(value))
 
         with open(self.fn, "w") as fh:
             self.write(fh)
 
+    def get_str(self, section, option, default):
+        return self.get(section, option)
+
+    def get_float(self, section, option, default):
+        value = self.get(section, option)
+        try:
+            return float(value)
+        except (ValueError, SyntaxError):
+            return default
+
+    def get_int(self, section, option, default):
+        value = self.get(section, option)
+        try:
+            return int(value)
+        except (ValueError, SyntaxError):
+            return default
+
+    def get_boolean(self, section, option, default):
+        value = self.get(section, option)
+        if value.lower() in ['1', 'true', 'yes', 'on', 'yeah', 'sure']:
+            return True
+        elif value.lower() in ['0', 'false', 'no', 'off', 'nah']:
+            return False
+        log.error('Non boolian value "{0}" for option [{1}] {2},'
+            ' using default value of "{3}"'.format(value, section, option, default))
+        return default
+
+    def get_list(self, section, option, default):
+        value = self.get(section, option)
+        try:
+            return ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            log.error('"{0}" for option [{1}] {2} is not a valid list,'
+                ' using default value of "{3}"'.format(value, section, option, default))
+            return default
+
+    def get_dict(self, section, option, default):
+        value = self.get(section, option)
+        try:
+            return ast.literal_eval(value)
+        except (ValueError, SyntaxError):
+            log.error('"{0}" for option [{1}] {2} is not a valid dict,'
+                ' using default value of "{3}"'.format(value, section, option, default))
+            return default
+
+
 prefs = Preferences()
 
-def set_pref(section, option, value, opt_type=bool):
-    prefs.set_pref(section, option, value, opt_type)
+def set(section, option, value, opt_type=None):
+    prefs.set_pref(section, option, value)
 
-def get_pref(section, option, value, opt_type=bool):
-    return prefs.get_pref(section, option, value, opt_type)
+def get(section, option, default_val=None, opt_type=None):
+    return prefs.get_pref(section, option, default_val, opt_type)
