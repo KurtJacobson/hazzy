@@ -62,10 +62,6 @@ SIGNALS = {
     'file-loaded': 'file'
 }
 
-def singleton(cls):
-    return cls()
-
-@singleton
 class Status(GObject.GObject):
     __gtype_name__ = 'Status'
     __gsignals__ = {
@@ -245,3 +241,9 @@ class Status(GObject.GObject):
             pos = self.stat.joint_position
 
         self.emit('joint-positions', pos)
+
+
+status = Status()
+
+def on_value_changed(attribute, callback, print_info=True):
+    status.on_value_changed(attribute, callback, print_info)
