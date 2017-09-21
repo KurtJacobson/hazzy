@@ -8,11 +8,17 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import GObject
 
 from utilities import preferences as prefs
 
 
 class PrefEntry(Gtk.Entry):
+    __gtype_name__ = 'PrefEntry'
+    __gsignals__ = {
+        'value-changed': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        }
+
     def __init__(self, section, option, default_value=''):
         Gtk.Entry.__init__(self)
 
@@ -39,13 +45,22 @@ class PrefEntry(Gtk.Entry):
             self.get_toplevel().set_focus(None)
 
     def set_preference(self):
-        self.value = self.get_text()
+        value = self.get_text()
+        if value == self.value:
+            return
+        self.value = value
         prefs.set(self.section, self.option, self.value, str)
+        self.emit('value-changed', self.value)
         self.select_region(0, 0)
         self.get_toplevel().set_focus(None)
 
 
 class PrefComboBox(Gtk.ComboBox):
+    __gtype_name__ = 'PrefComboBox'
+    __gsignals__ = {
+        'value-changed': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        }
+
     def __init__(self, section, option, items=[], default_item=None):
         Gtk.ComboBox.__init__(self)
 
@@ -73,16 +88,24 @@ class PrefComboBox(Gtk.ComboBox):
         for row in range(len(self.model)):
             if self.model[row][0] == item:
                 self.set_active_iter(self.model.get_iter(row))
+                self.item = item
+                self.emit('value-changed', self.item)
                 break
 
     def on_selection_changed(self, widget):
         tree_iter = widget.get_active_iter()
         if tree_iter != None:
-            self.value = self.model[tree_iter][0]
-            prefs.set(self.section, self.option, self.value)
+            self.item = self.model[tree_iter][0]
+            prefs.set(self.section, self.option, self.item)
+            self.emit('value-changed', self.item)
 
 
 class PrefCheckButton(Gtk.CheckButton):
+    __gtype_name__ = 'PrefCheckButton'
+    __gsignals__ = {
+        'value-changed': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        }
+
     def __init__(self, section, option, default_value=False):
         Gtk.CheckButton.__init__(self)
 
@@ -92,15 +115,21 @@ class PrefCheckButton(Gtk.CheckButton):
 
         self.connect('toggled', self.on_toggle)
 
-        self.value = prefs.get(self.section, self.option, self.default_value, bool)
-        self.set_active(self.value)
+        self.state = prefs.get(self.section, self.option, self.default_value, bool)
+        self.set_active(self.state)
 
     def on_toggle(self, widget):
-        self.value = self.get_active()
-        prefs.set(self.section, self.option, self.value)
+        self.state = self.get_active()
+        prefs.set(self.section, self.option, self.state)
+        self.emit('value-changed', self.state)
 
 
 class PrefSwitch(Gtk.Switch):
+    __gtype_name__ = 'PrefSwitch'
+    __gsignals__ = {
+        'value-changed': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        }
+
     def __init__(self, section, option, default_value=False):
         Gtk.Switch.__init__(self)
 
@@ -110,12 +139,13 @@ class PrefSwitch(Gtk.Switch):
 
         self.connect('state-set', self.on_state_set)
 
-        self.value = prefs.get(self.section, self.option, self.default_value, bool)
-        self.set_active(self.value)
+        self.state = prefs.get(self.section, self.option, self.default_value, bool)
+        self.set_active(self.state)
 
     def on_state_set(self, widget, event):
-        self.value = self.get_state()
-        prefs.set(self.section, self.option, self.value)
+        self.state = not self.get_state() # Don't know why need to invert
+        prefs.set(self.section, self.option, self.state)
+        self.emit('value-changed', self.state)
 
 
 class PrefFeild(Gtk.Box):
