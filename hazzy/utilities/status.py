@@ -54,6 +54,11 @@ MOTION = {
     linuxcnc.TRAJ_MODE_TELEOP: 'TELEOP'
 }
 
+class ErrorTypes:
+    MESSAGE = 0
+    INFO = 1
+    ERROR = 2
+
 # These signals should cause an update
 # when they are connected to a callback
 SIGNALS = {
@@ -70,6 +75,7 @@ class Status(GObject.GObject):
         'file-loaded': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
         'joint-positions': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
         'axis-positions': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
+        'error': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
     }
 
     def __init__(self, stat=None):
@@ -133,6 +139,7 @@ class Status(GObject.GObject):
 
     def _periodic(self):
         try:
+            # Satus updates
             self.stat.poll()
 
             for attribute in self.registry:
@@ -145,6 +152,11 @@ class Status(GObject.GObject):
             # Always update joint/axis positions
             self._update_axis_positions()
             self._update_joint_positions()
+
+            # Check for errors
+            error = self.error.poll()
+            if error:
+                self._on_error(error)
 
         except Exception as e:
             log.exception(e)
@@ -241,6 +253,26 @@ class Status(GObject.GObject):
             pos = self.stat.joint_position
 
         self.emit('joint-positions', pos)
+
+    def _on_error(self, error):
+        kind, message = error
+
+        if message == "" or message is None:
+            message = "Unknown error!"
+
+        if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR, 'ERROR'):
+            kind = ErrorTypes.ERROR
+            log.error(message)
+        elif kind in (linuxcnc.NML_TEXT, linuxcnc.OPERATOR_TEXT, 'INFO'):
+            kind = ErrorTypes.ERROR
+            log.info(message)
+        elif kind in (linuxcnc.NML_DISPLAY, linuxcnc.OPERATOR_DISPLAY, 'MSG'):
+            kind = ErrorTypes.ERROR
+            log.info(message)
+        else:
+            kind = ErrorTypes.ERROR
+            log.error(message)
+        self.emit('error', (kind, message))
 
 
 status = Status()
