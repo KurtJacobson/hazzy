@@ -70,17 +70,21 @@ class GstWidget(Gtk.Box):
 
         devices = ["/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3"]
         default = "/dev/video0"
-        feild = widgets.PrefComboBox('VedioWidget', 'Device', devices, default)
-        self.add_config_field(feild)
+        combo = widgets.PrefComboBox('VedioWidget', 'Device', devices, default)
+        combo.connect('value-changed', self.on_device_changed)
+        self.add_config_field(combo)
 
-        feild = widgets.PrefEntry('VedioWidget', 'Host', '127.0.0.1')
-        self.add_config_field(feild)
+        entry = widgets.PrefEntry('VedioWidget', 'Host', '127.0.0.1')
+        entry.connect('value-changed', self.on_host_chaned)
+        self.add_config_field(entry)
 
-        feild = widgets.PrefEntry('VedioWidget', 'Port', '5000')
-        self.add_config_field(feild)
+        entry = widgets.PrefEntry('VedioWidget', 'Port', '5000')
+        entry.connect('value-changed', self.on_port_changed)
+        self.add_config_field(entry)
 
-        feild = widgets.PrefSwitch('VedioWidget', 'Stream', True)
-        self.add_config_field(feild)
+        switch = widgets.PrefSwitch('VedioWidget', 'Stream', True)
+        switch.connect('value-changed', self.on_stream_state_changed)
+        self.add_config_field(switch)
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
         self.stack.add_titled(self.config_box, "config", "Widget Config")
@@ -111,6 +115,18 @@ class GstWidget(Gtk.Box):
 
         self.gtksink_widget = None
 
+    def on_device_changed(self, widget, device):
+        print 'Device changed: ', device
+
+    def on_host_chaned(self, widget, host):
+        print 'Host changed: ', host
+
+    def on_port_changed(self, widget, port):
+        print 'Port changed: ', port
+
+    def on_stream_state_changed(self, widget, streaming):
+        print 'Streaming changed: ', streaming
+
     def add_config_field(self, feild):
         box = widgets.PrefFeild(feild, self.size_group)
         self.config_box.pack_start(box, False, True, 5)
@@ -139,7 +155,7 @@ class GstWidget(Gtk.Box):
         self.bus.connect('message::error', self._on_error)
 
         self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
-        self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', "/dev/video3", str))
+        self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', "/dev/video0", str))
         self.pipeline.add(self.video_source)
 
         caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
