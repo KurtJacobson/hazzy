@@ -116,3 +116,13 @@ class PrefSwitch(Gtk.Switch):
     def on_state_set(self, widget, event):
         self.value = self.get_state()
         prefs.set(self.section, self.option, self.value)
+
+
+class PrefFeild(Gtk.Box):
+    def __init__(self, feild, group):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.HORIZONTAL)
+        label = Gtk.Label(feild.option)
+        self.pack_start(label, True, True, 0)
+        self.pack_start(feild, True, True, 0)
+        group.add_widget(label)
+        group.add_widget(feild)

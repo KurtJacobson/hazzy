@@ -22,6 +22,8 @@ PYDIR = os.path.abspath(os.path.dirname(__file__))
 
 SETTINGS_FILE = os.path.join(PYDIR, 'settings.json')
 
+from gui import widgets
+from utilities import preferences as prefs
 from utilities import logger
 
 # Setup logging
@@ -52,17 +54,33 @@ class GstWidget(Gtk.Box):
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.stack.set_transition_duration(500)
 
-        self.widget_box = Gtk.VBox()
-        self.config_box = Gtk.VBox()
+        self.widget_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         button_start = Gtk.ToggleButton("Start")
         button_start.connect("toggled", self._on_button_start_toggled, "1")
 
         self.widget_box.pack_end(button_start, False, True, 0)
 
-        self.add_config_field("Device", "video_device")
-        self.add_config_field("Width", "video_width")
-        self.add_config_field("height", "video_height")
+#        self.add_config_field("Device", "video_device")
+#        self.add_config_field("Width", "video_width")
+#        self.add_config_field("Height", "video_height")
+
+        self.size_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
+
+        devices = ["/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3"]
+        default = "/dev/video0"
+        feild = widgets.PrefComboBox('VedioWidget', 'Device', devices, default)
+        self.add_config_field(feild)
+
+        feild = widgets.PrefEntry('VedioWidget', 'Host', '127.0.0.1')
+        self.add_config_field(feild)
+
+        feild = widgets.PrefEntry('VedioWidget', 'Port', '5000')
+        self.add_config_field(feild)
+
+        feild = widgets.PrefSwitch('VedioWidget', 'Stream', True)
+        self.add_config_field(feild)
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
         self.stack.add_titled(self.config_box, "config", "Widget Config")
@@ -93,21 +111,9 @@ class GstWidget(Gtk.Box):
 
         self.gtksink_widget = None
 
-    def add_config_field(self, name, key):
-
-        field_box = Gtk.HBox()
-
-        label = '{:{align}{width}}'.format(name, align='^', width='25')
-        entry_label = Gtk.Label(label)
-
-        entry = Gtk.Entry()
-        entry.set_name(key)
-        entry.set_text(str(self.settings[key]))
-
-        field_box.pack_start(entry_label, False, True, 0)
-        field_box.pack_start(entry, True, True, 0)
-
-        self.config_box.pack_start(field_box, False, True, 0)
+    def add_config_field(self, feild):
+        box = widgets.PrefFeild(feild, self.size_group)
+        self.config_box.pack_start(box, False, True, 5)
 
     def save_settings(self, widget=None):
         with open(SETTINGS_FILE, 'w') as fh:
@@ -133,7 +139,7 @@ class GstWidget(Gtk.Box):
         self.bus.connect('message::error', self._on_error)
 
         self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
-        self.video_source.set_property("device", "/dev/video0")
+        self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', "/dev/video3", str))
         self.pipeline.add(self.video_source)
 
         caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
