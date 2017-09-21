@@ -11,8 +11,8 @@ from gi.repository import Gdk
 
 import linuxcnc
 
-from utilities.status import Status, STATES, MODES, INTERP, MOTION
-from utilities.commands import Commands
+from utilities import status
+from utilities import commands
 
 # Setup logging
 from utilities import logger
@@ -33,28 +33,25 @@ class BasicControls(Gtk.Box):
         self.controls = self.builder.get_object('basic_controls')
         self.add(self.controls)
 
-        self.command = Commands()
-        self.status = Status
-
-        self.status.on_value_changed('task_state', self.on_task_state_changed)
-        self.status.on_value_changed('task_mode', self.on_task_mode_changed)
-        self.status.on_value_changed('interp_state', self.on_interp_state_changed)
-        self.status.on_value_changed('motion_mode', self.on_motion_mode_changed)
+        status.on_value_changed('task_state', self.on_task_state_changed)
+        status.on_value_changed('task_mode', self.on_task_mode_changed)
+        status.on_value_changed('interp_state', self.on_interp_state_changed)
+        status.on_value_changed('motion_mode', self.on_motion_mode_changed)
 
         self.show_all()
 
     def on_reset_btn_clicked(self, widget):
-        self.command.estop_reset()
+        commands.estop_reset()
         self.builder.get_object('power_sw').set_sensitive(True)
 
     def on_power_switch_activated(self, widget, event):
         if widget.get_active():
-            self.command.machine_on()
+            commands.machine_on()
         else:
-            self.command.machine_off()
+            commands.machine_off()
 
     def on_task_state_changed(self, widget, task_state):
-        state_str = STATES.get(task_state, 'UNKNOWN')
+        state_str = status.STATES.get(task_state, 'UNKNOWN')
         self.builder.get_object('state_lbl').set_text(state_str)
 
         if task_state == linuxcnc.STATE_ON:
@@ -69,13 +66,13 @@ class BasicControls(Gtk.Box):
             self.builder.get_object('power_sw').set_sensitive(False)
 
     def on_task_mode_changed(self, widget, task_mode):
-        mode_str = MODES.get(task_mode, 'UNKNOWN')
+        mode_str = status.MODES.get(task_mode, 'UNKNOWN')
         self.builder.get_object('mode_lbl').set_text(mode_str)
 
     def on_interp_state_changed(self, widget, interp_state):
-        interp_str = INTERP.get(interp_state, 'UNKNOWN')
+        interp_str = status.INTERP.get(interp_state, 'UNKNOWN')
         self.builder.get_object('interp_lbl').set_text(interp_str)
 
     def on_motion_mode_changed(self, widget, motion_mode):
-        motion_str = MOTION.get(motion_mode, 'UNKNOWN')
+        motion_str = status.MOTION.get(motion_mode, 'UNKNOWN')
         self.builder.get_object('motion_lbl').set_text(motion_str)
