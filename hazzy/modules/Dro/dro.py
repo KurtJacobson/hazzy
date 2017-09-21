@@ -13,7 +13,7 @@ from gi.repository import GObject
 
 from utilities import ini_info
 from utilities import machine_info
-from utilities.status import Status
+from utilities import status
 from utilities.constants import Paths
 
 # Setup paths
@@ -32,9 +32,7 @@ class Dro(Gtk.Box):
     def __init__(self):
         Gtk.Box.__init__(self)
 
-        self.stat = Status
-
-        self.stat.on_value_changed('axis_positions', self.update_dros, False)
+        status.on_value_changed('axis_positions', self.update_dros, False)
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'dro.ui'))

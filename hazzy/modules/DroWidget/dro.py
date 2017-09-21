@@ -8,12 +8,13 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import Pango
 
 PYDIR = os.path.join(os.path.dirname(__file__))
 
 from utilities import ini_info
 from utilities import machine_info
-from utilities.status import Status
+from utilities import status
 from utilities import entry_eval
 from utilities import preferences as prefs
 from gui import widgets
@@ -32,8 +33,7 @@ class AxisDro(Gtk.Grid):
 
         axes = machine_info.axis_letter_list
 
-        self.stat = Status
-        self.stat.on_value_changed('g5x_index', self.update_g5x_label)
+        status.on_value_changed('g5x_index', self.update_g5x_label, False)
 
         # Column labels
         self.g5x_label = Gtk.Label()
@@ -72,6 +72,7 @@ class AxisDro(Gtk.Grid):
         self.g5x_label.set_text(work_cords[g5x_index])
 
 
+
 class LabelCover(Gtk.EventBox):
     def __init__(self):
         Gtk.EventBox.__init__(self)
@@ -82,6 +83,7 @@ class LabelCover(Gtk.EventBox):
 
 
 class DroEntry(Gtk.Entry):
+    ''' Base DRO entry class '''
 
     class DroType:
         REL = 0
@@ -97,6 +99,11 @@ class DroEntry(Gtk.Entry):
         self.set_alignment(1)
         self.set_width_chars(8)
 
+        self.set_name('dro')
+
+        font = Pango.FontDescription('16')
+        self.modify_font(font)
+
         self.axis_letter = axis_letter
         self.axis_num = 'xyzabcuvw'.index(self.axis_letter.lower())
 
@@ -109,18 +116,18 @@ class DroEntry(Gtk.Entry):
         self.connect('key-press-event', self.on_key_press)
         self.connect('activate', self.on_activate)
 
-        self.stat = Status
-        self.stat.on_value_changed('axis-positions', self.update_dro)
+        status.on_value_changed('axis-positions', self._update_dro, False)
 
-    def update_dro(self, widget, positions):
+    def _update_dro(self, widget, positions):
         if not self.has_focus: # Don't step on user trying to enter value
             pos = positions[self.dro_type][self.axis_num]
             pos_str = '{:.{dec_plcs}f}'.format(pos, dec_plcs=4)
             self.set_text(pos_str)
 
     def on_button_release(self, widget, data=None):
-        self.select()
-        return True
+        if not self.has_focus:
+            self.select()
+            return True
 
     def on_focus_out(self, widget, data=None):
         self.unselect()
@@ -143,6 +150,8 @@ class DroEntry(Gtk.Entry):
 
 
 class G5xEntry(DroEntry):
+    ''' G5x DRO entry class. Allows setting work offset by typing into DRO '''
+
     def __init__(self, axis_letter, dro_type):
         DroEntry.__init__(self, axis_letter, dro_type)
 
