@@ -21,8 +21,12 @@
 
 import math
 import linuxcnc
+import time
+import threading
 
 from gi.repository import GObject
+
+GObject.threads_init() 
 
 # Setup logging
 from utilities import logger
@@ -108,6 +112,9 @@ class Status(GObject.GObject):
 
         self.on_value_changed('file', self._update_file, True)
 
+        self.max_time = 0
+        self.counter = 0
+
         GObject.timeout_add(50, self._periodic)
 
     # This allows monitoring any of the linuxcnc.stat attributes
@@ -138,20 +145,24 @@ class Status(GObject.GObject):
             log.warning('linuxcnc.stat does not have attribute "{}"'.format(attribute))
 
     def _periodic(self):
+        start_time = time.time()
         try:
             # Satus updates
             self.stat.poll()
-
             for attribute in self.registry:
                 old = self.old[attribute]
                 new = getattr(self.stat, attribute)
+                #print getattr(self.stat, 'joint')[1]['homed']
                 if old != new:
                     self.old[attribute] = new
                     self.emit(attribute, new)
 
             # Always update joint/axis positions
-            self._update_axis_positions()
-            self._update_joint_positions()
+            calc = time.time()
+            #self._update_axis_positions()
+            threading.Thread(target=self._update_axis_positions).start()
+            #self._update_joint_positions()
+            print 'Calc time: ', time.time() - calc
 
             # Check for errors
             error = self.error.poll()
@@ -160,6 +171,8 @@ class Status(GObject.GObject):
 
         except Exception as e:
             log.exception(e)
+
+        print 'Loop time: ', time.time() - start_time
 
         return True
 
@@ -243,7 +256,12 @@ class Status(GObject.GObject):
         for axis in self.axis_list:
             rel[axis] -= g92_offset[axis]
 
-        self.emit('axis-positions', tuple([pos, tuple(rel), tuple(dtg)]))
+        GObject.idle_add(self.emit_axis_possitions, tuple([pos, tuple(rel), tuple(dtg)]))
+
+        #self.emit('axis-positions', tuple([pos, tuple(rel), tuple(dtg)]))
+
+    def emit_axis_possitions(self, pos):
+        self.emit('axis-positions', pos)
 
     def _update_joint_positions(self):
 
