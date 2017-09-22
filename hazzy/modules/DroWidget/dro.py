@@ -15,6 +15,7 @@ PYDIR = os.path.join(os.path.dirname(__file__))
 from utilities import ini_info
 from utilities import machine_info
 from utilities import status
+from utilities import commands
 from utilities import entry_eval
 from utilities import preferences as prefs
 from gui import widgets
@@ -70,7 +71,6 @@ class AxisDro(Gtk.Grid):
     def update_g5x_label(self, widget, g5x_index):
         work_cords = ["G53", "G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3"]
         self.g5x_label.set_text(work_cords[g5x_index])
-
 
 
 class LabelCover(Gtk.EventBox):
@@ -152,6 +152,8 @@ class DroEntry(Gtk.Entry):
 class G5xEntry(DroEntry):
     ''' G5x DRO entry class. Allows setting work offset by typing into DRO '''
 
+    axis_list = machine_info.axis_letter_list
+
     def __init__(self, axis_letter, dro_type):
         DroEntry.__init__(self, axis_letter, dro_type)
 
@@ -165,9 +167,9 @@ class G5xEntry(DroEntry):
         self.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, icon_name)
 
     def on_activate(self, widget):
+        ''' Evaluate entry and set axis position to value '''
         expr = self.get_text().lower()
         val = entry_eval.eval(expr)
         if val is not None:
-            self.set_text(str(val))
-            #cmd.set_work_offset(axis_letter, val)
-        print val
+            commands.set_work_offset(self.axis_letter, val)
+        self.unselect()
