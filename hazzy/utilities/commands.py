@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
 import linuxcnc
+from utilities import ini_info
+
+num_joints = ini_info.get_num_joints()
+no_force_homing = ini_info.get_no_force_homing()
 
 # Setup logging
 from utilities import logger
@@ -56,30 +60,53 @@ def set_motion_mode(mode):
     command.wait_complete()
 
 def issue_mdi(mdi_command):
-    log.info("Issuing MDI command: {}".format(mdi_command))
-    command.mdi(mdi_command)
+    stat.poll()
+    if stat.estop:
+        log.error("Can't issue MDI when estoped")
+    elif not stat.enabled:
+        log.error("Can't issue MDI when not enabled")
+    elif not no_force_homing if no_force_homing else not is_homed():
+        log.error("Can't issue MDI when not homed")
+    elif not stat.interp_state == linuxcnc.INTERP_IDLE:
+        log.error("Can't issue MDI when interpreter is not idle")
+    else:
+        # Lets do this!
+        set_mode(linuxcnc.MODE_MDI)
+        log.info("Issuing MDI command: {0}".format(mdi_command))
+        command.mdi(mdi_command)
+        set_mode(linuxcnc.MODE_MANUAL)
 
 def set_work_offset(axis, value):
-    offset_command = 'G10 L20 P%d %s%.12f' % (stat.g5x_index, axis, value)
-    issue_mdi(offset_command)
+    stat.poll()
+    cmd = 'G10 L20 P{0:d} {1}{2:.12f}'.format(stat.g5x_index, axis.upper(), value)
+    issue_mdi(cmd)
     set_mode(linuxcnc.MODE_MANUAL)
 
 def home_joint(joint):
+    ''' Home/Unhome the specified joint, -1 for all. '''
     set_mode(linuxcnc.MODE_MANUAL)
-    if stat.joint[joint]['homed'] == 0 and not stat.estop and stat.joint[joint]['homing'] == 0:
+    stat.poll()
+    if not stat.estop and not stat.joint[joint]['homed'] and not stat.joint[joint]['homing']:
         log.info("Homing joint {0}".format(joint))
         command.home(joint)
-    elif stat.homed[joint]:
+    elif stat.joint[joint]['homed']:
         log.info("joint {0} is already homed, unhoming".format(joint))
         set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
         command.unhome(joint)
-    elif stat.joint[joint]['homing'] != 0:
+    elif stat.joint[joint]['homing']:
         log.error("Homing sequence already in progress")
     else:
         log.error("Can't home joint {0}, check E-stop and machine power".format(joint))
 
+def is_homed():
+    ''' Returns TRUE if all joints are homed. '''
+    for joint in range(num_joints):
+        if not stat.joint[joint]['homed']:
+            return False
+    return True
+
 def is_moving():
-    '''Check if machine is moving due to MDI, program execution, etc.'''
+    ''' Returns TRUE if machine is moving due to MDI, program execution, etc. '''
     if stat.state == linuxcnc.RCS_EXEC:
         return True
     else:

@@ -108,9 +108,9 @@ def get_is_metric():
 
 def get_no_force_homing():
     temp = ini.find("TRAJ", "NO_FORCE_HOMING")
-    if not temp or temp == "0":
-        return False
-    return True
+    if temp and temp == '1':
+        return True
+    return False
 
 def get_position_feedback():
     temp = ini.find("DISPLAY", "POSITION_FEEDBACK")
