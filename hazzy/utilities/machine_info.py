@@ -6,12 +6,12 @@ from utilities import ini_info
 from utilities import logger
 log = logger.get(__name__)
 
-AXIS_LETTERS = ['X', 'Y', 'Z', 'A', 'B', 'C', 'U', 'V', 'W']
+AXIS_LETTERS = 'xyzabcuvw'
 
 num_axes = 0           # Total number of Axes
 num_joints = 0         # Total number of Joints
+coordinates = []       # [TRAJ] COORDINATES
 axis_letter_list = []  # Axes letters [X, Y, Z, B]
-axis_number_list = []  # Axis numbers [0, 1, 2, 4]
 joint_axis_dict = {}   # Joint:Axis correspondence {0:0, 1:1, 2:2, 3:4}
 
 def init():
@@ -20,7 +20,7 @@ def init():
 
 def _get_axis_list():
 
-    global num_joints, axis_letter_list, axis_number_list, joint_axis_dict
+    global coordinates, num_joints, axis_letter_list, joint_axis_dict
 
     coordinates = ini_info.get_coordinates()
     num_joints = ini_info.get_num_joints()
@@ -32,11 +32,6 @@ def _get_axis_list():
         axis_letter_list.append(axis_letter)
 
     num_axes = len(axis_letter_list)
-
-    # Axis number list (Ex. [0, 1, 2, 4])
-    for axis in axis_letter_list:
-        axis_number = AXIS_LETTERS.index(axis)
-        axis_number_list.append(axis_number)
 
     # Joint:Axis dict (Ex. {0:0, 1:1, 2:2, 3:4})
     for jnum, aletter in enumerate(coordinates):
@@ -63,7 +58,7 @@ def _get_axis_list():
                 count += 1
             aletter_jnum_dict[aletter] = jnum
             jnum_aletter_dict[jnum] = aletter
-            log.info("Axis {0} --> Joint {1}".format(aletter, jnum))
+            log.info("Axis {0} --> Joint {1}".format(aletter.upper(), jnum))
     else:
         log.info("The number of joints ({0}) is not equal to the number of coordinates ({1})"
               .format(num_joints, len(coordinates)))

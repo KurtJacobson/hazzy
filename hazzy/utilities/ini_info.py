@@ -77,8 +77,8 @@ def get_coordinates():
     temp = temp.replace(' ','')
     if not temp:
         log.warning("No coordinates entry found in [TRAJ] of INI file, using XYZ")
-        temp = "XYZ"
-    return temp.upper()
+        temp = "xyz"
+    return temp.lower()
 
 def get_num_joints():
     temp = ini.find("KINS", "JOINTS")
