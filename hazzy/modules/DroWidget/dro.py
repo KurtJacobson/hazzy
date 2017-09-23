@@ -85,13 +85,22 @@ class LabelCover(Gtk.EventBox):
 class DroEntry(Gtk.Entry):
     ''' Base DRO entry class '''
 
+    coords = machine_info.coordinates
+
     class DroType:
-        REL = 0
-        ABS = 1
+        ABS = 0
+        REL = 1
         DTG = 2
 
     def __init__(self, axis_letter, dro_type=DroType.REL):
         Gtk.Entry.__init__(self)
+
+        self.axis_letter = axis_letter
+        self.axis_num = 'xyzabcuvw'.index(self.axis_letter.lower())
+        self.joint_num = self.coords.index(self.axis_letter.lower())
+
+        self.dro_type = dro_type
+        self.decimal_places = 4
 
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -99,15 +108,8 @@ class DroEntry(Gtk.Entry):
         self.set_alignment(1)
         self.set_width_chars(8)
 
-        self.set_name('dro')
-
         font = Pango.FontDescription('16')
         self.modify_font(font)
-
-        self.axis_letter = axis_letter
-        self.axis_num = 'xyzabcuvw'.index(self.axis_letter.lower())
-
-        self.dro_type = dro_type
 
         self.has_focus = False
 
@@ -121,7 +123,7 @@ class DroEntry(Gtk.Entry):
     def _update_dro(self, widget, positions):
         if not self.has_focus: # Don't step on user trying to enter value
             pos = positions[self.dro_type][self.axis_num]
-            pos_str = '{:.{dec_plcs}f}'.format(pos, dec_plcs=4)
+            pos_str = '{:.{dec_plcs}f}'.format(pos, dec_plcs=self.decimal_places)
             self.set_text(pos_str)
 
     def on_button_release(self, widget, data=None):
@@ -152,19 +154,17 @@ class DroEntry(Gtk.Entry):
 class G5xEntry(DroEntry):
     ''' G5x DRO entry class. Allows setting work offset by typing into DRO '''
 
-    axis_list = machine_info.axis_letter_list
-
     def __init__(self, axis_letter, dro_type):
         DroEntry.__init__(self, axis_letter, dro_type)
 
-        self.on_icon_toggled(True)
-
-    def on_icon_toggled(self, setting):
-        if setting:
-            icon_name = "go-home-symbolic"
-        else:
-            icon_name = None
+        icon_name = "go-home-symbolic"
         self.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, icon_name)
+
+        self.set_icon_activatable(1, True)
+        self.connect("icon-press", self.home)
+
+    def home(self, widget, icon, event):
+        commands.home_joint(self.joint_num)
 
     def on_activate(self, widget):
         ''' Evaluate entry and set axis position to value '''

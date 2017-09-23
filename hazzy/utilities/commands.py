@@ -56,14 +56,27 @@ def set_motion_mode(mode):
     command.wait_complete()
 
 def issue_mdi(mdi_command):
-    if set_mode(linuxcnc.MODE_MDI):
-        log.info("Issuing MDI command: {}".format(mdi_command))
-        command.mdi(mdi_command)
+    log.info("Issuing MDI command: {}".format(mdi_command))
+    command.mdi(mdi_command)
 
 def set_work_offset(axis, value):
     offset_command = 'G10 L20 P%d %s%.12f' % (stat.g5x_index, axis, value)
     issue_mdi(offset_command)
     set_mode(linuxcnc.MODE_MANUAL)
+
+def home_joint(joint):
+    set_mode(linuxcnc.MODE_MANUAL)
+    if stat.joint[joint]['homed'] == 0 and not stat.estop and stat.joint[joint]['homing'] == 0:
+        log.info("Homing joint {0}".format(joint))
+        command.home(joint)
+    elif stat.homed[joint]:
+        log.info("joint {0} is already homed, unhoming".format(joint))
+        set_motion_mode(linuxcnc.TRAJ_MODE_FREE)
+        command.unhome(joint)
+    elif stat.joint[joint]['homing'] != 0:
+        log.error("Homing sequence already in progress")
+    else:
+        log.error("Can't home joint {0}, check E-stop and machine power".format(joint))
 
 def is_moving():
     '''Check if machine is moving due to MDI, program execution, etc.'''
