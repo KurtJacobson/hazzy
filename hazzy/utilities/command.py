@@ -38,6 +38,11 @@ def flood_off():
     command.flood(0)
 
 def set_mode(mode):
+    '''Set mode to one of
+    linuxcnc.MODE_MANUAL
+    linuxcnc.MODE_MDI
+    linuxcnc.MODE_AUTO
+    '''
     stat.poll()
     if stat.task_mode == mode:
         return
@@ -45,6 +50,12 @@ def set_mode(mode):
     command.wait_complete()
 
 def set_state(state):
+    '''Set state to one of
+    linuxcnc.STATE_ESTOP
+    linuxcnc.STATE_ESTOP_RESET
+    linuxcnc.STATE_ON
+    linuxcnc.STATE_OFF
+    '''
     stat.poll()
     if stat.state == state:
         return
@@ -52,6 +63,11 @@ def set_state(state):
     command.wait_complete()
 
 def set_motion_mode(mode):
+    '''Set motion mode to one of
+    linuxcnc.TRAJ_MODE_FREE
+    linuxcnc.TRAJ_MODE_TELEOP
+    linuxcnc.TRAJ_MODE_COORD
+    '''
     stat.poll()
     if stat.motion_mode == mode:
         return
@@ -60,6 +76,7 @@ def set_motion_mode(mode):
     command.wait_complete()
 
 def issue_mdi(mdi_command):
+    '''Issue an MDI command if OK to do so.'''
     stat.poll()
     if stat.estop:
         log.error("Can't issue MDI when estoped")
@@ -76,17 +93,23 @@ def issue_mdi(mdi_command):
         command.mdi(mdi_command)
         set_mode(linuxcnc.MODE_MANUAL)
 
-def set_work_offset(axis, value):
+def set_work_coordinate(axis, position):
+    '''Set the current coordinates for `axis` to `position`.
+    Args:
+        axis (str): The axis for which to set the coordinates
+        position (float): The desired new coordinates for the axis
+    '''
     stat.poll()
-    cmd = 'G10 L20 P{0:d} {1}{2:.12f}'.format(stat.g5x_index, axis.upper(), value)
+    cmd = 'G10 L20 P{0:d} {1}{2:.12f}'.format(stat.g5x_index, axis.upper(), position)
     issue_mdi(cmd)
     set_mode(linuxcnc.MODE_MANUAL)
 
 def home_joint(joint):
-    ''' Home/Unhome the specified joint, -1 for all. '''
+    '''Home/Unhome the specified joint, -1 for all.'''
     set_mode(linuxcnc.MODE_MANUAL)
     stat.poll()
-    if not stat.estop and not stat.joint[joint]['homed'] and not stat.joint[joint]['homing']:
+    if not stat.estop and stat.enabled \
+     and not stat.joint[joint]['homed'] and not stat.joint[joint]['homing']:
         log.info("Homing joint {0}".format(joint))
         command.home(joint)
     elif stat.joint[joint]['homed']:
@@ -99,14 +122,14 @@ def home_joint(joint):
         log.error("Can't home joint {0}, check E-stop and machine power".format(joint))
 
 def is_homed():
-    ''' Returns TRUE if all joints are homed. '''
+    '''Returns TRUE if all joints are homed.'''
     for joint in range(num_joints):
         if not stat.joint[joint]['homed']:
             return False
     return True
 
 def is_moving():
-    ''' Returns TRUE if machine is moving due to MDI, program execution, etc. '''
+    '''Returns TRUE if machine is moving due to MDI, program execution, etc.'''
     if stat.state == linuxcnc.RCS_EXEC:
         return True
     else:

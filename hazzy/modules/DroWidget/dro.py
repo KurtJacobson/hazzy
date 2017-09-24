@@ -15,7 +15,7 @@ PYDIR = os.path.join(os.path.dirname(__file__))
 from utilities import ini_info
 from utilities import machine_info
 from utilities import status
-from utilities import commands
+from utilities import command
 from utilities import entry_eval
 from utilities import preferences as prefs
 from gui import widgets
@@ -169,12 +169,12 @@ class G5xEntry(DroEntry):
         self.connect("icon-press", self.home)
 
     def home(self, widget, icon, event):
-        commands.home_joint(self.joint_num)
+        command.home_joint(self.joint_num)
 
     def on_activate(self, widget):
         ''' Evaluate entry and set axis position to value '''
         expr = self.get_text().lower()
         val = entry_eval.eval(expr)
         if val is not None:
-            commands.set_work_offset(self.axis_letter, val)
+            command.set_work_coordinate(self.axis_letter, val)
         self.unselect()

@@ -12,7 +12,7 @@ from gi.repository import Gdk
 import linuxcnc
 
 from utilities import status
-from utilities import commands
+from utilities import command
 
 # Setup logging
 from utilities import logger
@@ -41,14 +41,14 @@ class BasicControls(Gtk.Box):
         self.show_all()
 
     def on_reset_btn_clicked(self, widget):
-        commands.estop_reset()
+        command.estop_reset()
         self.builder.get_object('power_sw').set_sensitive(True)
 
     def on_power_switch_activated(self, widget, event):
         if widget.get_active():
-            commands.machine_on()
+            command.machine_on()
         else:
-            commands.machine_off()
+            command.machine_off()
 
     def on_task_state_changed(self, widget, task_state):
         state_str = status.STATES.get(task_state, 'UNKNOWN')
