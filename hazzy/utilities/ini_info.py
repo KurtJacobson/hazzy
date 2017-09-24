@@ -40,7 +40,7 @@ if not ini:
     log.critical("Could not find INI file")
     sys.exit()
 
-MACHINE_NAME = ini.find("EMC", "MACHINE") or "hazzy"
+MACHINE_NAME = ini.find('EMC', 'MACHINE') or "hazzy"
 
 def get_log_file():
     temp = ini.find('DISPLAY', 'LOG_FILE')
@@ -73,47 +73,50 @@ def get_xml_file():
         return os.path.realpath(temp)
 
 def get_coordinates():
-    temp = ini.find("TRAJ", "COORDINATES")
+    '''Returns [TRAJ] COORDINATES or xyz'''
+    temp = ini.find('TRAJ', 'COORDINATES')
     temp = temp.replace(' ','')
     if not temp:
-        log.warning("No coordinates entry found in [TRAJ] of INI file, using XYZ")
+        log.warning("No [TRAJ] COORDINATES entry in INI, using XYZ")
         temp = "xyz"
     return temp.lower()
 
 def get_num_joints():
-    temp = ini.find("KINS", "JOINTS")
+    '''Returns value of [KINS] JOINTS or 3'''
+    temp = ini.find('KINS', 'JOINTS')
     if not temp:
         log.warning("No [KINS] JOINTS entry in INI file, using 3")
         return (3)
     return int(temp)
 
 def get_axis_list():
+    '''Returns a list of the Cartesian axes.'''
     axis_list = []
-    coordinates = coordinates()
-    for joint, axisletter in enumerate(coordinates):
-        if axisletter in axis_list:
+    coordinates = get_coordinates()
+    for axis_letter in coordinates:
+        if axis_letter in axis_list:
             continue
-        axis_list.append(axisletter)
+        axis_list.append(axis_letter)
     return axis_list
 
 def get_is_metric():
-    temp = ini.find("TRAJ", "LINEAR_UNITS")
+    temp = ini.find('TRAJ', 'LINEAR_UNITS')
     if not temp:
         # Then get the X axis units
-        temp = ini.find("AXIS_X", "UNITS")
+        temp = ini.find('AXIS_X', 'UNITS')
     if temp=="mm" or temp=="metric" or temp == "1.0":
         return True
     else:
         return False
 
 def get_no_force_homing():
-    temp = ini.find("TRAJ", "NO_FORCE_HOMING")
+    temp = ini.find('TRAJ', 'NO_FORCE_HOMING')
     if temp and temp == '1':
         return True
     return False
 
 def get_position_feedback():
-    temp = ini.find("DISPLAY", "POSITION_FEEDBACK")
+    temp = ini.find('DISPLAY', 'POSITION_FEEDBACK')
     if not temp or temp == "0":
         return True
     if temp.lower() == "actual":
@@ -122,13 +125,13 @@ def get_position_feedback():
         return False
 
 def get_is_lathe():
-    temp = ini.find("DISPLAY", "LATHE")
+    temp = ini.find('DISPLAY', 'LATHE')
     if not temp or temp == "0":
         return False
     return True
 
 def is_backtool_lathe():
-    temp = ini.find("DISPLAY", "BACK_TOOL_LATHE")
+    temp = ini.find('DISPLAY', 'BACK_TOOL_LATHE')
     if not temp or temp == "0":
         return False
     return True
@@ -136,7 +139,7 @@ def is_backtool_lathe():
 def get_jog_vel():
     # get default jog velocity
     # must convert from INI's units per second to hazzys's units per minute
-    temp = ini.find("DISPLAY", "DEFAULT_LINEAR_VELOCITY")
+    temp = ini.find('DISPLAY', 'DEFAULT_LINEAR_VELOCITY')
     if not temp:
         temp = 3.0
     return float(temp) * 60
@@ -144,7 +147,7 @@ def get_jog_vel():
 def get_max_jog_vel():
     # get max jog velocity
     # must convert from INI's units per second to hazzy's units per minute
-    temp = ini.find("DISPLAY", "MAX_LINEAR_VELOCITY")
+    temp = ini.find('DISPLAY', 'MAX_LINEAR_VELOCITY')
     if not temp:
         temp = 10.0
     return float(temp) * 60
@@ -153,7 +156,7 @@ def get_max_jog_vel():
 def get_max_velocity():
     # max velocity settings: more then one place to check
     # This is the maximum velocity of the machine
-    temp = ini.find("TRAJ", "MAX_VELOCITY")
+    temp = ini.find('TRAJ', 'MAX_VELOCITY')
     if  temp == None:
         log.warning("No MAX_VELOCITY found in [TRAJ] of INI file. Using 15ipm")
         temp = 15.0
@@ -161,7 +164,7 @@ def get_max_velocity():
 
 def get_default_spindle_speed():
     # check for default spindle speed settings
-    temp = ini.find("DISPLAY", "DEFAULT_SPINDLE_SPEED")
+    temp = ini.find('DISPLAY', 'DEFAULT_SPINDLE_SPEED')
     if not temp:
         temp = 300
         log.warning("No DEFAULT_SPINDLE_SPEED entry found in [DISPLAY] of INI file. Using 300rpm")
@@ -169,35 +172,35 @@ def get_default_spindle_speed():
 
 def get_max_spindle_override():
     # check for override settings
-    temp = ini.find("DISPLAY", "MAX_SPINDLE_OVERRIDE")
+    temp = ini.find('DISPLAY', 'MAX_SPINDLE_OVERRIDE')
     if not temp:
         temp = 1.0
         log.warning("No MAX_SPINDLE_OVERRIDE entry found in [DISPLAY] of INI file. Using 1.0")
     return float(temp)
 
 def get_min_spindle_override():
-    temp = ini.find("DISPLAY", "MIN_SPINDLE_OVERRIDE")
+    temp = ini.find('DISPLAY', 'MIN_SPINDLE_OVERRIDE')
     if not temp:
         temp = 0.1
         log.warning("No MIN_SPINDLE_OVERRIDE entry found in [DISPLAY] of INI file. Using 0.1")
     return float(temp)
 
 def get_max_feed_override():
-    temp = ini.find("DISPLAY", "MAX_FEED_OVERRIDE")
+    temp = ini.find('DISPLAY', 'MAX_FEED_OVERRIDE')
     if not temp:
         temp = 1.0
         log.warning("No MAX_FEED_OVERRIDE entry found in [DISPLAY] of INI file. Using 1.0")
     return float(temp)
 
 def get_parameter_file():
-    temp = ini.find("RS274NGC", "PARAMETER_FILE")
+    temp = ini.find('RS274NGC', 'PARAMETER_FILE')
     if not temp:
         return False
     return temp
 
 def get_program_prefix():
     # and we want to set the default path
-    default_path = ini.find("DISPLAY", "PROGRAM_PREFIX")
+    default_path = ini.find('DISPLAY', 'PROGRAM_PREFIX')
     if not default_path:
         log.warning("Path %s from DISPLAY , PROGRAM_PREFIX does not exist" % default_path)
         log.info("Trying default path...")
@@ -209,7 +212,7 @@ def get_program_prefix():
     return default_path
 
 def get_file_ext():
-    file_ext = ini.findall("FILTER", "PROGRAM_EXTENSION")
+    file_ext = ini.findall('FILTER', 'PROGRAM_EXTENSION')
     if file_ext:
         ext_list = ["*.ngc"]
         for data in file_ext:
@@ -224,7 +227,7 @@ def get_file_ext():
 
 def get_increments():
     jog_increments = []
-    increments = ini.find("DISPLAY", "INCREMENTS")
+    increments = ini.find('DISPLAY', 'INCREMENTS')
     if increments:
         if "," in increments:
             for i in increments.split(","):
@@ -238,13 +241,13 @@ def get_increments():
     return jog_increments
 
 def get_tool_table():
-    temp = ini.find("EMCIO", "TOOL_TABLE")
+    temp = ini.find('EMCIO', 'TOOL_TABLE')
     if not temp:
         return False
     return temp
 
 def get_subroutine_paths():
-    subroutines_paths = ini.find("RS274NGC", "SUBROUTINE_PATH")
+    subroutines_paths = ini.find('RS274NGC', 'SUBROUTINE_PATH')
     if not subroutines_paths:
         log.info("No subroutine folder or program prefix given in ini file")
         subroutines_paths = program_prefix()
@@ -253,7 +256,7 @@ def get_subroutine_paths():
     return subroutines_paths
 
 def get_RS274_start_code():
-    temp = ini.find("RS274NGC", "RS274NGC_STARTUP_CODE")
+    temp = ini.find('RS274NGC', 'RS274NGC_STARTUP_CODE')
     if not temp:
         return False
     return  temp
