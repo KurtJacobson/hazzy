@@ -33,10 +33,10 @@ class BasicControls(Gtk.Box):
         self.controls = self.builder.get_object('basic_controls')
         self.add(self.controls)
 
-        status.on_value_changed('task_state', self.on_task_state_changed, False)
-        status.on_value_changed('task_mode', self.on_task_mode_changed, False)
-        status.on_value_changed('interp_state', self.on_interp_state_changed, False)
-        status.on_value_changed('motion_mode', self.on_motion_mode_changed, False)
+        status.on_changed('stat.task_state', self.on_task_state_changed)
+        status.on_changed('stat.task_mode', self.on_task_mode_changed)
+        status.on_changed('stat.interp_state', self.on_interp_state_changed)
+        status.on_changed('stat.motion_mode', self.on_motion_mode_changed)
 
         self.show_all()
 

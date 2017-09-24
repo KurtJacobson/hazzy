@@ -34,7 +34,7 @@ class AxisDro(Gtk.Grid):
 
         axes = machine_info.axis_letter_list
 
-        status.on_value_changed('g5x_index', self.update_g5x_label, False)
+        status.on_changed('stat.g5x_index', self.update_g5x_label)
 
         # Column labels
         self.g5x_label = Gtk.Label()
@@ -118,13 +118,18 @@ class DroEntry(Gtk.Entry):
         self.connect('key-press-event', self.on_key_press)
         self.connect('activate', self.on_activate)
 
-        status.on_value_changed('axis-positions', self._update_dro, False)
+        status.on_changed('stat.axis-positions', self._update_dro)
+        status.on_changed('joint.homing', self._updade_homing_status)
 
     def _update_dro(self, widget, positions):
         if not self.has_focus: # Don't step on user trying to enter value
             pos = positions[self.dro_type][self.axis_num]
             pos_str = '{:.{dec_plcs}f}'.format(pos, dec_plcs=self.decimal_places)
             self.set_text(pos_str)
+
+    def _updade_homing_status(self, widget, joint_num, data):
+        if joint_num == self.joint_num and self.dro_type == self.DroType.REL:
+            print "homing", data
 
     def on_button_release(self, widget, data=None):
         if not self.has_focus:

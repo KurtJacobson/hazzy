@@ -11,7 +11,7 @@ AXIS_LETTERS = 'xyzabcuvw'
 num_axes = 0           # Total number of Axes
 num_joints = 0         # Total number of Joints
 coordinates = []       # [TRAJ] COORDINATES
-axis_letter_list = []  # Axes letters [X, Y, Z, B]
+axis_letter_list = []  # Axes letters [X, Y, Z, B], no duplicates
 joint_axis_dict = {}   # Joint:Axis correspondence {0:0, 1:1, 2:2, 3:4}
 
 def init():

@@ -32,7 +32,7 @@ class Dro(Gtk.Box):
     def __init__(self):
         Gtk.Box.__init__(self)
 
-        status.on_value_changed('axis_positions', self.update_dros, False)
+        status.on_changed('stat.axis_positions', self.update_dros)
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'dro.ui'))

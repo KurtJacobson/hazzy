@@ -21,8 +21,11 @@
 
 import math
 import linuxcnc
+import time
 
 from gi.repository import GObject
+
+from utilities import ini_info
 
 # Setup logging
 from utilities import logger
@@ -87,7 +90,8 @@ class Status(GObject.GObject):
         self.stat = stat or linuxcnc.stat()
         self.error = linuxcnc.error_channel()
 
-        self.report_actual_position = False
+        self.report_actual_position = ini_info.get_position_feedback()
+        self.num_joints = ini_info.get_num_joints()
 
         self.axis_list = []
         self.file = None
@@ -95,24 +99,34 @@ class Status(GObject.GObject):
         self.registry = []
         self.old = {}
 
-        self.on_value_changed('axis_mask', self._update_axis_list, False)
+        self.old['joint'] = getattr(self.stat, 'joint')
 
-        self.on_value_changed('task_state', self._update_task_state, False)
-        self.on_value_changed('task_mode', self._update_task_mode, False)
-        self.on_value_changed('interp_state', self._update_interp_state, False)
-        self.on_value_changed('motion_mode', self._update_motion_mode, False)
-        self.on_value_changed('g5x_index', self._update_work_corordinate, False)
+        # Setup joint dict signals
+        self.keys = self.old['joint'][0].keys()
+        for key in self.keys:
+            GObject.signal_new(key.replace('_', '-'), self, GObject.SignalFlags.RUN_FIRST, None, (int, object))
 
-        self.on_value_changed('gcodes', self._update_active_gcodes, False)
-        self.on_value_changed('mcodes', self._update_active_mcodes, False)
+        self.on_changed('stat.axis_mask', self._update_axis_list)
 
-        self.on_value_changed('file', self._update_file, True)
+        self.on_changed('stat.task_state', self._update_task_state)
+        self.on_changed('stat.task_mode', self._update_task_mode)
+        self.on_changed('stat.interp_state', self._update_interp_state)
+        self.on_changed('stat.motion_mode', self._update_motion_mode)
+        self.on_changed('stat.g5x_index', self._update_work_corordinate)
+
+        self.on_changed('stat.gcodes', self._update_active_gcodes)
+        self.on_changed('stat.mcodes', self._update_active_mcodes)
+
+        self.on_changed('stat.file', self._update_file)
+
+        self.max_time = 0
+        self.counter = 0
 
         GObject.timeout_add(50, self._periodic)
 
     # This allows monitoring any of the linuxcnc.stat attributes
     # and connecting a callback to be called on attribute value change
-    def on_value_changed(self, attribute, callback, print_info=True):
+    def _connect_stat_callback(self, attribute, callback):
 
         if hasattr(self.stat, attribute) \
                 or attribute.replace('_', '-') in self.signals:
@@ -130,28 +144,60 @@ class Status(GObject.GObject):
             else:
                 self.old[attribute] = None
 
-            if print_info:
-                log.info('"{}" connected to "stat.{}" value changed' \
-                         .format(str(callback.__name__), attribute))
-
         else:
-            log.warning('linuxcnc.stat does not have attribute "{}"'.format(attribute))
+            log.error('linuxcnc.stat has no attribute "{}"'.format(attribute))
+
+    def _connect_joint_callback(self, attribute, callback):
+        if attribute in self.keys:
+            self.connect(attribute, callback)
+        else:
+            log.error('linuxcnc.stat.joint has no attribute "{}"'.format(attribute))
+
+    def on_changed(self, attribute, callback):
+        kind, name = attribute.split('.')
+        if kind == 'stat':
+            self._connect_stat_callback(name, callback)
+        elif kind == 'joint':
+            self._connect_joint_callback(name, callback)
+
 
     def _periodic(self):
+        start_time = time.time()
         try:
-            # Satus updates
+
             self.stat.poll()
 
+            # Satus updates
             for attribute in self.registry:
                 old = self.old[attribute]
+
                 new = getattr(self.stat, attribute)
+
                 if old != new:
                     self.old[attribute] = new
                     self.emit(attribute, new)
 
-            # Always update joint/axis positions
+            # Joint updates
+            new = getattr(self.stat, 'joint')
+            old = self.old['joint']
+            self.old['joint'] = new
+
+            start = time.time()
+            for joint in range(self.num_joints):
+                if new[joint] != old[joint]:
+                    #print '\nJoint {}'.format(joint)
+                    items = tuple(set(new[joint].iteritems())-set(old[joint].iteritems()))
+                    for item in items:
+                        #print '{0}: {1}'.format(item[0], item[1])
+                        self.emit(item[0].replace('_', '-'), joint, item[1])
+
+            #print start - time.time()
+
+#            # Always update joint/axis positions
+#            calc = time.time()
             self._update_axis_positions()
             self._update_joint_positions()
+#            print 'Calc time: ', time.time() - calc
 
             # Check for errors
             error = self.error.poll()
@@ -160,6 +206,8 @@ class Status(GObject.GObject):
 
         except Exception as e:
             log.exception(e)
+
+#        print 'Loop time: ', time.time() - start_time
 
         return True
 
@@ -277,5 +325,5 @@ class Status(GObject.GObject):
 
 status = Status()
 
-def on_value_changed(attribute, callback, print_info=True):
-    status.on_value_changed(attribute, callback, print_info)
+def on_changed(attribute, callback):
+    status.on_changed(attribute, callback)
