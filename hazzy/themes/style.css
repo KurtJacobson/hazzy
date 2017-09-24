@@ -1,12 +1,11 @@
+@import url("/usr/share/themes/Adwaita/gtk-3.0/gtk.css");
+
 /* Define color scheme */
-@define-color bg_color #ccc;
-@define-color fg_color #4c9cd6;
-@define-color base_color #4c9cd6;
-@define-color text_color #4c9cd6;
-@define-color selected_bg_color #57c;
-@define-color selected_fg_color #eee;
-@define-color tooltip_bg_color #ccc;
-@define-color tooltip_fg_color #333;
+@define-color text_normal #c4a000;
+@define-color text_error #cc0000;
+@define-color text_warning #c4a000;
+
+
 
 
 button:checked {
@@ -55,6 +54,33 @@ button#menu_button {
     background-size: 20px 20px;
 }
 
+/***************
+* DroEntry *
+***************/
+.DroEntry {
+    font-family: DejaVu Sans Condensed;
+    font-size: 24px;
+}
+
+.DroEntry.homing {
+    color: @text_warning;
+}
+
+.DroEntry.unhomed {
+    color: @text_error;
+}
+
+@keyframes error {
+    from {color: @text_normal;}
+    to {color: @text_error;}
+}
+
+.DroEntry.error {
+    animation-name: error;
+    animation-duration: 250ms;
+    animation-iteration-count: 6;
+    animation-direction: alternate;
+}
 
 /***************
 * FileChooser *

@@ -108,8 +108,12 @@ class DroEntry(Gtk.Entry):
         self.set_alignment(1)
         self.set_width_chars(8)
 
-        font = Pango.FontDescription('16')
-        self.modify_font(font)
+        # Add style class
+        self.style_context = self.get_style_context()
+        self.style_context.add_class("DroEntry")
+
+#        font = Pango.FontDescription('16')
+#        self.modify_font(font)
 
         self.has_focus = False
 
@@ -119,17 +123,12 @@ class DroEntry(Gtk.Entry):
         self.connect('activate', self.on_activate)
 
         status.on_changed('stat.axis-positions', self._update_dro)
-        status.on_changed('joint.homing', self._updade_homing_status)
 
     def _update_dro(self, widget, positions):
         if not self.has_focus: # Don't step on user trying to enter value
             pos = positions[self.dro_type][self.axis_num]
             pos_str = '{:.{dec_plcs}f}'.format(pos, dec_plcs=self.decimal_places)
             self.set_text(pos_str)
-
-    def _updade_homing_status(self, widget, joint_num, data):
-        if joint_num == self.joint_num and self.dro_type == self.DroType.REL:
-            print "homing", data
 
     def on_button_release(self, widget, data=None):
         if not self.has_focus:
@@ -168,8 +167,28 @@ class G5xEntry(DroEntry):
         self.set_icon_activatable(1, True)
         self.connect("icon-press", self.home)
 
+        status.on_changed('joint.homing', self._on_homing)
+        status.on_changed('joint.homed', self._on_homed)
+
+        self.style_context.add_class('unhomed')
+
     def home(self, widget, icon, event):
         command.home_joint(self.joint_num)
+
+    def _on_homing(self, widget, joint, homing):
+        if joint == self.joint_num:
+            if homing == 1:
+                self.style_context.remove_class('unhomed')
+                self.style_context.add_class('homing')
+            else:
+                self.style_context.remove_class('homing')
+
+    def _on_homed(self, widget, joint, homed):
+        if joint == self.joint_num:
+            if homed == 1:
+                self.style_context.remove_class('unhomed')
+            else:
+                self.style_context.add_class('unhomed')
 
     def on_activate(self, widget):
         ''' Evaluate entry and set axis position to value '''
