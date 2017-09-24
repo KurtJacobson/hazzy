@@ -107,19 +107,13 @@ class Status(GObject.GObject):
         for key in self.keys:
             GObject.signal_new(key.replace('_', '-'), self, GObject.SignalFlags.RUN_FIRST, None, (int, object))
 
-        self.on_changed('stat.task_state', self._update_task_state)
-        self.on_changed('stat.task_mode', self._update_task_mode)
-        self.on_changed('stat.interp_state', self._update_interp_state)
-        self.on_changed('stat.motion_mode', self._update_motion_mode)
-        self.on_changed('stat.g5x_index', self._update_work_corordinate)
-
-        self.on_changed('stat.gcodes', self._update_active_gcodes)
-        self.on_changed('stat.mcodes', self._update_active_mcodes)
-
-        self.on_changed('stat.file', self._update_file)
-
         self.max_time = 0
         self.counter = 0
+
+        # Connect internally used signal callbacks
+        self.on_changed('stat.gcodes', self._update_active_gcodes)
+        self.on_changed('stat.mcodes', self._update_active_mcodes)
+        self.on_changed('stat.file', self._update_file)
 
         GObject.timeout_add(50, self._periodic)
 
@@ -210,27 +204,6 @@ class Status(GObject.GObject):
 
         return True
 
-    def _update_task_state(self, widget, task_state):
-        state_str = STATES.get(task_state, 'UNKNOWN')
-        log.debug("Machine state: {0}".format(state_str))
-
-    def _update_task_mode(self, widget, task_mode):
-        mode_str = MODES.get(task_mode, 'UNKNOWN')
-        log.debug("Machine mode: {0}".format(mode_str))
-
-    def _update_interp_state(self, widget, interp_state):
-        interp_str = INTERP.get(interp_state, 'UNKNOWN')
-        log.debug("Interp state: {0}".format(interp_str))
-
-    def _update_motion_mode(self, widget, motion_mode):
-        motion_str = MOTION.get(motion_mode, 'UNKNOWN')
-        log.debug("Motion mode: {0}".format(motion_str))
-
-    def _update_work_corordinate(self, widget, g5x_index):
-        work_cords = ["G53", "G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3"]
-        work_cord_str = work_cords[g5x_index]
-        log.debug("Work coord: {}".format(work_cord_str))
-
     def _update_active_gcodes(self, widget, gcodes):
         formated_gcodes = []
         for gcode in sorted(gcodes[1:]):
@@ -318,3 +291,31 @@ status = Status()
 
 def on_changed(attribute, callback):
     status.on_changed(attribute, callback)
+
+def _log_task_state(widget, task_state):
+    state_str = STATES.get(task_state, 'UNKNOWN')
+    log.debug("Machine state: {0}".format(state_str))
+
+def _log_task_mode(widget, task_mode):
+    mode_str = MODES.get(task_mode, 'UNKNOWN')
+    log.debug("Machine mode: {0}".format(mode_str))
+
+def _log_interp_state(widget, interp_state):
+    interp_str = INTERP.get(interp_state, 'UNKNOWN')
+    log.debug("Interp state: {0}".format(interp_str))
+
+def _log_motion_mode(widget, motion_mode):
+    motion_str = MOTION.get(motion_mode, 'UNKNOWN')
+    log.debug("Motion mode: {0}".format(motion_str))
+
+def _log_work_corordinate(widget, g5x_index):
+    work_cords = ["G53", "G54", "G55", "G56", "G57", "G58", "G59", "G59.1", "G59.2", "G59.3"]
+    work_cord_str = work_cords[g5x_index]
+    log.debug("Work coord: {}".format(work_cord_str))
+
+# Connect signals to log callbacks
+on_changed('stat.task_state', _log_task_state)
+on_changed('stat.task_mode', _log_task_mode)
+on_changed('stat.interp_state', _log_interp_state)
+on_changed('stat.motion_mode', _log_motion_mode)
+on_changed('stat.g5x_index', _log_work_corordinate)
