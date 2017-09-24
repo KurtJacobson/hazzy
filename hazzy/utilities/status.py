@@ -91,9 +91,10 @@ class Status(GObject.GObject):
         self.error = linuxcnc.error_channel()
 
         self.report_actual_position = ini_info.get_position_feedback()
+        axes = ini_info.get_axis_list()
+        self.axis_list = ['xyzabcuvw'.index(axis) for axis in axes]
         self.num_joints = ini_info.get_num_joints()
 
-        self.axis_list = []
         self.file = None
 
         self.registry = []
@@ -105,8 +106,6 @@ class Status(GObject.GObject):
         self.keys = self.old['joint'][0].keys()
         for key in self.keys:
             GObject.signal_new(key.replace('_', '-'), self, GObject.SignalFlags.RUN_FIRST, None, (int, object))
-
-        self.on_changed('stat.axis_mask', self._update_axis_list)
 
         self.on_changed('stat.task_state', self._update_task_state)
         self.on_changed('stat.task_mode', self._update_task_mode)
@@ -256,14 +255,6 @@ class Status(GObject.GObject):
                 and self.stat.call_level == 0:
             self.emit('file-loaded', file)
             log.debug('File loaded: "{}"'.format(file))
-
-    def _update_axis_list(self, widget, axis_mask):
-        mask = '{0:09b}'.format(axis_mask)
-
-        self.axis_list = []
-        for anum, enabled in enumerate(mask[::-1]):
-            if enabled == '1':
-                self.axis_list.append(anum)
 
     def _update_axis_positions(self):
 
