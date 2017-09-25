@@ -5,38 +5,35 @@
 @define-color text_error #cc0000;
 @define-color text_warning #c4a000;
 
-
-
-
 button:checked {
-    background: #57c;
+    background: @theme_selected_bg_color;
     border-color: #2e3436;
     color: #d3d7cf;
     text-shadow: 0 1px #555753;
-
-/*    rgba(255, 255, 255, 0.76923);*/
 }
-
 
 /***************
-* WidgetChooser *
+* WidgetWindow *
 ***************/
 
-.widget_window {
+.WidgetWindow {
     border-radius: 5px;
     border-width: 2px;
-    background-color: #f3f3f3;
-    box-shadow: 0px 0px 2px #555753;
+    background-color: @theme_base_color;
+    box-shadow: 1px 1px 2px @theme_selected_bg_color;
 }
 
-button#menu_button {
+.WidgetWindow .title_bar {
+    background: @theme_bg_color;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+}
+
+.WidgetWindow .title_bar .button {
     padding: 0px;
 }
 
-.title_bar{
-    background: #eeeeec;
-    border-radius: 5px;
-}
+
 
 .widget_chooser {
     background-color: rgba(.5, .5, .5, .5);
@@ -57,6 +54,7 @@ button#menu_button {
 /***************
 * DroEntry *
 ***************/
+
 .DroEntry {
     font-family: DejaVu Sans Condensed;
     font-size: 24px;
@@ -70,16 +68,12 @@ button#menu_button {
     color: @text_error;
 }
 
-@keyframes error {
-    from {color: @text_normal;}
-    to {color: @text_error;}
+.DroEntry.error {
+    color: @text_error;
 }
 
-.DroEntry.error {
-    animation-name: error;
-    animation-duration: 250ms;
-    animation-iteration-count: 6;
-    animation-direction: alternate;
+.DroEntry image.left {
+    color: @text_error;
 }
 
 /***************

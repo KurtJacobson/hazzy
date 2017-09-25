@@ -32,30 +32,38 @@ class WidgetWindow(Gtk.Box):
         self.action = None
 
         builder = Gtk.Builder()
-        builder.add_from_file(os.path.join(PYDIR, 'ui', 'widgetwindow.ui'))
+        builder.add_from_file(os.path.join(PYDIR, 'ui', 'widget_window.ui'))
         builder.connect_signals(self)
 
-        menu_btn = builder.get_object('menu_button')
-        label = builder.get_object('label')
-        box = builder.get_object('box')
-        wwindow = builder.get_object('widgetwindow')
-        self.overlay = builder.get_object('overlay')
+        # WidgetWindow - the whole thing
+        self.widget_window = builder.get_object('widget_window')
+
+        # Overlay - covers the whole window to catch event for drag/resize
+        self.widget_overlay = builder.get_object('widget_overlay')
+
+        # TitleBar - the title bar at the top of the window
+        self.title_bar = builder.get_object('title_bar')
+        self.title_bar_label = builder.get_object('title_bar_label')
+        self.title_bar_button = builder.get_object('title_bar_button')
+
+        #  WidgetBox - the box that the widget actually gets added to
+        self.widget_box = builder.get_object('widget_box')
+
+        self.title_bar_label.set_text(title)
+        self.widget_box.add(self.module_widget)
+        self.add(self.widget_window)
 
         if hasattr(self.module_widget, 'on_settings_button_pressed'):
             menu_btn.connect('clicked', self.module_widget.on_settings_button_pressed)
 
-        label.set_text(title)
-        box.add(self.module_widget)
-
-        self.add(wwindow)
         self.show_all()
 
 
     def show_overlay(self, setting):
         if setting:
-            self.overlay.show()
+            self.widget_overlay.show()
         else:
-            self.overlay.hide()
+            self.widget_overlay.hide()
 
 #===================================
 #  Drag to Move / Resize
