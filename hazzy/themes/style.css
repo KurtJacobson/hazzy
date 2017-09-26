@@ -16,11 +16,10 @@ button:checked {
 * WidgetWindow *
 ***************/
 
-.WidgetWindow {
+.WidgetWindow .window {
     border-radius: 5px;
-    border-width: 2px;
     background-color: @theme_base_color;
-    box-shadow: 1px 1px 2px @theme_selected_bg_color;
+/*    box-shadow: 1px 1px 2px @theme_selected_bg_color;*/
 }
 
 .WidgetWindow .title_bar {
@@ -33,7 +32,25 @@ button:checked {
     padding: 0px;
 }
 
+.WidgetWindow .overlay {
+    border: @theme_selected_bg_color;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 5px;
+    background-image: radial-gradient(ellipse at center, 
+                                      alpha(@theme_selected_bg_color, .10),
+                                      alpha(@theme_selected_bg_color, .3));
+}
 
+.WidgetWindow .overlay.selected {
+    border: @theme_selected_bg_color;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 5px;
+    background-image: radial-gradient(ellipse at center, 
+                                      alpha(@theme_selected_bg_color, .1),
+                                      alpha(@theme_selected_bg_color, .6));
+}
 
 .widget_chooser {
     background-color: rgba(.5, .5, .5, .5);
@@ -46,7 +63,8 @@ button:checked {
                 linear-gradient(153deg, #222, #222 5px, transparent 5px) 0 5px,
                 linear-gradient(333deg, #222, #222 5px, transparent 5px) 10px 10px,
                 linear-gradient(90deg, #1b1b1b, #1b1b1b 10px, transparent 10px),
-                linear-gradient(#1d1d1d, #1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+                linear-gradient(#1d1d1d, #1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, 
+                            transparent 50%, transparent 75%, #242424 75%, #242424);
     background-color: #131313;
     background-size: 20px 20px;
 }
