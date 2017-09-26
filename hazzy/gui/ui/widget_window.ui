@@ -5,19 +5,19 @@
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">menu.png</property>
+    <property name="icon_name">open-menu-symbolic</property>
   </object>
   <object class="GtkOverlay" id="widget_window">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="margin_left">2</property>
+    <property name="margin_right">2</property>
+    <property name="margin_top">2</property>
+    <property name="margin_bottom">2</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="window">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">2</property>
-        <property name="margin_right">2</property>
-        <property name="margin_top">2</property>
-        <property name="margin_bottom">2</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="title_bar">
@@ -121,10 +121,6 @@
       <object class="GtkEventBox" id="overlay">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="margin_left">2</property>
-        <property name="margin_right">2</property>
-        <property name="margin_top">2</property>
-        <property name="margin_bottom">2</property>
         <signal name="button-press-event" handler="on_drag_begin" swapped="no"/>
         <signal name="button-release-event" handler="on_drag_end" swapped="no"/>
         <signal name="key-press-event" handler="on_key_press" swapped="no"/>
@@ -137,8 +133,5 @@
         </style>
       </object>
     </child>
-    <style>
-      <class name="WidgetWindow"/>
-    </style>
   </object>
 </interface>

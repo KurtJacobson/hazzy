@@ -26,6 +26,10 @@ class WidgetWindow(Gtk.EventBox):
 
         self.action = None
 
+        # Add style class
+        self.style_context = self.get_style_context()
+        self.style_context.add_class("WidgetWindow")
+
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(PYDIR, 'ui', 'widget_window.ui'))
         builder.connect_signals(self)
