@@ -15,6 +15,7 @@ from widget_window import WidgetWindow
 # Grid size in pixels used for "Snap to Grid"
 GRID_SIZE = 20
 
+
 class WidgetArea(Gtk.Fixed):
 
     # Drag action definitions
@@ -69,7 +70,7 @@ class WidgetArea(Gtk.Fixed):
 
 
     def on_drag_data_received(self, widget, drag_context, x, y, data, info, time):
-        '''Called when a widget is dragged to WidgetArea from the WidgetChooser.'''
+        '''Add widget when receive drag to WidgetArea from the WidgetChooser.'''
 
         # Get the widget package name from the drop data
         package = data.get_text()
@@ -130,11 +131,13 @@ class WidgetArea(Gtk.Fixed):
         # "Snap to Grid"
         widget.set_size_request(w, h)
 
+
 #===================================
 #  Child Arrow Key Move and Resize
 #===================================
 
     def child_incremental_move(self, widget, direction):
+        '''Move or Resize widget by one grid increment.'''
 
         # Get WidgetArea dimensions
         pw = self.get_allocation().width
