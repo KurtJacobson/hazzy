@@ -9,17 +9,16 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
-
-# Setup paths
+# Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 
 
-class WidgetWindow(Gtk.Box):
+class WidgetWindow(Gtk.EventBox):
 
     selected = []
 
     def __init__(self, package, widget, title):
-        Gtk.Box.__init__(self)
+        Gtk.EventBox.__init__(self)
 
         self.module_package = package
         self.module_widget = widget
@@ -111,7 +110,10 @@ class WidgetWindow(Gtk.Box):
 
     def select(self):
         # Bring self to top of z-order
-        #self.bring_to_top()
+        # FIXME this does not work. Why??????
+        # https://stackoverflow.com/questions/1066012/stacking-widgets-in-gtk
+        # https://lazka.github.io/pgi-docs/#Gdk-3.0/classes/Window.html#Gdk.Window.raise_
+        self.get_window().raise_()
 
         # Grab focus so can catch key-press events
         self.overlay.grab_focus()
