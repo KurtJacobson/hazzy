@@ -45,6 +45,7 @@ class HazzyWindow(Gtk.Window):
         self.builder.connect_signals(self)
 
         self.connect('window-state-event', self.on_window_state_event)
+        self.connect('button-press-event', self.on_button_press)
 
         self.titlebar = self.builder.get_object('titlebar')
         self.set_titlebar(self.titlebar)
@@ -66,6 +67,10 @@ class HazzyWindow(Gtk.Window):
 
         self.set_size_request(900, 600)
         self.show_all()
+
+    def on_button_press(self, widget, event):
+        # Remove focus when clicking on non focusable area
+        self.get_toplevel().set_focus(None)
 
     def on_show_widget_choser_clicked(self, widget):
         visible = self.widget_chooser.get_visible()
