@@ -1,56 +1,70 @@
 @import url("/usr/share/themes/Adwaita/gtk-3.0/gtk.css");
 
-/* Define color scheme */
-@define-color text_normal #c4a000;
-@define-color text_error #cc0000;
-@define-color text_warning #c4a000;
+/* Import colors from current theme */
+@define-color base_color @theme_base_color;
+@define-color bg_color @theme_bg_color;
+@define-color fg_color @theme_fg_color;
+@define-color selected_fg_color @theme_selected_fg_color;
+@define-color selected_bg_color @theme_selected_bg_color;
+@define-color text_normal @theme_text_color;
 
-button:checked {
-    background: @theme_selected_bg_color;
-    border-color: #2e3436;
-    color: #d3d7cf;
-    text-shadow: 0 1px #555753;
-}
+/* Define custom colors */
+@define-color text_warning #c4a000;
+@define-color text_error #cc0000;
+
+/*button:checked {*/
+/*    background: @theme_selected_bg_color;*/
+/*    border-color: #2e3436;*/
+/*    color: #d3d7cf;*/
+/*    text-shadow: 0 1px #555753;*/
+/*}*/
 
 /***************
 * WidgetWindow *
 ***************/
 
+.WidgetWindow { 
+    margin-top: 10px;
+    margin: 2px;
+    padding: 2px;
+}
+
 .WidgetWindow .window {
     border-radius: 5px;
-    background-color: @theme_base_color;
+    background-color: @base_color;
 /*    box-shadow: 1px 1px 2px @theme_selected_bg_color;*/
 }
 
 .WidgetWindow .title_bar {
-    background: @theme_bg_color;
+    background: @bg_color;
     border-top-right-radius: 5px;
     border-top-left-radius: 5px;
 }
 
-.WidgetWindow .title_bar .button {
+.WidgetWindow .title_bar .image-button {
     padding: 0px;
 }
 
 .WidgetWindow .overlay {
-    border: @theme_selected_bg_color;
+    border: @selected_bg_color;
     border-width: 1px;
     border-style: solid;
     border-radius: 5px;
     background-image: radial-gradient(ellipse at center, 
-                                      alpha(@theme_selected_bg_color, .10),
-                                      alpha(@theme_selected_bg_color, .3));
+                                      alpha(@selected_bg_color, .2),
+                                      alpha(@selected_bg_color, .3));
 }
 
-.WidgetWindow .overlay.selected {
-    border: @theme_selected_bg_color;
+.WidgetWindow .overlay:focus {
+    border: @selected_bg_color;
     border-width: 3px;
     border-style: solid;
     border-radius: 5px;
     background-image: radial-gradient(ellipse at center, 
-                                      alpha(@theme_selected_bg_color, .1),
-                                      alpha(@theme_selected_bg_color, .6));
+                                      alpha(@selected_bg_color, .4),
+                                      alpha(@selected_bg_color, .6));
 }
+
 
 .widget_chooser {
     background-color: rgba(.5, .5, .5, .5);

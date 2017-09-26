@@ -15,8 +15,6 @@ PYDIR = os.path.abspath(os.path.dirname(__file__))
 
 class WidgetWindow(Gtk.EventBox):
 
-    selected = []
-
     def __init__(self, package, widget, title):
         Gtk.EventBox.__init__(self)
 
@@ -29,6 +27,9 @@ class WidgetWindow(Gtk.EventBox):
         # Add style class
         self.style_context = self.get_style_context()
         self.style_context.add_class("WidgetWindow")
+
+        # Used to remove any focus then 
+        self.connect('button-press-event', self.on_button_press)
 
         builder = Gtk.Builder()
         builder.add_from_file(os.path.join(PYDIR, 'ui', 'widget_window.ui'))
@@ -59,6 +60,9 @@ class WidgetWindow(Gtk.EventBox):
 
         self.show_all()
 
+    def on_button_press(self, widget, event):
+        # Remove focus when clicking on WidgetWindow
+        self.get_toplevel().set_focus(None)
 
     def show_overlay(self, setting):
         if setting:
@@ -70,14 +74,14 @@ class WidgetWindow(Gtk.EventBox):
 
         # Events that don't need to know about modifiers
         if event.keyval == Gdk.KEY_Escape:
-            self.unselect()
+            self.get_toplevel().set_focus(None)
             return True
         if event.keyval == Gdk.KEY_Delete:
-            self.destroy()
+            self.destroy()  # Remove the widget
             return True
         if event.keyval == Gdk.KEY_Tab:
-            print 'Select next'
-            return False
+            # TODO Implement move focus to next widget
+            pass
 
         # Get any active, but not pressed modifiers, like CapsLock and NumLock
         persistant_modifiers = Gtk.accelerator_get_default_mod_mask()
@@ -112,44 +116,6 @@ class WidgetWindow(Gtk.EventBox):
         # Indicate the event was handled
         return True
 
-    def select(self):
-        # Bring self to top of z-order
-        # FIXME this does not work. Why??????
-        # https://stackoverflow.com/questions/1066012/stacking-widgets-in-gtk
-        # https://lazka.github.io/pgi-docs/#Gdk-3.0/classes/Window.html#Gdk.Window.raise_
-        self.get_window().raise_()
-
-        # Grab focus so can catch key-press events
-        self.overlay.grab_focus()
-
-        # If another WidgetWindow was previously selected, remove selected style
-        if WidgetWindow.selected:
-            WidgetWindow.selected.overlay_style_context.remove_class('selected')
-
-        # Add selected style class to self
-        self.overlay_style_context.add_class('selected')
-
-        # Record self as last selected, so can un-select when another gets focus
-        WidgetWindow.selected = self
-
-    def unselect(self):
-        # Don't have focus anymore
-        self.get_toplevel().set_focus(None)
-
-        # Remove selected style class from self
-        if WidgetWindow.selected:
-            WidgetWindow.selected.overlay_style_context.remove_class('selected')
-
-    def bring_to_top(self):
-        # FIXME this causes erratic drags, why????
-        # Get the widgets position in the WidgetArea
-        x = self.parent.child_get_property(self, 'x')
-        y = self.parent.child_get_property(self, 'y')
-
-        # KLUDGE Remove and re-add to bring to top of z-order
-        self.parent.remove(self)
-        self.parent.put(self, x, y)
-
 
 #===================================
 #  Drag to Move / Resize
@@ -157,11 +123,16 @@ class WidgetWindow(Gtk.EventBox):
 
     def on_drag_begin(self, widget, event):
 
+        self.overlay.grab_focus()
+
+        # Bring self to top of z-order
+        # FIXME this does not work. Why??????
+        # https://stackoverflow.com/questions/1066012/stacking-widgets-in-gtk
+        # https://lazka.github.io/pgi-docs/#Gdk-3.0/classes/Window.html#Gdk.Window.raise_
+        self.get_window().raise_()
+
         # Get the WidgetArea that self is a child of
         self.parent = self.get_parent()
-
-        # Highlight self and give focus
-        self.select()
 
         # Get dimensions of self
         w = widget.get_allocation().width
@@ -182,6 +153,9 @@ class WidgetWindow(Gtk.EventBox):
             self.parent.child_resize_begin(self, event)
         else:
             self.action = None
+
+        # Indicate the event was handled
+        return True
 
     def on_drag_motion(self, widget, event):
         if self.action == self.parent.Drag.MOVE:
