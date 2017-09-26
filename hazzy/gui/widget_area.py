@@ -100,7 +100,7 @@ class WidgetArea(Gtk.Fixed):
         self.put(widget_window, x, y)
 
         # Snap to closest grid
-        self.snap_to_grid(widget_window)
+        self.child_snap_to_grid(widget_window)
 
 
     def child_snap_to_grid(self, widget):
