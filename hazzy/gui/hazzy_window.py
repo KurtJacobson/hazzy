@@ -84,11 +84,17 @@ class HazzyWindow(Gtk.Window):
             for widget in widgets:
                 widget.show_overlay(edit)
 
-    def set_theme(self, theme=None):
+    def set_gtk_theme(self, theme=None):
         settings = self.get_settings()
         if not theme:
             theme = settings.get_default().get_property("gtk-theme-name")
         settings.set_string_property("gtk-theme-name", theme, "")
+
+    def set_icon_theme(self, theme=None):
+        settings = self.get_settings()
+        if not theme:
+            theme = settings.get_default().get_property("gtk-icon-theme-name")
+        settings.set_string_property("gtk-icon-theme-name", theme, "")
 
     def load_from_xml(self):
 
