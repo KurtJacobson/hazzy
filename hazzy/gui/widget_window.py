@@ -23,6 +23,7 @@ class WidgetWindow(Gtk.EventBox):
         self.module_title = title
 
         self.action = None
+        self.drag_active = False
 
         # Add style class
         self.style_context = self.get_style_context()
@@ -63,6 +64,10 @@ class WidgetWindow(Gtk.EventBox):
     def on_button_press(self, widget, event):
         # Remove focus when clicking on WidgetWindow
         self.get_toplevel().set_focus(None)
+
+    def on_delete_clicked(self, widget):
+        # Remove self from the WidgetArea
+        self.destroy()
 
     def show_overlay(self, setting):
         if setting:
@@ -123,6 +128,8 @@ class WidgetWindow(Gtk.EventBox):
 
     def on_drag_begin(self, widget, event):
 
+        self.drag_active = True
+
         self.overlay.grab_focus()
 
         # Bring self to top of z-order
@@ -164,7 +171,11 @@ class WidgetWindow(Gtk.EventBox):
             self.parent.child_resize_motion(self, event, self.action)
 
     def on_drag_end(self, widget, event):
+        if not self.drag_active:
+            return
         if self.action == self.parent.Drag.MOVE:
             self.parent.child_move_end(self)
         elif self.action >= self.parent.Drag.RESIZE_X:
             self.parent.child_resize_end(self)
+
+        self.drag_active = False
