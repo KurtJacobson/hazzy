@@ -47,12 +47,14 @@ class HazzyWindow(Gtk.Window):
         self.connect('window-state-event', self.on_window_state_event)
         self.connect('button-press-event', self.on_button_press)
 
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(self.box)
+
         self.titlebar = self.builder.get_object('titlebar')
         self.set_titlebar(self.titlebar)
-        self.set_hide_titlebar_when_maximized(False)
 
         self.overlay = Gtk.Overlay()
-        self.add(self.overlay)
+        self.box.pack_start(self.overlay, True, True, 0)
 
         self.screen_stack = ScreenStack()
         self.overlay.add(self.screen_stack)
@@ -235,9 +237,23 @@ class HazzyWindow(Gtk.Window):
         else:
             self.unfullscreen()
 
+    def on_maximized_state_changed(self, maximized):
+        pass
+
+    def on_fullscreen_state_changed(self, fullscreen):
+        if fullscreen:
+            self.remove(self.titlebar)
+            self.box.pack_start(self.titlebar, False, False, 0)
+            self.box.reorder_child(self.titlebar, 0)
+        else:
+            self.box.remove(self.titlebar)
+            self.set_titlebar(self.titlebar)
+
     def on_window_state_event(self, widget, event):
         # Listen to state event and track window state
-        self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
-        print 'Fullscreen ', self.is_fullscreen
-        self.is_maximized = bool(event.new_window_state & Gdk.WindowState.MAXIMIZED)
-        print 'Maximized ', self.is_maximized
+        if self.is_fullscreen != bool(event.new_window_state & Gdk.WindowState.FULLSCREEN):
+            self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
+            self.on_fullscreen_state_changed(self.is_fullscreen)
+        if self.is_maximized != bool(event.new_window_state & Gdk.WindowState.MAXIMIZED):
+            self.is_maximized = bool(event.new_window_state & Gdk.WindowState.MAXIMIZED)
+            self.on_maximized_state_changed(self.is_maximized)
