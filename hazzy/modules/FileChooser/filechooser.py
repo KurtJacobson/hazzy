@@ -72,7 +72,7 @@ class FileChooser(Gtk.Box):
 
         # Glade setup
         self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(UIDIR, "filechooser_3.glade"))
+        self.builder.add_from_file(os.path.join(UIDIR, "filechooser.glade"))
         self.builder.connect_signals(self)
 
         self.add(self.builder.get_object('filechooser'))
@@ -234,7 +234,7 @@ class FileChooser(Gtk.Box):
         if self._filter in self._filters:
             exts = self._filters[self._filter]
         else:
-            exts = ''
+            exts = '*' # Don't filter
         dirs = os.listdir(self._cur_dir)
         for obj in dirs:
             if obj[0] == '.' and not self._show_hidden:
