@@ -13,7 +13,7 @@ from lxml import etree
 from datetime import datetime
 
 from utilities.constants import Paths
-from utilities import logger
+
 
 # Import our own modules
 from widget_manager import WidgetManager
@@ -25,7 +25,9 @@ from widget_area import WidgetArea
 
 from utilities import ini_info
 
-log = logger.get('HAZZY.WINDOW')
+# Set up logging
+from utilities import logger
+log = logger.get(__name__)
 
 class HazzyWindow(Gtk.Window):
     def __init__(self):
