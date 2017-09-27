@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.20.0 -->
 <interface>
-  <!-- interface-requires gtk+ 3.0 -->
-  <!-- interface-naming-policy toplevel-contextual -->
+  <requires lib="gtk+" version="3.20"/>
   <object class="GtkListStore" id="bookmark_liststore">
     <columns>
       <!-- column-name icon -->
@@ -28,90 +28,25 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkVBox" id="vbox1">
+  <object class="GtkBox" id="filechooser">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="spacing">8</property>
-    <signal name="realize" handler="on_vbox1_realize" swapped="no"/>
+    <property name="margin_left">5</property>
+    <property name="margin_right">5</property>
+    <property name="margin_top">5</property>
+    <property name="margin_bottom">5</property>
+    <property name="hexpand">True</property>
+    <property name="vexpand">True</property>
+    <property name="orientation">vertical</property>
+    <signal name="realize" handler="on_filechooser_realize" swapped="no"/>
     <child>
-      <object class="GtkHBox" id="hbox">
-        <property name="height_request">30</property>
+      <object class="GtkBox" id="nav_btn_box">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="margin_top">3</property>
+        <property name="margin_bottom">5</property>
         <child>
-          <object class="GtkButton" id="arrow_left">
-            <property name="can_focus">False</property>
-            <property name="receives_default">True</property>
-            <property name="use_action_appearance">False</property>
-            <signal name="clicked" handler="on_arrow_left_clicked" swapped="no"/>
-            <child>
-              <object class="GtkArrow" id="arrow2">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="arrow_type">left</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="goto_root">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="receives_default">True</property>
-            <property name="use_action_appearance">False</property>
-            <signal name="clicked" handler="on_goto_root_clicked" swapped="no"/>
-            <child>
-              <object class="GtkImage" id="image3">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="icon_name">drive-harddisk</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="arrow_right">
-            <property name="can_focus">False</property>
-            <property name="receives_default">True</property>
-            <property name="use_action_appearance">False</property>
-            <signal name="clicked" handler="on_arrow_right_clicked" swapped="no"/>
-            <child>
-              <object class="GtkArrow" id="arrow1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkHBox" id="hbox1">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
+          <placeholder/>
         </child>
       </object>
       <packing>
@@ -121,65 +56,43 @@
       </packing>
     </child>
     <child>
-      <object class="GtkHPaned" id="hpaned1">
+      <object class="GtkSeparator">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkPaned">
+        <property name="width_request">160</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
-        <property name="position">150</property>
+        <property name="position">160</property>
+        <property name="position_set">True</property>
         <child>
-          <object class="GtkVBox" id="vbox2">
-            <property name="width_request">150</property>
+          <object class="GtkBox">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="spacing">4</property>
+            <property name="margin_right">5</property>
+            <property name="orientation">vertical</property>
             <child>
-              <object class="GtkScrolledWindow" id="scrolledwindow2">
+              <object class="GtkScrolledWindow" id="bookmarks_scrolled">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="hscrollbar_policy">never</property>
-                <property name="vscrollbar_policy">automatic</property>
                 <child>
-                  <object class="GtkTreeView" id="bookmark_treeview">
-                    <property name="width_request">36</property>
+                  <object class="GtkViewport">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="model">bookmark_liststore</property>
-                    <property name="headers_clickable">False</property>
-                    <property name="rules_hint">True</property>
-                    <property name="enable_search">False</property>
-                    <property name="search_column">0</property>
-                    <property name="enable_tree_lines">True</property>
-                    <signal name="cursor-changed" handler="on_bookmark_treeview_cursor_changed" swapped="no"/>
                     <child>
-                      <object class="GtkTreeViewColumn" id="treeviewcolumn1">
-                        <property name="title" translatable="yes">Bookmarks</property>
-                        <child>
-                          <object class="GtkCellRendererPixbuf" id="icon"/>
-                          <attributes>
-                            <attribute name="pixbuf">0</attribute>
-                          </attributes>
-                        </child>
-                        <child>
-                          <object class="GtkCellRendererText" id="location">
-                            <property name="ellipsize">end</property>
-                            <property name="width_chars">15</property>
-                          </object>
-                          <attributes>
-                            <attribute name="text">1</attribute>
-                          </attributes>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkTreeViewColumn" id="eject_col">
-                        <child>
-                          <object class="GtkCellRendererPixbuf" id="eject">
-                            <property name="icon_name">media-eject</property>
-                          </object>
-                          <attributes>
-                            <attribute name="sensitive">3</attribute>
-                            <attribute name="visible">3</attribute>
-                          </attributes>
-                        </child>
+                      <object class="GtkListBox" id="bookmark_listbox">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <signal name="activate-cursor-row" handler="on_bookmark_activated" swapped="no"/>
+                        <signal name="row-activated" handler="on_bookmark_activated" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -192,14 +105,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkHBox" id="hbox2">
-                <property name="height_request">20</property>
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="spacing">4</property>
+                <property name="spacing">5</property>
                 <child>
                   <object class="GtkEventBox" id="add_bookmark">
                     <property name="width_request">30</property>
+                    <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="visible_window">False</property>
@@ -221,6 +134,7 @@
                 <child>
                   <object class="GtkEventBox" id="remove_bookmark">
                     <property name="width_request">30</property>
+                    <property name="height_request">30</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="visible_window">False</property>
@@ -239,13 +153,10 @@
                     <property name="position">1</property>
                   </packing>
                 </child>
-                <child>
-                  <placeholder/>
-                </child>
               </object>
               <packing>
                 <property name="expand">False</property>
-                <property name="fill">False</property>
+                <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
@@ -256,11 +167,9 @@
           </packing>
         </child>
         <child>
-          <object class="GtkScrolledWindow" id="scrolledwindow1">
+          <object class="GtkScrolledWindow" id="fileview">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="hscrollbar_policy">automatic</property>
-            <property name="vscrollbar_policy">automatic</property>
             <child>
               <object class="GtkTreeView" id="file_treeview">
                 <property name="visible">True</property>
@@ -270,14 +179,17 @@
                 <property name="reorderable">True</property>
                 <property name="rules_hint">True</property>
                 <property name="search_column">2</property>
+                <property name="enable_grid_lines">vertical</property>
+                <signal name="button-release-event" handler="on_file_treeview_button_release_event" swapped="no"/>
                 <signal name="cursor-changed" handler="on_filechooser_treeview_cursor_changed" swapped="no"/>
                 <signal name="row-activated" handler="on_filechooser_treeview_row_activated" swapped="no"/>
-                <signal name="button-release-event" handler="on_file_treeview_button_release_event" swapped="no"/>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection"/>
+                </child>
                 <child>
                   <object class="GtkTreeViewColumn" id="col_select">
                     <child>
                       <object class="GtkCellRendererToggle" id="select">
-                        <property name="indicator_size">18</property>
                         <signal name="toggled" handler="on_select_toggled" swapped="no"/>
                       </object>
                       <attributes>
@@ -290,7 +202,8 @@
                   <object class="GtkTreeViewColumn" id="col_file_name">
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
-                    <property name="fixed_width">120</property>
+                    <property name="fixed_width">200</property>
+                    <property name="min_width">60</property>
                     <property name="title" translatable="yes">Name</property>
                     <child>
                       <object class="GtkCellRendererPixbuf" id="cellrendererpixbuf1"/>
@@ -300,8 +213,9 @@
                     </child>
                     <child>
                       <object class="GtkCellRendererText" id="file_name">
-                        <signal name="editing-started" handler="on_file_name_editing_started" swapped="no"/>
+                        <property name="ellipsize">end</property>
                         <signal name="edited" handler="on_file_name_edited" swapped="no"/>
+                        <signal name="editing-started" handler="on_file_name_editing_started" swapped="no"/>
                       </object>
                       <attributes>
                         <attribute name="editable">0</attribute>
@@ -315,6 +229,7 @@
                     <property name="resizable">True</property>
                     <property name="sizing">fixed</property>
                     <property name="fixed_width">80</property>
+                    <property name="min_width">60</property>
                     <property name="title" translatable="yes">Size</property>
                     <child>
                       <object class="GtkCellRendererText" id="file_size"/>
@@ -347,7 +262,7 @@
       <packing>
         <property name="expand">True</property>
         <property name="fill">True</property>
-        <property name="position">1</property>
+        <property name="position">2</property>
       </packing>
     </child>
   </object>
