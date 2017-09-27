@@ -66,7 +66,6 @@ class HazzyWindow(Gtk.Window):
         self.overlay.add_overlay(self.screen_chooser)
 
         self.set_size_request(900, 600)
-        self.show_all()
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on non focusable area
