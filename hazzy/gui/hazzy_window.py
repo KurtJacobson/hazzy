@@ -175,8 +175,7 @@ class HazzyWindow(Gtk.Window):
 
         x = self.get_position().root_x
         y = self.get_position().root_y
-        w = self.get_allocation().width
-        h = self.get_allocation().height
+        w, h = self.get_size()
 
         for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
             self.set_property(win, prop, value)
