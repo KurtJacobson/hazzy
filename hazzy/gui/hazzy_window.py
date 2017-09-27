@@ -39,7 +39,7 @@ class HazzyWindow(Gtk.Window):
         self.is_fullscreen = False
         self.is_maximized = False
 
-        gladefile = os.path.join(os.path.dirname(__file__), 'ui', 'hazzy.ui')
+        gladefile = os.path.join(os.path.dirname(__file__), 'ui', 'titlebar.ui')
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
