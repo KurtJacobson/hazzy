@@ -23,16 +23,16 @@ from widget_window import WidgetWindow
 from screen_stack import ScreenStack
 from widget_area import WidgetArea
 
+from utilities import ini_info
+
 log = logger.get('HAZZY.WINDOW')
 
 class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self)
 
-        # Get log file path
-        self.xml_file = Paths.XML_FILE
-        if not os.path.isabs(self.xml_file):
-            self.xml_file = os.path.join(Paths.CONFIGDIR, self.xml_file)
+        # Get the XML file path
+        self.xml_file = ini_info.get_xml_file()
 
         self.widget_manager = WidgetManager()
 
@@ -49,6 +49,7 @@ class HazzyWindow(Gtk.Window):
 
         self.titlebar = self.builder.get_object('titlebar')
         self.set_titlebar(self.titlebar)
+        self.set_hide_titlebar_when_maximized(False)
 
         self.overlay = Gtk.Overlay()
         self.add(self.overlay)
@@ -206,7 +207,7 @@ class HazzyWindow(Gtk.Window):
                 for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
                     self.set_property(wid, prop, value)
 
-        with open(self.xml_file, 'wb') as fh:
+        with open(self.xml_file, 'w') as fh:
             fh.write(etree.tostring(root, pretty_print=True))
 
 # Helpers
@@ -235,7 +236,8 @@ class HazzyWindow(Gtk.Window):
             self.unfullscreen()
 
     def on_window_state_event(self, widget, event):
-        if event.new_window_state & Gdk.WindowState.FULLSCREEN:
-            self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
-        if event.new_window_state & Gdk.WindowState.MAXIMIZED:
-            self.is_maximized = bool(event.new_window_state & Gdk.WindowState.MAXIMIZED)
+        # Listen to state event and track window state
+        self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
+        print 'Fullscreen ', self.is_fullscreen
+        self.is_maximized = bool(event.new_window_state & Gdk.WindowState.MAXIMIZED)
+        print 'Maximized ', self.is_maximized
