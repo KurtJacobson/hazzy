@@ -40,8 +40,17 @@ class Terminal(Gtk.ScrolledWindow):
         self.add(self.terminal)
 
     def on_key_press(self, widget, event):
+
+        # Determine the actively pressed modifier
+        modifier = event.get_state() & Gtk.accelerator_get_default_mod_mask()
+
+        # Bool of Control or Shift modifier states
+        control = modifier == Gdk.ModifierType.CONTROL_MASK
+        shift = modifier == Gdk.ModifierType.SHIFT_MASK
+
+        # Reset terminal instead of exiting
         kv = event.keyval
-        if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
+        if control or shift or (control and shift):
             if kv == Gdk.KEY_d:
                 self.terminal.feed_child("reset\n", -1)
                 return True
