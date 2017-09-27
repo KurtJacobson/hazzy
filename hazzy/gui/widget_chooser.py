@@ -48,8 +48,8 @@ class WidgetView(Gtk.IconView):
         Gtk.IconView.__init__(self)
 
         # Add style class
-        context = self.get_style_context()
-        context.add_class("widget_chooser")
+        style_context = self.get_style_context()
+        style_context.add_class("WidgetChooser")
 
         self.set_text_column(0)
         self.set_pixbuf_column(1)
