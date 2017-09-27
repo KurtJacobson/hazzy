@@ -49,7 +49,7 @@ class AxisDro(Gtk.Grid):
         count = 1
         for axis in axes:
             # Axis Lables
-            label = Gtk.Label(axis)
+            label = Gtk.Label(axis.upper())
             self.attach(label, 1, count, 1, 1)
 
             # G5x DRO
@@ -136,6 +136,8 @@ class DroEntry(Gtk.Entry):
             return True
 
     def on_focus_out(self, widget, data=None):
+        if self.style_context.has_class('error'):
+            self.style_context.remove_class('error')
         self.unselect()
 
     def on_activate(self, widget, data=None):
@@ -158,6 +160,8 @@ class DroEntry(Gtk.Entry):
 class G5xEntry(DroEntry):
     ''' G5x DRO entry class. Allows setting work offset by typing into DRO '''
 
+    no_force_homing = ini_info.get_no_force_homing()
+
     def __init__(self, axis_letter, dro_type):
         DroEntry.__init__(self, axis_letter, dro_type)
 
@@ -167,15 +171,17 @@ class G5xEntry(DroEntry):
         self.set_icon_activatable(1, True)
         self.connect("icon-press", self.home)
 
-        status.on_changed('joint.homing', self._on_homing)
-        status.on_changed('joint.homed', self._on_homed)
+        status.on_changed('joint.homing', self.on_homing)
+        status.on_changed('joint.homed', self.on_homed)
 
-        self.style_context.add_class('unhomed')
+        # Only indicate unhomed if require homing
+        if not self.no_force_homing:
+            self.style_context.add_class('unhomed')
 
     def home(self, widget, icon, event):
         command.home_joint(self.joint_num)
 
-    def _on_homing(self, widget, joint, homing):
+    def on_homing(self, widget, joint, homing):
         if joint == self.joint_num:
             if homing == 1:
                 self.style_context.remove_class('unhomed')
@@ -183,7 +189,7 @@ class G5xEntry(DroEntry):
             else:
                 self.style_context.remove_class('homing')
 
-    def _on_homed(self, widget, joint, homed):
+    def on_homed(self, widget, joint, homed):
         if joint == self.joint_num:
             if homed == 1:
                 self.style_context.remove_class('unhomed')
@@ -191,9 +197,13 @@ class G5xEntry(DroEntry):
                 self.style_context.add_class('unhomed')
 
     def on_activate(self, widget):
-        ''' Evaluate entry and set axis position to value '''
+        '''Evaluate entry and set axis position to value.'''
         expr = self.get_text().lower()
         val = entry_eval.eval(expr)
+        print "value", val
         if val is not None:
             command.set_work_coordinate(self.axis_letter, val)
-        self.unselect()
+            self.unselect()
+        else:
+            self.style_context.add_class('error')
+            Gdk.beep()
