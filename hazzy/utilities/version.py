@@ -12,7 +12,7 @@ VERSION = None
 VERSION_URL = None
 
 # Check if we are running in a git repo
-if not os.path.exists(os.path.join(repo_dir, '.git')):
+if os.path.exists(os.path.join(repo_dir, '.git')):
 
     log.info('Running from a git repository ...')
 
