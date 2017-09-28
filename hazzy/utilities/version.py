@@ -92,12 +92,12 @@ if not VERSION:
     with open(version_file, 'r') as fh:
         VERSION = fh.readline().strip()
 
-        # If is a pre release we can't determine the exact url, so use master
         if '~pre' in VERSION:
+            # It is a pre release so no tag yet on github, use master
             VERSION_URL = 'https://github.com/KurtJacobson/hazzy'
 
-        # If it is a release use the url to the version tag
         else:
+            # It is a release so make a url to the version tag
             VERSION_URL = 'https://github.com/KurtJacobson/hazzy/tree/{}' \
                 .format('v' + VERSION)
 
