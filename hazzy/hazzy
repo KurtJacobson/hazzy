@@ -22,6 +22,9 @@ from utilities import logger
 from utilities.constants import Paths
 from gui.hazzy_window import HazzyWindow
 
+from utilities import version
+#print version.VERSION
+
 log = logger.get('MAIN')
 
 BASE = None
