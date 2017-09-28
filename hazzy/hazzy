@@ -22,9 +22,6 @@ from utilities import logger
 from utilities.constants import Paths
 from gui.hazzy_window import HazzyWindow
 
-from utilities import version
-#print version.VERSION
-
 log = logger.get('MAIN')
 
 BASE = None
@@ -95,7 +92,6 @@ def quit(window, event):
     except Exception as e:
         log.exception(e)
     Gtk.main_quit()
-
 
 if __name__ == "__main__":
     main(sys.argv)
