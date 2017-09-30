@@ -149,6 +149,7 @@ class GstWidget(Gtk.Box):
         self.pipeline = Gst.Pipeline()
 
         self.bus = self.pipeline.get_bus()
+
         self.bus.add_signal_watch()
         self.bus.connect('message::eos', self._on_eos)
         self.bus.connect('message::tag', self._on_tag)
@@ -177,15 +178,13 @@ class GstWidget(Gtk.Box):
         """
         self.video_parse = Gst.ElementFactory.make("h264parse", None)
         self.pipeline.add(self.video_parse)
-        """
-        """
+        
         self.video_mux = Gst.ElementFactory.make('oggmux', None)
         self.pipeline.add(self.video_mux)
         """
 
         self.video_pay = Gst.ElementFactory.make("gdppay", None)
         self.pipeline.add(self.video_pay)
-
 
         self.video_converter = Gst.ElementFactory.make('videoconvert', None)
         self.pipeline.add(self.video_converter)
@@ -196,7 +195,7 @@ class GstWidget(Gtk.Box):
         self.tcp_sink = Gst.ElementFactory.make('tcpserversink', None)
         self.tcp_sink.set_property('host', '127.0.0.1')
         self.tcp_sink.set_property('port', 5000)
-        self.pipeline.add(self.tcp_sink)
+        #self.pipeline.add(self.tcp_sink)
 
         self.tee = Gst.ElementFactory.make('tee', None)
         self.pipeline.add(self.tee)
@@ -214,12 +213,14 @@ class GstWidget(Gtk.Box):
         self.video_converter.link(self.camera_gtk_filter)
         self.camera_gtk_filter.link(self.gtk_sink)
 
+        """
         self.tee.link(self.queue_2)
         self.queue_2.link(self.video_converter)
         self.video_converter.link(self.camera_stream_filter)
         self.camera_stream_filter.link(self.video_enc)
         self.video_enc.link(self.video_pay)
         self.video_pay.link(self.tcp_sink)
+        """
 
         self.gtksink_widget = self.gtk_sink.get_property("widget")
         self.gtksink_widget.show_all()
