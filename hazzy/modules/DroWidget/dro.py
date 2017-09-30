@@ -18,6 +18,9 @@ from utilities import status
 from utilities import command
 from utilities import entry_eval
 from utilities import preferences as prefs
+
+from modules.TouchPads import keyboard
+
 from gui import widgets
 
 class AxisDro(Gtk.Grid):
@@ -118,6 +121,7 @@ class DroEntry(Gtk.Entry):
         self.has_focus = False
 
         self.connect('button-release-event', self.on_button_release)
+        self.connect('focus-in-event', self.on_focus_in)
         self.connect('focus-out-event', self.on_focus_out)
         self.connect('key-press-event', self.on_key_press)
         self.connect('activate', self.on_activate)
@@ -140,16 +144,21 @@ class DroEntry(Gtk.Entry):
             self.style_context.remove_class('error')
         self.unselect()
 
+    def on_focus_in(self, widegt, data=None):
+        self.has_focus = True
+        self.select()
+
     def on_activate(self, widget, data=None):
         self.unselect()
 
-    def on_key_press(self, widget, event, data=None):
+    def on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
             self.unselect()
 
     def select(self):
         self.select_region(0, -1)
         self.has_focus = True
+        keyboard.show(self)
 
     def unselect(self):
         self.select_region(0, 0)
