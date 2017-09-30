@@ -48,6 +48,7 @@ class WidgetWindow(Gtk.EventBox):
         self.title_bar = builder.get_object('title_bar')
         self.title_bar_label = builder.get_object('title_bar_label')
         self.title_bar_button = builder.get_object('title_bar_button')
+        self.preferences_button= builder.get_object('preferences_button')
 
         #  WidgetBox - the box that the widget actually gets added to
         self.widget_box = builder.get_object('widget_box')
@@ -57,7 +58,7 @@ class WidgetWindow(Gtk.EventBox):
         self.add(self.widget_window)
 
         if hasattr(self.module_widget, 'on_settings_button_pressed'):
-            menu_btn.connect('clicked', self.module_widget.on_settings_button_pressed)
+            self.preferences_button.connect('toggled', self.module_widget.on_settings_button_pressed)
 
         self.show_all()
 
