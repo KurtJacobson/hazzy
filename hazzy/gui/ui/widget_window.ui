@@ -5,35 +5,38 @@
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">menu.png</property>
+    <property name="icon_name">open-menu-symbolic</property>
   </object>
-  <object class="GtkOverlay" id="widgetwindow">
+  <object class="GtkOverlay" id="widget_window">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
+    <property name="margin_left">2</property>
+    <property name="margin_right">2</property>
+    <property name="margin_top">2</property>
+    <property name="margin_bottom">2</property>
     <child>
-      <object class="GtkBox">
+      <object class="GtkBox" id="window">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="margin_left">2</property>
-        <property name="margin_right">2</property>
-        <property name="margin_top">2</property>
-        <property name="margin_bottom">2</property>
         <property name="orientation">vertical</property>
         <child>
-          <object class="GtkBox">
+          <object class="GtkBox" id="title_bar">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-              <object class="GtkLabel" id="label">
+              <object class="GtkLabel" id="title_bar_label">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="halign">center</property>
                 <property name="hexpand">True</property>
-                <property name="label" translatable="yes">Corrdinates</property>
+                <property name="label" translatable="yes">Unnamed</property>
                 <property name="ellipsize">end</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
+                <style>
+                  <class name="label"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -42,8 +45,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="menu_button">
-                <property name="name">menu_button</property>
+              <object class="GtkButton" id="title_bar_button">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
@@ -56,6 +58,9 @@
                 <property name="image">image1</property>
                 <property name="relief">none</property>
                 <property name="image_position">right</property>
+                <style>
+                  <class name="button"/>
+                </style>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -86,7 +91,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="box">
+          <object class="GtkBox" id="widget_box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="margin_left">5</property>
@@ -105,7 +110,7 @@
           </packing>
         </child>
         <style>
-          <class name="widget_window"/>
+          <class name="window"/>
         </style>
       </object>
       <packing>
@@ -115,18 +120,27 @@
     <child type="overlay">
       <object class="GtkEventBox" id="overlay">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="visible_window">False</property>
+        <property name="can_focus">True</property>
         <signal name="button-press-event" handler="on_drag_begin" swapped="no"/>
         <signal name="button-release-event" handler="on_drag_end" swapped="no"/>
+        <signal name="key-press-event" handler="on_key_press" swapped="no"/>
         <signal name="motion-notify-event" handler="on_drag_motion" swapped="no"/>
         <child>
-          <placeholder/>
+          <object class="GtkButton">
+            <property name="label">gtk-delete</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="use_stock">True</property>
+            <signal name="clicked" handler="on_delete_clicked" swapped="no"/>
+          </object>
         </child>
+        <style>
+          <class name="overlay"/>
+        </style>
       </object>
-      <packing>
-        <property name="pass_through">True</property>
-      </packing>
     </child>
   </object>
 </interface>

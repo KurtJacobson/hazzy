@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # hazzy startup script.
-# This script checks package requirements, sets up the system/enviroment
+# This script checks package requirements, sets up the system/environment
 # and shows the main window.
 
 import os
@@ -63,11 +63,7 @@ def main(argv):
     log.info("green$Starting")
 
     style_provider = Gtk.CssProvider()
-
-    with open(os.path.join(Paths.STYLEDIR, "style.css"), 'rb') as css:
-        css_data = css.read()
-
-    style_provider.load_from_data(css_data)
+    style_provider.load_from_path(os.path.join(Paths.STYLEDIR, "style.css"))
 
     Gtk.StyleContext.add_provider_for_screen(
         Gdk.Screen.get_default(), style_provider,
@@ -75,10 +71,12 @@ def main(argv):
     )
 
     hazzy_window = HazzyWindow()
+    hazzy_window.set_gtk_theme('Adwaita')
+    hazzy_window.set_icon_theme('Adwaita')
     hazzy_window.load_from_xml()
     hazzy_window.show_all()
 
-    hazzy_window.connect('delete-event', quit, hazzy_window)
+    hazzy_window.connect('delete-event', quit,)
 
     Gtk.main()
 
@@ -88,13 +86,12 @@ def main(argv):
     log.info("Total session duration: {}".format(run_time))
 
 
-def quit(window, event, data):
+def quit(window, event):
     try:
         window.save_to_xml()
     except Exception as e:
         log.exception(e)
     Gtk.main_quit()
-
 
 if __name__ == "__main__":
     main(sys.argv)

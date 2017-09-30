@@ -1,45 +1,71 @@
-/* Define color scheme */
-@define-color bg_color #ccc;
-@define-color fg_color #4c9cd6;
-@define-color base_color #4c9cd6;
-@define-color text_color #4c9cd6;
-@define-color selected_bg_color #57c;
-@define-color selected_fg_color #eee;
-@define-color tooltip_bg_color #ccc;
-@define-color tooltip_fg_color #333;
+@import url("/usr/share/themes/Adwaita/gtk-3.0/gtk.css");
 
+/* Import colors from current theme */
+@define-color base_color @theme_base_color;
+@define-color bg_color @theme_bg_color;
+@define-color fg_color @theme_fg_color;
+@define-color selected_fg_color @theme_selected_fg_color;
+@define-color selected_bg_color @theme_selected_bg_color;
+@define-color text_normal @theme_text_color;
 
-button:checked {
-    background: #57c;
-    border-color: #2e3436;
-    color: #d3d7cf;
-    text-shadow: 0 1px #555753;
+/* Define custom colors */
+@define-color text_warning #c4a000;
+@define-color text_error #cc0000;
 
-/*    rgba(255, 255, 255, 0.76923);*/
-}
-
+/*button:checked {*/
+/*    background: @theme_selected_bg_color;*/
+/*    border-color: #2e3436;*/
+/*    color: #d3d7cf;*/
+/*    text-shadow: 0 1px #555753;*/
+/*}*/
 
 /***************
-* WidgetChooser *
+* WidgetWindow *
 ***************/
 
-.widget_window {
-    border-radius: 5px;
-    border-width: 2px;
-    background-color: #f3f3f3;
-    box-shadow: 0px 0px 2px #555753;
+.WidgetWindow { 
+    margin-top: 10px;
+    margin: 2px;
+    padding: 2px;
 }
 
-button#menu_button {
+.WidgetWindow .window {
+    border-radius: 5px;
+    background-color: @base_color;
+/*    box-shadow: 1px 1px 2px @theme_selected_bg_color;*/
+}
+
+.WidgetWindow .title_bar {
+    background: @bg_color;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+}
+
+.WidgetWindow .title_bar .image-button {
     padding: 0px;
 }
 
-.title_bar{
-    background: #eeeeec;
+.WidgetWindow .overlay {
+    border: @selected_bg_color;
+    border-width: 1px;
+    border-style: solid;
     border-radius: 5px;
+    background-image: radial-gradient(ellipse at center, 
+                                      alpha(@selected_bg_color, .2),
+                                      alpha(@selected_bg_color, .3));
 }
 
-.widget_chooser {
+.WidgetWindow .overlay:focus {
+    border: @selected_bg_color;
+    border-width: 3px;
+    border-style: solid;
+    border-radius: 5px;
+    background-image: radial-gradient(ellipse at center, 
+                                      alpha(@selected_bg_color, .4),
+                                      alpha(@selected_bg_color, .6));
+}
+
+.WidgetChooser {
     background-color: rgba(.5, .5, .5, .5);
 }
 
@@ -50,11 +76,36 @@ button#menu_button {
                 linear-gradient(153deg, #222, #222 5px, transparent 5px) 0 5px,
                 linear-gradient(333deg, #222, #222 5px, transparent 5px) 10px 10px,
                 linear-gradient(90deg, #1b1b1b, #1b1b1b 10px, transparent 10px),
-                linear-gradient(#1d1d1d, #1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+                linear-gradient(#1d1d1d, #1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, 
+                            transparent 50%, transparent 75%, #242424 75%, #242424);
     background-color: #131313;
     background-size: 20px 20px;
 }
 
+/***************
+* DroEntry *
+***************/
+
+.DroEntry {
+    font-family: DejaVu Sans Condensed;
+    font-size: 24px;
+}
+
+.DroEntry.homing {
+    color: @text_warning;
+}
+
+.DroEntry.unhomed {
+    color: @text_error;
+}
+
+.DroEntry.error {
+    color: @text_error;
+}
+
+.DroEntry image.left {
+    color: @text_error;
+}
 
 /***************
 * FileChooser *

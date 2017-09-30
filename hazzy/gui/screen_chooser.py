@@ -46,7 +46,7 @@ class ScreenView(Gtk.IconView):
 
         # Add style class
         context = self.get_style_context()
-        context.add_class("widget_chooser")
+        context.add_class("WidgetChooser")
 
         self.connect('item-activated', self.on_icon_clicked)
         self.set_activate_on_single_click(True)

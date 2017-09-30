@@ -13,7 +13,7 @@ from lxml import etree
 from datetime import datetime
 
 from utilities.constants import Paths
-from utilities import logger
+
 
 # Import our own modules
 from widget_manager import WidgetManager
@@ -23,34 +23,40 @@ from widget_window import WidgetWindow
 from screen_stack import ScreenStack
 from widget_area import WidgetArea
 
-log = logger.get('HAZZY.WINDOW')
+from utilities import ini_info
+
+# Set up logging
+from utilities import logger
+log = logger.get(__name__)
 
 class HazzyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self)
 
-        # Get log file path
-        self.xml_file = Paths.XML_FILE
-        if not os.path.isabs(self.xml_file):
-            self.xml_file = os.path.join(Paths.CONFIGDIR, self.xml_file)
+        # Get the XML file path
+        self.xml_file = ini_info.get_xml_file()
 
         self.widget_manager = WidgetManager()
 
         self.is_fullscreen = False
         self.is_maximized = False
 
-        gladefile = os.path.join(os.path.dirname(__file__), 'ui', 'hazzy.ui')
+        gladefile = os.path.join(os.path.dirname(__file__), 'ui', 'titlebar.ui')
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
 
         self.connect('window-state-event', self.on_window_state_event)
+        self.connect('button-press-event', self.on_button_press)
+
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.add(self.box)
 
         self.titlebar = self.builder.get_object('titlebar')
         self.set_titlebar(self.titlebar)
 
         self.overlay = Gtk.Overlay()
-        self.add(self.overlay)
+        self.box.pack_start(self.overlay, True, True, 0)
 
         self.screen_stack = ScreenStack()
         self.overlay.add(self.screen_stack)
@@ -65,7 +71,10 @@ class HazzyWindow(Gtk.Window):
         self.overlay.add_overlay(self.screen_chooser)
 
         self.set_size_request(900, 600)
-        self.show_all()
+
+    def on_button_press(self, widget, event):
+        # Remove focus when clicking on non focusable area
+        self.get_toplevel().set_focus(None)
 
     def on_show_widget_choser_clicked(self, widget):
         visible = self.widget_chooser.get_visible()
@@ -84,7 +93,17 @@ class HazzyWindow(Gtk.Window):
             for widget in widgets:
                 widget.show_overlay(edit)
 
+    def set_gtk_theme(self, theme=None):
+        settings = self.get_settings()
+        if not theme:
+            theme = settings.get_default().get_property("gtk-theme-name")
+        settings.set_string_property("gtk-theme-name", theme, "")
 
+    def set_icon_theme(self, theme=None):
+        settings = self.get_settings()
+        if not theme:
+            theme = settings.get_default().get_property("gtk-icon-theme-name")
+        settings.set_string_property("gtk-icon-theme-name", theme, "")
 
     def load_from_xml(self):
 
@@ -161,8 +180,7 @@ class HazzyWindow(Gtk.Window):
 
         x = self.get_position().root_x
         y = self.get_position().root_y
-        w = self.get_allocation().width
-        h = self.get_allocation().height
+        w, h = self.get_size()
 
         for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
             self.set_property(win, prop, value)
@@ -193,7 +211,7 @@ class HazzyWindow(Gtk.Window):
                 for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
                     self.set_property(wid, prop, value)
 
-        with open(self.xml_file, 'wb') as fh:
+        with open(self.xml_file, 'w') as fh:
             fh.write(etree.tostring(root, pretty_print=True))
 
 # Helpers
@@ -221,8 +239,23 @@ class HazzyWindow(Gtk.Window):
         else:
             self.unfullscreen()
 
+    def on_maximized_state_changed(self, maximized):
+        pass
+
+    def on_fullscreen_state_changed(self, fullscreen):
+        if fullscreen:
+            self.remove(self.titlebar)
+            self.box.pack_start(self.titlebar, False, False, 0)
+            self.box.reorder_child(self.titlebar, 0)
+        else:
+            self.box.remove(self.titlebar)
+            self.set_titlebar(self.titlebar)
+
     def on_window_state_event(self, widget, event):
-        if event.new_window_state & Gdk.WindowState.FULLSCREEN:
+        # Listen to state event and track window state
+        if self.is_fullscreen != bool(event.new_window_state & Gdk.WindowState.FULLSCREEN):
             self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
-        if event.new_window_state & Gdk.WindowState.MAXIMIZED:
+            self.on_fullscreen_state_changed(self.is_fullscreen)
+        if self.is_maximized != bool(event.new_window_state & Gdk.WindowState.MAXIMIZED):
             self.is_maximized = bool(event.new_window_state & Gdk.WindowState.MAXIMIZED)
+            self.on_maximized_state_changed(self.is_maximized)
