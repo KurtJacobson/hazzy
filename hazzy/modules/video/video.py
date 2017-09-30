@@ -40,12 +40,9 @@ class GstWidget(Gtk.Box):
         self.connect('unmap', self._on_unmap)
         self.connect('map', self._on_map)
 
-        self.settings = self.load_settings()
-
         self.config_stack = False
 
-        self.set_size_request(self.settings["video_width"],
-                              self.settings["video_height"])
+        self.set_size_request(320, 240)
 
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -91,8 +88,6 @@ class GstWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
-        self.connect('destroy', self.save_settings)
-
         # Initialize empty GST related vars
 
         self.pipeline = None
@@ -135,19 +130,6 @@ class GstWidget(Gtk.Box):
     def add_config_field(self, feild):
         box = widgets.PrefFeild(feild, self.size_group)
         self.config_box.pack_start(box, False, True, 5)
-
-    def save_settings(self, widget=None):
-        with open(SETTINGS_FILE, 'w') as fh:
-            json.dump(self.settings, fh, indent=4, sort_keys=True)
-
-    def load_settings(self):
-        if not os.path.exists(SETTINGS_FILE):
-            return dict()
-        with open(SETTINGS_FILE, 'r') as fh:
-            try:
-                return json.load(fh)
-            except ValueError:
-                return dict()
 
     def run(self):
 
@@ -278,4 +260,3 @@ class GstWidget(Gtk.Box):
     def _on_error(self, bus, msg):
         error = msg.parse_error()
         log.error('on_error: {0}'.format(error[1]))
-
