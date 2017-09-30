@@ -26,6 +26,9 @@ class About(Gtk.AboutDialog):
         self.set_transient_for(app_window)
         self.set_modal(True)
 
+        self.header_bar = Gtk.HeaderBar(title='About')
+        self.set_titlebar(self.header_bar)
+
         self.set_program_name("hazzy")
 
         self.set_version(VERSION)
@@ -33,7 +36,7 @@ class About(Gtk.AboutDialog):
         self.set_comments('LinuxCNC: {} \n GTK: {}'.format(LCNC_VERSION, GTK_VERSION))
 
         self.set_website(VERSION_URL)
-        self.set_website_label("This versions URL")
+        self.set_website_label(VERSION_URL)
 
         self.set_copyright(COPYRIGHT)
         self.set_license_type(LICENSE)
