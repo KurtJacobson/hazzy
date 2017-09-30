@@ -93,20 +93,25 @@ class GstWidget(Gtk.Box):
 
         self.connect('destroy', self.save_settings)
 
+        # Initialize empty GST related vars
+
         self.pipeline = None
+
         self.bus = None
 
-        self.camera_filter = None
+        self.camera_gtk_filter = None
+        self.camera_stream_filter = None
 
         self.video_source = None
         self.video_enc = None
         self.video_parse = None
         self.video_mux = None
-        self.video_rtp_pay = None
+        self.video_pay = None
         self.video_converter = None
 
         self.gtk_sink = None
         self.udp_sink = None
+        self.tcp_sink = None
 
         self.tee = None
 
