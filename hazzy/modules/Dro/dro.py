@@ -11,20 +11,21 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
 
+from utilities import ini_info
+from utilities import machine_info
+from utilities.status import Status
+from utilities.constants import Paths
+
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(PYDIR)
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
-from utilities.status import Status
-from utilities.constants import Paths
 
 # Setup logging
 from utilities import logger
 log = logger.get(__name__)
 
+log.info(ini_info.get_xml_file())
+log.info(machine_info.axis_letter_list)
 
 class Dro(Gtk.Box):
 

@@ -40,7 +40,7 @@ UIDIR = os.path.join(PYDIR, 'ui')
 # Setup logging
 from utilities.status import Status
 from utilities.constants import Paths
-from utilities.entryeval import EntryEval
+from utilities import entry_eval
 #from utilities.getiniinfo import GetIniInfo
 
 # Setup logging
@@ -68,8 +68,6 @@ class ToolTable(Gtk.Box):
         #self.add(box)
 
         self.add(self.treeview)
-
-        self.eval = EntryEval().eval
 
         self.tool_table = os.path.join(PYDIR, 'tool.tbl')
         self.load_tool_table()
@@ -217,7 +215,7 @@ class ToolTable(Gtk.Box):
             new_int = int(new_text)
             self.liststore[path][1] = new_int
             self.liststore[path][2] = new_int
-        except ValueError:
+        except:
             msg = '"{0}" is not a valid tool number'.format(new_text)
             log.error(msg)
             # self._show_message(["ERROR", msg])
@@ -226,14 +224,14 @@ class ToolTable(Gtk.Box):
         try:
             new_int = int(new_text)
             self.liststore[path][2] = new_int
-        except ValueError:
+        except:
             msg = '"{0}" is not a valid tool pocket'.format(new_text)
             log.error(msg)
             # self._show_message(["ERROR", msg])
 
     def on_tool_dia_edited(self, widget, path, new_text):
         try:
-            num = self.eval(new_text)
+            num = entry_eval.eval(new_text)
             self.liststore[path][3] = "{:.4f}".format(float(num))
         except:
             msg = '"{0}" does not evaluate to a valid tool diameter'.format(new_text)
@@ -242,7 +240,7 @@ class ToolTable(Gtk.Box):
 
     def on_z_offset_edited(self, widget, path, new_text):
         try:
-            num = self.eval(new_text)
+            num = entry_eval.eval(new_text)
             self.liststore[path][4] = "{:.4f}".format(float(num))
         except:
             msg = '"{0}" does not evaluate to a valid tool length'.format(new_text)
