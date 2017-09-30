@@ -33,29 +33,20 @@ from gi.repository import GObject
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
-
 UIDIR = os.path.join(PYDIR, 'ui')
-STYLEDIR = os.path.join(HAZZYDIR, 'themes')
 
-from utilities.constants import Paths
-from utilities import logger
+#from utilities import logger
 
+## Setup logging
+#log = logger.get(__name__)
 
-# Setup logging
-log = logger.get("HAZZY.KEYBOARD")
+import logging
+
+log = logging.getLogger(__name__)
 
 
 _keymap = Gdk.Keymap.get_default()
 
-
-def singleton(cls):
-    return cls()
-
-@singleton
 class Keyboard():
 
     def __init__(self):
@@ -64,38 +55,22 @@ class Keyboard():
         self.parent = None
         self.persistent = False
 
+        self.focus_out_sig = None
+        self.key_press_sig = None
+
         # Glade setup
-        gladefile = os.path.join(UIDIR, 'keyboard.glade')
+        gladefile = os.path.join(UIDIR, 'keyboard.ui')
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(gladefile)
         self.builder.connect_signals(self)
 
-        keyboard = self.builder.get_object('keyboard')
-        self.window = self.builder.get_object('window')
-        self.window.set_keep_above(True)
-        self.window.add(keyboard)
-
-        # Setup CSS themeing
-        style_provider = Gtk.CssProvider()
-
-        with open(os.path.join(Paths.STYLEDIR, "style.css"), 'rb') as css:
-            css_data = css.read()
-
-        style_provider.load_from_data(css_data)
-
-        Gtk.StyleContext.add_provider_for_screen(
-            Gdk.Screen.get_default(), style_provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-        )
-
+        self.keyboard = self.builder.get_object('keyboard')
 
         self.wait_counter = 0
 
         self.letters = 'abcdefghijklmnopqrstuvwxyz' # Now I've said my abc's
-#                Don't remove the space character ^ It's named ' ' in glade too!
-
-        self.numbers = '`1234567890-=' # Now I've said my 1 2 3's
+        self.numbers = '`1234567890-='              # Now I've said my 1 2 3's
 
         # Relate special character to their glade names.
         self.characters = {'`':'~', '1':'!', '2':'@', '3':'#', '4':'$',
@@ -108,13 +83,17 @@ class Keyboard():
 
         self.number_btn_dict = dict((n, self.builder.get_object(n)) for n in self.characters)
 
-#        # Connect letter button press events
+        # Connect letter button press events
         for l, btn in self.letter_btn_dict.iteritems():
             btn.connect("pressed", self.emulate_key) #self.on_button_pressed)
 
         # Connect number button press events
         for l, btn in self.number_btn_dict.iteritems():
             btn.connect("pressed", self.emulate_key) #self.on_button_pressed)
+
+
+        print "Initializing the keyboard"
+
 
 # =========================================================
 # Keyboard Settings
@@ -204,9 +183,9 @@ class Keyboard():
             GObject.timeout_add(50, self.key_repeat, widget, event)
 
         except Exception as e:
-            log.exception(e)
-            log.error("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
-            self.window.hide()
+            print(e)
+            print("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
+
 
         # Unshift if left shift is active, right shift is "sticky"
         if self.builder.get_object('left_shift').get_active():
@@ -246,9 +225,10 @@ class Keyboard():
     # Return
     def on_return_pressed(self, widget):
         self.enter(widget)
+        return
 
     # Escape
-    def on_esc_pressed(self, widget, data=None):
+    def on_escape_clicked(self, widget, data=None):
         self.escape()
 
     # Left arrow
@@ -294,12 +274,14 @@ class Keyboard():
             self.entry.emit("key-press-event", event)
         except:
             pass
-        self.window.hide()
+        self.entry.disconnect(self.focus_out_sig)
+        self.entry.disconnect(self.key_press_sig)
+        self.keyboard.hide()
 
     def enter(self, widget):
         self.emulate_key(widget, Gdk.KEY_Return)
         if not self.persistent:
-            self.window.hide()
+            self.keyboard.hide()
 
     def on_entry_loses_focus(self, widget, data=None):
         self.escape()
@@ -307,47 +289,62 @@ class Keyboard():
     def on_entry_key_press(self, widget, event, data=None):
         kv = event.keyval
         if kv == Gdk.KEY_Escape:
-            self.window.hide() # Close the keyboard
+            self.keyboard.hide() # Close the keyboard
 
 # ==========================================================
 # Show the keyboard
 # ==========================================================
 
-    def show(self, entry, persistent=False ):
+    def show(self, entry, persistent=False):
         self.entry = entry
         self.persistent = persistent
-        self.entry.connect('focus-out-event', self.on_entry_loses_focus)
-        #self.entry.connect('key-press-event', self.on_entry_key_press)
-        if self.parent:
-            pos = self.parent.get_position()
-            self.window.move(pos[0]+105, pos[1]+440)
-        self.window.show()
+        self.focus_out_sig = self.entry.connect('focus-out-event', self.on_entry_loses_focus)
+        self.key_press_sig = self.entry.connect('key-press-event', self.on_entry_key_press)
+        self.keyboard.set_relative_to(entry)
+        self.keyboard.popup()
 
-    def set_parent(self, parent):
-        self.parent = parent
+    def on_button_press(self, widget, event):
+        # Needed to prevent closing the PopOver on activate
+        return True
+
+
+# ==========================================================
+# For use without having to initialize
+# ==========================================================
+
+keyboard = Keyboard()
+
+def show(entry, data=None):
+    keyboard.show(entry)
 
 
 # ==========================================================
 # For standalone testing
 # ==========================================================
 
-def show(widget, event):
-    keyboard.show(entry)
 
-def destroy(widget):
-    Gtk.main_quit()
+def demo():
+    keyboard = Keyboard()
 
-def main():
+    box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+    entry = Gtk.Entry()
+    entry.set_hexpand(False)
+    entry.set_vexpand(False)
+    entry.connect('focus-in-event', show)
+    box.pack_start(entry, False, False, 5)
+
+    button = Gtk.Button()
+    box.pack_start(button, False, False, 5)
+
+    window = Gtk.Window(title="Test Keyboard")
+    window.connect('destroy', Gtk.main_quit)
+    window.add(box)
+
+    window.set_size_request(1000, 400)
+    window.show_all()
+
     Gtk.main()
 
 if __name__ == "__main__":
-    keyboard = Keyboard
-    entry = Gtk.Entry()
-    window = Gtk.Window()
-    window.add(entry)
-    window.connect('destroy', destroy)
-    entry.connect('button-press-event', show)
-    window.show_all()
-    keyboard.set_parent(window)
-    keyboard.show(entry)
-    main()
+    demo()
