@@ -63,8 +63,40 @@ class HazzyWindow(Gtk.Window):
         self.screen_chooser = ScreenChooser()
         self.overlay.add_overlay(self.screen_chooser)
 
+        self.menu_button = Gtk.MenuButton()
+        self.menu_button.set_popover(self.make_menu_popover())
+        self.header_bar.pack_start(self.menu_button)
+
         self.set_size_request(900, 600)
-        about.About(self)
+
+
+    def make_menu_popover(self):
+        #Create a menu popover - very temporary, need to do something neater
+        popover = Gtk.PopoverMenu.new()
+
+        pbox = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
+        pbox.set_property('margin', 10)
+        popover.add(pbox)
+
+        edit = Gtk.CheckButton.new()
+        edit.set_label("Edit Layout")
+        edit.set_active(True)
+        edit.connect('toggled', self.on_edit_layout_toggled)
+        pbox.pack_start(edit, False, False, 5)
+
+        about = Gtk.ModelButton.new()
+        about.set_label("About")
+        about.connect('clicked', self.on_show_about_clicked)
+        pbox.pack_start(about, False, False, 5)
+
+        quit = Gtk.ModelButton.new()
+        quit.set_label("Quit")
+        quit.connect('clicked', Gtk.main_quit)
+
+        pbox.pack_start(quit, False, False, 5)
+        pbox.show_all()
+
+        return popover
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on non focusable area
@@ -86,6 +118,9 @@ class HazzyWindow(Gtk.Window):
             widgets = screen.get_children()
             for widget in widgets:
                 widget.show_overlay(edit)
+
+    def on_show_about_clicked(self, widegt):
+        about.About(self)
 
     def set_gtk_theme(self, theme=None):
         settings = self.get_settings()
