@@ -49,18 +49,27 @@ class WidgetManager:
 
 
     def get_widgets(self):
-        pakages = os.listdir(WIDGET_DIR)
-        for pakage in pakages:
-            path = os.path.join(WIDGET_DIR, pakage, 'widget.info')
-            info_dict = {}
-            if os.path.exists(path):
-                with open(path, 'r') as fh:
-                    lines = fh.readlines()
-                for line in lines:
-                    if line.startswith('#'):
-                        continue
-                    key, value = line.split(':')
-                    value = ast.literal_eval(value.strip())
-                    info_dict[key] = value
-                self.widget_data[pakage] = info_dict
+        categories = os.listdir(WIDGET_DIR)
+        for category in categories:
+            print category
+            if not os.path.isdir(os.path.join(WIDGET_DIR, category)):
+                print "not dir"
+                continue
+            packages = os.listdir(os.path.join(WIDGET_DIR, category))
+
+            for package in packages:
+                print package
+                path = os.path.join(WIDGET_DIR, package, 'widget.info')
+                info_dict = {}
+                if os.path.exists(path):
+                    with open(path, 'r') as fh:
+                        lines = fh.readlines()
+                    for line in lines:
+                        if line.startswith('#'):
+                            continue
+                        key, value = line.split(':')
+                        value = ast.literal_eval(value.strip())
+                        info_dict[key] = value
+                    self.widget_data[package] = info_dict
+                
         return self.widget_data
