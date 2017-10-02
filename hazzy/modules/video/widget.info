@@ -1,4 +1,4 @@
 name: 'Video'
 module: 'video'
 class: 'GstWidget'
-image: 'none'
+image: 'video.png'

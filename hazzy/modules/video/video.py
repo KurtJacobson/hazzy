@@ -2,7 +2,7 @@
 
 import os
 import sys
-import json
+from threading import Thread
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -26,6 +26,8 @@ from gui import widgets
 from utilities import preferences as prefs
 from utilities import logger
 
+from stream import VideoHttpServer
+
 # Setup logging
 log = logger.get(__name__)
 
@@ -37,6 +39,7 @@ Gst.init_check(None)
 class GstWidget(Gtk.Box):
     def __init__(self, *args, **kwargs):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+
         self.connect('unmap', self._on_unmap)
         self.connect('map', self._on_map)
 
@@ -58,10 +61,6 @@ class GstWidget(Gtk.Box):
         button_start.connect("toggled", self._on_button_start_toggled, "1")
 
         self.widget_box.pack_end(button_start, False, True, 0)
-
-#        self.add_config_field("Device", "video_device")
-#        self.add_config_field("Width", "video_width")
-#        self.add_config_field("Height", "video_height")
 
         self.size_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -115,6 +114,10 @@ class GstWidget(Gtk.Box):
 
         self.gtksink_widget = None
 
+        # Threading stream server
+
+        self.stream_thread = ControlThread(1, "StreamThread", 1)
+
     def on_device_changed(self, widget, device):
         print 'Device changed: ', device
 
@@ -126,6 +129,7 @@ class GstWidget(Gtk.Box):
 
     def on_stream_state_changed(self, widget, streaming):
         print 'Streaming changed: ', streaming
+        self.streaming(streaming)
 
     def add_config_field(self, feild):
         box = widgets.PrefFeild(feild, self.size_group)
@@ -260,3 +264,27 @@ class GstWidget(Gtk.Box):
     def _on_error(self, bus, msg):
         error = msg.parse_error()
         log.error('on_error: {0}'.format(error[1]))
+
+    def streaming(self, enabled):
+        if enabled:
+            self.stream_thread.start()
+        else:
+            self.stream_thread.stop()
+
+
+class ControlThread(Thread):
+    def __init__(self, thread_id, name, counter):
+        Thread.__init__(self)
+        self.thread_id = thread_id
+        self.name = name
+        self.counter = counter
+
+        self.video_streamer = VideoHttpServer("HAZZY video stream", '0.0.0.0', 1337)
+
+    def run(self):
+        print("control RUN")
+        self.video_streamer.start()
+
+    def stop(self):
+        print("Control STOP")
+        self.video_streamer.stop()
