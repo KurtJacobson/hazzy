@@ -1,1 +1,1 @@
-from filechooser import Filechooser as Widget
+from filechooser import FileChooser as Widget
