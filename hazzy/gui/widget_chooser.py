@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import sys
+import ast
+import importlib
+import json
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -14,6 +19,8 @@ from gi.repository import GdkPixbuf
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
 WIDGET_DIR = os.path.join(HAZZYDIR, 'hazzy/modules')
+
+WIDGET_DIRS = [WIDGET_DIR, os.environ['CONFIG_DIR']]
 
 
 class WidgetChooser(Gtk.Revealer):
@@ -34,56 +41,88 @@ class WidgetChooser(Gtk.Revealer):
 
         self.add(self.scrolled)
 
+        self.image_missing = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
+
         self.get_widgets()
 
-
-
-
     def get_widgets(self):
-        categories = os.listdir(WIDGET_DIR)
-        for category in categories:
-            print category
 
-            if category.startswith('_'):
-                continue
+        categories = {}
 
-            if not os.path.isdir(os.path.join(WIDGET_DIR, category)):
-                print "not dir"
-                continue
-            section = self.add_section(category)
+        for widget_dir in WIDGET_DIRS:
 
-            packages = os.listdir(os.path.join(WIDGET_DIR, category))
+            sys.path.append(widget_dir)
 
-            for package in packages:
-                print package
+            for root, subdirs, files in os.walk(widget_dir):
 
-                path = os.path.join(WIDGET_DIR, package, 'widget.info')
-                info_dict = {}
-                if os.path.exists(path):
-                    with open(path, 'r') as fh:
-                        lines = fh.readlines()
-                    for line in lines:
-                        if line.startswith('#'):
-                            continue
-                        key, value = line.split(':')
-                        value = ast.literal_eval(value.strip())
-                        info_dict[key] = value
+                # Ignore directories starting with '_'
+                if os.path.split(root)[1].startswith('_'):
+                    continue
+
+                # Ignore non widgets. i.e. dirs with no 'widget.info' file
+                info_file = os.path.join(root, 'widget.info')
+                if not os.path.exists(info_file):
+                    continue
+
+                with open(info_file, 'r') as fh:
+                    lines = fh.readlines()
+
+                info = {}
+                for line in lines:
+                    line = line.strip()
+
+                    # Skip blank or comment lines
+                    if not line or line[0] in ['#', ';']:
+                        continue
+
+                    key, value = line.split(':')
+                    info[key.strip()] = ast.literal_eval(value.strip())
+
+                if info.get('image'):
+                    info['image'] = os.path.join(root, info['image'])
+
+                path = os.path.relpath(root, widget_dir).split('/')
+
+                # Determine package for import, and category name for display
+                if len(path) == 1:
+                    category = info.get('category') or 'Uncategorized'
+                    package = path[0]
+                elif len(path) == 2:
+                    category = info.get('category') or path[0]
+                    package = path[1]
+
+                info['import_str'] = '.'.join(path)
+
+                if not category in categories.keys():
+                    categories[category] = {}
+
+                categories[category][package] = info
+
+#        print json.dumps(categories, sort_keys=True, indent=4)
+
+        self.populate(categories)
 
 
-                    self.widget_data[package] = info_dict
-                section.add_item(package)
+    def populate(self, categories):
 
+        for category, packages in sorted(categories.items()):
+            section = Section(category)
+            self.box.pack_start(section, False, False, 0)
 
+            for package, info in sorted(packages.items()):
+                name = info.get('name', 'Unnamed')
+                import_str = info['import_str']
+                image_path = info.get('image')
 
-    def populate(self):
-        data = self.widget_manager.get_widgets()
+                if os.path.exists(image_path):
+                    image = GdkPixbuf.Pixbuf.new_from_file(image_path)
+                    w, h = image.get_width(), image.get_height()
+                    scale = 200 / float(w)
+                    image = image.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
+                else:
+                    image = self.image_missing
 
-
-
-    def add_section(self, section_name):
-        section = Section(section_name)
-        self.box.pack_start(section, False, False, 0)
-        return section
+                section.add_item(name, image, import_str)
 
 
 class Section(Gtk.Box):
@@ -120,9 +159,10 @@ class Section(Gtk.Box):
         else:
             self.arrow.set(Gtk.ArrowType.DOWN, Gtk.ShadowType.NONE)
 
-    def add_item(self, item):
-        print "adding section item ", item
-        self.view.add_item(item, "test", 'test')
+
+    def add_item(self, name, image, import_str):
+        self.view.model.append([name, image, import_str])
+
 
 
 class WidgetView(Gtk.IconView):
@@ -135,7 +175,7 @@ class WidgetView(Gtk.IconView):
 
         self.set_text_column(0)
         self.set_pixbuf_column(1)
-        self.set_item_width(200)
+        self.set_item_width(130)
         self.set_columns(1)
 
         self.model = Gtk.ListStore(str, GdkPixbuf.Pixbuf, str)
@@ -147,20 +187,10 @@ class WidgetView(Gtk.IconView):
         self.drag_source_set_target_list(None)
         self.drag_source_add_text_targets()
 
-        self.image_missing = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
+        self.connect('focus-out-event', self.on_focus_out)
 
-
-    def add_item(self, name, image_path, package):
-        if os.path.exists(image_path):
-            image = GdkPixbuf.Pixbuf.new_from_file(image_path)
-            w, h = image.get_width(), image.get_height()
-            scale = 200 / float(w)
-            image = image.scale_simple(w * scale, h * scale, GdkPixbuf.InterpType.BILINEAR)
-        else:
-            image = self.image_missing
-
-        self.model.append([name, image, package])
-
+    def on_focus_out(self, widget, event):
+        self.unselect_all()
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
         selected_path = self.get_selected_items()[0]

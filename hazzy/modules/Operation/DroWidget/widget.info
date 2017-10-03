@@ -1,4 +1,3 @@
+category: 'Operation'
 name: 'GridDRO'
-module: 'dro'
-class: 'AxisDro'
 image: 'dro.png'

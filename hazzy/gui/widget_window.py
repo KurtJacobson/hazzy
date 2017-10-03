@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import importlib
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -11,16 +13,26 @@ from gi.repository import Gdk
 
 # Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
+UI_FILE = os.path.join(PYDIR, 'ui', 'widget_window.ui')
 
 
 class WidgetWindow(Gtk.EventBox):
 
-    def __init__(self, package, widget, title):
+    def __init__(self, package):
         Gtk.EventBox.__init__(self)
 
-        self.module_package = package
-        self.module_widget = widget
-        self.module_title = title
+        self.package = package
+
+        module = importlib.import_module(self.package)
+        widget = getattr(module, 'Widget')()
+
+        if hasattr(widget, 'title'):
+            # Use widget name attribute if specified
+            title = widget.title
+        else:
+            # Use the package name
+            title = self.package.split('.')[-1]
+
 
         self.action = None
         self.drag_active = False
@@ -29,11 +41,11 @@ class WidgetWindow(Gtk.EventBox):
         self.style_context = self.get_style_context()
         self.style_context.add_class("WidgetWindow")
 
-        # Used to remove any focus then 
+        # Used to remove focus when clicking a non focusable widget
         self.connect('button-press-event', self.on_button_press)
 
         builder = Gtk.Builder()
-        builder.add_from_file(os.path.join(PYDIR, 'ui', 'widget_window.ui'))
+        builder.add_from_file(UI_FILE)
         builder.connect_signals(self)
 
         # WidgetWindow - the whole thing
@@ -53,11 +65,12 @@ class WidgetWindow(Gtk.EventBox):
         self.widget_box = builder.get_object('widget_box')
 
         self.title_bar_label.set_text(title)
-        self.widget_box.add(self.module_widget)
+        self.widget_box.add(widget)
         self.add(self.widget_window)
 
-        if hasattr(self.module_widget, 'on_settings_button_pressed'):
-            menu_btn.connect('clicked', self.module_widget.on_settings_button_pressed)
+        if hasattr(widget, 'on_settings_button_pressed'):
+            btn = builder.get_object('title_bar_button')
+            btn.connect('clicked', widget.on_settings_button_pressed)
 
         self.show_all()
 

@@ -29,6 +29,12 @@ log.info(machine_info.axis_letter_list)
 
 class Dro(Gtk.Box):
 
+    title = 'Basic 3 axis Dro'
+    author = 'Kurt Jacobson'
+    version = '0.1.0'
+    date = '10/01/2017'
+    description = 'Description of the widget and its indented use'
+
     def __init__(self):
         Gtk.Box.__init__(self)
 

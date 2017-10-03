@@ -16,7 +16,6 @@ from utilities.constants import Paths
 from gui import about
 
 # Import our own modules
-from widget_manager import WidgetManager
 from widget_chooser import WidgetChooser
 from screen_chooser import ScreenChooser
 from widget_window import WidgetWindow
@@ -36,8 +35,6 @@ class HazzyWindow(Gtk.Window):
 
         # Get the XML file path
         self.xml_file = ini_info.get_xml_file()
-
-        self.widget_manager = WidgetManager()
 
         self.connect('button-press-event', self.on_button_press)
 
@@ -175,11 +172,11 @@ class HazzyWindow(Gtk.Window):
                 # Add widgets
                 for widget in screen.iter('widget'):
                     package = widget.get('package')
-                    if not self.widget_manager.check_exist(package):
-                        log.error('The package "{}" could not be found'.format(package))
+                    try:
+                        wwindow = WidgetWindow(package)
+                    except ImportError:
+                        log.error('The package "{}" could not be imported'.format(package))
                         continue
-                    obj, title, size = self.widget_manager.get_widget(package)
-                    wwindow = WidgetWindow(package, obj, title)
 
                     props = self.get_propertys(widget)
 
@@ -230,7 +227,7 @@ class HazzyWindow(Gtk.Window):
             widgets = screen.get_children()
             for widget in widgets:
                 wid = etree.SubElement(scr, "widget")
-                wid.set('package', widget.module_package)
+                wid.set('package', widget.package)
 
                 x = screen.child_get_property(widget, 'x')
                 y = screen.child_get_property(widget, 'y')
