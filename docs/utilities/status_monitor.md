@@ -2,7 +2,7 @@
 
 Hazzy uses GObject signaling to inform its widgets of any changes to the status
 of linuxcnc. status.py runs in a 50ms loop and 'listens' for any changes in the
-linuxcnc.status attributes. When a change is detected, status.py emits a GObject
+`linuxcnc.stat` attributes. When a change is detected, status.py emits a GObject
 signal with the same name as the attribute that changed, and passes along
 the updated value. A python script can connect a callback to these signals, which
 can then perform any necessary updates when a signal is received.
@@ -20,34 +20,66 @@ This is referred to as event-driven programing, and has several advantages:
 
 
 !!! note
-    status.py monitors only the linuxcnc.status attributes which have been
+    status.py monitors only the `linuxcnc.stat` attributes which have been
     connected to a callback. This is to avoid needless monitoring of attributes,
     and emission of signals which are not used.
 
 
 ## Connecting Callbacks
 
-status.on_value_changed(_**attribute**_, _**callback**_)
+status.on_changed(_**attribute**_, _**callback**_)
 
 where _**attribute**_ is any [linuxcnc.stat](http://linuxcnc.org/docs/devel/html/config/python-interface.html#_linuxcnc_stat_attributes) attribute and _**callback**_ is the method to be called when the value of that attribute changes.
 
 ## Examples
 
-Here is a basic example that prints the tool number when the _linuxcnc.stat.tool_in_spindle_ attribute changes.
+Here is a basic example that prints the tool number when the
+`linuxcnc.stat.tool_in_spindle` attribute changes.
 
 ```python
 #!/usr/bin/env python
 
-import status.Status
+from hazzy.utilities import status
 
-self.status = Status
-
-# Connect "tool_in_spindle" value changed signal to "update_tool" callback
-self.status.on_value_changed('tool_in_spindle', self.update_tool)
-
-self.update_tool(widget, tool_num):
+def update_tool(status, tool_num):
     print tool_num
+
+# Connect "tool_in_spindle" changed signal to "update_tool" callback
+status.on_changed('tool_in_spindle', update_tool)
 ```
+
+status.py also monitors the `linuxcnc.stat.joint` dictionaries for changes. So 
+it is simple to do things like keep track of the homing status, report the current
+following error, etc.
+
+Here is an example of printing the following error for each joint used in the machine
+
+```python
+def print_ferror(status, joint_num, ferror):
+    print 'joint {} f-error: {:.5f}'.format(joint_num, ferror)
+
+# Connect "joint.ferror_current" changed signal to "print_ferror" callback
+status.on_changed('joint.ferror_current', print_ferror)
+```
+
+!!! note
+    This is roughly equivalent to the pseudo code
+
+    ```python
+    while True:
+        stat.poll()
+
+        for jnum in range(num_joints):
+            if ferror has changed:
+                print stat.joint[jnum]['ferror_current']
+
+        sleep(.05)
+    ```
+
+    So the signal will only be emitted if the value has changed since the previous 
+    emission. If no joints are moving no signal will be emitted. If one joint
+    is moving, only the ferror for that joint will be emitted, etc.
+
 
 ## Additional Signals
 
@@ -92,10 +124,10 @@ g-codes formed as strings.
 Example:
 
 ```python
-self.stat.on_value_changed('formated_gcodes', self.update_gcodes)
-
 def update_gcodes(widget, gcodes):
     print "G-codes: ", " ".join(gcodes)
+
+status.on_changed('formated_gcodes', update_gcodes)
 ```
 
 Result: ```G-codes:  G8 G17 G20 G40 G49 G54 G64 G80 G90 G91.1 G94 G97 G99```
@@ -109,10 +141,10 @@ m-codes formed as strings.
 Example:
 
 ```python
-self.stat.on_value_changed('formated_mcodes', self.update_mcodes)
-
 def update_mcodes(widget, mcodes):
     print "M-codes: ", " ".join(mcodes)
+
+status.on_changed('formated_mcodes', update_mcodes)
 ```
 
 Result: ```M-codes:  M0 M5 M9 M48 M53```
