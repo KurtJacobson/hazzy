@@ -11,3 +11,12 @@ deploy:
  local_dir: site
  on:
    branch: GTK3
+
+notifications:
+  irc:
+    channels:
+      - "chat.freenode.net#hazzy"
+    template:
+      - "%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}"
+      - "Diff view : %{compare_url}"
+      - "Build details : %{build_url}"
