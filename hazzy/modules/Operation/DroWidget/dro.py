@@ -19,8 +19,8 @@ from utilities import command
 from utilities import entry_eval
 from utilities import preferences as prefs
 
-from widgets.TouchPads import keyboard
-from widgets import widgets
+from widget_factory.TouchPads import keyboard
+
 
 class AxisDro(Gtk.Grid):
 
