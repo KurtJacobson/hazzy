@@ -54,9 +54,6 @@ class HazzyWindow(Gtk.Window):
         self.stack_switcher.set_stack(self.screen_stack)
         self.header_bar.set_custom_title(self.stack_switcher)
 
-        self.widget_chooser = WidgetChooser()
-        self.overlay.add_overlay(self.widget_chooser)
-
         self.screen_chooser = ScreenChooser()
         self.overlay.add_overlay(self.screen_chooser)
 
@@ -64,8 +61,15 @@ class HazzyWindow(Gtk.Window):
         self.menu_button.set_popover(self.make_menu_popover())
         self.header_bar.pack_start(self.menu_button)
 
-        self.set_size_request(900, 600)
+        self.widget_chooser = WidgetChooser(self.screen_stack)
 
+        self.edit_button = Gtk.MenuButton()
+        icon = Gtk.Image.new_from_icon_name('view-list-symbolic', Gtk.IconSize.MENU)
+        self.edit_button.set_image(icon)
+        self.edit_button.set_popover(self.widget_chooser)
+        self.header_bar.pack_start(self.edit_button)
+
+        self.set_size_request(900, 600)
 
     def make_menu_popover(self):
         #Create a menu popover - very temporary, need to do something neater

@@ -3,7 +3,6 @@
 import os
 import sys
 import ast
-import importlib
 import json
 
 import gi
@@ -22,13 +21,18 @@ WIDGET_DIR = os.path.join(HAZZYDIR, 'hazzy/modules')
 
 WIDGET_DIRS = [WIDGET_DIR, os.environ['CONFIG_DIR']]
 
+from widget_factory import entry_widgets
 
-class WidgetChooser(Gtk.Revealer):
-    def __init__(self):
-        Gtk.Revealer.__init__(self)
+class WidgetChooser(Gtk.Popover):
+    def __init__(self, screen_stack):
+        Gtk.Popover.__init__(self)
 
-        self.set_reveal_child(True)
-        self.set_halign(Gtk.Align.START)
+        self.set_vexpand(True)
+
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        screen_editor = ScreenEditor(screen_stack)
+        self.box.pack_start(screen_editor, False, False, 0)
 
         # Scrolled Window
         self.scrolled = Gtk.ScrolledWindow()
@@ -36,7 +40,6 @@ class WidgetChooser(Gtk.Revealer):
         self.scrolled.set_overlay_scrolling(True)
         self.scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
 
-        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.scrolled.add(self.box)
 
         self.add(self.scrolled)
@@ -44,6 +47,9 @@ class WidgetChooser(Gtk.Revealer):
         self.image_missing = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
 
         self.get_widgets()
+
+        self.show_all()
+        self.hide()
 
     def get_widgets(self):
 
@@ -126,7 +132,7 @@ class WidgetChooser(Gtk.Revealer):
 
 
 class Section(Gtk.Box):
-    def __init__(self, section_name='Section 1'):
+    def __init__(self, section_name='Unnamed'):
         Gtk.HeaderBar.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
         self.section_name = section_name
@@ -136,11 +142,15 @@ class Section(Gtk.Box):
 
         # The section button
         self.button = Gtk.Button()
+        self.button.get_style_context().add_class('flat')
         self.button.connect('clicked', self.on_button_clicked)
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.pack_start(self.arrow, False, False, 0)
         box.set_center_widget(self.label)
         self.button.add(box)
+
+        self.label = Gtk.Label()
+        box.pack_end(self.label, False, False, 0)
 
         self.revealer = Gtk.Revealer()
 
@@ -149,6 +159,8 @@ class Section(Gtk.Box):
 
         self.pack_start(self.button, False, False, 0)
         self.pack_start(self.revealer, False, False, 0)
+
+        self.count = 0
 
 
     def on_button_clicked(self, widget):
@@ -162,6 +174,8 @@ class Section(Gtk.Box):
 
     def add_item(self, name, image, import_str):
         self.view.model.append([name, image, import_str])
+        self.count += 1
+        self.label.set_text('({})'.format(self.count))
 
 
 
@@ -199,14 +213,67 @@ class WidgetView(Gtk.IconView):
         data.set_text(text, -1)
 
 
-def main():
-    win = Gtk.Window()
-    win.set_size_request(200, 400)
-    win.connect('destroy', Gtk.main_quit)
-    sec = WidgetChooser()
-    win.add(sec)
-    win.show_all()
-    Gtk.main()
+class ScreenEditor(Gtk.Box):
+    def __init__(self, screen_stack):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+
+        self.screen_stack = screen_stack
+        self.visible_child = None
+
+        self.set_spacing(5)
+
+        label = Gtk.Label('Screen Name')
+        self.pack_start(label, False, False, 0)
+
+        self.title_entry = entry_widgets.TextEntry()
+        self.pack_start(self.title_entry, False, False, 0)
+        self.title_entry.connect('activate', self.on_title_entry_activated)
+
+        label = Gtk.Label('Screen Position')
+        self.pack_start(label, False, False, 0)
+
+        self.pos_adj = Gtk.SpinButton.new_with_range(0, 10, 1)
+        self.pos_adj.connect('value_changed', self.on_position_changed)
+        self.pack_start(self.pos_adj, False, False, 0)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        box.set_spacing(5)
+        add_btn = Gtk.Button.new_from_stock('gtk-add')
+        delete_btn = Gtk.Button.new_from_stock('gtk-delete')
+
+        box.pack_start(add_btn, True, True, 0)
+        box.pack_start(delete_btn, True, True, 0)
+        box.set_homogeneous(True)
+
+        self.pack_start(box, False, False, 0)
+
+        self.screen_stack.connect("notify::visible-child", self.on_stack_changed)
+
+        self.show_all()
+
+
+    def on_title_entry_activated(self, widegt):
+        title = self.title_entry.get_text()
+        self.set_title(title)
+
+    def set_title(self, title):
+        self.screen_stack.child_set_property(self.visible_child, 'title', title)
+
+    def on_position_changed(self, widegt):
+        pos = widegt.get_value_as_int()
+        print pos
+        self.screen_stack.child_set_property(self.visible_child, 'position', pos)
+
+    def on_stack_changed(self, stack, param):
+
+        self.visible_child = stack.get_visible_child()
+
+        title = self.screen_stack.child_get_property(self.visible_child, 'title')
+        self.title_entry.set_text(title)
+
+        pos = stack.child_get_property(self.visible_child, 'position')
+        self.pos_adj.set_value(pos)
+
 
 if __name__ == "__main__":
     main()
