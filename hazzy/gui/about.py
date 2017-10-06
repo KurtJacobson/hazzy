@@ -8,8 +8,12 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import GdkPixbuf
 
 from utilities.version import VERSION, VERSION_URL
+
+PYDIR = os.path.dirname(__file__)
+LOGO = os.path.join(PYDIR, 'ui/logo.png')
 
 LICENSE = Gtk.License.GPL_3_0
 AUTHORS = ['Kurt Jacobson', 'TurBoss']
@@ -29,7 +33,10 @@ class About(Gtk.AboutDialog):
         self.header_bar = Gtk.HeaderBar(title='About')
         self.set_titlebar(self.header_bar)
 
-        self.set_program_name("hazzy")
+        logo = GdkPixbuf.Pixbuf.new_from_file(LOGO)
+        self.set_logo(logo)
+
+        self.set_program_name("A touchscreen UI")
 
         self.set_version(VERSION)
 
