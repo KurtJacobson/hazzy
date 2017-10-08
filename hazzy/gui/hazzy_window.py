@@ -17,7 +17,6 @@ from gui import about
 
 # Import our own modules
 from widget_chooser import WidgetChooser
-from screen_chooser import ScreenChooser
 from widget_window import WidgetWindow
 from screen_stack import ScreenStack
 from widget_area import WidgetArea
@@ -53,9 +52,6 @@ class HazzyWindow(Gtk.Window):
         self.stack_switcher = Gtk.StackSwitcher()
         self.stack_switcher.set_stack(self.screen_stack)
         self.header_bar.set_custom_title(self.stack_switcher)
-
-        self.screen_chooser = ScreenChooser()
-        self.overlay.add_overlay(self.screen_chooser)
 
         self.menu_button = Gtk.MenuButton()
         self.menu_button.set_popover(self.make_menu_popover())
@@ -106,10 +102,6 @@ class HazzyWindow(Gtk.Window):
     def on_show_widget_choser_clicked(self, widget):
         visible = self.widget_chooser.get_visible()
         self.widget_chooser.set_visible(not visible)
-
-    def on_show_screen_choser_clicked(self, widget):
-        visible = self.screen_chooser.get_visible()
-        self.screen_chooser.set_visible(not visible)
 
     def on_edit_layout_toggled(self, widget):
         edit = widget.get_active()
@@ -162,32 +154,27 @@ class HazzyWindow(Gtk.Window):
             self.set_fullscreen(props['fullscreen'])
 
             # Add screens
-            screens = []
             for screen in window.iter('screen'):
-                screen_obj = WidgetArea()
                 screen_name = screen.get('name')
                 screen_title = screen.get('title')
                 screen_pos = int(screen.get('position'))
 
-                self.screen_stack.add_screen(screen_obj, screen_name, screen_title)
-                self.screen_stack.child_set_property(screen_obj, 'position', screen_pos)
-                screens.append(screen_name)
+                self.screen_stack.add_screen(screen_name, screen_title)
+                self.screen_stack.set_position(screen_name, screen_pos)
 
-                # Add widgets
+                # Add all the widgets
                 for widget in screen.iter('widget'):
                     package = widget.get('package')
+                    props = self.get_propertys(widget)
                     try:
-                        wwindow = WidgetWindow(package)
+                        self.screen_stack.place_widget(WidgetWindow(package),
+                                                        int(props['x']),
+                                                        int(props['y']),
+                                                        int(props['w']),
+                                                        int(props['h']))
                     except ImportError:
                         log.error('The package "{}" could not be imported'.format(package))
                         continue
-
-                    props = self.get_propertys(widget)
-
-                    screen_obj.put(wwindow, int(props['x']), int(props['y']))
-                    wwindow.set_size_request(int(props['w']), int(props['h']))
-
-        self.screen_chooser.view.fill_iconview(screens)
 
 
     def save_to_xml(self):

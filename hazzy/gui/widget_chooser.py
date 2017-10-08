@@ -241,7 +241,10 @@ class ScreenEditor(Gtk.Box):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.set_spacing(5)
         add_btn = Gtk.Button.new_from_stock('gtk-add')
+        add_btn.connect('clicked', self.on_add_screen_clicked)
+
         delete_btn = Gtk.Button.new_from_stock('gtk-delete')
+        delete_btn.connect('clicked', self.on_delete_screen_clicked)
 
         box.pack_start(add_btn, True, True, 0)
         box.pack_start(delete_btn, True, True, 0)
@@ -253,12 +256,14 @@ class ScreenEditor(Gtk.Box):
 
         self.show_all()
 
+    def on_add_screen_clicked(self, widegt):
+        self.screen_stack.add_screen('screen 1', 'testing')
+
+    def on_delete_screen_clicked(self, widegt):
+        self.visible_child.destroy()
 
     def on_title_entry_activated(self, widegt):
         title = self.title_entry.get_text()
-        self.set_title(title)
-
-    def set_title(self, title):
         self.screen_stack.child_set_property(self.visible_child, 'title', title)
 
     def on_position_changed(self, widegt):
