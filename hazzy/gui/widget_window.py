@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import sys
+import cairo
 import importlib
 
 import gi
@@ -33,6 +35,7 @@ class WidgetWindow(Gtk.EventBox):
             # Use the package name
             title = self.package.split('.')[-1]
 
+        self.widget_dir = os.path.abspath(os.path.dirname(module.__file__))
 
         self.action = None
         self.drag_active = False
@@ -55,6 +58,9 @@ class WidgetWindow(Gtk.EventBox):
         self.overlay = builder.get_object('overlay')
         self.overlay.add_events(Gdk.EventMask.KEY_PRESS_MASK)
         self.overlay_style_context = self.overlay.get_style_context()
+
+        # The iner window, used only for getting the icon image
+        self.window = builder.get_object('window')
 
         # TitleBar - the title bar at the top of the window
         self.title_bar = builder.get_object('title_bar')
@@ -87,6 +93,24 @@ class WidgetWindow(Gtk.EventBox):
             self.overlay.show()
         else:
             self.overlay.hide()
+
+    def get_widget_image(self):
+
+        window = self.window.get_window()
+
+        if window is None:
+            return
+
+        width, height = window.get_width(), window.get_height()
+
+        surface = Gdk.Window.create_similar_surface(window,
+                                                    cairo.CONTENT_COLOR,
+                                                    width, height)
+        cairo_context = cairo.Context(surface)
+        Gdk.cairo_set_source_window(cairo_context, window, 0, 0)
+        cairo_context.paint()
+
+        surface.write_to_png(os.path.join(self.widget_dir, 'widget.png'))
 
     def on_key_press(self, widget, event):
 

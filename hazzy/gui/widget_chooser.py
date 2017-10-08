@@ -86,6 +86,8 @@ class WidgetChooser(Gtk.Popover):
 
                 if info.get('image'):
                     info['image'] = os.path.join(root, info['image'])
+                else:
+                    info['image'] = os.path.join(root, 'widget.png')
 
                 path = os.path.relpath(root, widget_dir).split('/')
 
@@ -116,7 +118,7 @@ class WidgetChooser(Gtk.Popover):
             self.box.pack_start(section, False, False, 0)
 
             for package, info in sorted(packages.items()):
-                name = info.get('name', 'Unnamed')
+                name = info.get('name', package)
                 import_str = info['import_str']
                 image_path = info.get('image')
 
