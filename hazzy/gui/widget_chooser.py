@@ -27,12 +27,16 @@ class WidgetChooser(Gtk.Popover):
     def __init__(self, screen_stack):
         Gtk.Popover.__init__(self)
 
+        self.set_can_focus(False)
+        self.set_can_default(False)
         self.set_vexpand(True)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         screen_editor = ScreenEditor(screen_stack)
-        self.box.pack_start(screen_editor, False, False, 0)
+        screen_editor_expander = Expander('Screen Settings')
+        screen_editor_expander.add(screen_editor)
+        self.box.pack_start(screen_editor_expander, False, False, 0)
 
         # Scrolled Window
         self.scrolled = Gtk.ScrolledWindow()
@@ -114,9 +118,12 @@ class WidgetChooser(Gtk.Popover):
     def populate(self, categories):
 
         for category, packages in sorted(categories.items()):
-            section = Section(category)
-            self.box.pack_start(section, False, False, 0)
+            expander = Expander(category)
+            icon_vew = WidgetView()
+            expander.add(icon_vew)
+            self.box.pack_start(expander, False, False, 0)
 
+            count = 0
             for package, info in sorted(packages.items()):
                 name = info.get('name', package)
                 import_str = info['import_str']
@@ -130,40 +137,44 @@ class WidgetChooser(Gtk.Popover):
                 else:
                     image = self.image_missing
 
-                section.add_item(name, image, import_str)
+                icon_vew.add_item(name, image, import_str)
+                count += 1
+            expander.set_item_count(count)
 
 
-class Section(Gtk.Box):
-    def __init__(self, section_name='Unnamed'):
-        Gtk.HeaderBar.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+class Expander(Gtk.Box):
+    def __init__(self, title=''):
+        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
-        self.section_name = section_name
+        self.title = title
 
         self.arrow = Gtk.Arrow.new(Gtk.ArrowType.RIGHT, Gtk.ShadowType.NONE)
-        self.label = Gtk.Label(self.section_name)
+        self.title_label = Gtk.Label(self.title)
 
         # The section button
         self.button = Gtk.Button()
         self.button.get_style_context().add_class('flat')
         self.button.connect('clicked', self.on_button_clicked)
+        self.num_label = Gtk.Label()
+
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.pack_start(self.arrow, False, False, 0)
-        box.set_center_widget(self.label)
+        box.set_center_widget(self.title_label)
+        box.pack_end(self.num_label, False, False, 0)
+
         self.button.add(box)
 
-        self.label = Gtk.Label()
-        box.pack_end(self.label, False, False, 0)
-
         self.revealer = Gtk.Revealer()
-
-        self.view = WidgetView()
-        self.revealer.add(self.view)
+        self.revealer.get_style_context().add_class('expander')
 
         self.pack_start(self.button, False, False, 0)
         self.pack_start(self.revealer, False, False, 0)
 
-        self.count = 0
+    def add(self, widegt):
+        self.revealer.add(widegt)
 
+    def set_item_count(self, count):
+        self.num_label.set_text("({})".format(count))
 
     def on_button_clicked(self, widget):
         revealed = self.revealer.get_reveal_child()
@@ -172,13 +183,6 @@ class Section(Gtk.Box):
             self.arrow.set(Gtk.ArrowType.RIGHT, Gtk.ShadowType.NONE)
         else:
             self.arrow.set(Gtk.ArrowType.DOWN, Gtk.ShadowType.NONE)
-
-
-    def add_item(self, name, image, import_str):
-        self.view.model.append([name, image, import_str])
-        self.count += 1
-        self.label.set_text('({})'.format(self.count))
-
 
 
 class WidgetView(Gtk.IconView):
@@ -205,6 +209,9 @@ class WidgetView(Gtk.IconView):
 
         self.connect('focus-out-event', self.on_focus_out)
 
+    def add_item(self, name, image, import_str):
+        self.model.append([name, image, import_str])
+
     def on_focus_out(self, widget, event):
         self.unselect_all()
 
@@ -224,26 +231,30 @@ class ScreenEditor(Gtk.Box):
 
         self.set_spacing(5)
 
-        label = Gtk.Label('Screen Name')
-        self.pack_start(label, False, False, 0)
+        grid = Gtk.Grid()
+        grid. set_row_spacing(5)
 
+        grid.attach(Gtk.Label('Title', hexpand=True), 0 , 0 , 1 , 1)
         self.title_entry = entry_widgets.TextEntry()
-        self.pack_start(self.title_entry, False, False, 0)
         self.title_entry.connect('activate', self.on_title_entry_activated)
+        grid.attach(self.title_entry, 1, 0, 1, 1)
 
-        label = Gtk.Label('Screen Position')
-        self.pack_start(label, False, False, 0)
-
+        grid.attach(Gtk.Label('Position', hexpand=True), 0 , 1 , 1 , 1)
         self.pos_adj = Gtk.SpinButton.new_with_range(0, 10, 1)
         self.pos_adj.connect('value_changed', self.on_position_changed)
-        self.pack_start(self.pos_adj, False, False, 0)
+        grid.attach(self.pos_adj, 1, 1, 1, 1)
+
+        self.pack_start(grid, False, False, 0)
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.set_spacing(5)
+
+        # Add screen button
         add_btn = Gtk.Button.new_from_stock('gtk-add')
         add_btn.connect('clicked', self.on_add_screen_clicked)
 
-        delete_btn = Gtk.Button.new_from_stock('gtk-delete')
+        # Remove screen button
+        delete_btn = Gtk.Button.new_from_stock('gtk-remove')
         delete_btn.connect('clicked', self.on_delete_screen_clicked)
 
         box.pack_start(add_btn, True, True, 0)
@@ -257,7 +268,7 @@ class ScreenEditor(Gtk.Box):
         self.show_all()
 
     def on_add_screen_clicked(self, widegt):
-        self.screen_stack.add_screen('screen 1', 'testing')
+        self.screen_stack.add_screen('New Screen')
 
     def on_delete_screen_clicked(self, widegt):
         self.visible_child.destroy()
@@ -268,7 +279,6 @@ class ScreenEditor(Gtk.Box):
 
     def on_position_changed(self, widegt):
         pos = widegt.get_value_as_int()
-        print pos
         self.screen_stack.child_set_property(self.visible_child, 'position', pos)
 
     def on_stack_changed(self, stack, param):

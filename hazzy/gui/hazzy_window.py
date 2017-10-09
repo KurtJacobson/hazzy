@@ -60,6 +60,7 @@ class HazzyWindow(Gtk.Window):
         self.widget_chooser = WidgetChooser(self.screen_stack)
 
         self.edit_button = Gtk.MenuButton()
+        self.edit_button.set_can_focus(False)
         icon = Gtk.Image.new_from_icon_name('view-list-symbolic', Gtk.IconSize.MENU)
         self.edit_button.set_image(icon)
         self.edit_button.set_popover(self.widget_chooser)
@@ -159,8 +160,8 @@ class HazzyWindow(Gtk.Window):
                 screen_title = screen.get('title')
                 screen_pos = int(screen.get('position'))
 
-                self.screen_stack.add_screen(screen_name, screen_title)
-                self.screen_stack.set_position(screen_name, screen_pos)
+                self.screen_stack.add_screen(screen_title)
+                self.screen_stack.set_position(screen_pos)
 
                 # Add all the widgets
                 for widget in screen.iter('widget'):

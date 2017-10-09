@@ -24,30 +24,38 @@ class ScreenStack(Gtk.Stack):
         context.add_class("widget_stack")
 
         self.set_homogeneous(True)
-        self.set_transition_type(Gtk.StackTransitionType.NONE)
-        self.set_transition_duration(150)
+        self.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        self.set_transition_duration(300)
 
         self.current_screen = None
+        self.screen_count = 0
 
         self.show_all()
 
-    def add_screen(self, name=None, title=None):
-        if name is None:
-            screens = self.get_children()
-            for screen in screens:
-                print screen.name
+    def add_screen(self, title=None, switch_to=False):
 
-        new_screen = WidgetArea()
-        self.add_titled(new_screen, name, title or '')
-        self.current_screen = new_screen
+        screen = WidgetArea()
+        screen.show_all()
+
+        name = "screen{}".format(self.screen_count)
+
+        self.add_titled(screen, name, title or '')
+
+        if switch_to:
+            self.set_visible_child(self.current_screen)
+
+        self.current_screen = screen
+        self.screen_count += 1
+
+    def set_title(self, title):
+        self.child_set_property(self.current_screen, 'title', title)
+
+    def set_position(self, position):
+        self.child_set_property(self.current_screen, 'position', position)
 
     def place_widget(self, widget, x, y, w, h):
         self.current_screen.put(widget, x, y)
         widget.set_size_request(w, h)
-
-    def set_position(self, name, position):
-        screen = self.get_child_by_name(name)
-        self.child_set_property(screen, 'position', position)
 
     def show_screen(self, name):
         self.set_visible_child_name(name)
