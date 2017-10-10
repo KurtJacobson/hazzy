@@ -196,7 +196,6 @@ class HeaderBar(Gtk.HeaderBar):
             # Re-show the maximize button
             self.maximize_btn.show()
 
-
     def on_window_state_event(self, widget, event):
         # Listen to state event and track window state
         if self.window_fullscreen != bool(event.new_window_state & Gdk.WindowState.FULLSCREEN):

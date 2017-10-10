@@ -1,5 +1,0 @@
-name: 'Gcode View'
-module: 'gcodeview'
-class: 'GcodeViewWidget'
-image: 'gcodeview.png'
-size: [200, 260]

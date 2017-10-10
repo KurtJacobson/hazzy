@@ -1,5 +1,2 @@
 name: 'Tool Table'
-module: 'tool_table'
-class: 'ToolTable'
 image: 'tooltable.png'
-size: [500, 300]

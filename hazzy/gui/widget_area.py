@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os
+import importlib
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -9,7 +11,6 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
-from widget_manager import WidgetManager
 from widget_window import WidgetWindow
 
 # Grid size in pixels used for "Snap to Grid"
@@ -51,9 +52,6 @@ class WidgetArea(Gtk.Fixed):
         self.drag_dest_set_target_list(None)
         self.drag_dest_add_text_targets()
 
-        # Used to find widget info and initialize widget object
-        self.widget_manager = WidgetManager()
-
         # Initial event positions
         self.initial_x = 0
         self.initial_y = 0
@@ -75,22 +73,14 @@ class WidgetArea(Gtk.Fixed):
         # Get the widget package name from the drop data
         package = data.get_text()
 
-        # Get the widget object and some useful data from WidgetManager
-        widget, title, size = self.widget_manager.get_widget(package)
+        # Create a new WidgetWindow object containing the widget
+        widget_window = WidgetWindow(package)
 
         # Determine reasonable values for the initial size
-        min_size = widget.get_preferred_size()[0]
-        min_w, min_h = min_size.width, min_size.height
+        size = widget_window.get_preferred_size()[0]
 
-        # Create a new WidgetWindow object containing the widget
-        widget_window = WidgetWindow(package, widget, title)
-
-        # Use max of preferred size or size specified in the widget.info file
-        w = max(size[0], min_w)
-        h = max(size[1], min_h)
-
-        # Set the initial size
-        widget_window.set_size_request(w, h)
+        w = size.width + GRID_SIZE / 2 
+        h = size.height + GRID_SIZE / 2 
 
         # Calculate position so widget drops "centered" under cursor
         x = x - w / 2
@@ -99,22 +89,27 @@ class WidgetArea(Gtk.Fixed):
         # Add widget_window to WidgetArea (self)
         self.put(widget_window, x, y)
 
+        # "Snap to Grid"
+        widget_window.set_size_request(w, h)
+
         # Snap to closest grid
         self.child_snap_to_grid(widget_window)
+
+        # ToDo Don't let widget be resized small then
+        min_w = widget_window.get_size_request().width
+        min_h = widget_window.get_size_request().height
 
 
     def child_snap_to_grid(self, widget):
         '''Snap widget position and size to closest grid.'''
-
-        #FIXME this does not seem to work. Why??
 
         # Get initial widget position
         x = self.child_get_property(widget, 'x')
         y = self.child_get_property(widget, 'y')
 
         # Get initial widget height
-        w = widget.get_size_request().width + GRID_SIZE / 2
-        h = widget.get_size_request().height + GRID_SIZE / 2
+        w = widget.get_size_request().width  #+ GRID_SIZE / 2
+        h = widget.get_size_request().height #+ GRID_SIZE / 2
 
         # Calculate the closest position that is a multiple of GRID_SIZE
         x = int(round(float(x) / GRID_SIZE)) * GRID_SIZE
@@ -238,19 +233,7 @@ class WidgetArea(Gtk.Fixed):
 
 
     def child_move_end(self, widget):
-
-        # Get the final position of the widget in the WidgetArea
-        x = self.child_get_property(widget, 'x')
-        y = self.child_get_property(widget, 'y')
-
-        # Calculate closest position that is a multiple of GRID_SIZE
-        x = int(round(float(x) / GRID_SIZE)) * GRID_SIZE
-        y = int(round(float(y) / GRID_SIZE)) * GRID_SIZE
-
-        # "Snap to grid"
-        self.child_set_property(widget, 'x', x)
-        self.child_set_property(widget, 'y', y)
-
+        self.child_snap_to_grid(widget)
 
 #===================================
 #  Child Drag Resize
@@ -311,14 +294,4 @@ class WidgetArea(Gtk.Fixed):
 
 
     def child_resize_end(self, widget):
-
-        # Get the final width and height
-        w = widget.get_allocation().width
-        h = widget.get_allocation().height
-
-        # Calculate closest w and h that are a multiple of GRID_SIZE
-        w = int(round(float(w) / GRID_SIZE)) * GRID_SIZE
-        h = int(round(float(h) / GRID_SIZE)) * GRID_SIZE
-
-        # "Snap to grid"
-        widget.set_size_request(w, h)
+        self.child_snap_to_grid(widget)
