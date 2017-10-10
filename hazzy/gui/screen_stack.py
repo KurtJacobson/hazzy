@@ -19,10 +19,6 @@ class ScreenStack(Gtk.Stack):
     def __init__(self):
         Gtk.Stack.__init__(self)
 
-        # Add style class
-        context = self.get_style_context()
-        context.add_class("widget_stack")
-
         self.set_homogeneous(True)
         self.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.set_transition_duration(300)
