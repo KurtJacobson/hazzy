@@ -43,7 +43,7 @@ class ScreenStack(Gtk.Stack):
         self.child_set_property(self.get_visible_child(), 'title', title)
 
     def set_visible_child_position(self, position):
-        self.child_set_property(self.visible_child, 'position', position)
+        self.child_set_property(self.get_visible_child(), 'position', position)
 
     def place_widget(self, screen, widget, x, y, w, h):
         screen.put(widget, x, y)
