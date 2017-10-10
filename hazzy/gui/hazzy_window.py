@@ -131,6 +131,8 @@ class HazzyWindow(Gtk.Window):
     def load_from_xml(self):
 
         if not os.path.exists(self.xml_file):
+            # Add an initial screen to get started
+            self.screen_stack.add_screen('New Screen')
             return
 
         try:
@@ -177,6 +179,9 @@ class HazzyWindow(Gtk.Window):
                         log.error('The package "{}" could not be imported'.format(package))
                         continue
 
+        if not self.screen_stack.get_children():
+            # Add an initial screen to get started
+            self.screen_stack.add_screen('New Screen')
 
     def save_to_xml(self):
 
