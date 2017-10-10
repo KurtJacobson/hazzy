@@ -275,33 +275,21 @@ class ScreenEditor(Gtk.Box):
 
         self.pack_start(box, False, False, 0)
 
-#        self.screen_stack.connect("notify::visible-child", self.on_stack_changed)
-
         self.show_all()
 
     def on_add_screen_clicked(self, widegt):
         self.screen_stack.add_screen('New Screen')
 
     def on_delete_screen_clicked(self, widegt):
-        self.screen_stack.remove_current_screen()
+        self.screen_stack.remove_visible_child()
 
     def on_title_entry_activated(self, widegt):
         title = self.title_entry.get_text()
-        self.screen_stack.set_current_title(title)
+        self.screen_stack.set_visible_child_title(title)
 
     def on_position_changed(self, widegt):
         pos = widegt.get_value_as_int()
-        self.screen_stack.set_position(pos)
-
-    def on_stack_changed(self, stack, param):
-
-        self.visible_child = stack.get_visible_child()
-
-        title = self.screen_stack.child_get_property(self.visible_child, 'title')
-        self.title_entry.set_text(title)
-
-        pos = stack.child_get_property(self.visible_child, 'position')
-        self.pos_adj.set_value(pos)
+        self.screen_stack.set_visible_child_position(pos)
 
 
 if __name__ == "__main__":

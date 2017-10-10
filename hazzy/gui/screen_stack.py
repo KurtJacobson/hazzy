@@ -23,39 +23,28 @@ class ScreenStack(Gtk.Stack):
         self.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.set_transition_duration(300)
 
-        self.current_screen = None
         self.screen_count = 0
 
         self.show_all()
 
-    def add_screen(self, title=None, switch_to=False):
-
+    def add_screen(self, title=None):
         screen = WidgetArea()
         screen.show_all()
 
         name = "screen{}".format(self.screen_count)
-
-        self.add_titled(screen, name, title or '')
-
-        if switch_to:
-            self.set_visible_child(self.current_screen)
-
-        self.current_screen = screen
+        self.add_titled(screen, name, title or 'New Screen')
         self.screen_count += 1
+        return screen
 
-    def remove_current_screen(self):
-        self.current_screen.destroy()
+    def remove_visible_child(self):
+        self.get_visible_child().destroy()
 
-    def set_current_title(self, title):
-        self.child_set_property(self.current_screen, 'title', title)
+    def set_visible_child_title(self, title):
+        self.child_set_property(self.get_visible_child(), 'title', title)
 
-    def set_position(self, position):
-        self.child_set_property(self.current_screen, 'position', position)
+    def set_visible_child_position(self, position):
+        self.child_set_property(self.visible_child, 'position', position)
 
-    def place_widget(self, widget, x, y, w, h):
-        self.current_screen.put(widget, x, y)
+    def place_widget(self, screen, widget, x, y, w, h):
+        screen.put(widget, x, y)
         widget.set_size_request(w, h)
-
-    def show_screen(self, name):
-        self.set_visible_child_name(name)
-        self.get_child_by_name(name).set_visible(True)

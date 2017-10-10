@@ -132,7 +132,7 @@ class HazzyWindow(Gtk.Window):
 
         if not os.path.exists(self.xml_file):
             # Add an initial screen to get started
-            self.screen_stack.add_screen('New Screen')
+            self.screen_stack.add_screen()
             return
 
         try:
@@ -158,11 +158,11 @@ class HazzyWindow(Gtk.Window):
 
             # Add screens
             for screen in window.iter('screen'):
-                screen_name = screen.get('name')
+#                screen_name = screen.get('name')
                 screen_title = screen.get('title')
-                screen_pos = int(screen.get('position'))
+#                screen_pos = int(screen.get('position'))
 
-                self.screen_stack.add_screen(screen_title)
+                screen_obj = self.screen_stack.add_screen(screen_title)
 #                self.screen_stack.set_position(screen_pos) # Not needed ??
 
                 # Add all the widgets
@@ -170,18 +170,20 @@ class HazzyWindow(Gtk.Window):
                     package = widget.get('package')
                     props = self.get_propertys(widget)
                     try:
-                        self.screen_stack.place_widget(WidgetWindow(package),
-                                                        int(props['x']),
-                                                        int(props['y']),
-                                                        int(props['w']),
-                                                        int(props['h']))
+                        widget_obj = WidgetWindow(package)
+                        self.screen_stack.place_widget(screen_obj,
+                                                    widget_obj,
+                                                    int(props['x']),
+                                                    int(props['y']),
+                                                    int(props['w']),
+                                                    int(props['h']))
                     except ImportError:
                         log.error('The package "{}" could not be imported'.format(package))
                         continue
 
         if not self.screen_stack.get_children():
             # Add an initial screen to get started
-            self.screen_stack.add_screen('New Screen')
+            self.screen_stack.add_screen()
 
     def save_to_xml(self):
 
@@ -211,14 +213,14 @@ class HazzyWindow(Gtk.Window):
         # Screens
         screens = self.screen_stack.get_children()
         for screen in screens:
-            screen_name = self.screen_stack.child_get_property(screen, 'name')
+#            screen_name = self.screen_stack.child_get_property(screen, 'name')
             screen_title = self.screen_stack.child_get_property(screen, 'title')
-            screen_pos = self.screen_stack.child_get_property(screen, 'position')
+#            screen_pos = self.screen_stack.child_get_property(screen, 'position')
 
             scr = etree.SubElement(win, "screen")
-            scr.set('name', screen_name)
+#            scr.set('name', screen_name)
             scr.set('title', screen_title)
-            scr.set('position', str(screen_pos))
+#            scr.set('position', str(screen_pos))
 
             # Widgets
             widgets = screen.get_children()
