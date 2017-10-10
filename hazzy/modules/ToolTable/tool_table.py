@@ -49,6 +49,9 @@ log = logger.get(__name__)
 
 
 class ToolTable(Gtk.Box):
+
+    title = "Tool Table"
+
     def __init__(self):
         Gtk.Box.__init__(self)
 
@@ -72,7 +75,6 @@ class ToolTable(Gtk.Box):
         self.tool_table = os.path.join(PYDIR, 'tool.tbl')
         self.load_tool_table()
         self.use_touchpad = False
-
 
 
 # =========================================================

@@ -13,15 +13,14 @@ from lxml import etree
 from datetime import datetime
 
 from utilities.constants import Paths
-
+from gui import about
 
 # Import our own modules
-from widget_manager import WidgetManager
 from widget_chooser import WidgetChooser
-from screen_chooser import ScreenChooser
 from widget_window import WidgetWindow
 from screen_stack import ScreenStack
 from widget_area import WidgetArea
+from header_bar import HeaderBar
 
 from utilities import ini_info
 
@@ -36,24 +35,13 @@ class HazzyWindow(Gtk.Window):
         # Get the XML file path
         self.xml_file = ini_info.get_xml_file()
 
-        self.widget_manager = WidgetManager()
-
-        self.is_fullscreen = False
-        self.is_maximized = False
-
-        gladefile = os.path.join(os.path.dirname(__file__), 'ui', 'titlebar.ui')
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file(gladefile)
-        self.builder.connect_signals(self)
-
-        self.connect('window-state-event', self.on_window_state_event)
         self.connect('button-press-event', self.on_button_press)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(self.box)
 
-        self.titlebar = self.builder.get_object('titlebar')
-        self.set_titlebar(self.titlebar)
+        self.header_bar = HeaderBar(self, title='Hazzy')
+        self.set_titlebar(self.header_bar)
 
         self.overlay = Gtk.Overlay()
         self.box.pack_start(self.overlay, True, True, 0)
@@ -61,28 +49,60 @@ class HazzyWindow(Gtk.Window):
         self.screen_stack = ScreenStack()
         self.overlay.add(self.screen_stack)
 
-        self.switcher = self.builder.get_object('stack_switcher')
-        self.switcher.set_stack(self.screen_stack)
+        self.stack_switcher = Gtk.StackSwitcher()
+        self.stack_switcher.set_stack(self.screen_stack)
+        self.header_bar.set_custom_title(self.stack_switcher)
 
-        self.widget_chooser = WidgetChooser()
-        self.overlay.add_overlay(self.widget_chooser)
+        self.menu_button = Gtk.MenuButton()
+        self.menu_button.set_popover(self.make_menu_popover())
+        self.header_bar.pack_start(self.menu_button)
 
-        self.screen_chooser = ScreenChooser()
-        self.overlay.add_overlay(self.screen_chooser)
+        self.edit_button = Gtk.Button()
+        self.edit_button.connect('clicked', self.on_edit_button_clicked)
+        self.edit_button.set_can_focus(False)
+        icon = Gtk.Image.new_from_icon_name('view-list-symbolic', Gtk.IconSize.MENU)
+        self.edit_button.set_image(icon)
+        self.header_bar.pack_start(self.edit_button)
+
+        self.widget_chooser = WidgetChooser(self.screen_stack)
+        self.widget_chooser.set_relative_to(self.edit_button)
 
         self.set_size_request(900, 600)
+
+    def make_menu_popover(self):
+        #Create a menu popover - very temporary, need to do something neater
+        popover = Gtk.PopoverMenu.new()
+
+        pbox = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
+        pbox.set_property('margin', 10)
+        popover.add(pbox)
+
+        edit = Gtk.CheckButton.new()
+        edit.set_label("Edit Layout")
+        edit.set_active(True)
+        edit.connect('toggled', self.on_edit_layout_toggled)
+        pbox.pack_start(edit, False, False, 5)
+
+        about = Gtk.ModelButton.new()
+        about.set_label("About")
+        about.connect('clicked', self.on_show_about_clicked)
+        pbox.pack_start(about, False, False, 5)
+
+        quit = Gtk.ModelButton.new()
+        quit.set_label("Quit")
+        quit.connect('clicked', Gtk.main_quit)
+
+        pbox.pack_start(quit, False, False, 5)
+        pbox.show_all()
+
+        return popover
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on non focusable area
         self.get_toplevel().set_focus(None)
 
-    def on_show_widget_choser_clicked(self, widget):
-        visible = self.widget_chooser.get_visible()
-        self.widget_chooser.set_visible(not visible)
-
-    def on_show_screen_choser_clicked(self, widget):
-        visible = self.screen_chooser.get_visible()
-        self.screen_chooser.set_visible(not visible)
+    def on_edit_button_clicked(self, widget):
+        self.widget_chooser.popup_()
 
     def on_edit_layout_toggled(self, widget):
         edit = widget.get_active()
@@ -92,6 +112,9 @@ class HazzyWindow(Gtk.Window):
             widgets = screen.get_children()
             for widget in widgets:
                 widget.show_overlay(edit)
+
+    def on_show_about_clicked(self, widegt):
+        about.About(self)
 
     def set_gtk_theme(self, theme=None):
         settings = self.get_settings()
@@ -108,6 +131,8 @@ class HazzyWindow(Gtk.Window):
     def load_from_xml(self):
 
         if not os.path.exists(self.xml_file):
+            # Add an initial screen to get started
+            self.screen_stack.add_screen('New Screen')
             return
 
         try:
@@ -132,33 +157,31 @@ class HazzyWindow(Gtk.Window):
             self.set_fullscreen(props['fullscreen'])
 
             # Add screens
-            screens = []
             for screen in window.iter('screen'):
-                screen_obj = WidgetArea()
                 screen_name = screen.get('name')
                 screen_title = screen.get('title')
                 screen_pos = int(screen.get('position'))
 
-                self.screen_stack.add_screen(screen_obj, screen_name, screen_title)
-                self.screen_stack.child_set_property(screen_obj, 'position', screen_pos)
-                screens.append(screen_name)
+                self.screen_stack.add_screen(screen_title)
+#                self.screen_stack.set_position(screen_pos) # Not needed ??
 
-                # Add widgets
+                # Add all the widgets
                 for widget in screen.iter('widget'):
                     package = widget.get('package')
-                    if not self.widget_manager.check_exist(package):
-                        log.error('The package "{}" could not be found'.format(package))
-                        continue
-                    obj, title, size = self.widget_manager.get_widget(package)
-                    wwindow = WidgetWindow(package, obj, title)
-
                     props = self.get_propertys(widget)
+                    try:
+                        self.screen_stack.place_widget(WidgetWindow(package),
+                                                        int(props['x']),
+                                                        int(props['y']),
+                                                        int(props['w']),
+                                                        int(props['h']))
+                    except ImportError:
+                        log.error('The package "{}" could not be imported'.format(package))
+                        continue
 
-                    screen_obj.put(wwindow, int(props['x']), int(props['y']))
-                    wwindow.set_size_request(int(props['w']), int(props['h']))
-
-        self.screen_chooser.view.fill_iconview(screens)
-
+        if not self.screen_stack.get_children():
+            # Add an initial screen to get started
+            self.screen_stack.add_screen('New Screen')
 
     def save_to_xml(self):
 
@@ -175,8 +198,8 @@ class HazzyWindow(Gtk.Window):
         win.set('name', 'Window 1')
         win.set('title', 'Main Window')
 
-        self.set_property(win, 'maximize', self.is_maximized)
-        self.set_property(win, 'fullscreen', self.is_fullscreen)
+        self.set_property(win, 'maximize', self.header_bar.window_maximized)
+        self.set_property(win, 'fullscreen', self.header_bar.window_fullscreen)
 
         x = self.get_position().root_x
         y = self.get_position().root_y
@@ -201,7 +224,7 @@ class HazzyWindow(Gtk.Window):
             widgets = screen.get_children()
             for widget in widgets:
                 wid = etree.SubElement(scr, "widget")
-                wid.set('package', widget.module_package)
+                wid.set('package', widget.package)
 
                 x = screen.child_get_property(widget, 'x')
                 y = screen.child_get_property(widget, 'y')
@@ -238,24 +261,3 @@ class HazzyWindow(Gtk.Window):
             self.fullscreen()
         else:
             self.unfullscreen()
-
-    def on_maximized_state_changed(self, maximized):
-        pass
-
-    def on_fullscreen_state_changed(self, fullscreen):
-        if fullscreen:
-            self.remove(self.titlebar)
-            self.box.pack_start(self.titlebar, False, False, 0)
-            self.box.reorder_child(self.titlebar, 0)
-        else:
-            self.box.remove(self.titlebar)
-            self.set_titlebar(self.titlebar)
-
-    def on_window_state_event(self, widget, event):
-        # Listen to state event and track window state
-        if self.is_fullscreen != bool(event.new_window_state & Gdk.WindowState.FULLSCREEN):
-            self.is_fullscreen = bool(event.new_window_state & Gdk.WindowState.FULLSCREEN)
-            self.on_fullscreen_state_changed(self.is_fullscreen)
-        if self.is_maximized != bool(event.new_window_state & Gdk.WindowState.MAXIMIZED):
-            self.is_maximized = bool(event.new_window_state & Gdk.WindowState.MAXIMIZED)
-            self.on_maximized_state_changed(self.is_maximized)

@@ -37,8 +37,7 @@
 
 .WidgetWindow .title_bar {
     background: @bg_color;
-    border-top-right-radius: 5px;
-    border-top-left-radius: 5px;
+    border-radius: 5px 5px 0 0;
 }
 
 .WidgetWindow .title_bar .image-button {
@@ -51,7 +50,7 @@
     border-style: solid;
     border-radius: 5px;
     background-image: radial-gradient(ellipse at center, 
-                                      alpha(@selected_bg_color, .2),
+                                      alpha(@selected_bg_color, .15),
                                       alpha(@selected_bg_color, .3));
 }
 
@@ -61,15 +60,15 @@
     border-style: solid;
     border-radius: 5px;
     background-image: radial-gradient(ellipse at center, 
-                                      alpha(@selected_bg_color, .4),
+                                      alpha(@selected_bg_color, .3),
                                       alpha(@selected_bg_color, .6));
 }
 
-.WidgetChooser {
-    background-color: rgba(.5, .5, .5, .5);
-}
+/*.WidgetChooser {*/
+/*    background-color: rgba(.5, .5, .5, .5);*/
+/*}*/
 
-.widget_stack {
+window {
 /*    background-color: #555753;*/
     background: linear-gradient(153deg, #151515, #151515 5px, transparent 5px) 0 0,
                 linear-gradient(333deg, #151515, #151515 5px, transparent 5px) 10px 5px,
@@ -105,6 +104,12 @@
 
 .DroEntry image.left {
     color: @text_error;
+}
+
+
+.TouchPad button {
+    padding: 2px;
+    font-size: 20px;
 }
 
 /***************

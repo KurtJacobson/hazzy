@@ -1,5 +1,0 @@
-name: 'File Chooser'
-module: 'filechooser'
-class: 'FileChooser'
-image: 'filechooser.png'
-size: [400, 350]

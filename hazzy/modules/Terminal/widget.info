@@ -1,4 +1,0 @@
-name: 'Terminal'
-module: 'terminal'
-class: 'Terminal'
-image: 'terminal.png'
