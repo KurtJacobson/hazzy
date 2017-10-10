@@ -47,7 +47,10 @@ class ScreenStack(Gtk.Stack):
         self.current_screen = screen
         self.screen_count += 1
 
-    def set_title(self, title):
+    def remove_current_screen(self):
+        self.current_screen.destroy()
+
+    def set_current_title(self, title):
         self.child_set_property(self.current_screen, 'title', title)
 
     def set_position(self, position):

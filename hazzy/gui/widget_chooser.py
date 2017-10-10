@@ -27,18 +27,21 @@ class WidgetChooser(Gtk.Popover):
     def __init__(self, screen_stack):
         Gtk.Popover.__init__(self)
 
+        self.screen_stack = screen_stack
+
         self.set_can_focus(False)
         self.set_can_default(False)
         self.set_vexpand(True)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        screen_editor = ScreenEditor(screen_stack)
-        screen_editor_expander = Expander('Screen Settings')
-        screen_editor_expander.add(screen_editor)
-        self.box.pack_start(screen_editor_expander, False, False, 0)
+        # Screen title / position editor
+        self.screen_editor = ScreenEditor(self.screen_stack)
+        self.screen_editor_expander = Expander('Screen Settings')
+        self.screen_editor_expander.add(self.screen_editor)
+        self.box.pack_start(self.screen_editor_expander, False, False, 0)
 
-        # Scrolled Window
+        # Scrolled Window for widgets
         self.scrolled = Gtk.ScrolledWindow()
         self.scrolled.set_propagate_natural_width(True)
         self.scrolled.set_overlay_scrolling(True)
@@ -49,9 +52,10 @@ class WidgetChooser(Gtk.Popover):
         self.add(self.scrolled)
 
         self.image_missing = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
-
         self.get_widgets()
 
+        # FixMe this is needed to keep the popover from showing at start
+        # but make it so the children will show when it pops up
         self.show_all()
         self.hide()
 
@@ -140,6 +144,14 @@ class WidgetChooser(Gtk.Popover):
                 icon_vew.add_item(name, image, import_str)
                 count += 1
             expander.set_item_count(count)
+
+    def popup_(self):
+        child = self.screen_stack.get_visible_child()
+        title = self.screen_stack.child_get_property(child, 'title')
+        pos = self.screen_stack.child_get_property(child, 'position')
+        self.screen_editor.title_entry.set_text(title)
+        self.screen_editor.pos_adj.set_value(pos)
+        self.popup()
 
 
 class Expander(Gtk.Box):
@@ -263,7 +275,7 @@ class ScreenEditor(Gtk.Box):
 
         self.pack_start(box, False, False, 0)
 
-        self.screen_stack.connect("notify::visible-child", self.on_stack_changed)
+#        self.screen_stack.connect("notify::visible-child", self.on_stack_changed)
 
         self.show_all()
 
@@ -271,15 +283,15 @@ class ScreenEditor(Gtk.Box):
         self.screen_stack.add_screen('New Screen')
 
     def on_delete_screen_clicked(self, widegt):
-        self.visible_child.destroy()
+        self.screen_stack.remove_current_screen()
 
     def on_title_entry_activated(self, widegt):
         title = self.title_entry.get_text()
-        self.screen_stack.child_set_property(self.visible_child, 'title', title)
+        self.screen_stack.set_current_title(title)
 
     def on_position_changed(self, widegt):
         pos = widegt.get_value_as_int()
-        self.screen_stack.child_set_property(self.visible_child, 'position', pos)
+        self.screen_stack.set_position(pos)
 
     def on_stack_changed(self, stack, param):
 

@@ -57,14 +57,15 @@ class HazzyWindow(Gtk.Window):
         self.menu_button.set_popover(self.make_menu_popover())
         self.header_bar.pack_start(self.menu_button)
 
-        self.widget_chooser = WidgetChooser(self.screen_stack)
-
-        self.edit_button = Gtk.MenuButton()
+        self.edit_button = Gtk.Button()
+        self.edit_button.connect('clicked', self.on_edit_button_clicked)
         self.edit_button.set_can_focus(False)
         icon = Gtk.Image.new_from_icon_name('view-list-symbolic', Gtk.IconSize.MENU)
         self.edit_button.set_image(icon)
-        self.edit_button.set_popover(self.widget_chooser)
         self.header_bar.pack_start(self.edit_button)
+
+        self.widget_chooser = WidgetChooser(self.screen_stack)
+        self.widget_chooser.set_relative_to(self.edit_button)
 
         self.set_size_request(900, 600)
 
@@ -100,9 +101,8 @@ class HazzyWindow(Gtk.Window):
         # Remove focus when clicking on non focusable area
         self.get_toplevel().set_focus(None)
 
-    def on_show_widget_choser_clicked(self, widget):
-        visible = self.widget_chooser.get_visible()
-        self.widget_chooser.set_visible(not visible)
+    def on_edit_button_clicked(self, widget):
+        self.widget_chooser.popup_()
 
     def on_edit_layout_toggled(self, widget):
         edit = widget.get_active()
@@ -161,7 +161,7 @@ class HazzyWindow(Gtk.Window):
                 screen_pos = int(screen.get('position'))
 
                 self.screen_stack.add_screen(screen_title)
-                self.screen_stack.set_position(screen_pos)
+#                self.screen_stack.set_position(screen_pos) # Not needed ??
 
                 # Add all the widgets
                 for widget in screen.iter('widget'):
