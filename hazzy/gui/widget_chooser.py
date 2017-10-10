@@ -278,7 +278,7 @@ class ScreenEditor(Gtk.Box):
         self.show_all()
 
     def on_add_screen_clicked(self, widegt):
-        self.screen_stack.add_screen('New Screen')
+        self.screen_stack.add_screen_interactive()
 
     def on_delete_screen_clicked(self, widegt):
         self.screen_stack.remove_visible_child()
