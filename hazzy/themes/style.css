@@ -68,7 +68,7 @@
 /*    background-color: rgba(.5, .5, .5, .5);*/
 /*}*/
 
-.widget_stack {
+window {
 /*    background-color: #555753;*/
     background: linear-gradient(153deg, #151515, #151515 5px, transparent 5px) 0 0,
                 linear-gradient(333deg, #151515, #151515 5px, transparent 5px) 10px 5px,
