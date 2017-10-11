@@ -28,7 +28,6 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Gdk
-from gi.repository import GtkSource
 
 # Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -37,6 +36,9 @@ if not HAZZYDIR in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 UI = os.path.join(PYDIR, 'ui', 'gcode_view.ui')
+
+
+from Setup.FileChooser.filechooser import FileChooser
 
 # Import our own modules
 from gcode_view import GcodeView, GcodeMap
@@ -54,36 +56,38 @@ class GcodeEditor(Gtk.Box):
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(UI)
-
         self.builder.connect_signals(self)
 
         main = self.builder.get_object('main')
-
         self.add(main)
 
-        view = GcodeView()
-        buf = view.get_buffer()
-        buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
-        view.highlight_line(3, 'motion')
+        self.stack = self.builder.get_object('stack')
 
-        scroll_window = self.builder.get_object('scrolled_window')
-        scroll_window.add(view)
+        self.file_chooser = FileChooser()
+        self.file_chooser.show_all()
+        self.stack.add_named(self.file_chooser, 'file_chooser_page')
+
+        self.gcode_view_page = self.builder.get_object('gcode_view_page')
+
+        self.gcode_view = GcodeView()
+        self.buf = self.gcode_view.get_buffer()
+        self.buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
+        self.gcode_view.highlight_line(3, 'motion')
+
+        self.scroll_window = self.builder.get_object('scrolled_window')
+        self.scroll_window.add(self.gcode_view)
+
+        self.map_scrolled = self.builder.get_object('source_map_scrolled_window')
+        self.source_map = GcodeMap()
+        self.source_map.set_view(self.gcode_view)
+        self.map_scrolled.add(self.source_map)
 
 
-        map_scrolled = self.builder.get_object('source_map_scrolled_window')
+    def on_open_radiobutton_clicked(self, widegt):
+        self.stack.set_visible_child(self.file_chooser)
 
-        source_map = GcodeMap()
-        source_map.set_view(view)
-
-        map_scrolled.add(source_map)
-
-#        scrolled.connect('button-press-event', self.on_button_press)
-
-#        scrolled.set_hexpand(True)
-#        scrolled.set_vexpand(True)
-
-#        self.add(scrolled)
-#        self.show_all()
+    def on_edit_radiobutton_clicked(self, widegt):
+        self.stack.set_visible_child(self.gcode_view_page)
 
     # The GtkSource deos not return True after handaling and button
     # press, so we have to do so here so the hanler in the WidgetWindow

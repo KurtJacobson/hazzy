@@ -41,6 +41,7 @@ class GcodeMap(GtkSource.Map):
     def __init__(self):
         GtkSource.Map.__init__(self)
 
+        self.set_vexpand(True)
         self.props.font_desc = Pango.FontDescription('1')
 
 
@@ -48,6 +49,9 @@ class GcodeView(GtkSource.View):
 
     def __init__(self):
         GtkSource.View.__init__(self)
+
+        self.set_hexpand(True)
+        self.set_vexpand(True)
 
         # create buffer
         self.buf = self.get_buffer()
@@ -168,16 +172,22 @@ def demo():
     view.highlight_line(3, None)
 
     scrolled = Gtk.ScrolledWindow()
+    scrolled.set_hexpand(True)
     scrolled.add(view)
+
+    view_map = GcodeMap()
+    view_map.set_view(view)
+
+    box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+    box.pack_start(scrolled, True, True, 0)
+    box.pack_start(Gtk.Separator(), False, False, 0)
+    box.pack_start(view_map, False, False, 0)
 
     win = Gtk.Window()
     win.set_default_size(400, 300)
-    win.add(scrolled)
+    win.add(box)
 
     win.connect('destroy', Gtk.main_quit)
-
-    file = Gio.File.new_for_path('/home/kurt/Desktop/theme.py')
-    print file. get_path()
 
     win.show_all()
     Gtk.main()
