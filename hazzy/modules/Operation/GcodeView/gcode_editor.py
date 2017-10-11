@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #   Copyright (c) 2017 Kurt Jacobson
-#       <kurtcjacobson@gmail.com>
+#      <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #
@@ -24,7 +24,6 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-gi.require_version('GtkSource', '3.0')
 
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -45,27 +44,31 @@ from gcode_view import GcodeView
 #log = logger.get("HAZZY.GCODEVIEW")
 
 
-class GcodeViewWidget(Gtk.Box):
+class GcodeEditor(Gtk.Box):
 
     def __init__(self):
         Gtk.Box.__init__(self)
 
         self.set_size_request(200, 160)
 
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file(UI)
-        self.builder.connect_signals(self)
-
-        self.add(self.builder.get_object('main'))
-        self.scrolled = self.builder.get_object('gcode_scroller')
-
-        self.gcode_view = GcodeView(preview=True)
-        buf = self.gcode_view.get_buffer()
+        view = GcodeView()
+        buf = view.get_buffer()
         buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
-        self.gcode_view.highlight_line(3, 'motion')
+        view.highlight_line(3, 'motion')
 
-        self.scrolled.add(self.gcode_view)
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.add(view)
 
+        scrolled.connect('button-press-event', self.on_button_press)
+
+        scrolled.set_hexpand(True)
+        scrolled.set_vexpand(True)
+
+        self.add(scrolled)
         self.show_all()
 
-
+    # The GtkSource deos not return True after handaling and button
+    # press, so we have to do so here so the hanler in the WidgetWindow
+    # and in the HazzyWindow do not remove the focus
+    def on_button_press(self, widget, event):
+        return True
