@@ -27,6 +27,7 @@ gi.require_version('GtkSource', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import Gio
 from gi.repository import GtkSource
 
 # Set up paths
@@ -166,6 +167,9 @@ def demo():
     win.add(scrolled)
 
     win.connect('destroy', Gtk.main_quit)
+
+    file = Gio.File.new_for_path('/home/kurt/Desktop/theme.py')
+    print file. get_path()
 
     win.show_all()
     Gtk.main()

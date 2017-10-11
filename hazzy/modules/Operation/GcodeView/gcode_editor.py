@@ -51,24 +51,33 @@ class GcodeEditor(Gtk.Box):
 
         self.set_size_request(200, 160)
 
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(UI)
+
+        self.builder.connect_signals(self)
+
+        main = self.builder.get_object('main')
+
+        self.add(main)
+
         view = GcodeView()
         buf = view.get_buffer()
         buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
         view.highlight_line(3, 'motion')
 
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.add(view)
+        scroll_window = self.builder.get_object('scrolled_window')
+        scroll_window.add(view)
 
-        scrolled.connect('button-press-event', self.on_button_press)
+#        scrolled.connect('button-press-event', self.on_button_press)
 
-        scrolled.set_hexpand(True)
-        scrolled.set_vexpand(True)
+#        scrolled.set_hexpand(True)
+#        scrolled.set_vexpand(True)
 
-        self.add(scrolled)
-        self.show_all()
+#        self.add(scrolled)
+#        self.show_all()
 
     # The GtkSource deos not return True after handaling and button
     # press, so we have to do so here so the hanler in the WidgetWindow
     # and in the HazzyWindow do not remove the focus
-    def on_button_press(self, widget, event):
+    def on_scrolled_window_button_press(self, widget, event):
         return True
