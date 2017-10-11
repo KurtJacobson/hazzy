@@ -28,6 +28,7 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import GtkSource
 
 # Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -38,7 +39,7 @@ if not HAZZYDIR in sys.path:
 UI = os.path.join(PYDIR, 'ui', 'gcode_view.ui')
 
 # Import our own modules
-from gcode_view import GcodeView
+from gcode_view import GcodeView, GcodeMap
 
 # Setup logger
 #log = logger.get("HAZZY.GCODEVIEW")
@@ -67,6 +68,14 @@ class GcodeEditor(Gtk.Box):
 
         scroll_window = self.builder.get_object('scrolled_window')
         scroll_window.add(view)
+
+
+        map_scrolled = self.builder.get_object('source_map_scrolled_window')
+
+        source_map = GcodeMap()
+        source_map.set_view(view)
+
+        map_scrolled.add(source_map)
 
 #        scrolled.connect('button-press-event', self.on_button_press)
 

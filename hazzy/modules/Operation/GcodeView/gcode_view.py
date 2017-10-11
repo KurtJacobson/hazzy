@@ -28,12 +28,20 @@ gi.require_version('GtkSource', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
+from gi.repository import Pango
 from gi.repository import GtkSource
 
 # Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 LANGDIR = os.path.join(PYDIR, 'gcode_highlight', "language-specs")
 STYLEDIR = os.path.join(PYDIR, 'gcode_highlight', "styles")
+
+
+class GcodeMap(GtkSource.Map):
+    def __init__(self):
+        GtkSource.Map.__init__(self)
+
+        self.props.font_desc = Pango.FontDescription('1')
 
 
 class GcodeView(GtkSource.View):
