@@ -47,10 +47,10 @@ from gcode_view import GcodeView, GcodeMap
 #log = logger.get("HAZZY.GCODEVIEW")
 
 
-class GcodeEditor(Gtk.Box):
+class GcodeEditor(Gtk.Bin):
 
     def __init__(self):
-        Gtk.Box.__init__(self)
+        Gtk.Bin.__init__(self)
 
         self.set_size_request(200, 160)
 
@@ -64,6 +64,7 @@ class GcodeEditor(Gtk.Box):
         self.stack = self.builder.get_object('stack')
 
         self.file_chooser = FileChooser()
+        self.file_chooser.connect('file-activated', self.on_file_activated)
         self.file_chooser.show_all()
         self.stack.add_named(self.file_chooser, 'file_chooser_page')
 
@@ -82,12 +83,26 @@ class GcodeEditor(Gtk.Box):
         self.source_map.set_view(self.gcode_view)
         self.map_scrolled.add(self.source_map)
 
+        self.open_radiobutton = self.builder.get_object('open_radiobutton')
+        self.edit_radiobutton = self.builder.get_object('edit_radiobutton')
 
-    def on_open_radiobutton_clicked(self, widegt):
-        self.stack.set_visible_child(self.file_chooser)
+    def on_run_button_toggled(self, widegt):
+        self.gcode_view.set_editable(False)
+        print 'Run Button toggled'
 
-    def on_edit_radiobutton_clicked(self, widegt):
+    def on_edit_button_toggled(self, widegt):
         self.stack.set_visible_child(self.gcode_view_page)
+        self.gcode_view.set_editable(True)
+        print 'Edit Button Toggled'
+
+    def on_open_button_toggled(self, widegt):
+        self.stack.set_visible_child(self.file_chooser)
+        print 'Open Button Toggled'
+
+    def on_file_activated(self, widegt, path):
+        self.gcode_view.load_file(path)
+        self.stack.set_visible_child(self.gcode_view_page)
+        self.edit_radiobutton.set_active(True)
 
     # The GtkSource deos not return True after handaling and button
     # press, so we have to do so here so the hanler in the WidgetWindow
