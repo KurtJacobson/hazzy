@@ -50,14 +50,14 @@ from userdirectories import UserDirectories
 from bookmarks import BookMarks
 from icons import Icons
 
-#from hazzy.modules.dialogs.dialogs import Dialogs, DialogTypes
+from widget_factory.TouchPads import keyboard
 
 # Setup logging
 from utilities import logger
 log = logger.get(__name__)
 
 
-class FileChooser(Gtk.Box):
+class FileChooser(Gtk.Bin):
     __gtype_name__ = 'FileChooser'
     __gsignals__ = {
         'file-activated': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
@@ -68,10 +68,11 @@ class FileChooser(Gtk.Box):
     }
 
     def __init__(self):
-        Gtk.Box.__init__(self)
+        Gtk.Bin.__init__(self)
 
         # Glade setup
         self.builder = Gtk.Builder()
+        self.widgets = self.builder.get_object
         self.builder.add_from_file(os.path.join(UIDIR, "filechooser.glade"))
         self.builder.connect_signals(self)
 
@@ -92,9 +93,10 @@ class FileChooser(Gtk.Box):
         self.file_treeview = self.builder.get_object("file_treeview")
         self.bookmark_listbox = self.builder.get_object("bookmark_listbox")
 
-        # Enable DnD TODO DnD is not implemented yet
-        self.file_treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, \
-                                                    [('text/plain', 0, 0)], Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
+        # Enable DnD ToDo implement DnD
+        self.file_treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK,
+                                    [('text/plain', 0, 0)], 
+                                    Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
         self.file_treeview.enable_model_drag_dest([('text/plain', 0, 0)], \
                                                   Gdk.DragAction.COPY)
 
@@ -223,7 +225,7 @@ class FileChooser(Gtk.Box):
         self.current_selection = None
 
         if path:
-            self._cur_dir = path #os.path.realpath(path)
+            self._cur_dir = path
 
             # Reset scrollbars since display has changed
             self.file_vadj.set_value(0)
@@ -265,6 +267,7 @@ class FileChooser(Gtk.Box):
             model.append([0, icon, fname, size, date])
 
         self._update_nav_buttons()
+        self.widgets('edit_button').set_sensitive(False)
 
     def _get_file_data(self, fpath):
         size = os.path.getsize(fpath)
@@ -280,19 +283,39 @@ class FileChooser(Gtk.Box):
         date_str = datetime.fromtimestamp(tstamp).strftime("%m/%d/%y %X")
         return size_str, date_str
 
+    def _count_lines(self, filename):
+        import time
+        lines = 0
+        buf_size = 1024 * 1024
+        start = time.time()
+        with open(filename) as fh:
+            read_f = fh.read
+            buf = read_f(buf_size)
+            while buf:
+                lines += buf.count('\n')
+                buf = read_f(buf_size)
+        print start - time.time()
+        return lines
+
     def on_select_toggled(self, widget, path):
         model = self.file_liststore
         model[path][0] = not model[path][0]
 
     def on_filechooser_treeview_cursor_changed(self, widget):
         path = widget.get_cursor()[0]
-        # Prevent emiting selection changed on double click
+        # Prevent emitting selection changed on double click
         if path == self.current_selection or path is None:
             return
         self.current_selection = path
         fname = self.file_liststore[path][2]
         fpath = os.path.join(self._cur_dir, fname)
         self.emit('selection-changed', fpath)
+        self.widgets('edit_button').set_sensitive(True)
+        self.widgets('cut_button').set_sensitive(True)
+        self.widgets('copy_button').set_sensitive(True)
+
+        if os.path.isfile(fpath):
+            print self._count_lines(fpath)
 
     def on_filechooser_treeview_row_activated(self, widget, path, colobj):
         fname = self.file_liststore[path][2]
@@ -301,12 +324,16 @@ class FileChooser(Gtk.Box):
             self.emit('file-activated', fpath)
         elif os.path.isdir(fpath):
             self._fill_file_liststore(fpath)
+        else:
+            # Probably does not exist, so reload
+            self._fill_file_liststore()
 
     def on_file_name_editing_started(self, renderer, entry, row):
-        self.emit('filename-editing-started', entry)
+        keyboard.show(entry)
 
     def on_file_name_edited(self, widget, row, new_name):
         model = self.file_liststore
+        model[row][0] = 0
         old_name = model[row][2]
         old_path = os.path.join(self._cur_dir, old_name)
         new_path = os.path.join(self._cur_dir, new_name)
@@ -331,11 +358,7 @@ class FileChooser(Gtk.Box):
     #   Methods to be called externally
     # =======================================
 
-    # Get filechooser object to embed in main window
-    def get_filechooser_widget(self):
-        return self.builder.get_object('filechooser')
-
-    # Add filter by name and list of extensions to display
+    # Add filter by name
     def add_filter(self, name, ext):
         self._filters[name] = ext
 
@@ -412,14 +435,13 @@ class FileChooser(Gtk.Box):
 
     # Get paths for selected
     def get_selected(self):
-        model = self.file_liststore
+        model, rows = self.file_treeview.get_selection().get_selected_rows()
+        if not rows:
+            return
         paths = []
-        for row in range(len(model)):
-            if model[row][0] == 1:
-                fpath = os.path.join(self._cur_dir, model[row][2])
-                paths.append(fpath)
-        if len(paths) == 0:
-            return None
+        for row in rows:
+            fpath = os.path.join(self._cur_dir, model[row.to_string()][2])
+            paths.append(fpath)
         return paths
 
     # Check checkbox at file path
@@ -492,18 +514,19 @@ class FileChooser(Gtk.Box):
         self._fill_file_liststore(path)
 
     # Cut selected files
-    def cut_selected(self):
+    def cut_selected(self, widegt=None, data=None):
         files = self.get_selected()
-        if files is None:
+        if not files:
             log.error("No files selected to cut")
             return False
         self._files = files
         self._copy = False
         log.debug("Files to cut: {}".format(files))
+        self.widgets('paste_button').set_sensitive(True)
         return True
 
     # Copy selected files
-    def copy_selected(self):
+    def copy_selected(self, widegt=None, data=None):
         files = self.get_selected()
         if files is None:
             log.error("No files selected to copy")
@@ -511,10 +534,11 @@ class FileChooser(Gtk.Box):
         self._files = files
         self._copy = True
         log.debug("Files to copy: {}".format(files))
+        self.widgets('paste_button').set_sensitive(True)
         return True
 
     # Paste previously cut/copied files to current directory
-    def paste(self):
+    def paste(self, widegt=None, data=None):
         src_list = self._files
         if src_list is None:
             return False
@@ -527,6 +551,7 @@ class FileChooser(Gtk.Box):
                 self._move_file(src, dst_dir)
             self._files = None
         self._fill_file_liststore()
+        self.widgets('paste_button').set_sensitive(False)
         return True
 
     # Save file as, if path is specified it will be saved in that directory
@@ -547,7 +572,7 @@ class FileChooser(Gtk.Box):
         tree.set_cursor(row, focus_column, True)
 
     # Create a new folder in the current directory
-    def new_folder(self):
+    def new_folder(self, widegt=None, data=None):
         model = self.file_liststore
         tree = self.file_treeview
 
@@ -559,6 +584,7 @@ class FileChooser(Gtk.Box):
 
         path = os.path.join(self._cur_dir, name)
         os.makedirs(path)
+
         self._fill_file_liststore()
 
         for row in range(len(model)):
@@ -568,9 +594,41 @@ class FileChooser(Gtk.Box):
         model[row][0] = 1
         tree.set_cursor(row, focus_column, True)
 
+    # Create a new folder in the current directory
+    def new_file(self, widegt=None, data=None):
+        model = self.file_liststore
+        tree = self.file_treeview
+
+        name = "New file"
+        count = 1
+        while os.path.exists(os.path.join(self._cur_dir, name)):
+            name = 'New Folder {0}'.format(count)
+            count += 1
+
+        path = os.path.join(self._cur_dir, name)
+        with open(path, 'w') as fh:
+            pass
+        self._fill_file_liststore()
+
+        for row in range(len(model)):
+            if model[row][2] == name:
+                break
+        focus_column = self.builder.get_object('col_file_name')
+        model[row][0] = 1
+        tree.set_cursor(row, focus_column, True)
+
+    def edit_selected(self, widget=None, data=None):
+        row = self.file_treeview.get_cursor()[0]
+        if not row:
+            return
+        model = self.file_liststore
+        tree = self.file_treeview
+        focus_column = self.builder.get_object('col_file_name')
+        model[row][0] = 1
+        tree.set_cursor(row, focus_column, True)
 
     # Move selected files to trash (see file_util code at end)
-    def delete_selected(self):
+    def delete_selected(self, widegt=None, data=None):
         paths = self.get_selected()
         if paths is None:
             return
