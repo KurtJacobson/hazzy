@@ -33,7 +33,7 @@
                 <property name="halign">center</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Unnamed</property>
-                <property name="ellipsize">end</property>
+                <property name="ellipsize">middle</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>

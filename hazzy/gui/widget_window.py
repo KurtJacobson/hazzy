@@ -29,7 +29,7 @@ class WidgetWindow(Gtk.EventBox):
         widget = getattr(module, 'Widget')()
 
         if hasattr(widget, 'title'):
-            # Use widget name attribute if specified
+            # Use widget title attribute if specified
             title = widget.title
         else:
             # Use the package name
@@ -77,7 +77,12 @@ class WidgetWindow(Gtk.EventBox):
         if hasattr(widget, 'on_settings_button_pressed'):
             self.title_bar_button.connect('clicked', widget.on_settings_button_pressed)
 
+        setattr(widget, 'widget_window', self)
+
         self.show_all()
+
+    def set_title(self, title):
+        self.title_bar_label.set_text(title)
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on WidgetWindow
