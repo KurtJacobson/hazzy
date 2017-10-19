@@ -75,6 +75,14 @@ def set_motion_mode(mode):
     command.traj_mode(mode)
     command.wait_complete()
 
+def load_file(fname):
+    if stat.file != "":
+        # Is this needed?
+        set_mode(linuxcnc.MODE_MDI)
+        set_mode(linuxcnc.MODE_AUTO)
+    command.program_open(fname)
+    log.debug("NGC file loaded: {0}".format(fname))
+
 def issue_mdi(mdi_command):
     '''Issue an MDI command if OK to do so.'''
     stat.poll()
