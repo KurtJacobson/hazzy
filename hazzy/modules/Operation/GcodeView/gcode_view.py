@@ -36,6 +36,9 @@ PYDIR = os.path.abspath(os.path.dirname(__file__))
 LANGDIR = os.path.join(PYDIR, 'gcode_highlight', "language-specs")
 STYLEDIR = os.path.join(PYDIR, 'gcode_highlight', "styles")
 
+from utilities import logger
+log = logger.get(__name__)
+
 
 class GcodeMap(GtkSource.Map):
     def __init__(self):

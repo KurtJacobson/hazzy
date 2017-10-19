@@ -18,9 +18,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
-import sys
 import shutil
 import gi
 
@@ -34,28 +32,23 @@ from gi.repository import Gdk
 from gi.repository import Gio
 
 from datetime import datetime
+from glob import glob
 
+from utilities import logger
+from widget_factory.TouchPads import keyboard
 
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
-UIDIR = os.path.join(PYDIR, 'ui')
-STYLEDIR = os.path.join(HAZZYDIR, 'hazzy', 'themes')
-
-# Import our own modules
+# Import our own file utility modules
 from move2trash import move2trash
 from userdirectories import UserDirectories
 from bookmarks import BookMarks
 from icons import Icons
 
-from widget_factory.TouchPads import keyboard
+# Set up paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+UIDIR = os.path.join(PYDIR, 'ui')
 
-# Setup logging
-from utilities import logger
+# Set up logging
 log = logger.get(__name__)
-
 
 class FileChooser(Gtk.Bin):
     __gtype_name__ = 'FileChooser'
@@ -72,9 +65,10 @@ class FileChooser(Gtk.Bin):
 
         # Glade setup
         self.builder = Gtk.Builder()
-        self.widgets = self.builder.get_object
         self.builder.add_from_file(os.path.join(UIDIR, "filechooser.glade"))
         self.builder.connect_signals(self)
+
+        self.builder.get_object = self.builder.get_object
 
         self.add(self.builder.get_object('filechooser'))
 
@@ -105,8 +99,7 @@ class FileChooser(Gtk.Bin):
         self.mounts.connect('mount-added', self.on_mount_added)
         self.mounts.connect('mount-removed', self.on_mount_removed)
 
-        # Initialize objects
-        #self.ok_cancel_dialog = Dialogs(DialogTypes.OK_CANCEL)
+        # Initialize helpers
         self.bookmarks = BookMarks()
         self.icons = Icons(Gtk.IconTheme.get_default())
 
@@ -135,13 +128,14 @@ class FileChooser(Gtk.Bin):
 
         self.show_all()
 
-
     # Have to do this once realized so sizes will have been allocated
     def on_filechooser_realize(self, widget):
         self._update_bookmarks()
         self._fill_file_liststore(self._cur_dir)
 
     def _init_nav_buttons(self):
+        # FixMe this needs a lot of work. Try to copy this implementation
+        # https://searchcode.com/codesearch/view/22668315/
         box = self.nav_btn_box
         box.get_style_context().add_class(Gtk.STYLE_CLASS_LINKED)
 
@@ -222,7 +216,7 @@ class FileChooser(Gtk.Bin):
     def _fill_file_liststore(self, path=None):
         model = self.file_liststore
         model.clear()
-        self.current_selection = None
+        self.selected_row = None
 
         if path:
             self._cur_dir = path
@@ -248,6 +242,7 @@ class FileChooser(Gtk.Bin):
                 folders.append(obj)
             elif os.path.isfile(path):
                 ext = os.path.splitext(obj)[1]
+                # ToDo Use glob to match extensions
                 if '*' in exts and not ext in self._hidden_exts:
                     files.append(obj)
                 elif '*{0}'.format(ext) in exts:
@@ -267,7 +262,7 @@ class FileChooser(Gtk.Bin):
             model.append([0, icon, fname, size, date])
 
         self._update_nav_buttons()
-        self.widgets('edit_button').set_sensitive(False)
+        self.builder.get_object('edit_button').set_sensitive(False)
 
     def _get_file_data(self, fpath):
         size = os.path.getsize(fpath)
@@ -302,17 +297,20 @@ class FileChooser(Gtk.Bin):
         model[path][0] = not model[path][0]
 
     def on_filechooser_treeview_cursor_changed(self, widget):
-        path = widget.get_cursor()[0]
+        row = widget.get_cursor()[0]
         # Prevent emitting selection changed on double click
-        if path == self.current_selection or path is None:
+        if row == self.selected_row or row is None:
             return
-        self.current_selection = path
-        fname = self.file_liststore[path][2]
+
+        self.selected_row = row
+
+        fname = self.file_liststore[row][2]
         fpath = os.path.join(self._cur_dir, fname)
         self.emit('selection-changed', fpath)
-        self.widgets('edit_button').set_sensitive(True)
-        self.widgets('cut_button').set_sensitive(True)
-        self.widgets('copy_button').set_sensitive(True)
+
+        self.builder.get_object('edit_button').set_sensitive(True)
+        self.builder.get_object('cut_button').set_sensitive(True)
+        self.builder.get_object('copy_button').set_sensitive(True)
 
         if os.path.isfile(fpath):
             print self._count_lines(fpath)
@@ -325,7 +323,7 @@ class FileChooser(Gtk.Bin):
         elif os.path.isdir(fpath):
             self._fill_file_liststore(fpath)
         else:
-            # Probably does not exist, so reload
+            # If neither, probably does not exist, so reload
             self._fill_file_liststore()
 
     def on_file_name_editing_started(self, renderer, entry, row):
@@ -522,7 +520,7 @@ class FileChooser(Gtk.Bin):
         self._files = files
         self._copy = False
         log.debug("Files to cut: {}".format(files))
-        self.widgets('paste_button').set_sensitive(True)
+        self.builder.get_object('paste_button').set_sensitive(True)
         return True
 
     # Copy selected files
@@ -534,7 +532,7 @@ class FileChooser(Gtk.Bin):
         self._files = files
         self._copy = True
         log.debug("Files to copy: {}".format(files))
-        self.widgets('paste_button').set_sensitive(True)
+        self.builder.get_object('paste_button').set_sensitive(True)
         return True
 
     # Paste previously cut/copied files to current directory
@@ -551,7 +549,7 @@ class FileChooser(Gtk.Bin):
                 self._move_file(src, dst_dir)
             self._files = None
         self._fill_file_liststore()
-        self.widgets('paste_button').set_sensitive(False)
+        self.builder.get_object('paste_button').set_sensitive(False)
         return True
 
     # Save file as, if path is specified it will be saved in that directory
