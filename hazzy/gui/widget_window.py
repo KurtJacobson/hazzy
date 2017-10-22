@@ -29,7 +29,7 @@ class WidgetWindow(Gtk.EventBox):
         self.package = package
 
         module = importlib.import_module(self.package)
-        widget = getattr(module, 'Widget')()
+        widget = getattr(module, 'Widget')(self)
 
         if hasattr(widget, 'title'):
             # Use widget title attribute if specified
@@ -92,15 +92,19 @@ class WidgetWindow(Gtk.EventBox):
         if hasattr(widget, 'on_settings_button_pressed'):
             self.title_bar_button.connect('clicked', widget.on_settings_button_pressed)
 
-        setattr(widget, 'widget_window', self)
-
         self.show_all()
 
     def set_title(self, title):
         self.title_bar_label.set_text(title)
 
-    def show_message(self, *args, **kwargs):
-        self.message_bar.show(*args, **kwargs)
+    def show_info(self, *args, **kwargs):
+        self.message_bar.show_info(*args, **kwargs)
+
+    def show_warning(self, *args, **kwargs):
+        self.message_bar.show_warning(*args, **kwargs)
+
+    def show_error(self, *args, **kwargs):
+        self.message_bar.show_error(*args, **kwargs)
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on WidgetWindow

@@ -28,6 +28,10 @@ class MessageBar(Gtk.Revealer):
         self.bar_style_context = self.bar.get_style_context()
         self.add(self.bar)
 
+        # Message Icon
+        self.icon = Gtk.Image()
+        self.bar.pack_start(self.icon, False, False, 0)
+
         # Message Label
         self.label = Gtk.Label('Info')
         self.label.set_margin_left(5)
@@ -45,20 +49,33 @@ class MessageBar(Gtk.Revealer):
     def close(self, widget=None):
         self.set_reveal_child(False)
 
-    def show(self, message='Undefined', kind=None, duration=None):
+    def show_info(self, message='Undefined', timeout=None):
         self.label.set_text(message)
-
-        if kind == MessageType.INFO:
-            self.bar_style_context.add_class('blue_bar')
-            self.button_style_context.add_class('blue_button')
-        elif kind == MessageType.WARNING:
-            self.bar_style_context.add_class('yellow_bar')
-            self.button_style_context.add_class('yellow_button')
-        else:
-            self.bar_style_context.add_class('red_bar')
-            self.button_style_context.add_class('red_button')
-
+        self.bar_style_context.add_class('blue_bar')
+        self.button_style_context.add_class('blue_button')
         self.set_reveal_child(True)
+        self.set_timout(timeout)
 
-        if duration:
-            GObject.timeout_add(duration * 1000, self.close)
+    def show_warning(self, message='Undefined', timeout=None):
+        self.label.set_text(message)
+        self.bar_style_context.add_class('yellow_bar')
+        self.button_style_context.add_class('yellow_button')
+        self.set_reveal_child(True)
+        self.set_timout(timeout)
+
+    def show_error(self, message='Undefined', timeout=None):
+        self.label.set_text(message)
+        self.bar_style_context.add_class('red_bar')
+        self.button_style_context.add_class('red_button')
+        self.set_reveal_child(True)
+        self.set_timout(timeout)
+
+    def show_question(self, message='Undefined'):
+        raise NotImplemented
+
+    def show_confirmation(selfm, message='Undefined'):
+        raise NotImplemented
+
+    def set_timout(self, timeout):
+        if timeout:
+            GObject.timeout_add(timeout * 1000, self.close)
