@@ -1,5 +1,7 @@
 @import url("/usr/share/themes/Adwaita/gtk-3.0/gtk.css");
 
+@import url('message_bar.css');
+
 /* Import colors from current theme */
 @define-color base_color @theme_base_color;
 @define-color bg_color @theme_bg_color;

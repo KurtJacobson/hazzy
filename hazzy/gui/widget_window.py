@@ -13,6 +13,9 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+from message_bar import MessageBar
+from utilities.constants import MessageType
+
 # Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 UI_FILE = os.path.join(PYDIR, 'ui', 'widget_window.ui')
@@ -59,7 +62,7 @@ class WidgetWindow(Gtk.EventBox):
         self.overlay.add_events(Gdk.EventMask.KEY_PRESS_MASK)
         self.overlay_style_context = self.overlay.get_style_context()
 
-        # The iner window, used only for getting the icon image
+        # The inner window, used only for getting the icon image
         self.window = builder.get_object('window')
 
         # TitleBar - the title bar at the top of the window
@@ -70,7 +73,19 @@ class WidgetWindow(Gtk.EventBox):
         #  WidgetBox - the box that the widget actually gets added to
         self.widget_box = builder.get_object('widget_box')
 
+        # MessageBar
+        self.message_bar = MessageBar()
+        self.widget_box.add_overlay(self.message_bar)
+
+
+        # Set up the WidgetWindow
         self.title_bar_label.set_text(title)
+
+        widget.set_margin_right(5)
+        widget.set_margin_left(5)
+        widget.set_margin_top(5)
+        widget.set_margin_bottom(5)
+
         self.widget_box.add(widget)
         self.add(self.widget_window)
 
@@ -83,6 +98,9 @@ class WidgetWindow(Gtk.EventBox):
 
     def set_title(self, title):
         self.title_bar_label.set_text(title)
+
+    def show_message(self, *args, **kwargs):
+        self.message_bar.show(*args, **kwargs)
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on WidgetWindow
