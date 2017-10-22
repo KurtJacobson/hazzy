@@ -1,6 +1,11 @@
 import os
 from linuxcnc import ini
 
+class DroType(enumerate):
+    ABS = 0
+    REL = 1
+    DTG = 2
+
 class Paths(enumerate):
 
     # Hazzy Paths

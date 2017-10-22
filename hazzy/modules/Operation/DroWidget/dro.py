@@ -18,6 +18,7 @@ from utilities import status
 from utilities import command
 from utilities import entry_eval
 from utilities import preferences as prefs
+from utilities.constants import DroType
 
 from widget_factory.TouchPads import keyboard
 
@@ -55,15 +56,15 @@ class AxisDro(Gtk.Grid):
             self.attach(label, 1, count, 1, 1)
 
             # G5x DRO
-            entry = G5xEntry(axis, DroEntry.DroType.REL)
+            entry = G5xEntry(axis, DroType.REL)
             self.attach(entry, 2, count, 1, 1)
 
             # ABS DRO
-            label = DroEntry(axis, DroEntry.DroType.ABS)
+            label = DroEntry(axis, DroType.ABS)
             self.attach(label, 3, count, 1, 1)
 
             # DTG DRO
-            label = DroEntry(axis, DroEntry.DroType.DTG)
+            label = DroEntry(axis, DroType.DTG)
             box = LabelCover()
             self.attach(box, 4, count, 1, 1)
             self.attach(label, 4, count, 1, 1)
@@ -88,11 +89,6 @@ class DroEntry(Gtk.Entry):
     ''' Base DRO entry class '''
 
     coords = machine_info.coordinates
-
-    class DroType:
-        ABS = 0
-        REL = 1
-        DTG = 2
 
     def __init__(self, axis_letter, dro_type=DroType.REL):
         Gtk.Entry.__init__(self)
