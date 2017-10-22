@@ -10,8 +10,6 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Pango
 
-PYDIR = os.path.join(os.path.dirname(__file__))
-
 from utilities import ini_info
 from utilities import machine_info
 from utilities import status
@@ -23,7 +21,7 @@ from utilities.constants import DroType
 from widget_factory.TouchPads import keyboard
 
 
-class AxisDro(Gtk.Grid):
+class Dro(Gtk.Grid):
 
     def __init__(self):
         Gtk.Grid.__init__(self)

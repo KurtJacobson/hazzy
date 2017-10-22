@@ -1,1 +1,1 @@
-from dro import AxisDro as Widget
+from dro import Dro as Widget
