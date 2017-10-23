@@ -211,7 +211,7 @@ def get_program_prefix():
             default_path = os.path.expanduser("~/")
     return default_path
 
-def get_file_ext():
+def get_file_extentions():
     file_ext = ini.findall('FILTER', 'PROGRAM_EXTENSION')
     if file_ext:
         ext_list = ["*.ngc"]

@@ -32,7 +32,6 @@ from gi.repository import Gio
 from gi.repository import GObject
 
 from datetime import datetime
-# from glob import glob <== ToDo Use glob for filter
 
 from utilities import logger
 from widget_factory.TouchPads import keyboard
@@ -90,7 +89,7 @@ class FileChooser(Gtk.Bin):
         self.file_treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK,
                                     [('text/plain', 0, 0)], 
                                     Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
-        self.file_treeview.enable_model_drag_dest([('text/plain', 0, 0)], \
+        self.file_treeview.enable_model_drag_dest([('text/plain', 0, 0)],
                                                   Gdk.DragAction.COPY)
 
         # Connect callbacks to VolumeMonitor
@@ -110,9 +109,9 @@ class FileChooser(Gtk.Bin):
 
         # Initialize variables
         self._cur_dir = desktop
-        self._old_dir = " "
+        self._old_dir = ''
         self._filters = {}
-        self._filter = ''
+        self._filter = None
         self._files = []
         self._show_hidden = False
         self._hidden_exts = ['.desktop']
@@ -219,33 +218,29 @@ class FileChooser(Gtk.Bin):
 
         if path:
             self._cur_dir = path
-
             # Reset scrollbars since display has changed
             self.file_vadj.set_value(0)
             self.file_hadj.set_value(0)
 
         files = []
         folders = []
-        if self._filter in self._filters:
+        if self._filter:
             exts = self._filters[self._filter]
         else:
             exts = '*' # Don't filter
-        dirs = os.listdir(self._cur_dir)
-        for obj in dirs:
-            if obj[0] == '.' and not self._show_hidden:
+        names = os.listdir(self._cur_dir)
+        for name in names:
+            if name[0] == '.' and not self._show_hidden:
                 continue
-            path = os.path.join(self._cur_dir, obj)
+            path = os.path.join(self._cur_dir, name)
             if os.path.islink(path):
                 path = os.readlink(path)
             if os.path.isdir(path):
-                folders.append(obj)
+                folders.append(name)
             elif os.path.isfile(path):
-                ext = os.path.splitext(obj)[1]
-                # ToDo Use glob to match extensions
-                if '*' in exts and not ext in self._hidden_exts:
-                    files.append(obj)
-                elif '*{0}'.format(ext) in exts:
-                    files.append(obj)
+                ext = os.path.splitext(name)[1]
+                if '*' in exts or ext in exts and not ext in self._hidden_exts:
+                    files.append(name)
 
         folders.sort(key=str.lower, reverse=False)
         for fname in folders:
@@ -392,28 +387,30 @@ class FileChooser(Gtk.Bin):
     # =======================================
 
     # Add filter by name
-    def add_filter(self, name, ext):
-        self._filters[name] = ext
+    def add_filter(self, name, exts):
+        self._filters[name] = [ext.replace('*.', '.') for ext in exts]
 
     # Delete filter by name
-    def remove_filter(self, name):
+    def delete_filter(self, name):
         if name in self._filters:
             del self._filters[name]
+            if self._filter == name:
+                self._filter = None
             return True
         return False
 
     # Set current filter by name
     def set_filter(self, name):
-        if name in self._filters:
+        if name is None:
+            self._filter = None
+        elif name in self._filters:
             self._filter = name
-            self._fill_file_liststore()
-            return True
-        return False
+        self._fill_file_liststore()
 
     # Get current filter
     def get_filter(self):
         if self._filter in self._filters:
-            return [self._filter, self._filters[self._filter]]
+            return ['*' + ext for ext in self._filters[self._filter]]
         return None
 
     # Get names of all specified filters
