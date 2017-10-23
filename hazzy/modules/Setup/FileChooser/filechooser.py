@@ -26,13 +26,13 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gio', '2.0')
 
-from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
+from gi.repository import GObject
 
 from datetime import datetime
-from glob import glob
+# from glob import glob <== ToDo Use glob for filter
 
 from utilities import logger
 from widget_factory.TouchPads import keyboard
@@ -54,14 +54,13 @@ class FileChooser(Gtk.Bin):
     __gtype_name__ = 'FileChooser'
     __gsignals__ = {
         'file-activated': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'selection-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'filename-editing-started': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
-        'button-up-event': (GObject.SignalFlags.RUN_FIRST, None, ()),
-        'error': (GObject.SignalFlags.RUN_FIRST, None, (str, str))
+        'selection-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,))
     }
 
-    def __init__(self):
+    def __init__(self, widget_window):
         Gtk.Bin.__init__(self)
+
+        self.widget_window = widget_window
 
         # Glade setup
         self.builder = Gtk.Builder()
@@ -262,7 +261,11 @@ class FileChooser(Gtk.Bin):
             model.append([0, icon, fname, size, date])
 
         self._update_nav_buttons()
+
         self.builder.get_object('edit_button').set_sensitive(False)
+        self.builder.get_object('cut_button').set_sensitive(False)
+        self.builder.get_object('copy_button').set_sensitive(False)
+        self.builder.get_object('delete_button').set_sensitive(False)
 
     def _get_file_data(self, fpath):
         size = os.path.getsize(fpath)
@@ -311,6 +314,7 @@ class FileChooser(Gtk.Bin):
         self.builder.get_object('edit_button').set_sensitive(True)
         self.builder.get_object('cut_button').set_sensitive(True)
         self.builder.get_object('copy_button').set_sensitive(True)
+        self.builder.get_object('delete_button').set_sensitive(True)
 
         if os.path.isfile(fpath):
             print self._count_lines(fpath)
@@ -338,19 +342,15 @@ class FileChooser(Gtk.Bin):
         if old_name == new_name:
             return
         if not os.path.exists(new_path):
-            msg = "Renamed {} to {}".format(old_name, new_name)
-            log.info(msg)
-            self.info(msg)
             os.rename(old_path, new_path)
+            msg = 'Renamed "{}" to "{}"'.format(old_name, new_name)
+            log.info(msg)
+            self.widget_window.show_info(msg, 2)
             model[row][2] = new_name
         else:
             msg = "Destination file already exists, won't rename"
             log.warning(msg)
-            self.warn(msg)
-            # TODO add overwrite confirmation dialog
-
-    def on_file_treeview_button_release_event(self, widget, data=None):
-        self.emit('button-up-event')
+            self.widget_window.show_warning(msg)
 
     # =======================================
     #   Methods to be called externally
@@ -632,11 +632,14 @@ class FileChooser(Gtk.Bin):
             return
         num = len(paths)
         for path in paths:
-            info = move2trash(path)
+            result, msg = move2trash(path)
         self._fill_file_liststore()
 
-        # Show ERROR/INFO message at bottom of screen
-        self.emit('error', info[0], info[1])
+        if result == 'INFO':
+            self.widget_window.show_info(msg, 2)
+        else:
+            self.widget_window.show_error(msg)
+
 
     # =======================================
     #   Drag and Drop TODO
@@ -668,7 +671,7 @@ class FileChooser(Gtk.Bin):
         name = os.path.split(path)[1]
         msg = 'External storage device "{}" mounted'.format(name)
         log.info(msg)
-        self.info(msg)
+        self.widget_window.show_info(msg, 2)
         self._update_bookmarks()
 
     def on_mount_removed(self, volume, mount):
@@ -676,7 +679,7 @@ class FileChooser(Gtk.Bin):
         name = os.path.split(path)[1]
         msg = 'External storage device "{}" removed'.format(name)
         log.info(msg)
-        self.info(msg)
+        self.widget_window.show_info(msg, 2)
         if self._cur_dir.startswith(path):
             self.file_liststore.clear()
             self._update_nav_buttons('')
@@ -689,8 +692,9 @@ class FileChooser(Gtk.Bin):
         mount.eject(0, None, self.on_eject_finished)
 
     def on_eject_finished(self, mount, result):
-        print 'Safe to remove external storage device "{}"'.format(mount.get_name())
-        log.info('Safe to remove external storage device "{}"'.format(mount.get_name()))
+        msg ='Safe to remove external storage device "{}"'.format(mount.get_name())
+        log.info(msg)
+        self.widget_window.show_info(msg, 2)
 
     def on_add_bookmark_button_release_event(self, widget, data=None):
         path = self.file_treeview.get_cursor()[0]
@@ -821,18 +825,18 @@ class FileChooser(Gtk.Bin):
             if not overwrite:
                 msg = "User selected not to overwrite {}".format(dst_name)
                 log.info(msg)
-                self.info(msg)
+                self.widget_window.show_info(msg, 2)
                 return
-
-        msg = 'Copying "{0}" to "{1}"'.format(src_name, dst_dir)
-        log.info(msg)
-        self.info(msg)
 
         if os.path.isfile(src):
             shutil.copy2(src, dst)
 
         else:
             shutil.copytree(src, dst)
+
+        msg = 'Copied "{0}" to "{1}"'.format(src_name, dst_dir)
+        log.info(msg)
+        self.widget_window.show_info(msg, 2)
 
         self._fill_file_liststore()
         return dst_name
@@ -844,31 +848,21 @@ class FileChooser(Gtk.Bin):
         if src_dir == dst_dir:
             msg = "MOVE ERROR: Source and destination are the same"
             log.error(msg)
-            self.error(msg)
+            self.widget_window.show_error(msg)
             return
 
         dst = os.path.join(dst_dir, src_name)
 
         if os.path.exists(dst):
-            text = "Destination already exists! \n Overwrite {}?".format(src_name)
+            msg = "WARNING: Destination already exists. Overwrite {}?".format(src_name)
             overwrite = False #self.ok_cancel_dialog.run(text)
             if not overwrite:
                 msg = 'User selected not to overwrite "{}"'.format(src_name)
                 log.info(msg)
-                self.info(msg)
+                self.widget_window.show_info(msg, 2)
                 return
 
         msg = 'Moving "{0}" to "{1}"'.format(src_name, dst_dir)
         log.info(msg)
-        self.info(msg)
+        self.widget_window.show_info(msg, 2)
         shutil.move(src, dst)
-
-    # Shortcut methods to emit errors and print to terminal
-    def error(self, text):
-        self.emit('error', 'ERROR', text)
-
-    def warn(self, text):
-        self.emit('error', 'WARN', text)
-
-    def info(self, text):
-        self.emit('error', 'INFO', text)

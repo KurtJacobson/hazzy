@@ -31,28 +31,28 @@ from gi.repository import Gdk
 
 # Set up paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if not HAZZYDIR in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
 UI = os.path.join(PYDIR, 'ui', 'gcode_view.ui')
 
 # Import our own modules
 from utilities import command
-from gcode_view import GcodeView, GcodeMap
+from utilities import logger
+from utilities.constants import MessageType
 
-# Import FileChooser widegt
+# Import FileChooser
 from Setup.FileChooser.filechooser import FileChooser
 
+from gcode_view import GcodeView, GcodeMap
 
 # Setup logger
-#log = logger.get("HAZZY.GCODEVIEW")
+log = logger.get(__name__)
 
 
 class GcodeEditor(Gtk.Bin):
 
-    def __init__(self):
+    def __init__(self, widget_window=None):
         Gtk.Bin.__init__(self)
+
+        self.widget_window = widget_window
 
         self.set_size_request(200, 160)
 
@@ -65,7 +65,7 @@ class GcodeEditor(Gtk.Bin):
 
         self.stack = self.builder.get_object('stack')
 
-        self.file_chooser = FileChooser()
+        self.file_chooser = FileChooser(widget_window)
         self.file_chooser.connect('file-activated', self.on_filechooser_file_activated)
         self.file_chooser.connect('selection-changed', self.on_filechooser_selection_changed)
         self.file_chooser.show_all()
@@ -91,7 +91,6 @@ class GcodeEditor(Gtk.Bin):
         self.edit_radiobutton = self.builder.get_object('edit_radiobutton')
 
         self.edit_button_box = self.builder.get_object('edit_button_box')
-        
 
     def on_run_button_toggled(self, widegt):
         if not widegt.get_active():
@@ -130,7 +129,7 @@ class GcodeEditor(Gtk.Bin):
         self.widget_window.set_title(path)
         self.edit_radiobutton.set_sensitive(os.path.isfile(path))
 
-    # The GtkSource deos not return True after handaling and button
+    # The GtkSource deos not return True after handaling a button
     # press, so we have to do so here so the hanler in the WidgetWindow
     # and in the HazzyWindow do not remove the focus
     def on_scrolled_window_button_press(self, widget, event):
