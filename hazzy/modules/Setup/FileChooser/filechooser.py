@@ -299,6 +299,39 @@ class FileChooser(Gtk.Bin):
         model = self.file_liststore
         model[path][0] = not model[path][0]
 
+    def on_file_treeview_key_press_event(self, widget, event):
+        kv = event.keyval
+        # Events that don't need to know about modifiers
+        if kv == Gdk.KEY_Escape:
+            self.file_treeview.get_selection().unselect_all()
+            self.builder.get_object('edit_button').set_sensitive(False)
+            self.builder.get_object('cut_button').set_sensitive(False)
+            self.builder.get_object('copy_button').set_sensitive(False)
+            self.builder.get_object('delete_button').set_sensitive(False)
+            return True
+        elif kv == Gdk.KEY_Delete:
+            self.delete_selected()
+            return True
+        elif kv == Gdk.KEY_F2:
+            self.edit_selected()
+            return True
+
+        # Handle other events
+        # Determine the actively pressed modifier
+        modifier = event.get_state() & Gtk.accelerator_get_default_mod_mask()
+
+        # Bool of Control or Shift modifier states
+        control = modifier == Gdk.ModifierType.CONTROL_MASK
+        shift = modifier == Gdk.ModifierType.SHIFT_MASK
+
+        if control and kv == Gdk.KEY_c:
+            return self.copy_selected()
+        elif control and kv == Gdk.KEY_x:
+            return self.cut_selected()
+        elif control and kv == Gdk.KEY_v:
+            return self.paste()
+
+
     def on_filechooser_treeview_cursor_changed(self, widget):
         row = widget.get_cursor()[0]
         # Prevent emitting selection changed on double click
