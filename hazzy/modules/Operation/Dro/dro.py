@@ -35,7 +35,7 @@ class Dro(Gtk.Box):
     date = '10/01/2017'
     description = 'Description of the widget and its indented use'
 
-    def __init__(self):
+    def __init__(self, widget_window):
         Gtk.Box.__init__(self)
 
         status.on_changed('stat.axis_positions', self.update_dros)

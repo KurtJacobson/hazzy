@@ -37,7 +37,7 @@ Gst.init_check(None)
 
 
 class GstWidget(Gtk.Box):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
         self.connect('unmap', self._on_unmap)
