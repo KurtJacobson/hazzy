@@ -82,7 +82,6 @@ class Status(GObject.GObject):
     }
 
     def __init__(self, stat=None):
-
         GObject.GObject.__init__(self)
 
         self.signals = GObject.signal_list_names(self)

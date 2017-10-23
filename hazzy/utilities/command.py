@@ -81,7 +81,6 @@ def load_file(fname):
         set_mode(linuxcnc.MODE_MDI)
         set_mode(linuxcnc.MODE_AUTO)
     command.program_open(fname)
-    log.debug("NGC file loaded: {0}".format(fname))
 
 def issue_mdi(mdi_command):
     '''Issue an MDI command if OK to do so.'''
