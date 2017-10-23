@@ -36,6 +36,7 @@ UI = os.path.join(PYDIR, 'ui', 'gcode_view.ui')
 # Import our own modules
 from utilities import command
 from utilities import logger
+from utilities import ini_info
 from utilities.constants import MessageType
 
 # Import FileChooser
@@ -63,12 +64,19 @@ class GcodeEditor(Gtk.Bin):
         main = self.builder.get_object('main')
         self.add(main)
 
+        self.open_radiobutton = self.builder.get_object('open_radiobutton')
+        self.edit_radiobutton = self.builder.get_object('edit_radiobutton')
+        self.run_radiobutton = self.builder.get_object('run_radiobutton')
+        self.edit_button_box = self.builder.get_object('edit_button_box')
         self.stack = self.builder.get_object('stack')
 
         self.file_chooser = FileChooser(widget_window)
         self.file_chooser.connect('file-activated', self.on_filechooser_file_activated)
         self.file_chooser.connect('selection-changed', self.on_filechooser_selection_changed)
         self.file_chooser.show_all()
+        self.file_chooser.add_filter('ini', ini_info.get_file_extentions())
+        self.file_chooser.set_filter('ini')
+
         self.stack.add_named(self.file_chooser, 'file_chooser')
         self.stack.set_visible_child(self.file_chooser)
 
@@ -83,12 +91,6 @@ class GcodeEditor(Gtk.Bin):
         self.source_map = GcodeMap()
         self.source_map.set_view(self.gcode_view)
         self.map_scrolled.add(self.source_map)
-
-        self.open_radiobutton = self.builder.get_object('open_radiobutton')
-        self.edit_radiobutton = self.builder.get_object('edit_radiobutton')
-        self.run_radiobutton = self.builder.get_object('run_radiobutton')
-
-        self.edit_button_box = self.builder.get_object('edit_button_box')
 
     def on_open_button_toggled(self, widegt):
         if not widegt.get_active():

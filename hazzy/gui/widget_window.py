@@ -27,19 +27,6 @@ class WidgetWindow(Gtk.EventBox):
         Gtk.EventBox.__init__(self)
 
         self.package = package
-
-        module = importlib.import_module(self.package)
-        widget = getattr(module, 'Widget')(self)
-
-        if hasattr(widget, 'title'):
-            # Use widget title attribute if specified
-            title = widget.title
-        else:
-            # Use the package name
-            title = self.package.split('.')[-1]
-
-        self.widget_dir = os.path.abspath(os.path.dirname(module.__file__))
-
         self.action = None
         self.drag_active = False
 
@@ -77,6 +64,19 @@ class WidgetWindow(Gtk.EventBox):
         self.message_bar = MessageBar()
         self.widget_box.add_overlay(self.message_bar)
 
+
+        # Import the Widget and add to WidgetWindow
+        module = importlib.import_module(self.package)
+        widget = getattr(module, 'Widget')(self)
+
+        self.widget_dir = os.path.abspath(os.path.dirname(module.__file__))
+
+        if hasattr(widget, 'title'):
+            # Use widget title attribute if specified
+            title = widget.title
+        else:
+            # Use the package name
+            title = self.package.split('.')[-1]
 
         # Set up the WidgetWindow
         self.title_bar_label.set_text(title)
