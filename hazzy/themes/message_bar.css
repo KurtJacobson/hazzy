@@ -189,6 +189,7 @@
     margin: 2px 2px 2px 2px;
 }
 
+
 /******************************
  * yellowing Bar *
  ******************************/
@@ -219,3 +220,21 @@
 .red button {
     margin: 2px 2px 2px 2px;
 }
+
+
+/******************************
+ * labels *
+ ******************************/
+.blue, .red label {
+    color: @blue_fg;
+}
+
+.yellow label {
+    color: black;
+
+}
+.blue, .red, .yellow label {
+    font-size: 14px;
+    font-family: Bold;
+}
+

@@ -106,6 +106,9 @@ class WidgetWindow(Gtk.EventBox):
     def show_error(self, *args, **kwargs):
         self.message_bar.show_error(*args, **kwargs)
 
+    def show_question(self, *args, **kwargs):
+        self.message_bar.show_question(*args, **kwargs)
+
     def on_button_press(self, widget, event):
         # Remove focus when clicking on WidgetWindow
         self.get_toplevel().set_focus(None)

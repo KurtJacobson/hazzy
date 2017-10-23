@@ -34,6 +34,7 @@ class MessageBar(Gtk.Revealer):
         # Message Label
         self.label = Gtk.Label('Info')
         self.label.set_margin_left(5)
+        self.label.set_line_wrap(True)
         self.bar.pack_start(self.label, False, False, 0)
 
         # Close button
@@ -44,11 +45,11 @@ class MessageBar(Gtk.Revealer):
         self.close_button.connect('clicked', self.close)
         self.bar.pack_end(self.close_button, False, False, 0)
 
-        self.button_1 = Gtk.Button('Yes')
-        self.bar.pack_end(self.button_1, False, False, 0)
-
         self.button_2 = Gtk.Button('No')
         self.bar.pack_end(self.button_2, False, False, 0)
+
+        self.button_1 = Gtk.Button('Yes')
+        self.bar.pack_end(self.button_1, False, False, 0)
 
     def close(self, widget=None):
         self.reveal(False)
@@ -124,19 +125,19 @@ class MessageBar(Gtk.Revealer):
             self.time_out_id = GObject.timeout_add(timeout * 1000, self.close)
 
     def on_yes_clicked(self, widget, callback, *args, **kwargs):
-        callback(response=Gtk.ResponseType.YES, *args, **kwargs)
+        callback(Gtk.ResponseType.YES, *args, **kwargs)
         self.close()
 
     def on_no_clicked(self, widget, callback, *args, **kwargs):
-        callback(response=Gtk.ResponseType.NO, *args, **kwargs)
+        callback(Gtk.ResponseType.NO, *args, **kwargs)
         self.close()
 
     def on_ok_clicked(self, widget, callback, *args, **kwargs):
-        callback(response=Gtk.ResponseType.OK, *args, **kwargs)
+        callback(Gtk.ResponseType.OK, *args, **kwargs)
         self.close()
 
     def on_cancel_clicked(self, widget, callback, *args, **kwargs):
-        callback(response=Gtk.ResponseType.CANCEL, *args, **kwargs)
+        callback(Gtk.ResponseType.CANCEL, *args, **kwargs)
         self.close()
 
     def disconnect_signals(self):
