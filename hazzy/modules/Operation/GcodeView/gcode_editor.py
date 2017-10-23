@@ -75,9 +75,6 @@ class GcodeEditor(Gtk.Bin):
         self.gcode_view_page = self.builder.get_object('gcode_view_page')
 
         self.gcode_view = GcodeView()
-        self.buf = self.gcode_view.get_buffer()
-        self.buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
-        self.gcode_view.highlight_line(3, 'motion')
 
         self.scroll_window = self.builder.get_object('scrolled_window')
         self.scroll_window.add(self.gcode_view)
@@ -89,45 +86,84 @@ class GcodeEditor(Gtk.Bin):
 
         self.open_radiobutton = self.builder.get_object('open_radiobutton')
         self.edit_radiobutton = self.builder.get_object('edit_radiobutton')
+        self.run_radiobutton = self.builder.get_object('run_radiobutton')
 
         self.edit_button_box = self.builder.get_object('edit_button_box')
-
-    def on_run_button_toggled(self, widegt):
-        if not widegt.get_active():
-            return
-        print 'Run Button toggled'
-        self.edit_button_box.hide()
-        self.gcode_view.set_editable(False)
-        self.gcode_view.save()
-        command.load_file(self.gcode_view.current_file)
-
-    def on_edit_button_toggled(self, widegt):
-        if not widegt.get_active():
-            return
-        print 'Edit Button Toggled'
-        self.edit_button_box.show()
-        path = self.file_chooser.get_selected()
-        if not path:
-            return
-        self.gcode_view.load_file(path[0])
-        self.stack.set_visible_child(self.gcode_view_page)
-        self.gcode_view.set_editable(True)
 
     def on_open_button_toggled(self, widegt):
         if not widegt.get_active():
             return
-        print 'Open Button Toggled'
         self.stack.set_visible_child(self.file_chooser)
 
-    def on_filechooser_file_activated(self, widegt, path):
-        self.gcode_view.load_file(path)
+    def on_edit_button_toggled(self, widegt):
+        if not widegt.get_active():
+            return
+        path = self.get_selected_file()
+        if path is None:
+            return
+
         self.stack.set_visible_child(self.gcode_view_page)
+        self.edit_button_box.show()
+        self.gcode_view.set_editable(True)
+
+        self.check_modified_and_load_editor(path)
+
+    def on_run_button_toggled(self, widegt):
+        if not widegt.get_active():
+            return
+
+        if self.stack.get_visible_child() == self.file_chooser:
+            path = self.get_selected_file()
+            self.stack.set_visible_child(self.gcode_view_page)
+        else:
+            path = self.gcode_view.current_file
+
+        self.check_modified_and_load_editor(path)
+
+        self.edit_button_box.hide()
+        self.gcode_view.set_editable(False)
+        command.load_file(self.gcode_view.current_file)
+
+    def on_filechooser_file_activated(self, widegt, path):
         self.edit_radiobutton.set_active(True)
+        self.stack.set_visible_child(self.gcode_view_page)
+        self.edit_button_box.show()
+        self.gcode_view.set_editable(True)
+        self.check_modified_and_load_editor(path)
 
     def on_filechooser_selection_changed(self, widget, path):
-        print 'selection changed'
         self.widget_window.set_title(path)
-        self.edit_radiobutton.set_sensitive(os.path.isfile(path))
+        is_file = os.path.isfile(path)
+        self.edit_radiobutton.set_sensitive(is_file)
+        self.run_radiobutton.set_sensitive(is_file)
+
+# Helpers
+#============================
+
+    def get_selected_file(self):
+        path = self.file_chooser.get_selected()
+        if not path or len(path) != 1:
+            self.widget_window.show_error('Please select exactly one file to edit', 1.5)
+            self.open_radiobutton.set_active(True)
+            return None
+        else:
+            return path[0]
+
+    def check_modified_and_load_editor(self, path):
+        if self.gcode_view.get_modified():
+            fname = os.path.split(self.gcode_view.current_file)[1]
+            msg = '"{}" has been modified, save changes?'.format(fname)
+            self.widget_window.show_question(msg, self.on_save_changes_response, path)
+        else:
+            if path != self.gcode_view.current_file:
+                self.gcode_view.load_file(path)
+
+    def on_save_changes_response(self, response, path):
+        if response == Gtk.ResponseType.YES:
+            self.gcode_view.save()
+            self.gcode_view.load_file(path)
+        else:
+            self.gcode_view.load_file(path)
 
     # The GtkSource deos not return True after handaling a button
     # press, so we have to do so here so the hanler in the WidgetWindow

@@ -262,6 +262,8 @@ class FileChooser(Gtk.Bin):
 
         self._update_nav_buttons()
 
+        self.emit('selection-changed', self._cur_dir)
+
         self.builder.get_object('edit_button').set_sensitive(False)
         self.builder.get_object('cut_button').set_sensitive(False)
         self.builder.get_object('copy_button').set_sensitive(False)
