@@ -68,6 +68,7 @@ class GcodeEditor(Gtk.Bin):
         self.edit_radiobutton = self.builder.get_object('edit_radiobutton')
         self.run_radiobutton = self.builder.get_object('run_radiobutton')
         self.edit_button_box = self.builder.get_object('edit_button_box')
+        self.line_count_label = self.builder.get_object('line_count_label')
         self.stack = self.builder.get_object('stack')
 
         self.file_chooser = FileChooser(widget_window)
@@ -138,6 +139,12 @@ class GcodeEditor(Gtk.Bin):
         is_file = os.path.isfile(path)
         self.edit_radiobutton.set_sensitive(is_file)
         self.run_radiobutton.set_sensitive(is_file)
+
+        if is_file:
+            line_count = self.file_chooser.count_lines(path)
+            self.line_count_label.set_text(str(line_count))
+        else:
+            self.line_count_label.set_text('0')
 
 # Helpers
 #============================

@@ -278,7 +278,7 @@ class FileChooser(Gtk.Bin):
         date_str = datetime.fromtimestamp(tstamp).strftime("%m/%d/%y %X")
         return size_str, date_str
 
-    def _count_lines(self, filename):
+    def count_lines(self, filename):
         import time
         lines = 0
         buf_size = 1024 * 1024
@@ -345,9 +345,6 @@ class FileChooser(Gtk.Bin):
         self.builder.get_object('cut_button').set_sensitive(True)
         self.builder.get_object('copy_button').set_sensitive(True)
         self.builder.get_object('delete_button').set_sensitive(True)
-
-        if os.path.isfile(fpath):
-            print self._count_lines(fpath)
 
     def on_filechooser_treeview_row_activated(self, widget, path, colobj):
         fname = self.file_liststore[path][2]
