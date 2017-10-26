@@ -279,18 +279,15 @@ class FileChooser(Gtk.Bin):
         return size_str, date_str
 
     def count_lines(self, filename):
-        import time
         lines = 0
         buf_size = 1024 * 1024
-        start = time.time()
         with open(filename) as fh:
             read_f = fh.read
             buf = read_f(buf_size)
             while buf:
                 lines += buf.count('\n')
                 buf = read_f(buf_size)
-        print start - time.time()
-        return lines
+        return lines + 1
 
     def on_select_toggled(self, widget, path):
         model = self.file_liststore

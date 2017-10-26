@@ -112,7 +112,6 @@ class GcodeView(GtkSource.View):
         else:
             self.highlight_line(None)
 
-
     def highlight_line(self, lnum=None, style=None):
         style = style or 'none' # Must be a string
         if not lnum or lnum == -1:
@@ -136,14 +135,19 @@ class GcodeView(GtkSource.View):
     def highlight_error_line(self, lnum):
         self.error_line = lnum
 
-    def get_modified(self):
-        return self.buf.get_modified()
-
-    def set_modified(self, modified):
-        self.buf.set_modified(modified)
-
     def set_line_number(self, lnum):
-        self.highlight_line(int(lnum))
+        if lnum == 0: # 0 will scroll to end, use -1 for that!
+            lnum = 1
+        iter = self.buf.get_iter_at_line(lnum - 1)
+        self.scroll_to_iter(iter, 0, True, 0, .5)
+
+    def set_cursor(self, lnum):
+        if lnum == 0: # 0 will scroll to end, use -1 for that!
+            lnum = 1
+        self.grab_focus()
+        iter = self.buf.get_iter_at_line(lnum - 1)
+        self.scroll_to_iter(iter, 0, True, 0, .5)
+        self.buf.place_cursor(iter)
 
     def get_program_length(self):
         return self.buf.get_line_count()

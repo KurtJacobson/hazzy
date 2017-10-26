@@ -68,7 +68,10 @@ class GcodeEditor(Gtk.Bin):
         self.edit_radiobutton = self.builder.get_object('edit_radiobutton')
         self.run_radiobutton = self.builder.get_object('run_radiobutton')
         self.edit_button_box = self.builder.get_object('edit_button_box')
+        self.edit_action_undo = self.builder.get_object('edit_action_undo')
+        self.edit_action_redo = self.builder.get_object('edit_action_redo')
         self.line_count_label = self.builder.get_object('line_count_label')
+        self.jump_to_line_entry = self.builder.get_object('jump_to_line_entry')
         self.stack = self.builder.get_object('stack')
 
         self.file_chooser = FileChooser(widget_window)
@@ -84,6 +87,11 @@ class GcodeEditor(Gtk.Bin):
         self.gcode_view_page = self.builder.get_object('gcode_view_page')
 
         self.gcode_view = GcodeView()
+        self.gcode_buffer = self.gcode_view.get_buffer()
+        self.gcode_buffer.connect('mark-set', self.on_mark_set)
+        self.undo_manager = self.gcode_buffer.get_undo_manager()
+        self.undo_manager.connect('can-redo-changed', self.on_can_redo_state_changed)
+        self.undo_manager.connect('can-undo-changed', self.on_can_undo_state_changed)
 
         self.scroll_window = self.builder.get_object('scrolled_window')
         self.scroll_window.add(self.gcode_view)
@@ -93,10 +101,39 @@ class GcodeEditor(Gtk.Bin):
         self.source_map.set_view(self.gcode_view)
         self.map_scrolled.add(self.source_map)
 
+    def on_mark_set(self, buf, cursor_iter, mark):
+        # If this is not the (cursor) "insert" mark, disregard
+        if mark != buf.get_insert():
+            return
+
+        #char = cursor_iter.get_offset()
+        row = cursor_iter.get_line() + 1
+        #col = self.gcode_view.get_visual_column(cursor_iter) + 1
+        self.jump_to_line_entry.set_text(str(row))
+
+    def on_jump_to_line_entry_activated(self, widget):
+        line_number = int(widget.get_text())
+        self.gcode_view.set_cursor(line_number)
+
+    def on_can_undo_state_changed(self, widegt):
+        self.edit_action_undo.set_sensitive(widegt.can_undo())
+
+    def on_edit_action_undo_clicked(self, widegt):
+        self.gcode_buffer.undo()
+
+    def on_can_redo_state_changed(self, widegt):
+        self.edit_action_redo.set_sensitive(widegt.can_redo())
+
+    def on_edit_action_redo_clicked(self, widegt):
+        self.gcode_buffer.redo()
+
     def on_open_button_toggled(self, widegt):
         if not widegt.get_active():
             return
         self.stack.set_visible_child(self.file_chooser)
+
+    def on_edit_action_cut_clicked(self, widget):
+        pass
 
     def on_edit_button_toggled(self, widegt):
         if not widegt.get_active():
@@ -108,6 +145,8 @@ class GcodeEditor(Gtk.Bin):
         self.stack.set_visible_child(self.gcode_view_page)
         self.edit_button_box.show()
         self.gcode_view.set_editable(True)
+        self.jump_to_line_entry.set_sensitive(True)
+        self.gcode_view.grab_focus()
 
         self.check_modified_and_load_editor(path)
 
@@ -125,6 +164,7 @@ class GcodeEditor(Gtk.Bin):
 
         self.edit_button_box.hide()
         self.gcode_view.set_editable(False)
+        self.jump_to_line_entry.set_sensitive(False)
         command.load_file(self.gcode_view.current_file)
 
     def on_filechooser_file_activated(self, widegt, path):
@@ -159,7 +199,7 @@ class GcodeEditor(Gtk.Bin):
             return path[0]
 
     def check_modified_and_load_editor(self, path):
-        if self.gcode_view.get_modified():
+        if self.gcode_buffer.get_modified():
             fname = os.path.split(self.gcode_view.current_file)[1]
             msg = '"{}" has been modified, save changes?'.format(fname)
             self.widget_window.show_question(msg, self.on_save_changes_response, path)
