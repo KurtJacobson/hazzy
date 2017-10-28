@@ -85,6 +85,7 @@ class GcodeEditor(Gtk.Bin):
         self.file_chooser.show_all()
         self.file_chooser.add_filter('ini', ini_info.get_file_extentions())
         self.file_chooser.set_filter('ini')
+        self.file_chooser.set_current_folder(ini_info.get_program_prefix())
 
         self.stack.add_named(self.file_chooser, 'file_chooser')
         self.stack.set_visible_child(self.file_chooser)

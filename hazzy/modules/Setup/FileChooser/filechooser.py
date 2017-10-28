@@ -108,7 +108,7 @@ class FileChooser(Gtk.Bin):
         self.places = [home, desktop]
 
         # Initialize variables
-        self._cur_dir = desktop
+        self._cur_dir = None
         self._old_dir = ''
         self._filters = {}
         self._filter = None
@@ -221,6 +221,8 @@ class FileChooser(Gtk.Bin):
             # Reset scrollbars since display has changed
             self.file_vadj.set_value(0)
             self.file_hadj.set_value(0)
+        if self._cur_dir is None:
+            self._cur_dir = self.userdirs.get_XDG_directory('XDG_DESKTOP_DIR')
 
         files = []
         folders = []
@@ -259,6 +261,16 @@ class FileChooser(Gtk.Bin):
 
         self.emit('selection-changed', self._cur_dir)
 
+        # If dir is in bookmarks, select the bookmark
+        for row in self.bookmark_listbox.get_children():
+            bookmark_path = row.get_tooltip_text()
+            if bookmark_path == self._cur_dir:
+                self.bookmark_listbox.select_row(row)
+                break
+        else:
+            self.bookmark_listbox.unselect_all()
+
+        # No file selected yet, so desensitize edit buttons
         self.builder.get_object('edit_button').set_sensitive(False)
         self.builder.get_object('cut_button').set_sensitive(False)
         self.builder.get_object('copy_button').set_sensitive(False)
@@ -428,9 +440,13 @@ class FileChooser(Gtk.Bin):
 
     # Set current display directory to path
     def set_current_folder(self, fpath):
+#        fpath = fpath.rstrip('/')
         if os.path.exists(fpath):
             self._fill_file_liststore(fpath)
+            log.info('Setting the current folder to "{}"'.format(fpath))
             return True
+        log.error('Can not set current folder to "{}", folder does not exist' 
+            .format(fpath))
         return False
 
     # Get absolute path at cursor
