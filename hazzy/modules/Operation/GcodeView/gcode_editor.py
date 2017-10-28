@@ -70,9 +70,14 @@ class GcodeEditor(Gtk.Bin):
         self.edit_button_box = self.builder.get_object('edit_button_box')
         self.edit_action_undo = self.builder.get_object('edit_action_undo')
         self.edit_action_redo = self.builder.get_object('edit_action_redo')
+        self.edit_action_cut = self.builder.get_object('edit_action_cut')
+        self.edit_action_copy = self.builder.get_object('edit_action_copy')
+        self.edit_action_paste = self.builder.get_object('edit_action_paste')
         self.line_count_label = self.builder.get_object('line_count_label')
         self.jump_to_line_entry = self.builder.get_object('jump_to_line_entry')
         self.stack = self.builder.get_object('stack')
+
+        self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
 
         self.file_chooser = FileChooser(widget_window)
         self.file_chooser.connect('file-activated', self.on_filechooser_file_activated)
@@ -89,6 +94,7 @@ class GcodeEditor(Gtk.Bin):
         self.gcode_view = GcodeView()
         self.gcode_buffer = self.gcode_view.get_buffer()
         self.gcode_buffer.connect('mark-set', self.on_mark_set)
+        self.gcode_buffer.connect('notify::has-selection', self.on_text_selected)
         self.undo_manager = self.gcode_buffer.get_undo_manager()
         self.undo_manager.connect('can-redo-changed', self.on_can_redo_state_changed)
         self.undo_manager.connect('can-undo-changed', self.on_can_undo_state_changed)
@@ -105,7 +111,6 @@ class GcodeEditor(Gtk.Bin):
         # If this is not the (cursor) "insert" mark, disregard
         if mark != buf.get_insert():
             return
-
         #char = cursor_iter.get_offset()
         row = cursor_iter.get_line() + 1
         #col = self.gcode_view.get_visual_column(cursor_iter) + 1
@@ -114,6 +119,9 @@ class GcodeEditor(Gtk.Bin):
     def on_jump_to_line_entry_activated(self, widget):
         line_number = int(widget.get_text())
         self.gcode_view.set_cursor(line_number)
+
+    def on_jump_to_line_entry_focus_in_event(self, widget, event):
+        widget.select_region(0, -1)
 
     def on_can_undo_state_changed(self, widegt):
         self.edit_action_undo.set_sensitive(widegt.can_undo())
@@ -127,13 +135,24 @@ class GcodeEditor(Gtk.Bin):
     def on_edit_action_redo_clicked(self, widegt):
         self.gcode_buffer.redo()
 
+    def on_edit_action_cut_clicked(self, widget):
+        self.gcode_buffer.cut_clipboard(self.clipboard, True)
+
+    def on_edit_action_copy_clicked(self, widget):
+        self.gcode_buffer.copy_clipboard(self.clipboard)
+
+    def on_edit_action_paste_clicked(self, widget):
+        self.gcode_buffer.paste_clipboard(self.clipboard, None, True)
+
+    def on_text_selected(self, widegt, param):
+        selected = self.gcode_buffer.get_has_selection()
+        self.edit_action_copy.set_sensitive(selected)
+        self.edit_action_cut.set_sensitive(selected)
+
     def on_open_button_toggled(self, widegt):
         if not widegt.get_active():
             return
         self.stack.set_visible_child(self.file_chooser)
-
-    def on_edit_action_cut_clicked(self, widget):
-        pass
 
     def on_edit_button_toggled(self, widegt):
         if not widegt.get_active():
@@ -214,8 +233,8 @@ class GcodeEditor(Gtk.Bin):
         else:
             self.gcode_view.load_file(path)
 
-    # The GtkSource deos not return True after handaling a button
-    # press, so we have to do so here so the hanler in the WidgetWindow
+    # The GtkSource does not return True after handling a button
+    # press, so we have to do so here so the handler in the WidgetWindow
     # and in the HazzyWindow do not remove the focus
     def on_scrolled_window_button_press(self, widget, event):
         return True

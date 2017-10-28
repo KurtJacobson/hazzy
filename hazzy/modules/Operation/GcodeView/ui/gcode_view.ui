@@ -145,6 +145,7 @@
                         <child>
                           <object class="GtkButton" id="edit_action_cut">
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="margin_top">2</property>
@@ -161,11 +162,13 @@
                         <child>
                           <object class="GtkButton" id="edit_action_copy">
                             <property name="visible">True</property>
+                            <property name="sensitive">False</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
                             <property name="margin_top">2</property>
                             <property name="margin_bottom">2</property>
                             <property name="image">image_edit_copy</property>
+                            <signal name="clicked" handler="on_edit_action_copy_clicked" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -181,6 +184,7 @@
                             <property name="margin_top">2</property>
                             <property name="margin_bottom">2</property>
                             <property name="image">image_edit_paste</property>
+                            <signal name="clicked" handler="on_edit_action_paste_clicked" swapped="no"/>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -339,6 +343,7 @@
                 <property name="xalign">1</property>
                 <property name="shadow_type">none</property>
                 <signal name="activate" handler="on_jump_to_line_entry_activated" swapped="no"/>
+                <signal name="focus-in-event" handler="on_jump_to_line_entry_focus_in_event" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
