@@ -72,15 +72,15 @@ class GstWidget(Gtk.Box):
 
         entry = widgets.PrefEntry('VedioWidget', 'Host', '127.0.0.1')
         entry.connect('value-changed', self.on_host_chaned)
-        self.add_config_field(entry)
+        # self.add_config_field(entry)
 
         entry = widgets.PrefEntry('VedioWidget', 'Port', '5000')
         entry.connect('value-changed', self.on_port_changed)
-        self.add_config_field(entry)
+        # self.add_config_field(entry)
 
         switch = widgets.PrefSwitch('VedioWidget', 'Stream', True)
         switch.connect('value-changed', self.on_stream_state_changed)
-        self.add_config_field(switch)
+        # self.add_config_field(switch)
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
         self.stack.add_titled(self.config_box, "config", "Widget Config")
