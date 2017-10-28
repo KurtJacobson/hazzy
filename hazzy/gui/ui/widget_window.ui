@@ -33,7 +33,7 @@
                 <property name="halign">center</property>
                 <property name="hexpand">True</property>
                 <property name="label" translatable="yes">Unnamed</property>
-                <property name="ellipsize">end</property>
+                <property name="ellipsize">middle</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -94,14 +94,9 @@
           </packing>
         </child>
         <child>
-          <object class="GtkBox" id="widget_box">
+          <object class="GtkOverlay" id="widget_box">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="margin_left">5</property>
-            <property name="margin_right">5</property>
-            <property name="margin_top">5</property>
-            <property name="margin_bottom">5</property>
-            <property name="orientation">vertical</property>
             <child>
               <placeholder/>
             </child>

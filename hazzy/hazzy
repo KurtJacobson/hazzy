@@ -72,7 +72,7 @@ def main(argv):
 
     hazzy_window = HazzyWindow()
     hazzy_window.set_gtk_theme('Adwaita')
-    hazzy_window.set_icon_theme('Adwaita')
+#    hazzy_window.set_icon_theme('Adwaita')
     hazzy_window.load_from_xml()
     hazzy_window.show_all()
 

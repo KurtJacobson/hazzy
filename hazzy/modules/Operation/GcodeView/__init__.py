@@ -1,1 +1,1 @@
-from gcodeview import GcodeViewWidget as Widget
+from gcode_editor import GcodeEditor as Widget

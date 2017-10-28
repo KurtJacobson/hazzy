@@ -28,13 +28,54 @@
       <column type="gchararray"/>
     </columns>
   </object>
+  <object class="GtkImage" id="image_edit_copy">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">edit-copy-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_edit_cut">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">edit-cut-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_edit_paste">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">edit-paste-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_edit_paste1">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">edit-delete-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_edit_redo">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">edit-redo-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_edit_undo">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">edit-undo-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image_file_save">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">edit-symbolic</property>
+  </object>
+  <object class="GtkImage" id="new_file_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">document-new-symbolic</property>
+  </object>
+  <object class="GtkImage" id="new_folder_image">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">folder-new-symbolic</property>
+  </object>
   <object class="GtkBox" id="filechooser">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="margin_left">5</property>
-    <property name="margin_right">5</property>
-    <property name="margin_top">5</property>
-    <property name="margin_bottom">5</property>
     <property name="hexpand">True</property>
     <property name="vexpand">True</property>
     <property name="orientation">vertical</property>
@@ -67,10 +108,224 @@
       </packing>
     </child>
     <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <child>
+          <object class="GtkButton" id="new_file">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">new_file_image</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="new_file" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="new_folder">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">new_folder_image</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="new_folder" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="edit_button">
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">image_file_save</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="edit_selected" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">3</property>
+            <property name="margin_bottom">3</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">4</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="undo_button">
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">image_edit_undo</property>
+            <property name="relief">none</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="redo_button">
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">image_edit_redo</property>
+            <property name="relief">none</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">3</property>
+            <property name="margin_bottom">3</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">4</property>
+            <property name="position">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="cut_button">
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">image_edit_cut</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="cut_selected" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="copy_button">
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">image_edit_copy</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="copy_selected" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="paste_button">
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">image_edit_paste</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="paste" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">3</property>
+            <property name="margin_bottom">3</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="padding">4</property>
+            <property name="position">10</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="delete_button">
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="margin_bottom">2</property>
+            <property name="image">image_edit_paste1</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="delete_selected" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">12</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSeparator">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">3</property>
+      </packing>
+    </child>
+    <child>
       <object class="GtkPaned">
         <property name="width_request">160</property>
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
+        <property name="can_focus">False</property>
         <property name="position">160</property>
         <property name="position_set">True</property>
         <child>
@@ -82,7 +337,7 @@
             <child>
               <object class="GtkScrolledWindow" id="bookmarks_scrolled">
                 <property name="visible">True</property>
-                <property name="can_focus">True</property>
+                <property name="can_focus">False</property>
                 <child>
                   <object class="GtkViewport">
                     <property name="visible">True</property>
@@ -174,29 +429,18 @@
               <object class="GtkTreeView" id="file_treeview">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="is_focus">True</property>
                 <property name="model">file_liststore</property>
                 <property name="headers_clickable">False</property>
                 <property name="reorderable">True</property>
                 <property name="rules_hint">True</property>
                 <property name="search_column">2</property>
                 <property name="enable_grid_lines">vertical</property>
-                <signal name="button-release-event" handler="on_file_treeview_button_release_event" swapped="no"/>
                 <signal name="cursor-changed" handler="on_filechooser_treeview_cursor_changed" swapped="no"/>
+                <signal name="key-press-event" handler="on_file_treeview_key_press_event" swapped="no"/>
                 <signal name="row-activated" handler="on_filechooser_treeview_row_activated" swapped="no"/>
                 <child internal-child="selection">
                   <object class="GtkTreeSelection"/>
-                </child>
-                <child>
-                  <object class="GtkTreeViewColumn" id="col_select">
-                    <child>
-                      <object class="GtkCellRendererToggle" id="select">
-                        <signal name="toggled" handler="on_select_toggled" swapped="no"/>
-                      </object>
-                      <attributes>
-                        <attribute name="active">0</attribute>
-                      </attributes>
-                    </child>
-                  </object>
                 </child>
                 <child>
                   <object class="GtkTreeViewColumn" id="col_file_name">
@@ -262,7 +506,7 @@
       <packing>
         <property name="expand">True</property>
         <property name="fill">True</property>
-        <property name="position">2</property>
+        <property name="position">4</property>
       </packing>
     </child>
   </object>

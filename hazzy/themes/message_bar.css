@@ -1,0 +1,240 @@
+/******************************
+ * red colors *
+ ******************************/
+@define-color blue_a #74a9e0;
+@define-color blue_b #4287cf;
+@define-color blue_fg #ffffff;
+@define-color blue_border #204a87;
+@define-color blue_shadow shade(@blue_border, 1.15);
+
+
+/******************************
+ * red colors *
+ ******************************/
+@define-color yellow_a #fce94f;
+@define-color yellow_b #edd400;
+@define-color yellow_fg #ffffff;
+@define-color yellow_border #c4a000;
+@define-color yellow_shadow shade(@yellow_border, 1.15);
+
+
+/******************************
+ * red colors *
+ ******************************/
+@define-color red_a #ef2929;
+@define-color red_b #cc0000;
+@define-color red_fg #ffffff;
+@define-color red_border #9d4242;
+@define-color red_shadow shade(@red_border, 1.15);
+
+
+
+/******************************
+ * blue Button *
+ ******************************/
+.blue button {
+    background-image: linear-gradient(to bottom,
+                                      @blue_a,
+                                      @blue_b);
+    color: @blue_fg;
+    border-color: @blue_border;
+    box-shadow: inset 0 0, inset 0 0;
+/*    margin: 2px 2px 2px 2px;*/
+}
+
+.blue button:hover {
+    background-image: linear-gradient(to bottom,
+                                      shade(@blue_a, 1.10),
+                                      shade(@blue_b, 1.05));
+}
+
+.blue button:active,
+.blue button:hover:active {
+    background-image: linear-gradient(to bottom,
+                                      @blue_a,
+                                      @blue_b);
+    color: @blue_fg;
+}
+
+.blue button {
+    text-shadow: 0 1px @blue_shadow;
+    -gtk-icon-shadow: 0 1px @blue_shadow;
+}
+
+.blue button:active,
+.blue button:hover:active {
+    text-shadow: 0 1px shade(@blue_shadow, 1.15);
+    -gtk-icon-shadow: 0 1px shade(@blue_shadow, 1.15);
+}
+
+.blue button:backdrop {
+    background-image: linear-gradient(to bottom,
+                                      shade(@blue_a, 1.1),
+                                      shade(@blue_b, 1.15));
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: @blue_fg;
+}
+
+
+
+/******************************
+ * red Button *
+ ******************************/
+.red  button{
+    background-image: linear-gradient(to bottom,
+                                      @red_a,
+                                      @red_b);
+    color: @red_fg;
+    border-color: @red_border;
+    box-shadow: inset 0 0, inset 0 0;
+/*    margin: 2px 2px 2px 2px;*/
+}
+
+.red button:hover {
+    background-image: linear-gradient(to bottom,
+                                      shade(@red_a, 1.10),
+                                      shade(@red_b, 1.05));
+}
+
+.red button:active,
+.red button:hover:active {
+    background-image: linear-gradient(to bottom,
+                                      @red_a,
+                                      @red_b);
+    color: @red_fg;
+}
+
+.red button {
+    text-shadow: 0 1px @red_shadow;
+    -gtk-icon-shadow: 0 1px @red_shadow;
+}
+
+.red button:active,
+.red button:hover:active {
+    text-shadow: 0 1px shade(@red_shadow, 1.15);
+    -gtk-icon-shadow: 0 1px shade(@red_shadow, 1.15);
+}
+
+.red button:backdrop {
+    background-image: linear-gradient(to bottom,
+                                      shade(@red_a, 1.1),
+                                      shade(@red_b, 1.15));
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: @red_fg;
+}
+
+
+/******************************
+ * yellowing Button *
+ ******************************/
+.yellow button {
+    background-image: linear-gradient(to bottom,
+                                      @yellow_a,
+                                      @yellow_b);
+    color: @yellow_fg;
+    border-color: @yellow_border;
+    box-shadow: inset 0 0, inset 0 0;
+/*    margin: 2px 2px 2px 2px;*/
+}
+
+.yellow button:hover {
+    background-image: linear-gradient(to bottom,
+                                      shade(@yellow_a, 1.10),
+                                      shade(@yellow_b, 1.05));
+}
+
+.yellow button:active,
+.yellow button:hover:active {
+    background-image: linear-gradient(to bottom,
+                                      @yellow_a,
+                                      @yellow_b);
+    color: @yellow_fg;
+}
+
+.yellow {
+    text-shadow: 0 1px @yellow_shadow;
+    -gtk-icon-shadow: 0 1px @yellow_shadow;
+}
+
+.yellow button:active,
+.yellow button:hover:active {
+    text-shadow: 0 1px shade(@yellow_shadow, 1.15);
+    -gtk-icon-shadow: 0 1px shade(@yellow_shadow, 1.15);
+}
+
+.yellow button:backdrop {
+    background-image: linear-gradient(to bottom,
+                                      shade(@yellow_a, 1.1),
+                                      shade(@yellow_b, 1.15));
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: @yellow_fg;
+}
+
+
+/******************************
+ * blue Bar *
+ ******************************/
+.blue box {
+    background: @blue_b;
+}
+
+.blue box:backdrop {
+    background: @blue_a;
+}
+
+.blue button {
+    margin: 2px 2px 2px 2px;
+}
+
+
+/******************************
+ * yellowing Bar *
+ ******************************/
+.yellow box {
+    background: @yellow_b;
+}
+
+.yellow box:backdrop {
+    background: @yellow_a;
+}
+
+.yellow button {
+    margin: 2px 2px 2px 2px;
+}
+
+
+/******************************
+ * red Bar *
+ ******************************/
+.red box {
+    background: alpha(@red_b, .9);
+}
+
+.red box:backdrop {
+    background: alpha(@red_a, .9);
+}
+
+.red button {
+    margin: 2px 2px 2px 2px;
+}
+
+
+/******************************
+ * labels *
+ ******************************/
+.blue, .red label {
+    color: @blue_fg;
+}
+
+.yellow label {
+    color: black;
+
+}
+.blue, .red, .yellow label {
+    font-size: 14px;
+    font-family: Bold;
+}
+

@@ -199,19 +199,25 @@ def get_parameter_file():
     return temp
 
 def get_program_prefix():
-    # and we want to set the default path
-    default_path = ini.find('DISPLAY', 'PROGRAM_PREFIX')
-    if not default_path:
-        log.warning("Path %s from DISPLAY , PROGRAM_PREFIX does not exist" % default_path)
-        log.info("Trying default path...")
-        default_path = "~/linuxcnc/nc_files/"
-        if not os.path.exists(os.path.expanduser(default_path)):
-            log.warning("Default path to ~/linuxcnc/nc_files does not exist")
-            log.info("setting home as path")
-            default_path = os.path.expanduser("~/")
-    return default_path
+    path = ini.find('DISPLAY', 'PROGRAM_PREFIX')
 
-def get_file_ext():
+    if path:
+        path = os.path.expanduser(path)
+        if os.path.exists(path):
+            return path
+        else:
+            log.warning("Path '{}' given in [DISPLAY] PROGRAM_PREFIX does not exist, "
+            "trying '~/linuxcnc/nc_files'".format(path))
+
+    path = os.path.expanduser("~/linuxcnc/nc_files")
+    if os.path.exists(path):
+        return path
+    else:
+        log.warning("Default path '~/linuxcnc/nc_files' does not exist, using '~/' as path")
+        path = os.path.expanduser('~/')
+        return path
+
+def get_file_extentions():
     file_ext = ini.findall('FILTER', 'PROGRAM_EXTENSION')
     if file_ext:
         ext_list = ["*.ngc"]

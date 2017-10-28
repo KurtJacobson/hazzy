@@ -15,7 +15,7 @@ PYDIR = os.path.join(os.path.dirname(__file__))
 
 class Terminal(Gtk.ScrolledWindow):
 
-    def __init__(self):
+    def __init__(self, widget_window):
         Gtk.ScrolledWindow.__init__(self)
 
         self.terminal=Vte.Terminal()

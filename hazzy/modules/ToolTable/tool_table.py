@@ -52,7 +52,7 @@ class ToolTable(Gtk.Box):
 
     title = "Tool Table"
 
-    def __init__(self):
+    def __init__(self, widget_window):
         Gtk.Box.__init__(self)
 
         self.builder = Gtk.Builder()

@@ -18,9 +18,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import os
-import sys
 import shutil
 import gi
 
@@ -28,52 +26,47 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gio', '2.0')
 
-from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
+from gi.repository import GObject
 
 from datetime import datetime
 
+from utilities import logger
+from widget_factory.TouchPads import keyboard
 
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
-UIDIR = os.path.join(PYDIR, 'ui')
-STYLEDIR = os.path.join(HAZZYDIR, 'hazzy', 'themes')
-
-# Import our own modules
+# Import our own file utility modules
 from move2trash import move2trash
 from userdirectories import UserDirectories
 from bookmarks import BookMarks
 from icons import Icons
 
-#from hazzy.modules.dialogs.dialogs import Dialogs, DialogTypes
+# Set up paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+UIDIR = os.path.join(PYDIR, 'ui')
 
-# Setup logging
-from utilities import logger
+# Set up logging
 log = logger.get(__name__)
 
-
-class FileChooser(Gtk.Box):
+class FileChooser(Gtk.Bin):
     __gtype_name__ = 'FileChooser'
     __gsignals__ = {
         'file-activated': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'selection-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,)),
-        'filename-editing-started': (GObject.SignalFlags.RUN_FIRST, None, (object,)),
-        'button-up-event': (GObject.SignalFlags.RUN_FIRST, None, ()),
-        'error': (GObject.SignalFlags.RUN_FIRST, None, (str, str))
+        'selection-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,))
     }
 
-    def __init__(self):
-        Gtk.Box.__init__(self)
+    def __init__(self, widget_window):
+        Gtk.Bin.__init__(self)
+
+        self.widget_window = widget_window
 
         # Glade setup
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, "filechooser.glade"))
         self.builder.connect_signals(self)
+
+        self.builder.get_object = self.builder.get_object
 
         self.add(self.builder.get_object('filechooser'))
 
@@ -92,10 +85,11 @@ class FileChooser(Gtk.Box):
         self.file_treeview = self.builder.get_object("file_treeview")
         self.bookmark_listbox = self.builder.get_object("bookmark_listbox")
 
-        # Enable DnD TODO DnD is not implemented yet
-        self.file_treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, \
-                                                    [('text/plain', 0, 0)], Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
-        self.file_treeview.enable_model_drag_dest([('text/plain', 0, 0)], \
+        # Enable DnD ToDo implement DnD
+        self.file_treeview.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK,
+                                    [('text/plain', 0, 0)], 
+                                    Gdk.DragAction.MOVE | Gdk.DragAction.COPY)
+        self.file_treeview.enable_model_drag_dest([('text/plain', 0, 0)],
                                                   Gdk.DragAction.COPY)
 
         # Connect callbacks to VolumeMonitor
@@ -103,8 +97,7 @@ class FileChooser(Gtk.Box):
         self.mounts.connect('mount-added', self.on_mount_added)
         self.mounts.connect('mount-removed', self.on_mount_removed)
 
-        # Initialize objects
-        #self.ok_cancel_dialog = Dialogs(DialogTypes.OK_CANCEL)
+        # Initialize helpers
         self.bookmarks = BookMarks()
         self.icons = Icons(Gtk.IconTheme.get_default())
 
@@ -115,10 +108,10 @@ class FileChooser(Gtk.Box):
         self.places = [home, desktop]
 
         # Initialize variables
-        self._cur_dir = desktop
-        self._old_dir = " "
+        self._cur_dir = None
+        self._old_dir = ''
         self._filters = {}
-        self._filter = ''
+        self._filter = None
         self._files = []
         self._show_hidden = False
         self._hidden_exts = ['.desktop']
@@ -133,13 +126,14 @@ class FileChooser(Gtk.Box):
 
         self.show_all()
 
-
     # Have to do this once realized so sizes will have been allocated
     def on_filechooser_realize(self, widget):
         self._update_bookmarks()
         self._fill_file_liststore(self._cur_dir)
 
     def _init_nav_buttons(self):
+        # FixMe this needs a lot of work. Try to copy this implementation
+        # https://searchcode.com/codesearch/view/22668315/
         box = self.nav_btn_box
         box.get_style_context().add_class(Gtk.STYLE_CLASS_LINKED)
 
@@ -220,36 +214,35 @@ class FileChooser(Gtk.Box):
     def _fill_file_liststore(self, path=None):
         model = self.file_liststore
         model.clear()
-        self.current_selection = None
+        self.selected_row = None
 
         if path:
-            self._cur_dir = path #os.path.realpath(path)
-
+            self._cur_dir = path
             # Reset scrollbars since display has changed
             self.file_vadj.set_value(0)
             self.file_hadj.set_value(0)
+        if self._cur_dir is None:
+            self._cur_dir = self.userdirs.get_XDG_directory('XDG_DESKTOP_DIR')
 
         files = []
         folders = []
-        if self._filter in self._filters:
+        if self._filter:
             exts = self._filters[self._filter]
         else:
             exts = '*' # Don't filter
-        dirs = os.listdir(self._cur_dir)
-        for obj in dirs:
-            if obj[0] == '.' and not self._show_hidden:
+        names = os.listdir(self._cur_dir)
+        for name in names:
+            if name[0] == '.' and not self._show_hidden:
                 continue
-            path = os.path.join(self._cur_dir, obj)
+            path = os.path.join(self._cur_dir, name)
             if os.path.islink(path):
                 path = os.readlink(path)
             if os.path.isdir(path):
-                folders.append(obj)
+                folders.append(name)
             elif os.path.isfile(path):
-                ext = os.path.splitext(obj)[1]
-                if '*' in exts and not ext in self._hidden_exts:
-                    files.append(obj)
-                elif '*{0}'.format(ext) in exts:
-                    files.append(obj)
+                ext = os.path.splitext(name)[1]
+                if '*' in exts or ext in exts and not ext in self._hidden_exts:
+                    files.append(name)
 
         folders.sort(key=str.lower, reverse=False)
         for fname in folders:
@@ -266,6 +259,23 @@ class FileChooser(Gtk.Box):
 
         self._update_nav_buttons()
 
+        self.emit('selection-changed', self._cur_dir)
+
+        # If dir is in bookmarks, select the bookmark
+        for row in self.bookmark_listbox.get_children():
+            bookmark_path = row.get_tooltip_text()
+            if bookmark_path == self._cur_dir:
+                self.bookmark_listbox.select_row(row)
+                break
+        else:
+            self.bookmark_listbox.unselect_all()
+
+        # No file selected yet, so desensitize edit buttons
+        self.builder.get_object('edit_button').set_sensitive(False)
+        self.builder.get_object('cut_button').set_sensitive(False)
+        self.builder.get_object('copy_button').set_sensitive(False)
+        self.builder.get_object('delete_button').set_sensitive(False)
+
     def _get_file_data(self, fpath):
         size = os.path.getsize(fpath)
         if size >= 1E9:
@@ -280,19 +290,70 @@ class FileChooser(Gtk.Box):
         date_str = datetime.fromtimestamp(tstamp).strftime("%m/%d/%y %X")
         return size_str, date_str
 
+    def count_lines(self, filename):
+        lines = 0
+        buf_size = 1024 * 1024
+        with open(filename) as fh:
+            read_f = fh.read
+            buf = read_f(buf_size)
+            while buf:
+                lines += buf.count('\n')
+                buf = read_f(buf_size)
+        return lines + 1
+
     def on_select_toggled(self, widget, path):
         model = self.file_liststore
         model[path][0] = not model[path][0]
 
+    def on_file_treeview_key_press_event(self, widget, event):
+        kv = event.keyval
+        # Events that don't need to know about modifiers
+        if kv == Gdk.KEY_Escape:
+            self.file_treeview.get_selection().unselect_all()
+            self.builder.get_object('edit_button').set_sensitive(False)
+            self.builder.get_object('cut_button').set_sensitive(False)
+            self.builder.get_object('copy_button').set_sensitive(False)
+            self.builder.get_object('delete_button').set_sensitive(False)
+            return True
+        elif kv == Gdk.KEY_Delete:
+            self.delete_selected()
+            return True
+        elif kv == Gdk.KEY_F2:
+            self.edit_selected()
+            return True
+
+        # Handle other events
+        # Determine the actively pressed modifier
+        modifier = event.get_state() & Gtk.accelerator_get_default_mod_mask()
+
+        # Bool of Control or Shift modifier states
+        control = modifier == Gdk.ModifierType.CONTROL_MASK
+        shift = modifier == Gdk.ModifierType.SHIFT_MASK
+
+        if control and kv == Gdk.KEY_c:
+            return self.copy_selected()
+        elif control and kv == Gdk.KEY_x:
+            return self.cut_selected()
+        elif control and kv == Gdk.KEY_v:
+            return self.paste()
+
+
     def on_filechooser_treeview_cursor_changed(self, widget):
-        path = widget.get_cursor()[0]
-        # Prevent emiting selection changed on double click
-        if path == self.current_selection or path is None:
+        row = widget.get_cursor()[0]
+        # Prevent emitting selection changed on double click
+        if row == self.selected_row or row is None:
             return
-        self.current_selection = path
-        fname = self.file_liststore[path][2]
+
+        self.selected_row = row
+
+        fname = self.file_liststore[row][2]
         fpath = os.path.join(self._cur_dir, fname)
         self.emit('selection-changed', fpath)
+
+        self.builder.get_object('edit_button').set_sensitive(True)
+        self.builder.get_object('cut_button').set_sensitive(True)
+        self.builder.get_object('copy_button').set_sensitive(True)
+        self.builder.get_object('delete_button').set_sensitive(True)
 
     def on_filechooser_treeview_row_activated(self, widget, path, colobj):
         fname = self.file_liststore[path][2]
@@ -301,63 +362,61 @@ class FileChooser(Gtk.Box):
             self.emit('file-activated', fpath)
         elif os.path.isdir(fpath):
             self._fill_file_liststore(fpath)
+        else:
+            # If neither, probably does not exist, so reload
+            self._fill_file_liststore()
 
     def on_file_name_editing_started(self, renderer, entry, row):
-        self.emit('filename-editing-started', entry)
+        keyboard.show(entry)
 
     def on_file_name_edited(self, widget, row, new_name):
         model = self.file_liststore
+        model[row][0] = 0
         old_name = model[row][2]
         old_path = os.path.join(self._cur_dir, old_name)
         new_path = os.path.join(self._cur_dir, new_name)
         if old_name == new_name:
             return
         if not os.path.exists(new_path):
-            msg = "Renamed {} to {}".format(old_name, new_name)
-            log.info(msg)
-            self.info(msg)
             os.rename(old_path, new_path)
+            msg = 'Renamed "{}" to "{}"'.format(old_name, new_name)
+            log.info(msg)
+            self.widget_window.show_info(msg, 2)
             model[row][2] = new_name
         else:
             msg = "Destination file already exists, won't rename"
             log.warning(msg)
-            self.warn(msg)
-            # TODO add overwrite confirmation dialog
-
-    def on_file_treeview_button_release_event(self, widget, data=None):
-        self.emit('button-up-event')
+            self.widget_window.show_warning(msg)
 
     # =======================================
     #   Methods to be called externally
     # =======================================
 
-    # Get filechooser object to embed in main window
-    def get_filechooser_widget(self):
-        return self.builder.get_object('filechooser')
-
-    # Add filter by name and list of extensions to display
-    def add_filter(self, name, ext):
-        self._filters[name] = ext
+    # Add filter by name
+    def add_filter(self, name, exts):
+        self._filters[name] = [ext.replace('*.', '.') for ext in exts]
 
     # Delete filter by name
-    def remove_filter(self, name):
+    def delete_filter(self, name):
         if name in self._filters:
             del self._filters[name]
+            if self._filter == name:
+                self._filter = None
             return True
         return False
 
     # Set current filter by name
     def set_filter(self, name):
-        if name in self._filters:
+        if name is None:
+            self._filter = None
+        elif name in self._filters:
             self._filter = name
-            self._fill_file_liststore()
-            return True
-        return False
+        self._fill_file_liststore()
 
     # Get current filter
     def get_filter(self):
         if self._filter in self._filters:
-            return [self._filter, self._filters[self._filter]]
+            return ['*' + ext for ext in self._filters[self._filter]]
         return None
 
     # Get names of all specified filters
@@ -381,9 +440,13 @@ class FileChooser(Gtk.Box):
 
     # Set current display directory to path
     def set_current_folder(self, fpath):
+#        fpath = fpath.rstrip('/')
         if os.path.exists(fpath):
             self._fill_file_liststore(fpath)
+            log.info('Setting the current folder to "{}"'.format(fpath))
             return True
+        log.error('Can not set current folder to "{}", folder does not exist' 
+            .format(fpath))
         return False
 
     # Get absolute path at cursor
@@ -412,14 +475,13 @@ class FileChooser(Gtk.Box):
 
     # Get paths for selected
     def get_selected(self):
-        model = self.file_liststore
+        model, rows = self.file_treeview.get_selection().get_selected_rows()
+        if not rows:
+            return
         paths = []
-        for row in range(len(model)):
-            if model[row][0] == 1:
-                fpath = os.path.join(self._cur_dir, model[row][2])
-                paths.append(fpath)
-        if len(paths) == 0:
-            return None
+        for row in rows:
+            fpath = os.path.join(self._cur_dir, model[row.to_string()][2])
+            paths.append(fpath)
         return paths
 
     # Check checkbox at file path
@@ -492,18 +554,19 @@ class FileChooser(Gtk.Box):
         self._fill_file_liststore(path)
 
     # Cut selected files
-    def cut_selected(self):
+    def cut_selected(self, widegt=None, data=None):
         files = self.get_selected()
-        if files is None:
+        if not files:
             log.error("No files selected to cut")
             return False
         self._files = files
         self._copy = False
         log.debug("Files to cut: {}".format(files))
+        self.builder.get_object('paste_button').set_sensitive(True)
         return True
 
     # Copy selected files
-    def copy_selected(self):
+    def copy_selected(self, widegt=None, data=None):
         files = self.get_selected()
         if files is None:
             log.error("No files selected to copy")
@@ -511,10 +574,11 @@ class FileChooser(Gtk.Box):
         self._files = files
         self._copy = True
         log.debug("Files to copy: {}".format(files))
+        self.builder.get_object('paste_button').set_sensitive(True)
         return True
 
     # Paste previously cut/copied files to current directory
-    def paste(self):
+    def paste(self, widegt=None, data=None):
         src_list = self._files
         if src_list is None:
             return False
@@ -527,6 +591,7 @@ class FileChooser(Gtk.Box):
                 self._move_file(src, dst_dir)
             self._files = None
         self._fill_file_liststore()
+        self.builder.get_object('paste_button').set_sensitive(False)
         return True
 
     # Save file as, if path is specified it will be saved in that directory
@@ -547,7 +612,7 @@ class FileChooser(Gtk.Box):
         tree.set_cursor(row, focus_column, True)
 
     # Create a new folder in the current directory
-    def new_folder(self):
+    def new_folder(self, widegt=None, data=None):
         model = self.file_liststore
         tree = self.file_treeview
 
@@ -559,6 +624,7 @@ class FileChooser(Gtk.Box):
 
         path = os.path.join(self._cur_dir, name)
         os.makedirs(path)
+
         self._fill_file_liststore()
 
         for row in range(len(model)):
@@ -568,19 +634,54 @@ class FileChooser(Gtk.Box):
         model[row][0] = 1
         tree.set_cursor(row, focus_column, True)
 
+    # Create a new folder in the current directory
+    def new_file(self, widegt=None, data=None):
+        model = self.file_liststore
+        tree = self.file_treeview
+
+        name = "New file"
+        count = 1
+        while os.path.exists(os.path.join(self._cur_dir, name)):
+            name = 'New Folder {0}'.format(count)
+            count += 1
+
+        path = os.path.join(self._cur_dir, name)
+        with open(path, 'w') as fh:
+            pass
+        self._fill_file_liststore()
+
+        for row in range(len(model)):
+            if model[row][2] == name:
+                break
+        focus_column = self.builder.get_object('col_file_name')
+        model[row][0] = 1
+        tree.set_cursor(row, focus_column, True)
+
+    def edit_selected(self, widget=None, data=None):
+        row = self.file_treeview.get_cursor()[0]
+        if not row:
+            return
+        model = self.file_liststore
+        tree = self.file_treeview
+        focus_column = self.builder.get_object('col_file_name')
+        model[row][0] = 1
+        tree.set_cursor(row, focus_column, True)
 
     # Move selected files to trash (see file_util code at end)
-    def delete_selected(self):
+    def delete_selected(self, widegt=None, data=None):
         paths = self.get_selected()
         if paths is None:
             return
         num = len(paths)
         for path in paths:
-            info = move2trash(path)
+            result, msg = move2trash(path)
         self._fill_file_liststore()
 
-        # Show ERROR/INFO message at bottom of screen
-        self.emit('error', info[0], info[1])
+        if result == 'INFO':
+            self.widget_window.show_info(msg, 2)
+        else:
+            self.widget_window.show_error(msg)
+
 
     # =======================================
     #   Drag and Drop TODO
@@ -612,7 +713,7 @@ class FileChooser(Gtk.Box):
         name = os.path.split(path)[1]
         msg = 'External storage device "{}" mounted'.format(name)
         log.info(msg)
-        self.info(msg)
+        self.widget_window.show_info(msg, 2)
         self._update_bookmarks()
 
     def on_mount_removed(self, volume, mount):
@@ -620,7 +721,7 @@ class FileChooser(Gtk.Box):
         name = os.path.split(path)[1]
         msg = 'External storage device "{}" removed'.format(name)
         log.info(msg)
-        self.info(msg)
+        self.widget_window.show_info(msg, 2)
         if self._cur_dir.startswith(path):
             self.file_liststore.clear()
             self._update_nav_buttons('')
@@ -633,8 +734,9 @@ class FileChooser(Gtk.Box):
         mount.eject(0, None, self.on_eject_finished)
 
     def on_eject_finished(self, mount, result):
-        print 'Safe to remove external storage device "{}"'.format(mount.get_name())
-        log.info('Safe to remove external storage device "{}"'.format(mount.get_name()))
+        msg ='Safe to remove external storage device "{}"'.format(mount.get_name())
+        log.info(msg)
+        self.widget_window.show_info(msg, 2)
 
     def on_add_bookmark_button_release_event(self, widget, data=None):
         path = self.file_treeview.get_cursor()[0]
@@ -765,18 +867,18 @@ class FileChooser(Gtk.Box):
             if not overwrite:
                 msg = "User selected not to overwrite {}".format(dst_name)
                 log.info(msg)
-                self.info(msg)
+                self.widget_window.show_info(msg, 2)
                 return
-
-        msg = 'Copying "{0}" to "{1}"'.format(src_name, dst_dir)
-        log.info(msg)
-        self.info(msg)
 
         if os.path.isfile(src):
             shutil.copy2(src, dst)
 
         else:
             shutil.copytree(src, dst)
+
+        msg = 'Copied "{0}" to "{1}"'.format(src_name, dst_dir)
+        log.info(msg)
+        self.widget_window.show_info(msg, 2)
 
         self._fill_file_liststore()
         return dst_name
@@ -788,31 +890,21 @@ class FileChooser(Gtk.Box):
         if src_dir == dst_dir:
             msg = "MOVE ERROR: Source and destination are the same"
             log.error(msg)
-            self.error(msg)
+            self.widget_window.show_error(msg)
             return
 
         dst = os.path.join(dst_dir, src_name)
 
         if os.path.exists(dst):
-            text = "Destination already exists! \n Overwrite {}?".format(src_name)
+            msg = "WARNING: Destination already exists. Overwrite {}?".format(src_name)
             overwrite = False #self.ok_cancel_dialog.run(text)
             if not overwrite:
                 msg = 'User selected not to overwrite "{}"'.format(src_name)
                 log.info(msg)
-                self.info(msg)
+                self.widget_window.show_info(msg, 2)
                 return
 
         msg = 'Moving "{0}" to "{1}"'.format(src_name, dst_dir)
         log.info(msg)
-        self.info(msg)
+        self.widget_window.show_info(msg, 2)
         shutil.move(src, dst)
-
-    # Shortcut methods to emit errors and print to terminal
-    def error(self, text):
-        self.emit('error', 'ERROR', text)
-
-    def warn(self, text):
-        self.emit('error', 'WARN', text)
-
-    def info(self, text):
-        self.emit('error', 'INFO', text)

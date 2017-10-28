@@ -11,33 +11,24 @@ gi.require_version('Gst', '1.0')
 from gi.repository import Gtk
 from gi.repository import Gst
 
-# Setup paths
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
-
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-
-SETTINGS_FILE = os.path.join(PYDIR, 'settings.json')
-
-from gui import widgets
+from widget_factory import pref_widgets
 from utilities import preferences as prefs
 from utilities import logger
 
 from stream import VideoHttpServer
 
+# Setup paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+
 # Setup logging
 log = logger.get(__name__)
-
 
 Gst.init(None)
 Gst.init_check(None)
 
 
 class GstWidget(Gtk.Box):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
         self.connect('unmap', self._on_unmap)
@@ -66,19 +57,19 @@ class GstWidget(Gtk.Box):
 
         devices = ["/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3"]
         default = "/dev/video0"
-        combo = widgets.PrefComboBox('VedioWidget', 'Device', devices, default)
+        combo = pref_widgets.PrefComboBox('VedioWidget', 'Device', devices, default)
         combo.connect('value-changed', self.on_device_changed)
         self.add_config_field(combo)
 
-        entry = widgets.PrefEntry('VedioWidget', 'Host', '127.0.0.1')
+        entry = pref_widgets.PrefEntry('VedioWidget', 'Host', '127.0.0.1')
         entry.connect('value-changed', self.on_host_chaned)
         # self.add_config_field(entry)
 
-        entry = widgets.PrefEntry('VedioWidget', 'Port', '5000')
+        entry = pref_widgets.PrefEntry('VedioWidget', 'Port', '5000')
         entry.connect('value-changed', self.on_port_changed)
         # self.add_config_field(entry)
 
-        switch = widgets.PrefSwitch('VedioWidget', 'Stream', True)
+        switch = pref_widgets.PrefSwitch('VedioWidget', 'Stream', True)
         switch.connect('value-changed', self.on_stream_state_changed)
         # self.add_config_field(switch)
 
@@ -96,6 +87,7 @@ class GstWidget(Gtk.Box):
         self.camera_gtk_filter = None
         self.camera_stream_filter = None
 
+        self.video_device = None
         self.video_source = None
         self.video_enc = None
         self.video_parse = None
@@ -119,6 +111,7 @@ class GstWidget(Gtk.Box):
         self.stream_thread = ControlThread(1, "StreamThread", 1)
 
     def on_device_changed(self, widget, device):
+        self.video_device = device
         print 'Device changed: ', device
 
     def on_host_chaned(self, widget, host):
@@ -132,7 +125,7 @@ class GstWidget(Gtk.Box):
         self.streaming(streaming)
 
     def add_config_field(self, feild):
-        box = widgets.PrefFeild(feild, self.size_group)
+        box = pref_widgets.PrefFeild(feild, self.size_group)
         self.config_box.pack_start(box, False, True, 5)
 
     def run(self):
@@ -147,7 +140,7 @@ class GstWidget(Gtk.Box):
         self.bus.connect('message::error', self._on_error)
 
         self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
-        self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', "/dev/video0", str))
+        self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', self.video_device, str))
         self.pipeline.add(self.video_source)
 
         caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")

@@ -1,13 +1,19 @@
 import os
 from linuxcnc import ini
 
+
+class MessageType(enumerate):
+    INFO = 0
+    WARNING = 1
+    ERROR = 2
+
+
 class DroType(enumerate):
     ABS = 0
     REL = 1
     DTG = 2
 
 class Paths(enumerate):
-
     # Hazzy Paths
     HAZZYDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
     MAINDIR = os.path.dirname(HAZZYDIR)

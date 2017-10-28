@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 #   Copyright (c) 2017 Kurt Jacobson
-#       <kurtcjacobson@gmail.com>
+#      <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #
@@ -21,10 +21,14 @@
 import os
 import gi
 
+gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('GtkSource', '3.0')
 
+from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import Gio
+from gi.repository import Pango
 from gi.repository import GtkSource
 
 # Set up paths
@@ -32,13 +36,25 @@ PYDIR = os.path.abspath(os.path.dirname(__file__))
 LANGDIR = os.path.join(PYDIR, 'gcode_highlight', "language-specs")
 STYLEDIR = os.path.join(PYDIR, 'gcode_highlight', "styles")
 
+from utilities import logger
+log = logger.get(__name__)
+
+
+class GcodeMap(GtkSource.Map):
+    def __init__(self):
+        GtkSource.Map.__init__(self)
+
+        self.set_vexpand(True)
+        self.props.font_desc = Pango.FontDescription('1')
+
 
 class GcodeView(GtkSource.View):
 
-    def __init__(self, preview=False):
+    def __init__(self):
         GtkSource.View.__init__(self)
 
-        self.is_preview = preview
+        self.set_hexpand(True)
+        self.set_vexpand(True)
 
         # create buffer
         self.buf = self.get_buffer()
@@ -59,16 +75,6 @@ class GcodeView(GtkSource.View):
         self.set_show_line_marks(False)
         self.set_highlight_current_line(False)
 
-        # Only allow edit if gcode preview
-        self.set_editable(self.is_preview)
-
-        self.holder_text = "\t\t\t****No file to preview****"
-
-        # Only highlight motion line if not preview
-        if not self.is_preview:
-            self.set_can_focus(False)
-            self.holder_text = ""
-
         self.connect('key-press-event', self.on_key_press)
 
         # Set line highlight styles
@@ -78,10 +84,9 @@ class GcodeView(GtkSource.View):
 
         self.mark = None
         self.current_file = None
-        self.error_line =None
+        self.error_line = None
 
         self.show()
-
 
     def add_mark_category(self, category, bg_color):
         att = GtkSource.MarkAttributes()
@@ -90,12 +95,11 @@ class GcodeView(GtkSource.View):
         att.set_background(color)
         self.set_mark_attributes(category, att, 1)
 
-
     def load_file(self, fn=None):
         self.current_file = fn
         self.buf.begin_not_undoable_action()
         if not fn:
-            self.buf.set_text(self.holder_text)
+            self.buf.set_text('')
         else:
             with open(fn, 'r') as f:
                 self.buf.set_text(f.read())
@@ -108,8 +112,8 @@ class GcodeView(GtkSource.View):
         else:
             self.highlight_line(None)
 
-
-    def highlight_line(self, lnum, style='none'):
+    def highlight_line(self, lnum=None, style=None):
+        style = style or 'none' # Must be a string
         if not lnum or lnum == -1:
             if self.mark:
                 self.buf.delete_mark(self.mark)
@@ -131,14 +135,19 @@ class GcodeView(GtkSource.View):
     def highlight_error_line(self, lnum):
         self.error_line = lnum
 
-    def get_modified(self):
-        return self.buf.get_modified()
-
-    def set_modified(self, data):
-        self.buf.set_modified(data)
-
     def set_line_number(self, lnum):
-        self.highlight_line(int(lnum))
+        if lnum == 0: # 0 will scroll to end, use -1 for that!
+            lnum = 1
+        iter = self.buf.get_iter_at_line(lnum - 1)
+        self.scroll_to_iter(iter, 0, True, 0, .5)
+
+    def set_cursor(self, lnum):
+        if lnum == 0: # 0 will scroll to end, use -1 for that!
+            lnum = 1
+        self.grab_focus()
+        iter = self.buf.get_iter_at_line(lnum - 1)
+        self.scroll_to_iter(iter, 0, True, 0, .5)
+        self.buf.place_cursor(iter)
 
     def get_program_length(self):
         return self.buf.get_line_count()
@@ -161,3 +170,34 @@ class GcodeView(GtkSource.View):
         if event.get_state() & Gdk.ModifierType.CONTROL_MASK:
             if kv == Gdk.KEY_s:
                 self.save()
+
+
+def demo():
+    view = GcodeView()
+    buf = view.get_buffer()
+    buf.set_text('''(TEST OF G-CODE HIGHLIGHTING)\n\nG1 X1.2454 Y2.3446 Z-10.2342 I0 J0 K0\n\nM3''')
+    view.highlight_line(3, None)
+
+    scrolled = Gtk.ScrolledWindow()
+    scrolled.set_hexpand(True)
+    scrolled.add(view)
+
+    view_map = GcodeMap()
+    view_map.set_view(view)
+
+    box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+    box.pack_start(scrolled, True, True, 0)
+    box.pack_start(Gtk.Separator(), False, False, 0)
+    box.pack_start(view_map, False, False, 0)
+
+    win = Gtk.Window()
+    win.set_default_size(400, 300)
+    win.add(box)
+
+    win.connect('destroy', Gtk.main_quit)
+
+    win.show_all()
+    Gtk.main()
+
+if __name__ == '__main__':
+    demo()

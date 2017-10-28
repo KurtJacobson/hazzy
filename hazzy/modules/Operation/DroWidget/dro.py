@@ -23,8 +23,10 @@ from widget_factory.TouchPads import keyboard
 
 class Dro(Gtk.Grid):
 
-    def __init__(self):
+    def __init__(self, widget_window):
         Gtk.Grid.__init__(self)
+
+        self.widget_window = widget_window
 
         self.set_size_request(60, 60)
         self.set_hexpand(True)

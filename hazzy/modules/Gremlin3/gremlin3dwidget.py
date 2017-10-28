@@ -44,10 +44,11 @@ log = logging.getLogger("HAZZY.GREMLIN")
 log.setLevel(logging.DEBUG)
 
 
-class Gremlin3DWidget(Gtk.Box):
+class Gremlin3DWidget(Gtk.Bin):
 
-    def __init__(self):
-        Gtk.Box.__init__(self)
+    def __init__(self, widget_window):
+        Gtk.Bin.__init__(self)
+
         if os.environ["INI_FILE_NAME"]:
             inifile = linuxcnc.ini(os.environ["INI_FILE_NAME"])
             area3d = Area3D(inifile, 400, 600)

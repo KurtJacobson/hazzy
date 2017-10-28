@@ -21,10 +21,10 @@ log = logger.get(__name__)
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(PYDIR, 'ui')
 
-class BasicControls(Gtk.Box):
+class BasicControls(Gtk.Bin):
 
-    def __init__(self):
-        Gtk.Box.__init__(self)
+    def __init__(self, widget_window):
+        Gtk.Bin.__init__(self)
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'basic_controls.ui'))
