@@ -7,12 +7,6 @@ class MessageType(enumerate):
     WARNING = 1
     ERROR = 2
 
-
-class DroType(enumerate):
-    ABS = 0
-    REL = 1
-    DTG = 2
-
 class Paths(enumerate):
     # Hazzy Paths
     HAZZYDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
