@@ -60,10 +60,6 @@ MOTION = {
     linuxcnc.TRAJ_MODE_TELEOP: 'TELEOP'
 }
 
-class ErrorTypes:
-    MESSAGE = 0
-    INFO = 1
-    ERROR = 2
 
 # These signals should cause an update
 # when they are connected to a callback
@@ -294,9 +290,10 @@ class Status(GObject.GObject):
             log.info("OPERATOR_DISPLAY: {}".format(msg))
 
         else:
-            kind = ErrorTypes.ERROR
             notifications.show_error("UNKNOWN ERROR!", msg)
             log.error("UNKNOWN ERROR: {}".format(msg))
+
+        # ToDo Set HAL error pin
 #        self.emit('error', (kind, msg))
 
 
