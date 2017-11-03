@@ -27,9 +27,9 @@ class ProgramControls(Gtk.Box):
         self.stop_button.connect('clicked', self.on_stop_button_clicked)
         self.pack_start(self.stop_button, True, True, 4)
 
-    def on_run_button_clicked(self, widegt):
+    def on_run_button_clicked(self, widget):
         command.program_run()
         print 'RUN'
 
-    def on_stop_button_clicked(self, widegt):
+    def on_stop_button_clicked(self, widget):
         print 'STOP'
