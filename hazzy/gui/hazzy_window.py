@@ -57,6 +57,10 @@ class HazzyWindow(Gtk.Window):
         self.menu_button.set_popover(self.make_menu_popover())
         self.header_bar.pack_start(self.menu_button)
 
+        self.system_menu_button = Gtk.MenuButton()
+        self.system_menu_button.set_popover(self.make_system_menu_popover())
+        self.header_bar.pack_start(self.system_menu_button)
+
         self.edit_button = Gtk.Button()
         self.edit_button.connect('clicked', self.on_edit_button_clicked)
         self.edit_button.set_can_focus(False)
@@ -93,6 +97,33 @@ class HazzyWindow(Gtk.Window):
         quit.connect('clicked', Gtk.main_quit)
 
         pbox.pack_start(quit, False, False, 5)
+        pbox.show_all()
+
+        return popover
+
+    def make_system_menu_popover(self):
+        #Create a menu popover - very temporary, need to do something neater
+        popover = Gtk.PopoverMenu.new()
+
+        pbox = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
+        pbox.set_property('margin', 10)
+        popover.add(pbox)
+
+        halscope = Gtk.ModelButton.new()
+        halscope.set_label("Hal Scope")
+        # halscope.connect('clicked', self.on_show_about_clicked)
+        pbox.pack_start(halscope, False, False, 5)
+
+        halmeter = Gtk.ModelButton.new()
+        halmeter.set_label("Hal Meter")
+        # halmeter.connect('clicked', self.on_show_about_clicked)
+        pbox.pack_start(halmeter, False, False, 5)
+
+        halshow = Gtk.ModelButton.new()
+        halshow.set_label("Hal Configuration")
+        # halshow.connect('clicked', Gtk.main_quit)
+        pbox.pack_start(halshow, False, False, 5)
+
         pbox.show_all()
 
         return popover
