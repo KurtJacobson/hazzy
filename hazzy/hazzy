@@ -14,15 +14,18 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
+gi.require_version('Notify', '0.7')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import Notify
 
 from utilities import logger
 from utilities.constants import Paths
 from gui.hazzy_window import HazzyWindow
 
 log = logger.get('MAIN')
+Notify.init("hazzy")
 
 BASE = None
 INIFILE = None

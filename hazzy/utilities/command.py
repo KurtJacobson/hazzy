@@ -2,6 +2,7 @@
 
 import linuxcnc
 from utilities import ini_info
+from utilities import notifications
 
 num_joints = ini_info.get_num_joints()
 no_force_homing = ini_info.get_no_force_homing()
@@ -36,6 +37,32 @@ def flood_on():
 
 def flood_off():
     command.flood(0)
+
+def program_run(start_line=0):
+    '''Run loaded program if OK to do so.'''
+
+    stat.poll()
+    msg = None
+    if stat.estop:
+        msg = "Can't run program when estoped"
+    elif not stat.enabled:
+        msg = "Can't run program when not enabled"
+    elif not no_force_homing if no_force_homing else not is_homed():
+        msg = "Can't run program when not homed"
+    elif not stat.interp_state == linuxcnc.INTERP_IDLE:
+        msg = "Can't run program when interpreter is not idle"
+    elif stat.file == "":
+        msg = "Can't run program when no file loaded"
+    else:
+        set_mode(linuxcnc.MODE_AUTO)
+        command.auto(linuxcnc.AUTO_RUN, start_line)
+        info = "Running the program '{}' from line {}".format(stat.file, start_line)
+        notifications.show_success(info, "Program Started!")
+        log.info(info)
+    if msg:
+        log.error(msg)
+        notifications.show_error(msg)
+        return msg
 
 def set_mode(mode):
     '''Set mode to one of

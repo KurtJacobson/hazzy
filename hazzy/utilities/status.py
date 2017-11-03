@@ -22,14 +22,17 @@
 import math
 import linuxcnc
 import time
+import gi
 
 from gi.repository import GObject
 
 from utilities import ini_info
+from utilities import notifications
 
 # Setup logging
 from utilities import logger
 log = logger.get(__name__)
+
 
 STATES = {
     linuxcnc.STATE_ESTOP: 'ESTOP',
@@ -137,13 +140,13 @@ class Status(GObject.GObject):
                 self.old[attribute] = None
 
         else:
-            log.error('linuxcnc.stat has no attribute "{}"'.format(attribute))
+            log.error('linuxcnc.stat object has no attribute "{}"'.format(attribute))
 
     def _connect_joint_callback(self, attribute, callback):
         if attribute in self.keys:
             self.connect(attribute, callback)
         else:
-            log.error('linuxcnc.stat.joint has no attribute "{}"'.format(attribute))
+            log.error('linuxcnc.stat.joint object has no attribute "{}"'.format(attribute))
 
     def on_changed(self, attribute, callback):
         kind, name = attribute.split('.')
@@ -266,24 +269,35 @@ class Status(GObject.GObject):
         self.emit('joint-positions', pos)
 
     def _on_error(self, error):
-        kind, message = error
+        kind, msg = error
 
-        if message == "" or message is None:
-            message = "Unknown error!"
+        if msg == "" or msg is None:
+            msg = "Unknown error!"
 
-        if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR, 'ERROR'):
-            kind = ErrorTypes.ERROR
-            log.error(message)
-        elif kind in (linuxcnc.NML_TEXT, linuxcnc.OPERATOR_TEXT, 'INFO'):
-            kind = ErrorTypes.ERROR
-            log.info(message)
-        elif kind in (linuxcnc.NML_DISPLAY, linuxcnc.OPERATOR_DISPLAY, 'MSG'):
-            kind = ErrorTypes.ERROR
-            log.info(message)
+        if kind == linuxcnc.NML_ERROR:
+            notifications.show_error(msg, "NML_ERROR!", timeout=0)
+            log.error("NML_ERROR: {}".format(msg))
+        elif kind == linuxcnc.OPERATOR_ERROR:
+            notifications.show_error(msg, "OPERATOR_ERROR!", timeout=0)
+            log.error("OPERATOR_ERROR: {}".format(msg))
+        elif kind == linuxcnc.NML_TEXT:
+            notifications.show_info(msg, "NML_TEXT!", timeout=0)
+            log.info("NML_TEXT: {}".format(msg))
+        elif kind == linuxcnc.OPERATOR_TEXT:
+            notifications.show_info(msg, "OPERATOR_TEXT!", timeout=0)
+            log.info("OPERATOR_TEXT: {}".format(msg))
+        elif kind == linuxcnc.NML_DISPLAY:
+            notifications.show_info(msg, "NML_DISPLAY!", timeout=0)
+            log.info("NML_DISPLAY: {}".format(msg))
+        elif kind == linuxcnc.OPERATOR_DISPLAY:
+            notifications.show_info(msg, "OPERATOR_DISPLAY!", timeout=0)
+            log.info("OPERATOR_DISPLAY: {}".format(msg))
+
         else:
             kind = ErrorTypes.ERROR
-            log.error(message)
-        self.emit('error', (kind, message))
+            notifications.show_error("UNKNOWN ERROR!", msg)
+            log.error("UNKNOWN ERROR: {}".format(msg))
+#        self.emit('error', (kind, msg))
 
 
 status = Status()
@@ -291,6 +305,7 @@ status = Status()
 def on_changed(attribute, callback):
     status.on_changed(attribute, callback)
 
+# These are used only for logging purposes
 def _log_task_state(widget, task_state):
     state_str = STATES.get(task_state, 'UNKNOWN')
     log.debug("Machine state: {0}".format(state_str))
