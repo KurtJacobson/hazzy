@@ -111,22 +111,31 @@ class HazzyWindow(Gtk.Window):
 
         halscope = Gtk.ModelButton.new()
         halscope.set_label("Hal Scope")
-        # halscope.connect('clicked', self.on_show_about_clicked)
+        halscope.connect('clicked', self.on_show_halscope_clicked)
         pbox.pack_start(halscope, False, False, 5)
 
         halmeter = Gtk.ModelButton.new()
         halmeter.set_label("Hal Meter")
-        # halmeter.connect('clicked', self.on_show_about_clicked)
+        halmeter.connect('clicked', self.on_show_halmeter_clicked)
         pbox.pack_start(halmeter, False, False, 5)
 
         halshow = Gtk.ModelButton.new()
         halshow.set_label("Hal Configuration")
-        # halshow.connect('clicked', Gtk.main_quit)
+        halshow.connect('clicked', self.on_show_halshow_clicked)
         pbox.pack_start(halshow, False, False, 5)
 
         pbox.show_all()
 
         return popover
+
+    def on_show_halscope_clicked(self, widget):
+        p = os.popen("halscope &")
+
+    def on_show_halmeter_clicked(self, widget):
+        p = os.popen("halmeter &")
+
+    def on_show_halshow_clicked(self, widget):
+        p = os.popen("halshow &")
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on non focusable area
@@ -144,7 +153,7 @@ class HazzyWindow(Gtk.Window):
             for widget in widgets:
                 widget.show_overlay(edit)
 
-    def on_show_about_clicked(self, widegt):
+    def on_show_about_clicked(self, widget):
         about.About(self)
 
     def set_gtk_theme(self, theme=None):
