@@ -1,5 +1,31 @@
 #!/usr/bin/env python
 
+#   Copyright (c) 2017 Kurt Jacobson
+#      <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   This is used for each of the ScreenStack's children, and is what contains
+#   the individual Widgets. It implements what is need to for being able to
+#   move/resize the Widgets via dragging with the mouse or via the arrow keys.
+
+# ToDo:
+#   Make the widgets expand to the window border if they are within GRID_SIZE / 2
+
 import os
 import importlib
 

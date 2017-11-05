@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-#   This module is used to get information from the machines INI file.
-#   It does some sanity cheking and returns valid values. If an entry
-#   does not exist it may return a default value.
-
 #   Copyright (c) 2017 Kurt Jacobson
 #      <kurtcjacobson@gmail.com>
 #
@@ -21,6 +17,11 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   This module is used to get information from the machine's INI file.
+#   It does some sanity checking to ensure it returns valid values.
+#   If an INI entry does not exist, it may return a default value.
 
 import os
 import sys

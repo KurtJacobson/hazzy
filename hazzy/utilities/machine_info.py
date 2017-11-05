@@ -18,6 +18,13 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+# Description:
+#   Does some magic with info gleaned from the INI file to determine the machine
+#   confiuration. Mostly needed for gantry or non trivial kinematics machines.
+
+# ToDo:
+#   Should this become part of ini_info.py????
+
 from utilities import ini_info
 from utilities import logger
 

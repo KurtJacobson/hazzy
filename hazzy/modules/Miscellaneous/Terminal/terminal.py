@@ -1,5 +1,28 @@
 #!/usr/bin/env python
 
+#   Copyright (c) 2017 Kurt Jacobson
+#      <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   Terminal widget for debugging and to provide a method of running an
+#   an interactive python session using the same interpreter as the main UI.
+
+
 import os
 import sys
 import gi
@@ -14,6 +37,12 @@ from gi.repository import Vte, GLib
 PYDIR = os.path.join(os.path.dirname(__file__))
 
 class Terminal(Gtk.ScrolledWindow):
+
+    title = 'Terminal'
+    author = 'Kurt Jacobson'
+    version = '0.1.0'
+    date = '9/9/2017'
+    description = 'Terminal Widget'
 
     def __init__(self, widget_window):
         Gtk.ScrolledWindow.__init__(self)

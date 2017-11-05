@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-#   Base logging module
-
 #   Copyright (c) 2017 Kurt Jacobson
 #      <kurtcjacobson@gmail.com>
 #
@@ -9,7 +7,7 @@
 #
 #   Hazzy is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
+#   the Free Software Foundation, either version 2 of the License, or
 #   (at your option) any later version.
 #
 #   Hazzy is distributed in the hope that it will be useful,
@@ -19,6 +17,13 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   Application wide logging module.
+
+# ToDo:
+#   Find a way to get [DISPLAY] LOG_FILE form INI. Can't use ini_info.py
+#   currently since it imports logger, but the logger is not set up yet!
 
 import os
 import logging

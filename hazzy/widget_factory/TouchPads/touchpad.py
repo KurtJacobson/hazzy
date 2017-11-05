@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 
-#   Numeric touchpad for use on all entries
-#
 #   Copyright (c) 2017 Kurt Jacobson
-#       <kurtcjacobson@gmail.com>
+#      <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
 #
 #   Hazzy is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
+#   the Free Software Foundation, either version 2 of the License, or
 #   (at your option) any later version.
 #
 #   Hazzy is distributed in the hope that it will be useful,
@@ -19,6 +17,12 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   PopOver keypad for use on all numeric entries
+
+# ToDo:
+#   Need to finish or make as a setting for the main PopOver keyboard
 
 
 import os

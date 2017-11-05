@@ -1,8 +1,27 @@
 #!/usr/bin/env python
 
-# hazzy startup script.
-# This script checks package requirements, sets up the system/environment
-# and shows the main window.
+#   Copyright (c) 2017 Kurt Jacobson
+#      <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description
+#   Hazzy startup script.
+#   This script checks package requirements, sets up the system/environment
+#   and shows the main window.
 
 import os
 import sys
@@ -75,11 +94,10 @@ def main(argv):
 
     hazzy_window = HazzyWindow()
     hazzy_window.set_gtk_theme('Adwaita')
-#    hazzy_window.set_icon_theme('Adwaita')
     hazzy_window.load_from_xml()
     hazzy_window.show_all()
 
-    hazzy_window.connect('delete-event', quit,)
+    hazzy_window.connect('delete-event', quit)
 
     Gtk.main()
 

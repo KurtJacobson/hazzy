@@ -1,9 +1,31 @@
 #!/usr/bin/env python
 
+#   Copyright (c) 2017 Kurt Jacobson
+#      <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   This is the popover used for adding/editing screens and widgets 
+#   It display an IconView containing all the valid widegt pagakes found
+#   in the hazzy widget dir and in the maichine config directory.
+
 import os
 import sys
 import ast
-import json
 
 import gi
 
@@ -114,6 +136,7 @@ class WidgetChooser(Gtk.Popover):
 
                 categories[category][package] = info
 
+#        import json
 #        print json.dumps(categories, sort_keys=True, indent=4)
 
         self.populate(categories)
@@ -290,7 +313,3 @@ class ScreenEditor(Gtk.Box):
     def on_position_changed(self, widegt):
         pos = widegt.get_value_as_int()
         self.screen_stack.set_visible_child_position(pos)
-
-
-if __name__ == "__main__":
-    main()
