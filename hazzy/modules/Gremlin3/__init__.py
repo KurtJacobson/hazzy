@@ -1,1 +1,1 @@
-from gremlin3dwidget import Gremlin3DWidget as Widget
+from gremlin3 import Gremlin3 as Widget
