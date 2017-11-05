@@ -73,6 +73,204 @@ class HazzyWindow(Gtk.Window):
 
         self.set_size_request(900, 600)
 
+        self.get_gtk_theme()
+
+    def on_show_halscope_clicked(self, widget):
+        p = os.popen("halscope &")
+
+    def on_show_halmeter_clicked(self, widget):
+        p = os.popen("halmeter &")
+
+    def on_show_halshow_clicked(self, widget):
+        p = os.popen("halshow &")
+
+    def on_button_press(self, widget, event):
+        # Remove focus when clicking on non focusable area
+        self.get_toplevel().set_focus(None)
+
+    def on_edit_button_clicked(self, widget):
+        self.widget_chooser.popup_()
+
+    def on_edit_layout_toggled(self, widget):
+        edit = widget.get_active()
+        # Hide eventbox used for drag/resize
+        screens = self.screen_stack.get_children()
+        for screen in screens:
+            widgets = screen.get_children()
+            for widget in widgets:
+                widget.show_overlay(edit)
+
+    def on_show_about_clicked(self, widget):
+        about.About(self)
+
+# =========================================================
+#  XML handlers for saving/loading screen layout
+# =========================================================
+
+    def load_from_xml(self):
+
+        if not os.path.exists(self.xml_file):
+            # Add an initial screen to get started
+            self.screen_stack.add_screen()
+            return
+
+        try:
+            tree = etree.parse(self.xml_file)
+        except etree.XMLSyntaxError as e:
+            error_str = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
+            log.error(error_str)
+            return
+
+        root = tree.getroot()
+
+        # Windows (Might support multiple windows in future, so iterate)
+        for window in root.iter('window'):
+            window_name = window.get('name')
+            window_title = window.get('title')
+
+            props = self.get_properties(window)
+
+            self.set_default_size(int(props['w']), int(props['h']))
+            self.move(int(props['x']), int(props['y']))
+            self.set_maximized(props['maximize'])
+            self.set_fullscreen(props['fullscreen'])
+            self.set_gtk_theme(props['gtk-theme'])
+            self.set_icon_theme(props['icon-theme'])
+
+            # Add screens
+            for screen in window.iter('screen'):
+
+                screen_title = screen.get('title')
+                screen_obj = self.screen_stack.add_screen(screen_title)
+
+                # Add all the widgets
+                for widget in screen.iter('widget'):
+                    package = widget.get('package')
+                    props = self.get_properties(widget)
+                    try:
+                        widget_obj = WidgetWindow(package)
+                        self.screen_stack.place_widget(screen_obj,
+                                                    widget_obj,
+                                                    int(props['x']),
+                                                    int(props['y']),
+                                                    int(props['w']),
+                                                    int(props['h']))
+                    except ImportError:
+                        log.error('The package "{}" could not be imported'.format(package))
+                        continue
+
+        if not self.screen_stack.get_children():
+            # Add an initial screen to get started
+            self.screen_stack.add_screen()
+
+    def save_to_xml(self):
+
+        # Create XML root element & comment
+        root = etree.Element("hazzy_interface")
+        root.append(etree.Comment('Interface for: {}'.format(Paths.MACHINE_NAME)))
+
+        # Add time stamp
+        time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        root.append(etree.Comment('Last modified: {}'.format(time_str)))
+
+        # Main window size & position 
+        #    ToDO: need to iterate to support multi window
+        win = etree.SubElement(root, "window")
+        win.set('name', 'Window 1')
+        win.set('title', 'Main Window')
+
+        self.set_property(win, 'maximize', self.header_bar.window_maximized)
+        self.set_property(win, 'fullscreen', self.header_bar.window_fullscreen)
+        self.set_property(win, 'gtk-theme', self.get_gtk_theme())
+        self.set_property(win, 'icon-theme', self.get_icon_theme())
+
+        x = self.get_position().root_x
+        y = self.get_position().root_y
+        w, h = self.get_size()
+
+        for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
+            self.set_property(win, prop, value)
+
+        # Screens
+        screens = self.screen_stack.get_children()
+        for screen in screens:
+            screen_title = self.screen_stack.child_get_property(screen, 'title')
+
+            scr = etree.SubElement(win, "screen")
+            scr.set('title', screen_title)
+
+            # Widgets
+            widgets = screen.get_children()
+            for widget in widgets:
+                wid = etree.SubElement(scr, "widget")
+                wid.set('package', widget.package)
+
+                x = screen.child_get_property(widget, 'x')
+                y = screen.child_get_property(widget, 'y')
+                w = widget.get_size_request().width
+                h = widget.get_size_request().height
+
+                for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
+                    self.set_property(wid, prop, value)
+
+        with open(self.xml_file, 'w') as fh:
+            fh.write(etree.tostring(root, pretty_print=True))
+
+# =========================================================
+#  Helper functions
+# =========================================================
+
+    def set_property(self, parent, name, value):
+        prop = etree.SubElement(parent, 'property')
+        prop.set('name', name)
+        prop.text = str(value)
+
+    def get_properties(self, parent):
+        props = {}
+        for prop in parent.iterchildren('property'):
+            props[prop.get('name')] = prop.text
+        return props
+
+    def set_maximized(self, maximized):
+        if maximized == 'True':
+            self.maximize()
+        else:
+            self.unmaximize()
+
+    def set_fullscreen(self, fullscreen):
+        if fullscreen == 'True':
+            self.fullscreen()
+        else:
+            self.unfullscreen()
+
+    def get_gtk_theme(self):
+        settings = self.get_settings()
+        theme = settings.get_property("gtk-theme-name")
+        if not theme:
+            theme = settings.get_default().get_property("gtk-theme-name")
+        return theme
+
+    # ToDo: Verify that theme exists
+    def set_gtk_theme(self, theme=None):
+        settings = self.get_settings()
+        if not theme:
+            theme = settings.get_default().get_property("gtk-theme-name")
+        settings.set_string_property("gtk-theme-name", theme, "")
+
+    def get_icon_theme(self):
+        settings = self.get_settings()
+        theme = settings.get_property("gtk-icon-theme-name")
+        if not theme:
+            theme = settings.get_default().get_property("gtk-icon-theme-name")
+        return theme
+
+    # ToDo: Verify that theme exists
+    def set_icon_theme(self, theme=None):
+        settings = self.get_settings()
+        if not theme:
+            theme = settings.get_default().get_property("gtk-icon-theme-name")
+        settings.set_string_property("gtk-icon-theme-name", theme, "")
+
     def make_menu_popover(self):
         #Create a menu popover - very temporary, need to do something neater
         popover = Gtk.PopoverMenu.new()
@@ -127,179 +325,3 @@ class HazzyWindow(Gtk.Window):
         pbox.show_all()
 
         return popover
-
-    def on_show_halscope_clicked(self, widget):
-        p = os.popen("halscope &")
-
-    def on_show_halmeter_clicked(self, widget):
-        p = os.popen("halmeter &")
-
-    def on_show_halshow_clicked(self, widget):
-        p = os.popen("halshow &")
-
-    def on_button_press(self, widget, event):
-        # Remove focus when clicking on non focusable area
-        self.get_toplevel().set_focus(None)
-
-    def on_edit_button_clicked(self, widget):
-        self.widget_chooser.popup_()
-
-    def on_edit_layout_toggled(self, widget):
-        edit = widget.get_active()
-        # Hide eventbox used for drag/resize
-        screens = self.screen_stack.get_children()
-        for screen in screens:
-            widgets = screen.get_children()
-            for widget in widgets:
-                widget.show_overlay(edit)
-
-    def on_show_about_clicked(self, widget):
-        about.About(self)
-
-    def set_gtk_theme(self, theme=None):
-        settings = self.get_settings()
-        if not theme:
-            theme = settings.get_default().get_property("gtk-theme-name")
-        settings.set_string_property("gtk-theme-name", theme, "")
-
-    def set_icon_theme(self, theme=None):
-        settings = self.get_settings()
-        if not theme:
-            theme = settings.get_default().get_property("gtk-icon-theme-name")
-        settings.set_string_property("gtk-icon-theme-name", theme, "")
-
-    def load_from_xml(self):
-
-        if not os.path.exists(self.xml_file):
-            # Add an initial screen to get started
-            self.screen_stack.add_screen()
-            return
-
-        try:
-            tree = etree.parse(self.xml_file)
-        except etree.XMLSyntaxError as e:
-            error_str = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
-            log.error(error_str)
-            return
-
-        root = tree.getroot()
-
-        # Windows (Might support multiple windows in future, so iterate)
-        for window in root.iter('window'):
-            window_name = window.get('name')
-            window_title = window.get('title')
-
-            props = self.get_propertys(window)
-
-            self.set_default_size(int(props['w']), int(props['h']))
-            self.move(int(props['x']), int(props['y']))
-            self.set_maximized(props['maximize'])
-            self.set_fullscreen(props['fullscreen'])
-
-            # Add screens
-            for screen in window.iter('screen'):
-#                screen_name = screen.get('name')
-                screen_title = screen.get('title')
-#                screen_pos = int(screen.get('position'))
-
-                screen_obj = self.screen_stack.add_screen(screen_title)
-#                self.screen_stack.set_position(screen_pos) # Not needed ??
-
-                # Add all the widgets
-                for widget in screen.iter('widget'):
-                    package = widget.get('package')
-                    props = self.get_propertys(widget)
-                    try:
-                        widget_obj = WidgetWindow(package)
-                        self.screen_stack.place_widget(screen_obj,
-                                                    widget_obj,
-                                                    int(props['x']),
-                                                    int(props['y']),
-                                                    int(props['w']),
-                                                    int(props['h']))
-                    except ImportError:
-                        log.error('The package "{}" could not be imported'.format(package))
-                        continue
-
-        if not self.screen_stack.get_children():
-            # Add an initial screen to get started
-            self.screen_stack.add_screen()
-
-    def save_to_xml(self):
-
-        # Create XML root element & comment
-        root = etree.Element("hazzy_interface")
-        root.append(etree.Comment('Interface for: {}'.format(Paths.MACHINE_NAME)))
-
-        # Add time stamp
-        time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        root.append(etree.Comment('Last modified: {}'.format(time_str)))
-
-        # Main window size & position (TODO need to iterate to support multi window)
-        win = etree.SubElement(root, "window")
-        win.set('name', 'Window 1')
-        win.set('title', 'Main Window')
-
-        self.set_property(win, 'maximize', self.header_bar.window_maximized)
-        self.set_property(win, 'fullscreen', self.header_bar.window_fullscreen)
-
-        x = self.get_position().root_x
-        y = self.get_position().root_y
-        w, h = self.get_size()
-
-        for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
-            self.set_property(win, prop, value)
-
-        # Screens
-        screens = self.screen_stack.get_children()
-        for screen in screens:
-#            screen_name = self.screen_stack.child_get_property(screen, 'name')
-            screen_title = self.screen_stack.child_get_property(screen, 'title')
-#            screen_pos = self.screen_stack.child_get_property(screen, 'position')
-
-            scr = etree.SubElement(win, "screen")
-#            scr.set('name', screen_name)
-            scr.set('title', screen_title)
-#            scr.set('position', str(screen_pos))
-
-            # Widgets
-            widgets = screen.get_children()
-            for widget in widgets:
-                wid = etree.SubElement(scr, "widget")
-                wid.set('package', widget.package)
-
-                x = screen.child_get_property(widget, 'x')
-                y = screen.child_get_property(widget, 'y')
-                w = widget.get_size_request().width
-                h = widget.get_size_request().height
-
-                for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
-                    self.set_property(wid, prop, value)
-
-        with open(self.xml_file, 'w') as fh:
-            fh.write(etree.tostring(root, pretty_print=True))
-
-# Helpers
-
-    def set_property(self, parent, name, value):
-        prop = etree.SubElement(parent, 'property')
-        prop.set('name', name)
-        prop.text = str(value)
-
-    def get_propertys(self, parent):
-        props = {}
-        for prop in parent.iterchildren('property'):
-            props[prop.get('name')] = prop.text
-        return props
-
-    def set_maximized(self, maximized):
-        if maximized == 'True':
-            self.maximize()
-        else:
-            self.unmaximize()
-
-    def set_fullscreen(self, fullscreen):
-        if fullscreen == 'True':
-            self.fullscreen()
-        else:
-            self.unfullscreen()
