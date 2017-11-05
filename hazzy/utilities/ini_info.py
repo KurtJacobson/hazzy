@@ -46,31 +46,40 @@ def get_log_file():
     temp = ini.find('DISPLAY', 'LOG_FILE')
     if not temp:
         fname = MACHINE_NAME.replace(' ', '_') + '.log'
-        return os.path.join(CONFIG_DIR, fname)
-    if not os.path.isabs(temp):
-        return os.path.join(CONFIG_DIR, temp)
+        path = os.path.join(CONFIG_DIR, fname)
+    elif temp.startswith('~'):
+        path = os.path.expanduser(temp)
+    elif not os.path.isabs(temp):
+        path = os.path.join(CONFIG_DIR, temp)
     else:
-        return os.path.realpath(temp)
+        path = os.path.realpath(temp)
+    return path
 
 def get_preference_file():
     temp = ini.find('DISPLAY', 'PREFERENCE_FILE')
     if not temp:
         fname = MACHINE_NAME.replace(' ', '_') + '.pref'
-        return os.path.join(CONFIG_DIR, fname)
-    if not os.path.isabs(temp):
-        return os.path.join(CONFIG_DIR, temp)
+        path = os.path.join(CONFIG_DIR, fname)
+    elif temp.startswith('~'):
+        path = os.path.expanduser(temp)
+    elif not os.path.isabs(temp):
+        path = os.path.join(CONFIG_DIR, temp)
     else:
-        return os.path.realpath(temp)
+        path = os.path.realpath(temp)
+    return path
 
 def get_xml_file():
     temp = ini.find('DISPLAY', 'XML_FILE')
     if not temp:
         fname = MACHINE_NAME.replace(' ', '_') + '.xml'
-        return os.path.join(CONFIG_DIR, fname)
-    if not os.path.isabs(temp):
-        return os.path.join(CONFIG_DIR, temp)
+        path = os.path.join(CONFIG_DIR, fname)
+    elif temp.startswith('~'):
+        path = os.path.expanduser(temp)
+    elif not os.path.isabs(temp):
+        path = os.path.join(CONFIG_DIR, temp)
     else:
-        return os.path.realpath(temp)
+        path = os.path.realpath(temp)
+    return path
 
 def get_coordinates():
     '''Returns [TRAJ] COORDINATES or xyz'''
