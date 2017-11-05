@@ -38,7 +38,7 @@ def flood_on():
 def flood_off():
     command.flood(0)
 
-def program_run(start_line=0):
+def auto_run(start_line=0):
     '''Run loaded program if OK to do so.'''
 
     stat.poll()
@@ -63,6 +63,11 @@ def program_run(start_line=0):
         log.error(msg)
         notifications.show_error(msg)
         return msg
+
+def abort():
+    log.debug('Issuing abort command')
+    command.abort()
+
 
 def set_mode(mode):
     '''Set mode to one of
