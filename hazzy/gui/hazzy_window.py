@@ -57,6 +57,10 @@ class HazzyWindow(Gtk.Window):
         self.menu_button.set_popover(self.make_menu_popover())
         self.header_bar.pack_start(self.menu_button)
 
+        self.system_menu_button = Gtk.MenuButton()
+        self.system_menu_button.set_popover(self.make_system_menu_popover())
+        self.header_bar.pack_start(self.system_menu_button)
+
         self.edit_button = Gtk.Button()
         self.edit_button.connect('clicked', self.on_edit_button_clicked)
         self.edit_button.set_can_focus(False)
@@ -97,6 +101,42 @@ class HazzyWindow(Gtk.Window):
 
         return popover
 
+    def make_system_menu_popover(self):
+        #Create a menu popover - very temporary, need to do something neater
+        popover = Gtk.PopoverMenu.new()
+
+        pbox = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
+        pbox.set_property('margin', 10)
+        popover.add(pbox)
+
+        halscope = Gtk.ModelButton.new()
+        halscope.set_label("Hal Scope")
+        halscope.connect('clicked', self.on_show_halscope_clicked)
+        pbox.pack_start(halscope, False, False, 5)
+
+        halmeter = Gtk.ModelButton.new()
+        halmeter.set_label("Hal Meter")
+        halmeter.connect('clicked', self.on_show_halmeter_clicked)
+        pbox.pack_start(halmeter, False, False, 5)
+
+        halshow = Gtk.ModelButton.new()
+        halshow.set_label("Hal Configuration")
+        halshow.connect('clicked', self.on_show_halshow_clicked)
+        pbox.pack_start(halshow, False, False, 5)
+
+        pbox.show_all()
+
+        return popover
+
+    def on_show_halscope_clicked(self, widget):
+        p = os.popen("halscope &")
+
+    def on_show_halmeter_clicked(self, widget):
+        p = os.popen("halmeter &")
+
+    def on_show_halshow_clicked(self, widget):
+        p = os.popen("halshow &")
+
     def on_button_press(self, widget, event):
         # Remove focus when clicking on non focusable area
         self.get_toplevel().set_focus(None)
@@ -113,7 +153,7 @@ class HazzyWindow(Gtk.Window):
             for widget in widgets:
                 widget.show_overlay(edit)
 
-    def on_show_about_clicked(self, widegt):
+    def on_show_about_clicked(self, widget):
         about.About(self)
 
     def set_gtk_theme(self, theme=None):
