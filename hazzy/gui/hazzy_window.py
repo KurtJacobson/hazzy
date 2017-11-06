@@ -102,8 +102,6 @@ class HazzyWindow(Gtk.Window):
 
         self.set_size_request(900, 600)
 
-        self.get_gtk_theme()
-
     def on_show_halscope_clicked(self, widget):
         p = os.popen("halscope &")
 
