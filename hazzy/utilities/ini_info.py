@@ -46,8 +46,7 @@ MACHINE_NAME = ini.find('EMC', 'MACHINE') or "hazzy"
 def get_log_file():
     temp = ini.find('DISPLAY', 'LOG_FILE')
     if not temp:
-        fname = MACHINE_NAME.replace(' ', '_') + '.log'
-        path = os.path.join(CONFIG_DIR, fname)
+        path = os.path.expanduser('~/hazzy.log')
     elif temp.startswith('~'):
         path = os.path.expanduser(temp)
     elif not os.path.isabs(temp):
@@ -59,8 +58,7 @@ def get_log_file():
 def get_preference_file():
     temp = ini.find('DISPLAY', 'PREFERENCE_FILE')
     if not temp:
-        fname = MACHINE_NAME.replace(' ', '_') + '.pref'
-        path = os.path.join(CONFIG_DIR, fname)
+        path = os.path.expanduser('~/hazzy.pref')
     elif temp.startswith('~'):
         path = os.path.expanduser(temp)
     elif not os.path.isabs(temp):
@@ -72,8 +70,7 @@ def get_preference_file():
 def get_xml_file():
     temp = ini.find('DISPLAY', 'XML_FILE')
     if not temp:
-        fname = MACHINE_NAME.replace(' ', '_') + '.xml'
-        path = os.path.join(CONFIG_DIR, fname)
+        path = os.path.expanduser('~/hazzy.xml')
     elif temp.startswith('~'):
         path = os.path.expanduser(temp)
     elif not os.path.isabs(temp):
