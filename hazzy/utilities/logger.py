@@ -46,6 +46,9 @@ if inipath:
 else:
     log_file = os.path.expanduser('~/hazzy.log')
 
+with open(log_file, 'w') as fh:
+    pass
+
 # Get logger for module.__name__
 def get(name):
     name = 'HAZZY.' + name.upper()
