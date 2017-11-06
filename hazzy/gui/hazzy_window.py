@@ -39,6 +39,7 @@ from lxml import etree
 from datetime import datetime
 
 from utilities.constants import Paths
+from utilities import jogging
 from gui import about
 
 # Import our own modules
@@ -62,6 +63,8 @@ class HazzyWindow(Gtk.Window):
         self.xml_file = ini_info.get_xml_file()
 
         self.connect('button-press-event', self.on_button_press)
+        self.connect('key-press-event', self.on_key_press)
+        self.connect('key-release-event', self.on_key_release)
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(self.box)
@@ -138,6 +141,16 @@ class HazzyWindow(Gtk.Window):
 
     def on_show_about_clicked(self, widget):
         about.About(self)
+
+    def on_key_press(self, widget, event):
+        if not self.get_focus():
+            jogging.on_key_press_event(widget, event)
+            return True
+
+    def on_key_release(self, widget, event):
+        if not self.get_focus():
+            jogging.on_key_release_event(widget, event)
+            return True
 
 # =========================================================
 #  XML handlers for saving/loading screen layout

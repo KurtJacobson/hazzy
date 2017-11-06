@@ -63,7 +63,7 @@ class Preferences(ConfigParser.RawConfigParser):
 
         self.read(self.fn)
 
-    def get_pref(self, section, option, default_val=None, opt_type=None):
+    def get_pref(self, section, option, default_val=None, opt_type=bool):
         try:
             getter = self.getters.get(opt_type)
             value = getter(section, option, default_val)
