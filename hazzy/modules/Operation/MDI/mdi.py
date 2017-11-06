@@ -51,13 +51,21 @@ class MDI(Gtk.Box):
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'mdi.glade'))
-        # self.builder.connect_signals(SignalHandler)
+        self.builder.connect_signals(SignalHandler())
 
-        self.treeview = self.builder.get_object('treeview')
-        self.liststore = self.builder.get_object('mdi_liststore')
+        self.mdi_liststore = self.builder.get_object('mdi_liststore')
 
         self.mdi_box = self.builder.get_object('mdi_box')
 
         self.pack_start(self.mdi_box, True, True, 0)
 
-# class SignalHandler:
+
+class SignalHandler:
+
+    def on_mdi_prompt_activate(self, widget):
+
+        mdi_buffer = widget.get_text()
+        widget.set_text("")
+        print(mdi_buffer)
+
+        #store.append(mdi_command)
