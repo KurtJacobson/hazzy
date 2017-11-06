@@ -92,13 +92,13 @@ def on_key_release_event(widget, event):
 def jog_start(axis):
     JOGMODE = 0
     dir = axis[0]
-    vel = prefs.get("JOGGING", "VELOCITY", 1, int)
+    vel = prefs.get("JOGGING", "VELOCITY", 1, float)
     axis_num = "xyzabcuvw".index(axis[1])
-    log.debug("green$STARTED jogging {} axis".format(axis))
+    log.debug("green<STARTED> jogging {} axis".format(axis))
     command.jog(linuxcnc.JOG_CONTINUOUS, JOGMODE, axis_num, float('{}{}'.format(dir, vel)))
 
 def jog_stop(axis):
     JOGMODE = 0
     axis_num = "xyzabcuvw".index(axis[1])
-    log.debug("red$STOPED jogging {} axis".format(axis))
+    log.debug("red<STOPED> jogging {} axis".format(axis))
     command.jog(linuxcnc.JOG_STOP, JOGMODE, axis_num)

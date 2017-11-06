@@ -82,7 +82,7 @@ def main(argv):
     INIFILE = argv[2]
 
     start_time = datetime.datetime.now()
-    log.info("green$Starting")
+    log.info("green<Starting>")
 
     style_provider = Gtk.CssProvider()
     style_provider.load_from_path(os.path.join(Paths.STYLEDIR, "style.css"))
@@ -109,7 +109,7 @@ def main(argv):
 
     Gtk.main()
 
-    log.info("red$Quitting")
+    log.info("red<Quitting>")
 
     run_time = datetime.datetime.now() - start_time
     log.info("Total session duration: {}".format(run_time))
