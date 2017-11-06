@@ -33,6 +33,8 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+import hal
+
 from lxml import etree
 from datetime import datetime
 
@@ -106,7 +108,17 @@ class HazzyWindow(Gtk.Window):
         p = os.popen("halmeter &")
 
     def on_show_halshow_clicked(self, widget):
-        p = os.popen("halshow &")
+        p = os.popen("tclsh {0}/bin/halshow.tcl &".format(Paths.TCLPATH))
+
+    def on_show_status_clicked(self, widget, data=None):
+        p = os.popen("linuxcnctop &")
+
+    def on_show_classicladder_clicked(self, widget, data=None):
+        if hal.component_exists("classicladder_rt"):
+            p = os.popen("classicladder  &", "w")
+        else:
+            text = "Classicladder real-time component not detected"
+            self.error_dialog.run(text)
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on non focusable area
@@ -344,6 +356,16 @@ class HazzyWindow(Gtk.Window):
         halshow = Gtk.ModelButton.new()
         halshow.set_label("Hal Configuration")
         halshow.connect('clicked', self.on_show_halshow_clicked)
+        pbox.pack_start(halshow, False, False, 5)
+
+        halshow = Gtk.ModelButton.new()
+        halshow.set_label("LinuxCNC Status")
+        halshow.connect('clicked', self.on_show_status_clicked)
+        pbox.pack_start(halshow, False, False, 5)
+
+        halshow = Gtk.ModelButton.new()
+        halshow.set_label("ClassicLadder")
+        halshow.connect('clicked', self.on_show_classicladder_clicked)
         pbox.pack_start(halshow, False, False, 5)
 
         pbox.show_all()
