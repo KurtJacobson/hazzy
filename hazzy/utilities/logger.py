@@ -21,20 +21,30 @@
 # Description:
 #   Application wide logging module.
 
-# ToDo:
-#   Find a way to get [DISPLAY] LOG_FILE form INI. Can't use ini_info.py
-#   currently since it imports logger, but the logger is not set up yet!
 
 import os
 import logging
+from linuxcnc import ini
 
 from constants import Paths
 from utilities.colored_log import ColoredFormatter
 
-# Get log file path
-log_file = Paths.LOG_FILE
-if not os.path.isabs(log_file):
-    log_file = os.path.join(Paths.CONFIGDIR, log_file)
+
+inipath = os.environ.get('INI_FILE_NAME')
+
+if inipath:
+    ini = ini(inipath)
+    path = ini.find('DISPLAY', 'LOG_FILE')
+    if not path:
+        log_file = os.path.expanduser('~/hazzy.log')
+    elif path.startswith('~'):
+        log_file = os.path.expanduser(path)
+    elif not os.path.isabs(path):
+        log_file = os.path.join(Paths.CONFIGDIR, path)
+    else:
+        log_file = os.path.realpath(path)
+else:
+    log_file = os.path.expanduser('~/hazzy.log')
 
 # Get logger for module.__name__
 def get(name):
