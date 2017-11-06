@@ -7,7 +7,7 @@
 #
 #   Hazzy is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
+#   the Free Software Foundation, either version 2 of the License, or
 #   (at your option) any later version.
 #
 #   Hazzy is distributed in the hope that it will be useful,
@@ -18,23 +18,20 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import gi
+# Description:
+#   TBA
 
+import os
 import sys
 
+import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk
 
-
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
 UIDIR = os.path.join(PYDIR, 'ui')
 
 
