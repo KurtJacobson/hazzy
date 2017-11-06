@@ -36,7 +36,6 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
-from gi.repository import Notify
 
 from utilities import logger
 from utilities import ini_info
