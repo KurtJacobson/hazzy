@@ -37,6 +37,8 @@ if HAZZYDIR not in sys.path:
 
 UIDIR = os.path.join(PYDIR, 'ui')
 
+from utilities.command import issue_mdi
+
 
 class MDI(Gtk.Box):
 
@@ -64,8 +66,9 @@ class SignalHandler:
 
     def on_mdi_prompt_activate(self, widget):
 
-        mdi_buffer = widget.get_text()
+        mdi_text = widget.get_text()
         widget.set_text("")
-        print(mdi_buffer)
+
+        issue_mdi(mdi_text)
 
         #store.append(mdi_command)
