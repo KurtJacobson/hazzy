@@ -43,6 +43,9 @@ if not ini:
 
 MACHINE_NAME = ini.find('EMC', 'MACHINE') or "hazzy"
 
+def get_machine_name():
+    return MACHINE_NAME
+
 def get_log_file():
     temp = ini.find('DISPLAY', 'LOG_FILE')
     if not temp:

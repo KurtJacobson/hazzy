@@ -39,6 +39,7 @@ from lxml import etree
 from datetime import datetime
 
 from utilities.constants import Paths
+from utilities import ini_info
 from utilities import jogging
 from gui import about
 
@@ -214,7 +215,7 @@ class HazzyWindow(Gtk.Window):
 
         # Create XML root element & comment
         root = etree.Element("hazzy_interface")
-        root.append(etree.Comment('Interface for: {}'.format(Paths.MACHINE_NAME)))
+        root.append(etree.Comment('Interface for: {}'.format(ini_info.get_machine_name())))
 
         # Add time stamp
         time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
