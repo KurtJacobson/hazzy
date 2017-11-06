@@ -119,7 +119,7 @@ class Preferences(ConfigParser.RawConfigParser):
             return True
         elif value.lower() in ['0', 'false', 'no', 'off', 'nah']:
             return False
-        log.error('Non boolian value "{0}" for option [{1}] {2},'
+        log.error('Non boolean value "{0}" for option [{1}] {2},'
             ' using default value of "{3}"'.format(value, section, option, default))
         return default
 
