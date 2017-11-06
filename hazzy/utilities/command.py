@@ -184,6 +184,7 @@ def home_joint(joint):
 
 def is_homed():
     '''Returns TRUE if all joints are homed.'''
+    stat.poll()
     for joint in range(num_joints):
         if not stat.joint[joint]['homed']:
             return False
