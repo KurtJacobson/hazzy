@@ -273,3 +273,9 @@ def get_RS274_start_code():
     if not temp:
         return False
     return  temp
+
+def get_startup_notification():
+    return ini.find('DISPLAY', 'STARTUP_NOTIFICATION')
+
+def get_startup_warning():
+    return ini.find('DISPLAY', 'STARTUP_WARNING')

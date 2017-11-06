@@ -33,18 +33,18 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-gi.require_version('Notify', '0.7')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Notify
 
 from utilities import logger
+from utilities import ini_info
+from utilities import notifications
 from utilities.constants import Paths
 from gui.hazzy_window import HazzyWindow
 
 log = logger.get('MAIN')
-Notify.init("hazzy")
 
 BASE = None
 INIFILE = None
@@ -98,6 +98,14 @@ def main(argv):
     hazzy_window.show_all()
 
     hazzy_window.connect('delete-event', quit)
+
+    startup_notification = ini_info.get_startup_notification()
+    if startup_notification:
+        notifications.show_info(startup_notification, timeout=0)
+
+    startup_warning = ini_info.get_startup_warning()
+    if startup_warning:
+        notifications.show_warning(startup_warning, timeout=0)
 
     Gtk.main()
 
