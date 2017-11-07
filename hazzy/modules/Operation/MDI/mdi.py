@@ -53,7 +53,6 @@ class MDI(Gtk.Box):
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'mdi.glade'))
-        self.builder.connect_signals(SignalHandler())
 
         self.mdi_liststore = self.builder.get_object('mdi_liststore')
 
@@ -61,8 +60,7 @@ class MDI(Gtk.Box):
 
         self.pack_start(self.mdi_box, True, True, 0)
 
-
-class SignalHandler:
+        self.builder.connect_signals(self)
 
     def on_mdi_prompt_activate(self, widget):
 
@@ -71,4 +69,10 @@ class SignalHandler:
 
         issue_mdi(mdi_text)
 
-        #store.append(mdi_command)
+        remove_button = Gtk.Button()
+        repeat_button = Gtk.Button()
+
+        row = (mdi_text, "1", "2")
+
+        self.mdi_liststore.append(row)
+
