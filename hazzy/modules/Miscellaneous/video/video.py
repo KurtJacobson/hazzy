@@ -1,5 +1,30 @@
 #!/usr/bin/env python
 
+#   Copyright (c) 2017 Kurt Jacobson
+#      <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   Video widget for use with spotting camera or machine web-cam.
+
+# ToDo:
+#   Finish streaming over HTTP
+#   Add crosshairs
+
 import os
 import sys
 from threading import Thread
@@ -28,6 +53,14 @@ Gst.init_check(None)
 
 
 class GstWidget(Gtk.Box):
+
+    title = 'Video'
+    author = 'TurBoss'
+    version = '0.1.0'
+    date = '9/7/2017'
+    description = 'Video'
+
+
     def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 

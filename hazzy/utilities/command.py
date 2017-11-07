@@ -1,7 +1,30 @@
 #!/usr/bin/env python
 
+#   Copyright (c) 2017 Kurt Jacobson
+#      <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   Collection of linuxcnc.command convenience functions.
+#   Incomplete
+
 import linuxcnc
 from utilities import ini_info
+from utilities import notifications
 
 num_joints = ini_info.get_num_joints()
 no_force_homing = ini_info.get_no_force_homing()
@@ -36,6 +59,37 @@ def flood_on():
 
 def flood_off():
     command.flood(0)
+
+def auto_run(start_line=0):
+    '''Run loaded program if OK to do so.'''
+
+    stat.poll()
+    msg = None
+    if stat.estop:
+        msg = "Can't run program when estoped"
+    elif not stat.enabled:
+        msg = "Can't run program when not enabled"
+    elif not no_force_homing if no_force_homing else not is_homed():
+        msg = "Can't run program when not homed"
+    elif not stat.interp_state == linuxcnc.INTERP_IDLE:
+        msg = "Can't run program when interpreter is not idle"
+    elif stat.file == "":
+        msg = "Can't run program when no file loaded"
+    else:
+        set_mode(linuxcnc.MODE_AUTO)
+        command.auto(linuxcnc.AUTO_RUN, start_line)
+        info = "Running the program '{}' from line {}".format(stat.file, start_line)
+        notifications.show_success(info, "Program Started!")
+        log.info(info)
+    if msg:
+        log.error(msg)
+        notifications.show_error(msg)
+        return msg
+
+def abort():
+    log.debug('Issuing abort command')
+    command.abort()
+
 
 def set_mode(mode):
     '''Set mode to one of
@@ -130,6 +184,7 @@ def home_joint(joint):
 
 def is_homed():
     '''Returns TRUE if all joints are homed.'''
+    stat.poll()
     for joint in range(num_joints):
         if not stat.joint[joint]['homed']:
             return False

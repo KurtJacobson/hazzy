@@ -1,5 +1,28 @@
 #!/usr/bin/env python
 
+#   Copyright (c) 2017 Kurt Jacobson
+#      <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   Multi function DRO. Displays REL, ABS and DTG positions
+#   for all active axes and allows homing/unhoming of each axis.
+#   The current G5x position can be set by typing into the REL DRO.
+
 import os
 import gi
 
@@ -15,6 +38,16 @@ from utilities import machine_info
 from widget_factory.dros import DroType, DroEntry, G5xEntry, DroCover
 
 class Dro(Gtk.Grid):
+
+    title = 'DRO'
+    author = 'Kurt Jacobson'
+    version = '0.1.0'
+    date = '9/12/2017'
+    description = '''DRO:
+    Multi function DRO. Displays REL, ABS and DTG positions
+    for all active axes and allows homing/unhoming of each axis.
+    The current G5x position can be set by typing into the REL DRO.
+    '''
 
     def __init__(self, widget_window):
         Gtk.Grid.__init__(self)

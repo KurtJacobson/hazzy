@@ -7,7 +7,7 @@
 #
 #   Hazzy is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
+#   the Free Software Foundation, either version 2 of the License, or
 #   (at your option) any later version.
 #
 #   Hazzy is distributed in the hope that it will be useful,
@@ -18,18 +18,27 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+# Description:
+#   emit GObject signals for changes to LinuxCNC status or joint attributes.
+
+# ToDo:
+#   Clean up and possibly rethink
+
 
 import math
 import linuxcnc
 import time
+import gi
 
 from gi.repository import GObject
 
 from utilities import ini_info
+from utilities import notifications
 
 # Setup logging
 from utilities import logger
 log = logger.get(__name__)
+
 
 STATES = {
     linuxcnc.STATE_ESTOP: 'ESTOP',
@@ -57,10 +66,6 @@ MOTION = {
     linuxcnc.TRAJ_MODE_TELEOP: 'TELEOP'
 }
 
-class ErrorTypes:
-    MESSAGE = 0
-    INFO = 1
-    ERROR = 2
 
 # These signals should cause an update
 # when they are connected to a callback
@@ -137,13 +142,13 @@ class Status(GObject.GObject):
                 self.old[attribute] = None
 
         else:
-            log.error('linuxcnc.stat has no attribute "{}"'.format(attribute))
+            log.error('linuxcnc.stat object has no attribute "{}"'.format(attribute))
 
     def _connect_joint_callback(self, attribute, callback):
         if attribute in self.keys:
             self.connect(attribute, callback)
         else:
-            log.error('linuxcnc.stat.joint has no attribute "{}"'.format(attribute))
+            log.error('linuxcnc.stat.joint object has no attribute "{}"'.format(attribute))
 
     def on_changed(self, attribute, callback):
         kind, name = attribute.split('.')
@@ -266,24 +271,36 @@ class Status(GObject.GObject):
         self.emit('joint-positions', pos)
 
     def _on_error(self, error):
-        kind, message = error
+        kind, msg = error
 
-        if message == "" or message is None:
-            message = "Unknown error!"
+        if msg == "" or msg is None:
+            msg = "Unknown error!"
 
-        if kind in (linuxcnc.NML_ERROR, linuxcnc.OPERATOR_ERROR, 'ERROR'):
-            kind = ErrorTypes.ERROR
-            log.error(message)
-        elif kind in (linuxcnc.NML_TEXT, linuxcnc.OPERATOR_TEXT, 'INFO'):
-            kind = ErrorTypes.ERROR
-            log.info(message)
-        elif kind in (linuxcnc.NML_DISPLAY, linuxcnc.OPERATOR_DISPLAY, 'MSG'):
-            kind = ErrorTypes.ERROR
-            log.info(message)
+        if kind == linuxcnc.NML_ERROR:
+            notifications.show_error(msg, "NML_ERROR!", timeout=0)
+            log.error("NML_ERROR: {}".format(msg))
+        elif kind == linuxcnc.OPERATOR_ERROR:
+            notifications.show_error(msg, "OPERATOR_ERROR!", timeout=0)
+            log.error("OPERATOR_ERROR: {}".format(msg))
+        elif kind == linuxcnc.NML_TEXT:
+            notifications.show_info(msg, "NML_TEXT!", timeout=0)
+            log.info("NML_TEXT: {}".format(msg))
+        elif kind == linuxcnc.OPERATOR_TEXT:
+            notifications.show_info(msg, "OPERATOR_TEXT!", timeout=0)
+            log.info("OPERATOR_TEXT: {}".format(msg))
+        elif kind == linuxcnc.NML_DISPLAY:
+            notifications.show_info(msg, "NML_DISPLAY!", timeout=0)
+            log.info("NML_DISPLAY: {}".format(msg))
+        elif kind == linuxcnc.OPERATOR_DISPLAY:
+            notifications.show_info(msg, "OPERATOR_DISPLAY!", timeout=0)
+            log.info("OPERATOR_DISPLAY: {}".format(msg))
+
         else:
-            kind = ErrorTypes.ERROR
-            log.error(message)
-        self.emit('error', (kind, message))
+            notifications.show_error("UNKNOWN ERROR!", msg)
+            log.error("UNKNOWN ERROR: {}".format(msg))
+
+        # ToDo Set HAL error pin
+#        self.emit('error', (kind, msg))
 
 
 status = Status()
@@ -291,6 +308,7 @@ status = Status()
 def on_changed(attribute, callback):
     status.on_changed(attribute, callback)
 
+# These are used only for logging purposes
 def _log_task_state(widget, task_state):
     state_str = STATES.get(task_state, 'UNKNOWN')
     log.debug("Machine state: {0}".format(state_str))

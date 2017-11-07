@@ -20,6 +20,8 @@
 #  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 #  SOFTWARE.
 
+import re
+import time
 from copy import copy
 from logging import Formatter
 
@@ -47,6 +49,14 @@ COLORS = {
     'bggrey': 100
     }
 
+# Matches just the first color<text>
+# ^(.*?)<([^)]+)> 
+
+# Matches all color<text>
+# ([^<\s]+)<([^>]+)>
+# (\w+)<([^>]+)>
+
+parse = re.compile(r'(\w+)<([^>]+)>')
 
 class ColoredFormatter(Formatter):
 
@@ -60,18 +70,38 @@ class ColoredFormatter(Formatter):
         return (PREFIX + '%dm%s' + SUFFIX) % (clr, text)
 
 
-    def text_colorer(self, text):
-        words = text.split(' ')
-        clr_msg = []
-        for word in words:
-            if '$' in word:
-                ind = word.index('$')
-                clr = word[:ind]
-                text = word[ind+1:]
-                word = self.colorer(text, clr)
-            clr_msg.append(word)
-        return ' '.join(clr_msg)
+    def text_colorer(self, raw_msg):
+        # Example: red<Testing> will be rendered as red in terminal
+        plain_msg = color_msg = raw_msg
+#        start = time.time()
+        if '<' in raw_msg:
+            iterater = parse.finditer(raw_msg)
+#            print time.time() - start
+            if iterater:
+                for match in iterater:
+                    raw_word = match.group()
+                    color_name = match.group(1)
+                    text = match.group(2)
 
+                    color_msg = color_msg.replace(raw_word, self.colorer(text, color_name))
+                    plain_msg = plain_msg.replace(raw_word, text)
+
+#        print time.time() - start
+        return plain_msg, color_msg
+
+#        start = time.time()
+#        words = raw_msg.split(' ')
+#        clr_msg = []
+#        for word in words:
+#            if '$' in word:
+#                ind = word.index('$')
+#                clr = word[:ind]
+#                text = word[ind+1:]
+#                word = self.colorer(text, clr)
+#            clr_msg.append(word)
+#        msg = ' '.join(clr_msg)
+#        print time.time() - start
+#        return msg, msg
 
     def format(self, record):
         colored_record = copy(record)
@@ -84,8 +114,9 @@ class ColoredFormatter(Formatter):
 
         # Add colors to message text
         msg = colored_record.getMessage()
-        colored_msg = self.text_colorer(msg)
-        colored_record.msg = colored_msg
+        plain_msg, color_msg = self.text_colorer(msg)
+        record.msg = plain_msg
+        colored_record.msg = color_msg
 
         return Formatter.format(self, colored_record)
 

@@ -19,29 +19,37 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 # Description:
-#   Collection of constants.
-#   Needs to be cleaned up. Get rid on INI reading, do that with ini_info.py
-
+#   TBA
 
 import os
-from linuxcnc import ini
+import sys
 
-class MessageType(enumerate):
-    INFO = 0
-    WARNING = 1
-    ERROR = 2
+import gi
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
 
-class Paths(enumerate):
-    # Hazzy Paths
-    HAZZYDIR = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-    MAINDIR = os.path.dirname(HAZZYDIR)
+from gi.repository import Gtk, Gdk
 
-    UIDIR = os.path.join(HAZZYDIR, 'ui')
-    MODULEDIR = os.path.join(HAZZYDIR, 'modules')
-    STYLEDIR = os.path.join(HAZZYDIR, 'themes')
+# Setup paths
+PYDIR = os.path.abspath(os.path.dirname(__file__))
+UIDIR = os.path.join(PYDIR, 'ui')
 
-    # LinuxCNC Paths
-    INI_FILE = os.environ['INI_FILE_NAME']
-    CONFIGDIR = os.environ['CONFIG_DIR']
-    NC_FILE_DIR = os.environ['LINUXCNC_NCFILES_DIR']
-    TCLPATH = os.environ['LINUXCNC_TCL_DIR']
+
+class Jogging(Gtk.Bin):
+
+    title = 'Jogging'
+    author = 'Kurt Jacobson'
+    version = '0.1.0'
+    date = '5/11/2017'
+    description = 'Basic jogging controls'
+
+    def __init__(self, widget_window):
+        Gtk.Bin.__init__(self)
+
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(os.path.join(UIDIR, 'jogging.ui'))
+        # self.builder.connect_signals(SignalHandler)
+
+        main = self.builder.get_object('main')
+        self.add(main)
+

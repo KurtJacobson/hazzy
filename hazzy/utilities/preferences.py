@@ -4,7 +4,6 @@
 #      <kurtcjacobson@gmail.com>
 #
 #   This file is part of Hazzy.
-#   It is a class from Gmoccapy that has been heavily modified to support sections.
 #
 #   Hazzy is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -19,14 +18,15 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+# Description:
+#   Persistent preferences manager using INI format .pref file.
 
-#                   ***USEAGE***
 
-# Setting Preference
+# Setting Preference:
 #    set("section", "option", "value", type)
 #    set("DROs", "dec_places", 4 , int)
 
-# Getting Preference
+# Getting Preference:
 #    get("section", "option", "default_val", type)
 #    dro_places = get("DROs", "dec_places", 3, int)
 
@@ -63,7 +63,7 @@ class Preferences(ConfigParser.RawConfigParser):
 
         self.read(self.fn)
 
-    def get_pref(self, section, option, default_val=None, opt_type=None):
+    def get_pref(self, section, option, default_val=None, opt_type=bool):
         try:
             getter = self.getters.get(opt_type)
             value = getter(section, option, default_val)
@@ -119,7 +119,7 @@ class Preferences(ConfigParser.RawConfigParser):
             return True
         elif value.lower() in ['0', 'false', 'no', 'off', 'nah']:
             return False
-        log.error('Non boolian value "{0}" for option [{1}] {2},'
+        log.error('Non boolean value "{0}" for option [{1}] {2},'
             ' using default value of "{3}"'.format(value, section, option, default))
         return default
 

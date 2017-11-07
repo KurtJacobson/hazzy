@@ -1,0 +1,473 @@
+/******************************
+ * blue Button *
+ ******************************/
+
+@define-color blue_a #4a90d9;
+@define-color blue_b shade(@blue_a, 1.1);
+@define-color blue_border darker(@blue_a);
+
+button.blue {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @blue_border;
+    border-bottom-color: darker(@blue_border);
+    background-image: linear-gradient(to bottom, @blue_a, @blue_a 60%, shade(@blue_a, .85));
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.543529);
+    -gtk-icon-shadow: 0 -1px rgba(0, 0, 0, 0.543529);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.4);
+}
+
+button.blue.flat {
+    border-color: transparent;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: @blue_a;
+}
+
+button.blue:hover {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @blue_border;
+    border-bottom-color: darker(@blue_border);
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.495529);
+    -gtk-icon-shadow: 0 -1px rgba(0, 0, 0, 0.495529);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.4);
+    background-image: linear-gradient(to bottom, @blue_b, @blue_b 60%, shade(@blue_b, .85));
+}
+
+button.blue:active,
+button.blue:checked {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @blue_border;
+    background-image: image(shade(@blue_a, .9));
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+}
+
+button.blue:backdrop,
+button.blue.flat:backdrop {
+    border-color: @blue_a;
+    background-image: image(@blue_a);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.blue:backdrop label,
+button.blue:backdrop,
+button.blue.flat:backdrop label,
+button.blue.flat:backdrop {
+    color: mix(white, @blue_b, .1);
+}
+
+button.blue:backdrop:active,
+button.blue:backdrop:checked,
+button.blue.flat:backdrop:active,
+button.blue.flat:backdrop:checked {
+    border-color: @blue_b;
+    background-image: image(@blue_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.blue:backdrop:active label,
+button.blue:backdrop:active,
+button.blue:backdrop:checked label,
+button.blue:backdrop:checked,
+button.blue.flat:backdrop:active label,
+button.blue.flat:backdrop:active,
+button.blue.flat:backdrop:checked label,
+button.blue.flat:backdrop:checked {
+    color: mix(white, @blue_b, .1);
+}
+
+button.blue:backdrop:disabled,
+button.blue.flat:backdrop:disabled {
+    border-color: #c0c0bd;
+    background-image: image(#f1f1f1);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.blue:backdrop:disabled label,
+button.blue:backdrop:disabled,
+button.blue.flat:backdrop:disabled label,
+button.blue.flat:backdrop:disabled {
+    color: #c3c3c0;
+}
+
+button.blue:backdrop:disabled:active,
+button.blue:backdrop:disabled:checked,
+button.blue.flat:backdrop:disabled:active,
+button.blue.flat:backdrop:disabled:checked {
+    border-color: @blue_b;
+    background-image: image(@blue_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.blue:backdrop:disabled:active label,
+button.blue:backdrop:disabled:checked label,
+button.blue.flat:backdrop:disabled:active label,
+button.blue.flat:backdrop:disabled:checked label {
+    color: mix(white, @blue_b, .3);
+}
+
+button.blue.flat:backdrop,
+button.blue.flat:disabled,
+button.blue.flat:backdrop:disabled {
+    border-color: transparent;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: rgba(74, 144, 217, 0.8);
+}
+
+button.blue:disabled {
+    border-color: #b6b6b3;
+    background-image: image(#f1f1f1);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.blue:disabled label,
+button.blue:disabled {
+    color: #8b8e8f;
+}
+
+button.blue:disabled:active,
+button.blue:disabled:checked {
+    border-color: @blue_border;
+    background-image: image(@blue_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.blue:disabled:active label,
+button.blue:disabled:active,
+button.blue:disabled:checked label,
+button.blue:disabled:checked {
+    color: mix(white, @blue_b, .1);
+}
+
+/******************************
+ * red Button *
+ ******************************/
+
+@define-color red_a #cc0000;
+@define-color red_b shade(@red_a, 1.1);
+@define-color red_border darker(@red_a);
+
+button.red {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @red_border;
+    border-bottom-color: darker(@red_border);
+    background-image: linear-gradient(to bottom, @red_a, @red_a 60%, shade(@red_a, .85));
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.543529);
+    -gtk-icon-shadow: 0 -1px rgba(0, 0, 0, 0.543529);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.4);
+}
+
+button.red.flat {
+    border-color: transparent;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: @red_a;
+}
+
+button.red:hover {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @red_border;
+    border-bottom-color: darker(@red_border);
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.495529);
+    -gtk-icon-shadow: 0 -1px rgba(0, 0, 0, 0.495529);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.4);
+    background-image: linear-gradient(to bottom, @red_b, @red_b 60%, shade(@red_b, .85));
+}
+
+button.red:active,
+button.red:checked {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @red_border;
+    background-image: image(shade(@red_a, .9));
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+}
+
+button.red:backdrop,
+button.red.flat:backdrop {
+    border-color: @red_a;
+    background-image: image(@red_a);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.red:backdrop label,
+button.red:backdrop,
+button.red.flat:backdrop label,
+button.red.flat:backdrop {
+    color: mix(white, @red_b, .1);
+}
+
+button.red:backdrop:active,
+button.red:backdrop:checked,
+button.red.flat:backdrop:active,
+button.red.flat:backdrop:checked {
+    border-color: @red_b;
+    background-image: image(@red_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.red:backdrop:active label,
+button.red:backdrop:active,
+button.red:backdrop:checked label,
+button.red:backdrop:checked,
+button.red.flat:backdrop:active label,
+button.red.flat:backdrop:active,
+button.red.flat:backdrop:checked label,
+button.red.flat:backdrop:checked {
+    color: mix(white, @red_b, .1);
+}
+
+button.red:backdrop:disabled,
+button.red.flat:backdrop:disabled {
+    border-color: #c0c0bd;
+    background-image: image(#f1f1f1);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.red:backdrop:disabled label,
+button.red:backdrop:disabled,
+button.red.flat:backdrop:disabled label,
+button.red.flat:backdrop:disabled {
+    color: #c3c3c0;
+}
+
+button.red:backdrop:disabled:active,
+button.red:backdrop:disabled:checked,
+button.red.flat:backdrop:disabled:active,
+button.red.flat:backdrop:disabled:checked {
+    border-color: @red_b;
+    background-image: image(@red_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.red:backdrop:disabled:active label,
+button.red:backdrop:disabled:checked label,
+button.red.flat:backdrop:disabled:active label,
+button.red.flat:backdrop:disabled:checked label {
+    color: mix(white, @red_b, .3);
+}
+
+button.red.flat:backdrop,
+button.red.flat:disabled,
+button.red.flat:backdrop:disabled {
+    border-color: transparent;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: rgba(74, 144, 217, 0.8);
+}
+
+button.red:disabled {
+    border-color: #b6b6b3;
+    background-image: image(#f1f1f1);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.red:disabled label,
+button.red:disabled {
+    color: #8b8e8f;
+}
+
+button.red:disabled:active,
+button.red:disabled:checked {
+    border-color: @red_border;
+    background-image: image(@red_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.red:disabled:active label,
+button.red:disabled:active,
+button.red:disabled:checked label,
+button.red:disabled:checked {
+    color: mix(white, @red_b, .1);
+}
+
+/******************************
+ * yellow Button *
+ ******************************/
+
+@define-color yellow_a #edd400;
+@define-color yellow_b shade(@yellow_a, 1.1);
+@define-color yellow_border darker(@yellow_a);
+
+button.yellow {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @yellow_border;
+    border-bottom-color: darker(@yellow_border);
+    background-image: linear-gradient(to bottom, @yellow_a, @yellow_a 60%, shade(@yellow_a, .85));
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.543529);
+    -gtk-icon-shadow: 0 -1px rgba(0, 0, 0, 0.543529);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.4);
+}
+
+button.yellow.flat {
+    border-color: transparent;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: @yellow_a;
+}
+
+button.yellow:hover {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @yellow_border;
+    border-bottom-color: darker(@yellow_border);
+    text-shadow: 0 -1px rgba(0, 0, 0, 0.495529);
+    -gtk-icon-shadow: 0 -1px rgba(0, 0, 0, 0.495529);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0.4);
+    background-image: linear-gradient(to bottom, @yellow_b, @yellow_b 60%, shade(@yellow_b, .85));
+}
+
+button.yellow:active,
+button.yellow:checked {
+    color: white;
+    outline-color: rgba(255, 255, 255, 0.3);
+    border-color: @yellow_border;
+    background-image: image(shade(@yellow_a, .9));
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+}
+
+button.yellow:backdrop,
+button.yellow.flat:backdrop {
+    border-color: @yellow_a;
+    background-image: image(@yellow_a);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.yellow:backdrop label,
+button.yellow:backdrop,
+button.yellow.flat:backdrop label,
+button.yellow.flat:backdrop {
+    color: mix(white, @yellow_b, .1);
+}
+
+button.yellow:backdrop:active,
+button.yellow:backdrop:checked,
+button.yellow.flat:backdrop:active,
+button.yellow.flat:backdrop:checked {
+    border-color: @yellow_b;
+    background-image: image(@yellow_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.yellow:backdrop:active label,
+button.yellow:backdrop:active,
+button.yellow:backdrop:checked label,
+button.yellow:backdrop:checked,
+button.yellow.flat:backdrop:active label,
+button.yellow.flat:backdrop:active,
+button.yellow.flat:backdrop:checked label,
+button.yellow.flat:backdrop:checked {
+    color: mix(white, @yellow_b, .1);
+}
+
+button.yellow:backdrop:disabled,
+button.yellow.flat:backdrop:disabled {
+    border-color: #c0c0bd;
+    background-image: image(#f1f1f1);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.yellow:backdrop:disabled label,
+button.yellow:backdrop:disabled,
+button.yellow.flat:backdrop:disabled label,
+button.yellow.flat:backdrop:disabled {
+    color: #c3c3c0;
+}
+
+button.yellow:backdrop:disabled:active,
+button.yellow:backdrop:disabled:checked,
+button.yellow.flat:backdrop:disabled:active,
+button.yellow.flat:backdrop:disabled:checked {
+    border-color: @yellow_b;
+    background-image: image(@yellow_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.yellow:backdrop:disabled:active label,
+button.yellow:backdrop:disabled:checked label,
+button.yellow.flat:backdrop:disabled:active label,
+button.yellow.flat:backdrop:disabled:checked label {
+    color: mix(white, @yellow_b, .3);
+}
+
+button.yellow.flat:backdrop,
+button.yellow.flat:disabled,
+button.yellow.flat:backdrop:disabled {
+    border-color: transparent;
+    background-color: transparent;
+    background-image: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    color: rgba(74, 144, 217, 0.8);
+}
+
+button.yellow:disabled {
+    border-color: #b6b6b3;
+    background-image: image(#f1f1f1);
+    text-shadow: none;
+    -gtk-icon-shadow: none;
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.yellow:disabled label,
+button.yellow:disabled {
+    color: #8b8e8f;
+}
+
+button.yellow:disabled:active,
+button.yellow:disabled:checked {
+    border-color: @yellow_border;
+    background-image: image(@yellow_b);
+    box-shadow: inset 0 1px rgba(255, 255, 255, 0);
+}
+
+button.yellow:disabled:active label,
+button.yellow:disabled:active,
+button.yellow:disabled:checked label,
+button.yellow:disabled:checked {
+    color: mix(white, @yellow_b, .1);
+}

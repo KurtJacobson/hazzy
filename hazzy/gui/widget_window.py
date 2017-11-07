@@ -1,5 +1,28 @@
 #!/usr/bin/env python
 
+#   Copyright (c) 2017 Kurt Jacobson
+#      <kurtcjacobson@gmail.com>
+#
+#   This file is part of Hazzy.
+#
+#   Hazzy is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   Hazzy is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   The window which contains the widgets added to the WidgetArea
+#   This could use a LOT of clean up
+
+
 import os
 import sys
 import cairo
@@ -124,6 +147,8 @@ class WidgetWindow(Gtk.EventBox):
             self.overlay.hide()
 
     def get_widget_image(self):
+        # Gets an image for use as an icon in the WidgetChooser
+        # Need to implement some way to call from a GUI menu.
 
         window = self.window.get_window()
 

@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-#   This module is used to get information from the machines INI file.
-#   It does some sanity cheking and returns valid values. If an entry
-#   does not exist it may return a default value.
-
 #   Copyright (c) 2017 Kurt Jacobson
 #      <kurtcjacobson@gmail.com>
 #
@@ -21,6 +17,11 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description:
+#   This module is used to get information from the machine's INI file.
+#   It does some sanity checking to ensure it returns valid values.
+#   If an INI entry does not exist, it may return a default value.
 
 import os
 import sys
@@ -42,35 +43,44 @@ if not ini:
 
 MACHINE_NAME = ini.find('EMC', 'MACHINE') or "hazzy"
 
+def get_machine_name():
+    return MACHINE_NAME
+
 def get_log_file():
     temp = ini.find('DISPLAY', 'LOG_FILE')
     if not temp:
-        fname = MACHINE_NAME.replace(' ', '_') + '.log'
-        return os.path.join(CONFIG_DIR, fname)
-    if not os.path.isabs(temp):
-        return os.path.join(CONFIG_DIR, temp)
+        path = os.path.expanduser('~/hazzy.log')
+    elif temp.startswith('~'):
+        path = os.path.expanduser(temp)
+    elif not os.path.isabs(temp):
+        path = os.path.join(CONFIG_DIR, temp)
     else:
-        return os.path.realpath(temp)
+        path = os.path.realpath(temp)
+    return path
 
 def get_preference_file():
     temp = ini.find('DISPLAY', 'PREFERENCE_FILE')
     if not temp:
-        fname = MACHINE_NAME.replace(' ', '_') + '.pref'
-        return os.path.join(CONFIG_DIR, fname)
-    if not os.path.isabs(temp):
-        return os.path.join(CONFIG_DIR, temp)
+        path = os.path.expanduser('~/hazzy.pref')
+    elif temp.startswith('~'):
+        path = os.path.expanduser(temp)
+    elif not os.path.isabs(temp):
+        path = os.path.join(CONFIG_DIR, temp)
     else:
-        return os.path.realpath(temp)
+        path = os.path.realpath(temp)
+    return path
 
 def get_xml_file():
     temp = ini.find('DISPLAY', 'XML_FILE')
     if not temp:
-        fname = MACHINE_NAME.replace(' ', '_') + '.xml'
-        return os.path.join(CONFIG_DIR, fname)
-    if not os.path.isabs(temp):
-        return os.path.join(CONFIG_DIR, temp)
+        path = os.path.expanduser('~/hazzy.xml')
+    elif temp.startswith('~'):
+        path = os.path.expanduser(temp)
+    elif not os.path.isabs(temp):
+        path = os.path.join(CONFIG_DIR, temp)
     else:
-        return os.path.realpath(temp)
+        path = os.path.realpath(temp)
+    return path
 
 def get_coordinates():
     '''Returns [TRAJ] COORDINATES or xyz'''
@@ -266,3 +276,9 @@ def get_RS274_start_code():
     if not temp:
         return False
     return  temp
+
+def get_startup_notification():
+    return ini.find('DISPLAY', 'STARTUP_NOTIFICATION')
+
+def get_startup_warning():
+    return ini.find('DISPLAY', 'STARTUP_WARNING')

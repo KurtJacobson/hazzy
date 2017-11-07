@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-#   Base logging module
-
 #   Copyright (c) 2017 Kurt Jacobson
 #      <kurtcjacobson@gmail.com>
 #
@@ -9,7 +7,7 @@
 #
 #   Hazzy is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
-#   the Free Software Foundation, either version 3 of the License, or
+#   the Free Software Foundation, either version 2 of the License, or
 #   (at your option) any later version.
 #
 #   Hazzy is distributed in the hope that it will be useful,
@@ -20,16 +18,36 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+# Description:
+#   Application wide logging module.
+
+
 import os
 import logging
+from linuxcnc import ini
 
 from constants import Paths
 from utilities.colored_log import ColoredFormatter
 
-# Get log file path
-log_file = Paths.LOG_FILE
-if not os.path.isabs(log_file):
-    log_file = os.path.join(Paths.CONFIGDIR, log_file)
+
+inipath = os.environ.get('INI_FILE_NAME')
+
+if inipath:
+    ini = ini(inipath)
+    path = ini.find('DISPLAY', 'LOG_FILE')
+    if not path:
+        log_file = os.path.expanduser('~/hazzy.log')
+    elif path.startswith('~'):
+        log_file = os.path.expanduser(path)
+    elif not os.path.isabs(path):
+        log_file = os.path.join(Paths.CONFIGDIR, path)
+    else:
+        log_file = os.path.realpath(path)
+else:
+    log_file = os.path.expanduser('~/hazzy.log')
+
+with open(log_file, 'w') as fh:
+    pass
 
 # Get logger for module.__name__
 def get(name):
