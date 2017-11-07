@@ -51,28 +51,37 @@ class MDI(Gtk.Box):
     def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
-        self.builder = Gtk.Builder()
-        self.builder.add_from_file(os.path.join(UIDIR, 'mdi.glade'))
+        self.set_hexpand(True)
+        self.set_vexpand(True)
 
-        self.mdi_liststore = self.builder.get_object('mdi_liststore')
+        scrolled = Gtk.ScrolledWindow()
+        self.pack_start(scrolled, True, True, 0)
 
-        self.mdi_box = self.builder.get_object('mdi_box')
+        self.store = Gtk.ListStore(str, str, str)
 
-        self.pack_start(self.mdi_box, True, True, 0)
+        view = Gtk.TreeView(self.store)
 
-        self.builder.connect_signals(self)
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn("Instruction", renderer, text=0)
+        view.append_column(column)
 
-    def on_mdi_prompt_activate(self, widget):
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn("Remove", renderer, text=1)
+        view.append_column(column)
 
-        mdi_text = widget.get_text()
-        widget.set_text("")
+        renderer = Gtk.CellRendererText()
+        column = Gtk.TreeViewColumn("Run", renderer, text=2)
+        view.append_column(column)
 
-        issue_mdi(mdi_text)
+        scrolled.add(view)
 
-        remove_button = Gtk.Button()
-        repeat_button = Gtk.Button()
+        entry = Gtk.Entry()
+        entry.set_placeholder_text('MDI')
+        self.pack_start(entry, False, False, 0)
 
-        row = (mdi_text, "1", "2")
+        entry.connect('activate', self.on_entry_acitvated)
 
-        self.mdi_liststore.append(row)
-
+    def on_entry_acitvated(self, widget):
+        cmd = widget.get_text()
+        widget.set_text('')
+        self.store.append([cmd, None, None])
