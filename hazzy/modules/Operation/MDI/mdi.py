@@ -27,16 +27,6 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk
-
-
-# Setup paths
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-HAZZYDIR = os.path.abspath(os.path.join(PYDIR, '../..'))
-if HAZZYDIR not in sys.path:
-    sys.path.insert(1, HAZZYDIR)
-
-UIDIR = os.path.join(PYDIR, 'ui')
-
 from utilities.command import issue_mdi
 
 
@@ -55,33 +45,42 @@ class MDI(Gtk.Box):
         self.set_vexpand(True)
 
         scrolled = Gtk.ScrolledWindow()
+        self.vadj = scrolled.get_vadjustment()
         self.pack_start(scrolled, True, True, 0)
 
         self.store = Gtk.ListStore(str, str, str)
-
-        view = Gtk.TreeView(self.store)
+        self.view = Gtk.TreeView(self.store)
 
         renderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn("Instruction", renderer, text=0)
-        view.append_column(column)
+        self.view.append_column(column)
 
         renderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn("Remove", renderer, text=1)
-        view.append_column(column)
+        self.view.append_column(column)
 
         renderer = Gtk.CellRendererText()
         column = Gtk.TreeViewColumn("Run", renderer, text=2)
-        view.append_column(column)
+        self.view.append_column(column)
 
-        scrolled.add(view)
+        scrolled.add(self.view)
 
-        entry = Gtk.Entry()
-        entry.set_placeholder_text('MDI')
-        self.pack_start(entry, False, False, 0)
+        self.entry = Gtk.Entry()
+        self.entry.set_placeholder_text('MDI')
+        self.pack_start(self.entry, False, False, 0)
 
-        entry.connect('activate', self.on_entry_acitvated)
+        self.scrolled_to_bottom = False
+
+        self.view.connect('size-allocate', self.scroll_to_bottom)
+        self.entry.connect('activate', self.on_entry_acitvated)
 
     def on_entry_acitvated(self, widget):
         cmd = widget.get_text()
         widget.set_text('')
         self.store.append([cmd, None, None])
+        self.scrolled_to_bottom = False
+
+    def scroll_to_bottom(self, widget, event):
+        if not self.scrolled_to_bottom:
+            self.vadj.set_value(self.vadj.get_upper() - self.vadj.get_page_size())
+            self.scrolled_to_bottom = True
