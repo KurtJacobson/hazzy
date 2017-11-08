@@ -26,6 +26,11 @@
 import os
 from linuxcnc import ini
 
+class Units(enumerate):
+    IN = 1
+    MM = 2
+    CM = 3
+
 class MessageType(enumerate):
     INFO = 0
     WARNING = 1

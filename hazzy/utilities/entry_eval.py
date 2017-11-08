@@ -24,6 +24,7 @@
 import ast
 import operator as op
 from utilities import ini_info
+from utilities.constants import Units
 
 # Setup logging
 from utilities import logger
@@ -34,7 +35,8 @@ operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
              ast.Div: op.truediv, ast.Pow: op.pow, ast.BitXor: op.xor,
              ast.USub: op.neg}
 
-is_metric = ini_info.get_is_metric()
+is_metric = ini_info.get_machine_name() == Units.MM
+log.info(is_metric)
 
 def eval(expr):
     if expr is None or expr == '':

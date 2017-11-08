@@ -39,6 +39,7 @@ from utilities import status
 from utilities import command
 from utilities import entry_eval
 from utilities import preferences as prefs
+from utilities.constants import Units
 
 from widget_factory.TouchPads import keyboard
 
@@ -61,6 +62,16 @@ class DroEntry(Gtk.Entry):
     ''' Base DRO entry class '''
 
     coords = machine_info.coordinates
+    machine_units = ini_info.get_machine_units()
+
+    # Set the conversions used for changing the DRO units
+    # Only convert linear axes (XYZUVW), use factor of unity for ABC
+    if machine_units == Units.MM: 
+        # List of factors for converting from mm to inches
+        conversion_list = [1.0/25.4]*3+[1]*3+[1.0/25.4]*3
+    else:
+        # List of factors for converting from inches to mm
+        conversion_list = [25.4]*3+[1]*3+[25.4]*3
 
     def __init__(self, axis_letter, dro_type=DroType.REL):
         Gtk.Entry.__init__(self)
@@ -68,9 +79,7 @@ class DroEntry(Gtk.Entry):
         self.axis_letter = axis_letter
         self.axis_num = 'xyzabcuvw'.index(self.axis_letter.lower())
         self.joint_num = self.coords.index(self.axis_letter.lower())
-
         self.dro_type = dro_type
-        self.decimal_places = 4
 
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -85,8 +94,15 @@ class DroEntry(Gtk.Entry):
 #        font = Pango.FontDescription('16')
 #        self.modify_font(font)
 
+        self.in_decimal_places = prefs.get('DROs', 'IN_DEC_PLCS', 4, int)
+        self.mm_decimal_places = prefs.get('DROs', 'MM_DEC_PLCS', 3, int)
+        self.conversion_factor = self.conversion_list[self.axis_num]
         self.has_focus = False
 
+        self.dec_plcs = self.in_decimal_places
+        self.factor = 1
+
+        self.connect('button-press-event', self.on_button_press)
         self.connect('button-release-event', self.on_button_release)
         self.connect('focus-in-event', self.on_focus_in)
         self.connect('focus-out-event', self.on_focus_out)
@@ -94,21 +110,38 @@ class DroEntry(Gtk.Entry):
         self.connect('activate', self.on_activate)
 
         status.on_changed('stat.axis-positions', self._update_dro)
+        status.on_changed('stat.program_units', self._update_units)
 
     def _update_dro(self, widget, positions):
         if not self.has_focus: # Don't step on user trying to enter value
-            pos = positions[self.dro_type][self.axis_num]
-            pos_str = '{:.{dec_plcs}f}'.format(pos, dec_plcs=self.decimal_places)
+            pos = positions[self.dro_type][self.axis_num] * self.factor
+
+            pos_str = '{:.{dec_plcs}f}'.format(pos, dec_plcs=self.dec_plcs)
             self.set_text(pos_str)
 
-    def on_button_release(self, widget, data=None):
-        if not self.has_focus:
-            self.select()
+    def _update_units(self, status, units):
+        if units == self.machine_units:
+            self.factor = 1
+        else:
+            self.factor = self.conversion_factor
+        if units == Units.IN:
+            self.dec_plcs = self.in_decimal_places
+        else:
+            self.dec_plcs = self.mm_decimal_places
+
+    def on_button_press(self, widegt, event, data=None):
+        # Have to catch double and triple clickes to prevent
+        # activating the enty, which causes all kinds of problems
+        # with the pop up keyboad etc.
+        if event.type == Gdk.EventType.DOUBLE_BUTTON_PRESS \
+            or event.type == Gdk.EventType.TRIPLE_BUTTON_PRESS:
             return True
 
+    def on_button_release(self, widget, data=None):
+        return True
+
     def on_focus_out(self, widget, data=None):
-        if self.style_context.has_class('error'):
-            self.style_context.remove_class('error')
+        self.style_context.remove_class('error')
         self.unselect()
 
     def on_focus_in(self, widegt, data=None):
