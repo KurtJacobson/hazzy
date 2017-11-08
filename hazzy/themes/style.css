@@ -93,6 +93,10 @@ window {
     font-size: 24px;
 }
 
+.DroEntry:disabled {
+    color: black;
+}
+
 .DroEntry.homing {
     color: @text_warning;
 }
@@ -101,14 +105,21 @@ window {
     color: @text_error;
 }
 
-.DroEntry.error {
+.DroEntry.unhomed {
+    color: @text_error;
+}
+
+.DroEntry.unhomed image.left {
+    color: @text_error;
+}
+
+.DroEntry.homing image.left {
     color: @text_error;
 }
 
 .DroEntry image.left {
-    color: @text_error;
+    color: #4e9a06;
 }
-
 
 .TouchPad button {
     padding: 2px;
