@@ -48,22 +48,9 @@ class MDI(Gtk.Box):
         self.vadj = scrolled.get_vadjustment()
         self.pack_start(scrolled, True, True, 0)
 
-        self.store = Gtk.ListStore(str, str, str)
-        self.view = Gtk.TreeView(self.store)
-
-        renderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn("Instruction", renderer, text=0)
-        self.view.append_column(column)
-
-        renderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn("Remove", renderer, text=1)
-        self.view.append_column(column)
-
-        renderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn("Run", renderer, text=2)
-        self.view.append_column(column)
-
-        scrolled.add(self.view)
+        self.cmd_history = Gtk.ListBox()
+        self.cmd_history.set_activate_on_single_click(True)
+        scrolled.add(self.cmd_history)
 
         self.entry = Gtk.Entry()
         self.entry.set_placeholder_text('MDI')
@@ -71,16 +58,59 @@ class MDI(Gtk.Box):
 
         self.scrolled_to_bottom = False
 
-        self.view.connect('size-allocate', self.scroll_to_bottom)
+        self.cmd_history.connect('size-allocate', self.scroll_to_bottom)
         self.entry.connect('activate', self.on_entry_acitvated)
+
+    # Use MDIHistoryRow
+    def submit_to_history(self, command):
+        row = Gtk.ListBoxRow()
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        row.add(box)
+        row.connect('activate', self.on_row_activated, command)
+        box.pack_start(Gtk.Label(command, xalign=0), True, True, 0)
+        btn = Gtk.Button.new_from_icon_name('process-stop', Gtk.IconSize.BUTTON)
+        btn.connect('clicked', self.remove_from_history, row)
+        btn.get_style_context().add_class('flat')
+        btn.get_style_context().add_class('no_padding')
+        box.pack_end(btn, False, False, 0)
+        self.cmd_history.add(row)
+        row.show_all()
+
+    def on_row_activated(self, widegt, command):
+        self.entry.set_text(command)
+
+    def remove_from_history(self, widegt, row):
+        self.cmd_history.remove(row)
 
     def on_entry_acitvated(self, widget):
         cmd = widget.get_text()
+        if cmd == '':
+            return
         widget.set_text('')
-        self.store.append([cmd, None, None])
+        self.submit_to_history(cmd)
         self.scrolled_to_bottom = False
 
     def scroll_to_bottom(self, widget, event):
         if not self.scrolled_to_bottom:
             self.vadj.set_value(self.vadj.get_upper() - self.vadj.get_page_size())
             self.scrolled_to_bottom = True
+
+# Not done
+class MDIHistoryRow(Gtk.ListBoxRow):
+    def __init__(self, cmd):
+        Gtk.ListBoxRow.__init__(self)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.add(box)
+
+        label = Gtk.Label(command, xalign=0)
+        box.pack_start(label, True, True, 0)
+
+        btn = Gtk.Button.new_from_icon_name('process-stop', Gtk.IconSize.BUTTON)
+        btn.connect('clicked', self.remove_from_history, row)
+        btn.get_style_context().add_class('flat')
+        btn.get_style_context().add_class('no_padding')
+        box.pack_end(btn, False, False, 0)
+
+        row.connect('activate', self.on_row_activated, command)
+        row.show_all()

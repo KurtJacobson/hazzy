@@ -109,7 +109,6 @@ window {
     color: @text_error;
 }
 
-
 .TouchPad button {
     padding: 2px;
     font-size: 20px;
@@ -118,6 +117,10 @@ window {
 /***************
 * FileChooser *
 ***************/
+
+button.no_padding {
+    padding: 0px;
+}
 
 button#eject {
     border-radius: 0px;
