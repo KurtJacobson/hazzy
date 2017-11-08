@@ -54,13 +54,11 @@ def on_key_press_event(widget, event):
 
     keyname = Gdk.keyval_name(event.keyval)
 
-    if not keyname in KEYBINDINGS.keys():
+    if not keyname in KEYBINDINGS:
         return False
 
     if is_pressed.get(keyname, False):
         return True
-
-    is_pressed[keyname] = True
 
     if not prefs.get('JOGGING', 'USE_KEYBOARD', 'YES', bool):
         return
@@ -71,6 +69,8 @@ def on_key_press_event(widget, event):
         or not is_homed():
         return
 
+    is_pressed[keyname] = True
+
     jog_start(KEYBINDINGS[keyname])
     is_pressed[keyname] = True
     return True
@@ -78,13 +78,20 @@ def on_key_press_event(widget, event):
 def on_key_release_event(widget, event):
 
     keyname = Gdk.keyval_name(event.keyval)
+
+    if not keyname in KEYBINDINGS:
+        return
+
+    if not is_pressed.get(keyname, False):
+        return
+
     is_pressed[keyname] = False
 
-    stat.poll()
-    if stat.task_mode != linuxcnc.MODE_MANUAL \
-        or not stat.enabled \
-        or not is_homed():
-        return
+#    stat.poll()
+#    if stat.task_mode != linuxcnc.MODE_MANUAL \
+#        or not stat.enabled \
+#        or not is_homed():
+#        return
 
     jog_stop(KEYBINDINGS[keyname])
     return True

@@ -84,6 +84,9 @@ class DroEntry(Gtk.Entry):
         self.set_hexpand(True)
         self.set_vexpand(True)
 
+#        self.set_has_frame(False)
+        self.set_sensitive(False)
+
         self.set_alignment(1)
         self.set_width_chars(8)
 
@@ -177,6 +180,7 @@ class G5xEntry(DroEntry):
         icon_name = "go-home-symbolic"
         self.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, icon_name)
 
+        self.set_sensitive(True)
         self.set_icon_activatable(1, True)
         self.connect("icon-press", self.home)
 
@@ -209,7 +213,7 @@ class G5xEntry(DroEntry):
         '''Evaluate entry and set axis position to value.'''
         expr = self.get_text().lower()
         val = entry_eval.eval(expr)
-        print "value", val
+        print "DRO entry value: ", val
         if val is not None:
             command.set_work_coordinate(self.axis_letter, val)
             self.unselect()

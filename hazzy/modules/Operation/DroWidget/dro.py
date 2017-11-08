@@ -87,14 +87,14 @@ class Dro(Gtk.Grid):
 
             # ABS DRO
             label = DroEntry(axis, DroType.ABS)
-            box = DroCover() # Temp kludge to make un-editable/un-selectable
-            self.attach(box, 3, count, 1, 1)
+#            box = DroCover() # Temp kludge to make un-editable/un-selectable
+#            self.attach(box, 3, count, 1, 1)
             self.attach(label, 3, count, 1, 1)
 
             # DTG DRO
             label = DroEntry(axis, DroType.DTG)
-            box = DroCover() # Temp kludge to make un-editable/un-selectable
-            self.attach(box, 4, count, 1, 1)
+#            box = DroCover() # Temp kludge to make un-editable/un-selectable
+#            self.attach(box, 4, count, 1, 1)
             self.attach(label, 4, count, 1, 1)
 
             count += 1
