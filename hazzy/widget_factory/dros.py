@@ -32,6 +32,7 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+from utilities import logger
 from utilities import ini_info
 from utilities import machine_info
 from utilities import status
@@ -41,6 +42,8 @@ from utilities import preferences as prefs
 from utilities.constants import Units
 
 from widget_factory.TouchPads import keyboard
+
+log = logger.get(__name__)
 
 class DroType:
     ABS = 0
@@ -225,12 +228,13 @@ class G5xEntry(DroEntry):
 
     def on_activate(self, widget):
         '''Evaluate entry and set axis position to value.'''
-        expr = self.entry.get_text().lower()
-        val = entry_eval.eval(expr)
-        print "DRO entry value: ", val
-        if val is not None:
+        expr = self.entry.get_text()
+
+        try:
+            val = entry_eval.eval(expr)
             command.set_work_coordinate(self.axis_letter, val)
             self.unselect()
-        else:
+        except Exception as e:
+            log.exception(e)
             self.style_context.add_class('error')
             Gdk.beep()
