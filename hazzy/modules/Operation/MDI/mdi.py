@@ -87,6 +87,9 @@ class MDI(Gtk.Box):
         if cmd == '':
             return
         widget.set_text('')
+
+        issue_mdi(cmd)
+
         self.submit_to_history(cmd)
         self.scrolled_to_bottom = False
 
@@ -94,6 +97,7 @@ class MDI(Gtk.Box):
         if not self.scrolled_to_bottom:
             self.vadj.set_value(self.vadj.get_upper() - self.vadj.get_page_size())
             self.scrolled_to_bottom = True
+
 
 # Not done
 class MDIHistoryRow(Gtk.ListBoxRow):
