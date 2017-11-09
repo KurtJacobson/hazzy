@@ -152,7 +152,7 @@ def issue_mdi(mdi_command):
         set_mode(linuxcnc.MODE_MDI)
         log.info("Issuing MDI command: {0}".format(mdi_command))
         command.mdi(mdi_command)
-        set_mode(linuxcnc.MODE_MANUAL)
+#        set_mode(linuxcnc.MODE_MANUAL) # This blocks??
 
 def set_work_coordinate(axis, position):
     '''Set the current coordinates for `axis` to `position`.

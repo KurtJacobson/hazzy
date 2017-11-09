@@ -87,11 +87,11 @@ class MDI(Gtk.Box):
         if cmd == '':
             return
         widget.set_text('')
-
-        issue_mdi(cmd)
-
         self.submit_to_history(cmd)
         self.scrolled_to_bottom = False
+
+        # Must be last or blocks UI :D
+        issue_mdi(cmd)
 
     def scroll_to_bottom(self, widget, event):
         if not self.scrolled_to_bottom:
