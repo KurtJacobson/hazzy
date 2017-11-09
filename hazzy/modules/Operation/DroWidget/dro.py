@@ -35,7 +35,7 @@ from gi.repository import Pango
 
 from utilities import status
 from utilities import machine_info
-from widget_factory.dros import DroType, DroEntry, G5xEntry
+from widget_factory.dro_widgets import DroType, DroEntry, G5xEntry
 
 class Dro(Gtk.Grid):
 
