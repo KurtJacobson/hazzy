@@ -27,6 +27,7 @@ import os
 import sys
 
 from linuxcnc import ini
+from constants import Units
 
 # Setup logging
 from utilities import logger
@@ -109,15 +110,15 @@ def get_axis_list():
         axis_list.append(axis_letter)
     return axis_list
 
-def get_is_metric():
+def get_machine_units():
     temp = ini.find('TRAJ', 'LINEAR_UNITS')
     if not temp:
         # Then get the X axis units
         temp = ini.find('AXIS_X', 'UNITS')
-    if temp=="mm" or temp=="metric" or temp == "1.0":
-        return True
+    if temp in ['mm', 'metric']:
+        return Units.MM
     else:
-        return False
+        return Units.IN
 
 def get_no_force_homing():
     temp = ini.find('TRAJ', 'NO_FORCE_HOMING')

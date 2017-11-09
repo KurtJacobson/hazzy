@@ -24,8 +24,9 @@
 import ast
 import operator as op
 from utilities import ini_info
+from utilities.constants import Units
 
-# Setup logging
+# Set up logging
 from utilities import logger
 log = logger.get(__name__)
 
@@ -34,7 +35,8 @@ operators = {ast.Add: op.add, ast.Sub: op.sub, ast.Mult: op.mul,
              ast.Div: op.truediv, ast.Pow: op.pow, ast.BitXor: op.xor,
              ast.USub: op.neg}
 
-is_metric = ini_info.get_is_metric()
+is_metric = ini_info.get_machine_name() == Units.MM
+log.info(is_metric)
 
 def eval(expr):
     if expr is None or expr == '':
@@ -49,10 +51,8 @@ def eval(expr):
         expr = expr.replace("mm", "")
         if not is_metric:
             factor = 1/25.4
-    try:
-        return _eval(ast.parse(expr, mode='eval').body) * factor
-    except (ValueError, TypeError) as e:
-        log.exception(e)
+
+    return _eval(ast.parse(expr, mode='eval').body) * factor
 
 def _eval(node):
     if isinstance(node, ast.Num): # <number>
@@ -61,5 +61,3 @@ def _eval(node):
         return operators[type(node.op)](_eval(node.left), _eval(node.right))
     elif isinstance(node, ast.UnaryOp): # <operator> <operand> e.g., -1
         return operators[type(node.op)](_eval(node.operand))
-    else:
-        raise TypeError(node)
