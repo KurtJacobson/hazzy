@@ -22,9 +22,8 @@
 #   Various DRO widegts.
 
 # ToDo:
-#   Add DRO lable widgets.
+#   Add DRO label widgets.
 
-import os
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -48,18 +47,11 @@ class DroType:
     REL = 1
     DTG = 2
 
-
-class DroCover(Gtk.EventBox):
-    def __init__(self):
-        Gtk.EventBox.__init__(self)
-        self.connect('button-press-event', self.on_button_press)
-
-    def on_button_press(self, widget, event):
-        widget.get_toplevel().set_focus(None)
-
-
-class DroEntry(Gtk.Entry):
-    ''' Base DRO entry class '''
+class DroEntry(Gtk.EventBox):
+    '''Base DRO entry class'''
+    # Uses a Gtk.EventBox placed over a Gtk.Entry so that when the entry
+    # is insensitive we can still catch button press events and remove
+    # focus, needed for touchscreen use were no escape key is handy.
 
     coords = machine_info.coordinates
     machine_units = ini_info.get_machine_units()
@@ -74,43 +66,52 @@ class DroEntry(Gtk.Entry):
         conversion_list = [25.4]*3+[1]*3+[25.4]*3
 
     def __init__(self, axis_letter, dro_type=DroType.REL):
-        Gtk.Entry.__init__(self)
+        Gtk.EventBox.__init__(self)
 
         self.axis_letter = axis_letter
         self.axis_num = 'xyzabcuvw'.index(self.axis_letter.lower())
         self.joint_num = self.coords.index(self.axis_letter.lower())
         self.dro_type = dro_type
 
+        # Don't let the EventBox hide the entry
+        self.set_visible_window(False)
+
+        # Make expand to fill space allocated space
         self.set_hexpand(True)
         self.set_vexpand(True)
 
-#        self.set_has_frame(False)
-        self.set_sensitive(False)
+        # Add the actual DRO display
+        self.entry = Gtk.Entry()
+        self.add(self.entry)
 
-        self.set_alignment(1)
-        self.set_width_chars(8)
+        self.set_editable(False) # Default to not editable
+
+        self.entry.set_alignment(1)   # Move text to far right
+        self.entry.set_width_chars(7) # 6 digits and a decimal point (99.9999)
 
         # Add style class
-        self.style_context = self.get_style_context()
+        self.style_context = self.entry.get_style_context()
         self.style_context.add_class("DroEntry")
 
+        # Could set font like this, but CSS better
 #        font = Pango.FontDescription('16')
 #        self.modify_font(font)
 
         self.in_decimal_places = prefs.get('DROs', 'IN_DEC_PLCS', 4, int)
         self.mm_decimal_places = prefs.get('DROs', 'MM_DEC_PLCS', 3, int)
         self.conversion_factor = self.conversion_list[self.axis_num]
-        self.has_focus = False
-
         self.dec_plcs = self.in_decimal_places
         self.factor = 1
+        self.has_focus = False
+        self.selected = False
 
-        self.connect('button-press-event', self.on_button_press)
-        self.connect('button-release-event', self.on_button_release)
-        self.connect('focus-in-event', self.on_focus_in)
-        self.connect('focus-out-event', self.on_focus_out)
-        self.connect('key-press-event', self.on_key_press)
-        self.connect('activate', self.on_activate)
+        self.connect('button-press-event', self.on_eventbox_clicked)
+        self.entry.connect('button-press-event', self.on_button_press)
+        self.entry.connect('button-release-event', self.on_button_release)
+        self.entry.connect('focus-in-event', self.on_focus_in)
+        self.entry.connect('focus-out-event', self.on_focus_out)
+        self.entry.connect('key-press-event', self.on_key_press)
+        self.entry.connect('activate', self.on_activate)
 
         status.on_changed('stat.axis-positions', self._update_dro)
         status.on_changed('stat.program_units', self._update_units)
@@ -120,7 +121,7 @@ class DroEntry(Gtk.Entry):
             pos = positions[self.dro_type][self.axis_num] * self.factor
 
             pos_str = '{:.{dec_plcs}f}'.format(pos, dec_plcs=self.dec_plcs)
-            self.set_text(pos_str)
+            self.entry.set_text(pos_str)
 
     def _update_units(self, status, units):
         if units == self.machine_units:
@@ -133,23 +134,21 @@ class DroEntry(Gtk.Entry):
             self.dec_plcs = self.mm_decimal_places
 
     def on_button_press(self, widegt, event, data=None):
-        # Have to catch double and triple clickes to prevent
-        # activating the enty, which causes all kinds of problems
-        # with the pop up keyboad etc.
         if event.type == Gdk.EventType.DOUBLE_BUTTON_PRESS \
             or event.type == Gdk.EventType.TRIPLE_BUTTON_PRESS:
             return True
 
     def on_button_release(self, widget, data=None):
-        return True
+        if not self.selected:
+            self.selected = True
+            return True
+
+    def on_focus_in(self, widegt, data=None):
+        self.select()
 
     def on_focus_out(self, widget, data=None):
         self.style_context.remove_class('error')
         self.unselect()
-
-    def on_focus_in(self, widegt, data=None):
-        self.has_focus = True
-        self.select()
 
     def on_activate(self, widget, data=None):
         self.unselect()
@@ -158,15 +157,23 @@ class DroEntry(Gtk.Entry):
         if event.keyval == Gdk.KEY_Escape:
             self.unselect()
 
+    def on_eventbox_clicked(self, widget, event):
+        self.unselect()
+
     def select(self):
-        self.select_region(0, -1)
+        self.entry.select_region(0, -1)
         self.has_focus = True
-        keyboard.show(self)
+        self.selected = False
+        keyboard.show(self.entry)
 
     def unselect(self):
-        self.select_region(0, 0)
+        self.entry.select_region(0, 0)
         self.get_toplevel().set_focus(None)
         self.has_focus = False
+
+    def set_editable(self, editable):
+        self.entry.set_sensitive(editable) # For rendering insensitive colors
+        self.set_above_child(not editable) # Move EventBox to top so catches events
 
 
 class G5xEntry(DroEntry):
@@ -177,12 +184,14 @@ class G5xEntry(DroEntry):
     def __init__(self, axis_letter, dro_type):
         DroEntry.__init__(self, axis_letter, dro_type)
 
-        icon_name = "go-home-symbolic"
-        self.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, icon_name)
+        self.entry.set_width_chars(9)
 
-        self.set_sensitive(True)
-        self.set_icon_activatable(1, True)
-        self.connect("icon-press", self.home)
+        icon_name = "go-home-symbolic"
+        self.entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, icon_name)
+
+        self.entry.set_sensitive(True)
+        self.entry.set_icon_activatable(1, True)
+        self.entry.connect("icon-press", self.home)
 
         status.on_changed('joint.homing', self.on_homing)
         status.on_changed('joint.homed', self.on_homed)
@@ -190,6 +199,8 @@ class G5xEntry(DroEntry):
         # Only indicate unhomed if require homing
         if not self.no_force_homing:
             self.style_context.add_class('unhomed')
+
+        status.on_changed('stat.enabled', self.on_enebled_state_changed)
 
     def home(self, widget, icon, event):
         command.home_joint(self.joint_num)
@@ -209,9 +220,12 @@ class G5xEntry(DroEntry):
             else:
                 self.style_context.add_class('unhomed')
 
+    def on_enebled_state_changed(self, stat, enabled):
+        self.set_editable(enabled)
+
     def on_activate(self, widget):
         '''Evaluate entry and set axis position to value.'''
-        expr = self.get_text().lower()
+        expr = self.entry.get_text().lower()
         val = entry_eval.eval(expr)
         print "DRO entry value: ", val
         if val is not None:

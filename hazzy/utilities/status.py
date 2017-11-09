@@ -107,8 +107,9 @@ class Status(GObject.GObject):
         self.old['joint'] = getattr(self.stat, 'joint')
 
         # Setup joint dict signals
-        self.keys = self.old['joint'][0].keys()
-        for key in self.keys:
+        self.joint_keys = self.old['joint'][0].keys() # keys() is slow, but we only use it on init
+        for key in self.joint_keys:
+            key = 'joint-{}'.format(key)
             GObject.signal_new(key.replace('_', '-'), self, GObject.SignalFlags.RUN_FIRST, None, (int, object))
 
         self.max_time = 0
@@ -145,8 +146,9 @@ class Status(GObject.GObject):
             log.error('linuxcnc.stat object has no attribute "{}"'.format(attribute))
 
     def _connect_joint_callback(self, attribute, callback):
-        if attribute in self.keys:
-            self.connect(attribute, callback)
+        if attribute in self.joint_keys:
+            sig_name = 'joint-{}'.format(attribute)
+            self.connect(sig_name, callback)
         else:
             log.error('linuxcnc.stat.joint object has no attribute "{}"'.format(attribute))
 
@@ -159,12 +161,12 @@ class Status(GObject.GObject):
 
 
     def _periodic(self):
-        start_time = time.time()
+#        start_time = time.time()
         try:
 
             self.stat.poll()
 
-            # Satus updates
+            # Status updates
             for attribute in self.registry:
                 old = self.old[attribute]
 
@@ -179,19 +181,20 @@ class Status(GObject.GObject):
             old = self.old['joint']
             self.old['joint'] = new
 
-            start = time.time()
+#            start = time.time()
             for joint in range(self.num_joints):
                 if new[joint] != old[joint]:
                     #print '\nJoint {}'.format(joint)
-                    items = tuple(set(new[joint].iteritems())-set(old[joint].iteritems()))
-                    for item in items:
-                        #print '{0}: {1}'.format(item[0], item[1])
-                        self.emit(item[0].replace('_', '-'), joint, item[1])
+                    changed_items = tuple(set(new[joint].items())-set(old[joint].items()))
+                    for item in changed_items:
+#                        print 'JOINT_{0} {1}: {2}'.format(joint, item[0], item[1])
+                        key = 'joint-{}'.format(item[0].replace('_', '-'))
+                        self.emit(key, joint, item[1])
 
-            #print start - time.time()
+#            print start - time.time()
 
 #            # Always update joint/axis positions
-#            calc = time.time()
+            calc = time.time()
             self._update_axis_positions()
             self._update_joint_positions()
 #            print 'Calc time: ', time.time() - calc

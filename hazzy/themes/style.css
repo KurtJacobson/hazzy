@@ -94,7 +94,11 @@ window {
 }
 
 .DroEntry:disabled {
-    color: black;
+    color: @text_normal;
+}
+
+.DroEntry:backdrop {
+    color: gray;
 }
 
 .DroEntry.homing {
