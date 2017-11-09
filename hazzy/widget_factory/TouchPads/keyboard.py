@@ -36,15 +36,19 @@ from gi.repository import GObject
 PYDIR = os.path.abspath(os.path.dirname(__file__))
 UIDIR = os.path.join(PYDIR, 'ui')
 
-#from utilities import logger
-
-## Setup logging
-#log = logger.get(__name__)
-
-import logging
-
-log = logging.getLogger(__name__)
-
+# Might be running standalone
+try:
+    from utilities import logger
+    log = logger.get(__name__)
+except ImportError:
+    import logging
+    log = logging.getLogger('KEYBOARD')
+    log.setLevel(logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    cf = logging.Formatter("[%(name)s][%(levelname)s]  %(message)s (%(filename)s:%(lineno)d)")
+    ch.setFormatter(cf)
+    log.addHandler(ch)
 
 _keymap = Gdk.Keymap.get_default()
 
@@ -91,9 +95,6 @@ class Keyboard():
         # Connect number button press events
         for l, btn in self.number_btn_dict.iteritems():
             btn.connect("pressed", self.emulate_key) #self.on_button_pressed)
-
-
-        print "Initializing the keyboard"
 
 
 # =========================================================
@@ -184,8 +185,7 @@ class Keyboard():
             GObject.timeout_add(50, self.key_repeat, widget, event)
 
         except Exception as e:
-            print(e)
-            print("HAZZY KEYBOARD ERROR: key emulation error - " + str(e))
+            log.exception(e)
 
 
         # Unshift if left shift is active, right shift is "sticky"
@@ -305,7 +305,7 @@ class Keyboard():
         self.keyboard.popup()
 
     def on_button_press(self, widget, event):
-        # Needed to prevent closing the PopOver on activate
+        # Prevent closing the PopOver on activating a button
         return True
 
 
@@ -323,6 +323,14 @@ def show(entry, data=None):
 # For standalone testing
 # ==========================================================
 
+def on_activate(entry):
+    text = entry.get_text()
+    entry.set_text('')
+    entry.get_toplevel().set_focus(None)
+    print 'Got entry: ', text
+
+def on_button_press(window, event):
+    window.get_toplevel().set_focus(None)
 
 def demo():
     keyboard = Keyboard()
@@ -333,12 +341,11 @@ def demo():
     entry.set_hexpand(False)
     entry.set_vexpand(False)
     entry.connect('focus-in-event', show)
+    entry.connect('activate', on_activate)
     box.pack_start(entry, False, False, 5)
 
-    button = Gtk.Button()
-    box.pack_start(button, False, False, 5)
-
     window = Gtk.Window(title="Test Keyboard")
+    window.connect('button-press-event', on_button_press)
     window.connect('destroy', Gtk.main_quit)
     window.add(box)
 
