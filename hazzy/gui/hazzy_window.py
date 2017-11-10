@@ -24,7 +24,29 @@
 #   the window based on that description. If that file does not exist or is not
 #   valid, a window containing one blank screen will be displayed.
 
+import time
+
+from utilities import logger
+log = logger.get('MAIN')
+
+def log_time(task, _time=[time.time(), time.time()]):
+    now = time.time()
+    log.debug("yellow<Time:> {:.3f} ({:+.3f}) {}".format(now - _time[0], now - _time[1], task))
+    _time[1] = now
+
+log_time("in script")
+
 import os
+import sys
+import datetime
+import linuxcnc, hal
+import traceback
+
+from lxml import etree
+from datetime import datetime
+
+log_time('python imports done')
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -32,16 +54,39 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import Gio
+from gi.repository import GLib
 
-import hal
+log_time('Gtk imports done')
 
-from lxml import etree
-from datetime import datetime
+# Log exceptions
+def excepthook(exc_type, exc_value, exc_traceback):
+    message = traceback.format_exception(exc_type, exc_value, exc_traceback)
+    log.critical("".join(message))
+
+# Connect our excepthook handler
+sys.excepthook = excepthook
+
+# Check LinuxCNC Version
+major, minor, micro = os.environ.get('LINUXCNCVERSION').split('.')
+if (int(major), int(minor)) < (2, 8):
+    log.critical("LinuxCNC is version {}.{}.{} but hazzy requires LinuxCNC 2.8 or above"
+        .format(major, minor, micro))
+    sys.exit()
+
+# Check GTK+ Version
+major, minor, micro = Gtk.MAJOR_VERSION, Gtk.MINOR_VERSION, Gtk.MICRO_VERSION
+if (major, minor) < (3, 20):
+    log.critical("GTK+ is version {}.{}.{} but hazzy requires GTK+ 3.20 or above"
+        .format(major, minor, micro))
+    sys.exit()
+
+log_time('done checking requirements')
 
 from utilities.constants import Paths
+from utilities import notifications
 from utilities import ini_info
 from utilities import jogging
-from gui import about
 
 # Import our own modules
 from widget_chooser import WidgetChooser
@@ -49,12 +94,151 @@ from widget_window import WidgetWindow
 from screen_stack import ScreenStack
 from widget_area import WidgetArea
 from header_bar import HeaderBar
+from about import About
 
-from utilities import ini_info
+log_time('module imports done')
 
-# Set up logging
-from utilities import logger
-log = logger.get(__name__)
+
+
+
+
+class Hazzy(Gtk.Application):
+    def __init__(self):
+        Gtk.Application.__init__(self)
+        print "Initializing"
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+
+        self.start_time = datetime.now()
+        log.info("green<Starting>")
+
+        print Paths.STYLEDIR
+
+        style_provider = Gtk.CssProvider()
+        style_provider.load_from_path(os.path.join(Paths.STYLEDIR, "style.css"))
+
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(), style_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
+
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file(os.path.join(Paths.UIDIR, 'menu.ui'))
+
+        menu = self.builder.get_object('app_menu')
+        self.set_app_menu(menu)
+
+        actions = ['about', 'quit', 'launch_hal_meter', 'launch_hal_scope',
+            'launch_hal_configuration', 'launch_classicladder', 'launch_status']
+
+        for action in actions:
+            self.add_simple_action(action)
+
+        toggle_actions = ['edit_layout', 'dark_theme']
+        for action in toggle_actions:
+            self.add_toggle_action(action)
+
+        # Show any Startup Notifications given in INI
+        startup_notification = ini_info.get_startup_notification()
+        if startup_notification:
+            notifications.show_info(startup_notification, timeout=0)
+
+        startup_warning = ini_info.get_startup_warning()
+        if startup_warning:
+            notifications.show_warning(startup_warning, timeout=0)
+
+        log_time('done doing startup')
+
+    def do_activate(self):
+        Gtk.Application.do_activate(self)
+
+        window = HazzyWindow(application=self)
+        window.connect('delete-event', self.on_window_delete_event)
+        window.set_show_menubar(False)
+        window.set_gtk_theme('Adwaita')
+        window.load_from_xml()
+        window.show_all()
+        self.add_window(window)
+
+    def do_shutdown(self):
+        Gtk.Application.do_shutdown(self)
+
+        log.info("red<Quitting>")
+        run_time = datetime.now() - self.start_time
+        log.info("Total session duration: {}".format(run_time))
+
+        print 'Doing shutdown'
+        print self.get_windows()
+
+    def on_window_delete_event(self, window, event):
+        self.quit()
+        return True
+
+# =========================================================
+# App menu action handlers
+# =========================================================
+
+    def on_edit_layout_toggled(self, action, state):
+        action.set_state(state)
+        for window in self.get_windows():
+            window.set_edit_layout(state)
+
+    def on_dark_theme_toggled(self, action, state):
+        action.set_state(state)
+        settings = Gtk.Settings.get_default()
+        settings.set_property("gtk-application-prefer-dark-theme", state)
+
+    def on_new_window(self, action, data):
+        self.do_activate()
+
+    def on_launch_hal_scope(self, action, data):
+        p = os.popen("halscope &")
+
+    def on_launch_hal_meter(self, action, data):
+        p = os.popen("halmeter &")
+
+    def on_launch_hal_configuration(self, action, data):
+        p = os.popen("tclsh {0}/bin/halshow.tcl &".format(Paths.TCLPATH))
+
+    def on_launch_classicladder(self, action, data):
+        if hal.component_exists("classicladder_rt"):
+            p = os.popen("classicladder  &", "w")
+        else:
+            text = "Classicladder real-time component not detected"
+            self.error_dialog.run(text)
+
+    def on_launch_status(self, action, data):
+        p = os.popen("linuxcnctop &")
+
+    def on_about(self, action, data):
+        About(self.get_active_window())
+
+    def on_quit(self, action, data):
+        print "Quit ..."
+        self.quit()
+
+# =========================================================
+# Helper functions
+# =========================================================
+
+    def add_simple_action(self, action_name):
+        action = Gio.SimpleAction.new(action_name)
+        callback = getattr(self, 'on_{}'.format(action_name))
+        action.connect("activate", callback)
+        self.add_action(action)
+
+    def add_toggle_action(self, action_name, state=False):
+        toggle = Gio.SimpleAction.new_stateful(action_name,
+                            None, GLib.Variant.new_boolean(state))
+        callback = getattr(self, 'on_{}_toggled'.format(action_name))
+        toggle.connect("change-state", callback)
+        self.add_action(toggle)
+
+
+
+
+
 
 class HazzyWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
@@ -83,44 +267,9 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.stack_switcher.set_stack(self.screen_stack)
         self.header_bar.set_custom_title(self.stack_switcher)
 
-#        self.menu_button = Gtk.MenuButton()
-#        self.menu_button.set_popover(self.make_menu_popover())
-#        self.header_bar.pack_start(self.menu_button)
-
-#        self.system_menu_button = Gtk.MenuButton()
-#        self.system_menu_button.set_popover(self.make_system_menu_popover())
-#        self.header_bar.pack_start(self.system_menu_button)
-
-#        self.edit_button = Gtk.Button()
-#        self.edit_button.connect('clicked', self.on_edit_button_clicked)
-#        self.edit_button.set_can_focus(False)
-#        icon = Gtk.Image.new_from_icon_name('view-list-symbolic', Gtk.IconSize.MENU)
-#        self.edit_button.set_image(icon)
-#        self.header_bar.pack_start(self.edit_button)
-
         self.widget_chooser = WidgetChooser(self.screen_stack)
-#        self.widget_chooser.set_relative_to(self.edit_button)
 
         self.set_size_request(900, 600)
-
-    def on_show_halscope_clicked(self, widget):
-        p = os.popen("halscope &")
-
-    def on_show_halmeter_clicked(self, widget):
-        p = os.popen("halmeter &")
-
-    def on_show_halshow_clicked(self, widget):
-        p = os.popen("tclsh {0}/bin/halshow.tcl &".format(Paths.TCLPATH))
-
-    def on_show_status_clicked(self, widget, data=None):
-        p = os.popen("linuxcnctop &")
-
-    def on_show_classicladder_clicked(self, widget, data=None):
-        if hal.component_exists("classicladder_rt"):
-            p = os.popen("classicladder  &", "w")
-        else:
-            text = "Classicladder real-time component not detected"
-            self.error_dialog.run(text)
 
     def on_button_press(self, widget, event):
         # Remove focus when clicking on non focusable area
@@ -135,9 +284,6 @@ class HazzyWindow(Gtk.ApplicationWindow):
             widgets = screen.get_children()
             for widget in widgets:
                 widget.show_overlay(edit)
-
-    def on_show_about_clicked(self, widget):
-        about.About(self)
 
     def on_key_press(self, widget, event):
         if not self.get_focus():
@@ -316,3 +462,7 @@ class HazzyWindow(Gtk.ApplicationWindow):
         if not theme:
             theme = settings.get_default().get_property("gtk-icon-theme-name")
         settings.set_string_property("gtk-icon-theme-name", theme, "")
+
+if __name__ == "__main__":
+    app = Hazzy()
+    app.run()
