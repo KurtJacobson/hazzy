@@ -129,9 +129,7 @@ class HazzyWindow(Gtk.ApplicationWindow):
     def on_edit_button_clicked(self, widget):
         self.widget_chooser.popup_()
 
-    def on_edit_layout_toggled(self, widget):
-        edit = widget.get_active()
-        # Hide eventbox used for drag/resize
+    def set_edit_layout(self, edit):
         screens = self.screen_stack.get_children()
         for screen in screens:
             widgets = screen.get_children()
@@ -318,68 +316,3 @@ class HazzyWindow(Gtk.ApplicationWindow):
         if not theme:
             theme = settings.get_default().get_property("gtk-icon-theme-name")
         settings.set_string_property("gtk-icon-theme-name", theme, "")
-
-    def make_menu_popover(self):
-        #Create a menu popover - very temporary, need to do something neater
-        popover = Gtk.PopoverMenu.new()
-
-        pbox = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
-        pbox.set_property('margin', 10)
-        popover.add(pbox)
-
-        edit = Gtk.CheckButton.new()
-        edit.set_label("Edit Layout")
-        edit.set_active(True)
-        edit.connect('toggled', self.on_edit_layout_toggled)
-        pbox.pack_start(edit, False, False, 5)
-
-        about = Gtk.ModelButton.new()
-        about.set_label("About")
-        about.connect('clicked', self.on_show_about_clicked)
-        pbox.pack_start(about, False, False, 5)
-
-        quit = Gtk.ModelButton.new()
-        quit.set_label("Quit")
-        quit.connect('clicked', Gtk.main_quit)
-
-        pbox.pack_start(quit, False, False, 5)
-        pbox.show_all()
-
-        return popover
-
-    def make_system_menu_popover(self):
-        #Create a menu popover - very temporary, need to do something neater
-        popover = Gtk.PopoverMenu.new()
-
-        pbox = Gtk.Box(orientation = Gtk.Orientation.VERTICAL)
-        pbox.set_property('margin', 10)
-        popover.add(pbox)
-
-        halscope = Gtk.ModelButton.new()
-        halscope.set_label("Hal Scope")
-        halscope.connect('clicked', self.on_show_halscope_clicked)
-        pbox.pack_start(halscope, False, False, 5)
-
-        halmeter = Gtk.ModelButton.new()
-        halmeter.set_label("Hal Meter")
-        halmeter.connect('clicked', self.on_show_halmeter_clicked)
-        pbox.pack_start(halmeter, False, False, 5)
-
-        halshow = Gtk.ModelButton.new()
-        halshow.set_label("Hal Configuration")
-        halshow.connect('clicked', self.on_show_halshow_clicked)
-        pbox.pack_start(halshow, False, False, 5)
-
-        halshow = Gtk.ModelButton.new()
-        halshow.set_label("LinuxCNC Status")
-        halshow.connect('clicked', self.on_show_status_clicked)
-        pbox.pack_start(halshow, False, False, 5)
-
-        halshow = Gtk.ModelButton.new()
-        halshow.set_label("ClassicLadder")
-        halshow.connect('clicked', self.on_show_classicladder_clicked)
-        pbox.pack_start(halshow, False, False, 5)
-
-        pbox.show_all()
-
-        return popover
