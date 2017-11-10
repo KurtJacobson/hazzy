@@ -21,7 +21,7 @@
 # Description
 #   Hazzy startup script.
 
-from gui.hazzy_window import Hazzy
+from gui.main import Hazzy
 
 if __name__ == '__main__':
     app = Hazzy()
