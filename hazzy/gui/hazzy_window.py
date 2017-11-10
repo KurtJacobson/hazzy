@@ -56,9 +56,9 @@ from utilities import ini_info
 from utilities import logger
 log = logger.get(__name__)
 
-class HazzyWindow(Gtk.Window):
-    def __init__(self):
-        Gtk.Window.__init__(self)
+class HazzyWindow(Gtk.ApplicationWindow):
+    def __init__(self, *args, **kwargs):
+        Gtk.ApplicationWindow.__init__(self, *args, **kwargs)
 
         # Get the XML file path
         self.xml_file = ini_info.get_xml_file()
@@ -70,7 +70,7 @@ class HazzyWindow(Gtk.Window):
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(self.box)
 
-        self.header_bar = HeaderBar(self, title='Hazzy')
+        self.header_bar = Gtk.HeaderBar(title='Hazzy', show_close_button=True)
         self.set_titlebar(self.header_bar)
 
         self.overlay = Gtk.Overlay()
@@ -83,23 +83,23 @@ class HazzyWindow(Gtk.Window):
         self.stack_switcher.set_stack(self.screen_stack)
         self.header_bar.set_custom_title(self.stack_switcher)
 
-        self.menu_button = Gtk.MenuButton()
-        self.menu_button.set_popover(self.make_menu_popover())
-        self.header_bar.pack_start(self.menu_button)
+#        self.menu_button = Gtk.MenuButton()
+#        self.menu_button.set_popover(self.make_menu_popover())
+#        self.header_bar.pack_start(self.menu_button)
 
-        self.system_menu_button = Gtk.MenuButton()
-        self.system_menu_button.set_popover(self.make_system_menu_popover())
-        self.header_bar.pack_start(self.system_menu_button)
+#        self.system_menu_button = Gtk.MenuButton()
+#        self.system_menu_button.set_popover(self.make_system_menu_popover())
+#        self.header_bar.pack_start(self.system_menu_button)
 
-        self.edit_button = Gtk.Button()
-        self.edit_button.connect('clicked', self.on_edit_button_clicked)
-        self.edit_button.set_can_focus(False)
-        icon = Gtk.Image.new_from_icon_name('view-list-symbolic', Gtk.IconSize.MENU)
-        self.edit_button.set_image(icon)
-        self.header_bar.pack_start(self.edit_button)
+#        self.edit_button = Gtk.Button()
+#        self.edit_button.connect('clicked', self.on_edit_button_clicked)
+#        self.edit_button.set_can_focus(False)
+#        icon = Gtk.Image.new_from_icon_name('view-list-symbolic', Gtk.IconSize.MENU)
+#        self.edit_button.set_image(icon)
+#        self.header_bar.pack_start(self.edit_button)
 
         self.widget_chooser = WidgetChooser(self.screen_stack)
-        self.widget_chooser.set_relative_to(self.edit_button)
+#        self.widget_chooser.set_relative_to(self.edit_button)
 
         self.set_size_request(900, 600)
 
