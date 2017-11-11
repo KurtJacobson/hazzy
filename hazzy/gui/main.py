@@ -265,14 +265,12 @@ class Hazzy(Gtk.Application):
         for app in root.iter('application'):
             props = self.get_properties(app)
 
-        self.set_gtk_theme(props['gtk-theme'])
-        self.set_icon_theme(props['icon-theme'])
+            self.set_gtk_theme(props.get('gtk-theme'))
+            self.set_icon_theme(props.get('icon-theme'))
+            dark = props.get('dark-theme', 'False') == 'True'
+            self.dark_theme_action.set_state(GLib.Variant.new_boolean(dark))
+            self.set_dark_theme(dark)
 
-        dark = props['dark-theme'] == 'True'
-        self.dark_theme_action.set_state(GLib.Variant.new_boolean(dark))
-        print self.dark_theme_action
-
-        self.set_dark_theme(dark)
         # Windows
         for win in root.iter('window'):
             window_name = win.get('name')
@@ -318,7 +316,7 @@ class Hazzy(Gtk.Application):
     def save_to_xml(self):
 
         # Create XML root element & comment
-        root = etree.Element("hazzy_interface")
+        root = etree.Element("hazzy")
         root.append(etree.Comment('Interface for: {}'.format(ini_info.get_machine_name())))
 
         # Add time stamp
