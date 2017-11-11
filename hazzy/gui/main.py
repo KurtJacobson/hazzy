@@ -22,7 +22,7 @@
 #   This modules handles the creation of the main window. If the file specified
 #   in the INI's entry [DISPLAY] XML_FILE exists, it will attempt to populate
 #   the window based on that description. If that file does not exist or is not
-#   valid, a window containing one blank screen will be displayed.
+#   valid, one window containing one blank screen will be displayed.
 
 import time
 
@@ -31,7 +31,7 @@ log = logger.get('MAIN')
 
 def log_time(task, _time=[time.time(), time.time()]):
     now = time.time()
-    log.debug("yellow<Time:> {:.3f} ({:+.3f}) {}".format(now - _time[0], now - _time[1], task))
+    log.debug("yellow<Time:> {:.3f} (green<{:+.3f}>) - {}".format(now - _time[0], now - _time[1], task))
     _time[1] = now
 
 log_time("in script")
@@ -99,21 +99,23 @@ from about import About
 log_time('module imports done')
 
 
-
-
-
 class Hazzy(Gtk.Application):
     def __init__(self):
         Gtk.Application.__init__(self)
-        print "Initializing"
+
+        # Get the XML file path
+        self.xml_file = ini_info.get_xml_file()
+
+        self.settings = Gtk.Settings.get_default()
+        self.set_gtk_theme('Adwaita')
+
+        log_time('done initializing')
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
 
         self.start_time = datetime.now()
         log.info("green<Starting>")
-
-        print Paths.STYLEDIR
 
         style_provider = Gtk.CssProvider()
         style_provider.load_from_path(os.path.join(Paths.STYLEDIR, "style.css"))
@@ -129,7 +131,7 @@ class Hazzy(Gtk.Application):
         menu = self.builder.get_object('app_menu')
         self.set_app_menu(menu)
 
-        actions = ['about', 'quit', 'launch_hal_meter', 'launch_hal_scope',
+        actions = ['new_window', 'about', 'quit', 'launch_hal_meter', 'launch_hal_scope',
             'launch_hal_configuration', 'launch_classicladder', 'launch_status']
 
         for action in actions:
@@ -153,13 +155,11 @@ class Hazzy(Gtk.Application):
     def do_activate(self):
         Gtk.Application.do_activate(self)
 
-        window = HazzyWindow(application=self)
-        window.connect('delete-event', self.on_window_delete_event)
-        window.set_show_menubar(False)
-        window.set_gtk_theme('Adwaita')
-        window.load_from_xml()
-        window.show_all()
-        self.add_window(window)
+        if len(self.get_windows()) == 0:
+            self.load_from_xml()
+        else:
+            window = self.new_window()
+            window.screen_stack.add_screen()
 
     def do_shutdown(self):
         Gtk.Application.do_shutdown(self)
@@ -168,8 +168,9 @@ class Hazzy(Gtk.Application):
         run_time = datetime.now() - self.start_time
         log.info("Total session duration: {}".format(run_time))
 
-        print 'Doing shutdown'
-        print self.get_windows()
+        self.save_to_xml()
+
+        log_time('shutdown finished')
 
     def on_window_delete_event(self, window, event):
         self.quit()
@@ -186,8 +187,7 @@ class Hazzy(Gtk.Application):
 
     def on_dark_theme_toggled(self, action, state):
         action.set_state(state)
-        settings = Gtk.Settings.get_default()
-        settings.set_property("gtk-application-prefer-dark-theme", state)
+        self.set_dark_theme(state)
 
     def on_new_window(self, action, data):
         self.do_activate()
@@ -215,11 +215,11 @@ class Hazzy(Gtk.Application):
         About(self.get_active_window())
 
     def on_quit(self, action, data):
-        print "Quit ..."
+        log_time('quit requested')
         self.quit()
 
 # =========================================================
-# Helper functions
+# Menu helper functions
 # =========================================================
 
     def add_simple_action(self, action_name):
@@ -236,16 +236,181 @@ class Hazzy(Gtk.Application):
         self.add_action(toggle)
 
 
+# =========================================================
+#  XML handlers for saving/loading screen layout
+# =========================================================
+
+    def load_from_xml(self):
+
+        if not os.path.exists(self.xml_file):
+            # Add an initial screen to get started
+            self.new_window().show_all()
+            return
+
+        try:
+            tree = etree.parse(self.xml_file)
+        except etree.XMLSyntaxError as e:
+            error_str = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
+            log.error(error_str)
+            self.new_window.show_all()
+            return
+
+        root = tree.getroot()
+
+        # FixMe don't need to iterate here
+        for app in root.iter('application'):
+            props = self.get_properties(app)
+
+        self.set_gtk_theme(props['gtk-theme'])
+        self.set_dark_theme(props['dark-theme'] == 'True')
+        self.set_icon_theme(props['icon-theme'])
+
+        # Windows
+        for win in root.iter('window'):
+            window_name = win.get('name')
+            window_title = win.get('title')
+
+            props = self.get_properties(win)
+
+            window = self.new_window()
+
+            window.set_default_size(int(props['w']), int(props['h']))
+            window.move(int(props['x']), int(props['y']))
+            window.set_maximized(props['maximize'])
+            window.set_fullscreen(props['fullscreen'])
+
+            # Screens
+            for scr in win.iter('screen'):
+
+                screen_title = scr.get('title')
+                screen_obj = window.screen_stack.add_screen(screen_title)
+
+                # Widgets
+                for widget in scr.iter('widget'):
+                    package = widget.get('package')
+                    props = self.get_properties(widget)
+                    try:
+                        widget_obj = WidgetWindow(package)
+                        window.screen_stack.place_widget(screen_obj,
+                                                        widget_obj,
+                                                        int(props['x']),
+                                                        int(props['y']),
+                                                        int(props['w']),
+                                                        int(props['h']))
+                    except ImportError:
+                        log.error('The package "{}" could not be imported'.format(package))
+                        continue
+
+            if not window.screen_stack.get_children():
+                # Add an initial screen to get started
+                window.screen_stack.add_screen()
 
 
+    def save_to_xml(self):
+
+        # Create XML root element & comment
+        root = etree.Element("hazzy_interface")
+        root.append(etree.Comment('Interface for: {}'.format(ini_info.get_machine_name())))
+
+        # Add time stamp
+        time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        root.append(etree.Comment('Last modified: {}'.format(time_str)))
+
+        app = etree.SubElement(root, "application")
+
+        self.set_property(app, 'gtk-theme', self.get_gtk_theme())
+        self.set_property(app, 'dark-theme', self.get_dark_theme())
+        self.set_property(app, 'icon-theme', self.get_icon_theme())
+
+        # Window size & position
+        for window in self.get_windows():
+
+            win = etree.SubElement(root, "window")
+            win.set('name', 'Window 1')
+            win.set('title', 'Main Window')
+
+            self.set_property(win, 'maximize', window.header_bar.window_maximized)
+            self.set_property(win, 'fullscreen', window.header_bar.window_fullscreen)
+
+            x = window.get_position().root_x
+            y = window.get_position().root_y
+            w, h = window.get_size()
+
+            for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
+                self.set_property(win, prop, value)
+
+            # Screens
+            screens = window.screen_stack.get_children()
+            for screen in screens:
+                screen_title = window.screen_stack.child_get_property(screen, 'title')
+
+                scr = etree.SubElement(win, "screen")
+                scr.set('title', screen_title)
+
+                # Widgets
+                widgets = screen.get_children()
+                for widget in widgets:
+                    wid = etree.SubElement(scr, "widget")
+                    wid.set('package', widget.package)
+
+                    x = screen.child_get_property(widget, 'x')
+                    y = screen.child_get_property(widget, 'y')
+                    w = widget.get_size_request().width
+                    h = widget.get_size_request().height
+
+                    for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
+                        self.set_property(wid, prop, value)
+
+        with open(self.xml_file, 'w') as fh:
+            fh.write(etree.tostring(root, pretty_print=True))
+
+        print etree.tostring(root, pretty_print=True)
+
+# =========================================================
+#  XML helper functions
+# =========================================================
+
+    def new_window(self):
+        window = HazzyWindow(application=self)
+        window.connect('delete-event', self.on_window_delete_event)
+        window.show_all()
+        self.add_window(window)
+        return window
+
+    def set_property(self, parent, name, value):
+        prop = etree.SubElement(parent, 'property')
+        prop.set('name', name)
+        prop.text = str(value)
+
+    def get_properties(self, parent):
+        props = {}
+        for prop in parent.iterchildren('property'):
+            props[prop.get('name')] = prop.text
+        return props
+
+    def get_gtk_theme(self):
+        return self.settings.get_property("gtk-theme-name")
+
+    # ToDo: Verify that theme exists
+    def set_gtk_theme(self, theme):
+        self.settings.set_string_property("gtk-theme-name", theme, "")
+
+    def get_icon_theme(self):
+        return self.settings.get_property("gtk-icon-theme-name")
+
+    def set_icon_theme(self, theme):
+        self.settings.set_string_property("gtk-icon-theme-name", theme, "")
+
+    def get_dark_theme(self):
+        return self.settings.get_property("gtk-application-prefer-dark-theme")
+
+    def set_dark_theme(self, dark):
+        self.settings.set_property("gtk-application-prefer-dark-theme", dark)
 
 
 class HazzyWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         Gtk.ApplicationWindow.__init__(self, *args, **kwargs)
-
-        # Get the XML file path
-        self.xml_file = ini_info.get_xml_file()
 
         self.connect('button-press-event', self.on_button_press)
         self.connect('key-press-event', self.on_key_press)
@@ -254,7 +419,7 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(self.box)
 
-        self.header_bar = Gtk.HeaderBar(title='Hazzy', show_close_button=True)
+        self.header_bar = HeaderBar(self)
         self.set_titlebar(self.header_bar)
 
         self.overlay = Gtk.Overlay()
@@ -269,14 +434,7 @@ class HazzyWindow(Gtk.ApplicationWindow):
 
         self.widget_chooser = WidgetChooser(self.screen_stack)
 
-        self.set_size_request(900, 600)
-
-    def on_button_press(self, widget, event):
-        # Remove focus when clicking on non focusable area
-        self.get_toplevel().set_focus(None)
-
-    def on_edit_button_clicked(self, widget):
-        self.widget_chooser.popup_()
+        self.set_default_size(900, 600)
 
     def set_edit_layout(self, edit):
         screens = self.screen_stack.get_children()
@@ -284,6 +442,10 @@ class HazzyWindow(Gtk.ApplicationWindow):
             widgets = screen.get_children()
             for widget in widgets:
                 widget.show_overlay(edit)
+
+    def on_button_press(self, widget, event):
+        # Remove focus when clicking on non focusable area
+        self.get_toplevel().set_focus(None)
 
     def on_key_press(self, widget, event):
         if not self.get_focus():
@@ -294,134 +456,6 @@ class HazzyWindow(Gtk.ApplicationWindow):
         if not self.get_focus():
             jogging.on_key_release_event(widget, event)
             return True
-
-# =========================================================
-#  XML handlers for saving/loading screen layout
-# =========================================================
-
-    def load_from_xml(self):
-
-        if not os.path.exists(self.xml_file):
-            # Add an initial screen to get started
-            self.screen_stack.add_screen()
-            return
-
-        try:
-            tree = etree.parse(self.xml_file)
-        except etree.XMLSyntaxError as e:
-            error_str = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
-            log.error(error_str)
-            return
-
-        root = tree.getroot()
-
-        # Windows (Might support multiple windows in future, so iterate)
-        for window in root.iter('window'):
-            window_name = window.get('name')
-            window_title = window.get('title')
-
-            props = self.get_properties(window)
-
-            self.set_default_size(int(props['w']), int(props['h']))
-            self.move(int(props['x']), int(props['y']))
-            self.set_maximized(props['maximize'])
-            self.set_fullscreen(props['fullscreen'])
-            self.set_gtk_theme(props['gtk-theme'])
-            self.set_icon_theme(props['icon-theme'])
-
-            # Add screens
-            for screen in window.iter('screen'):
-
-                screen_title = screen.get('title')
-                screen_obj = self.screen_stack.add_screen(screen_title)
-
-                # Add all the widgets
-                for widget in screen.iter('widget'):
-                    package = widget.get('package')
-                    props = self.get_properties(widget)
-                    try:
-                        widget_obj = WidgetWindow(package)
-                        self.screen_stack.place_widget(screen_obj,
-                                                    widget_obj,
-                                                    int(props['x']),
-                                                    int(props['y']),
-                                                    int(props['w']),
-                                                    int(props['h']))
-                    except ImportError:
-                        log.error('The package "{}" could not be imported'.format(package))
-                        continue
-
-        if not self.screen_stack.get_children():
-            # Add an initial screen to get started
-            self.screen_stack.add_screen()
-
-    def save_to_xml(self):
-
-        # Create XML root element & comment
-        root = etree.Element("hazzy_interface")
-        root.append(etree.Comment('Interface for: {}'.format(ini_info.get_machine_name())))
-
-        # Add time stamp
-        time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        root.append(etree.Comment('Last modified: {}'.format(time_str)))
-
-        # Main window size & position 
-        #    ToDO: need to iterate to support multi window
-        win = etree.SubElement(root, "window")
-        win.set('name', 'Window 1')
-        win.set('title', 'Main Window')
-
-        self.set_property(win, 'maximize', self.header_bar.window_maximized)
-        self.set_property(win, 'fullscreen', self.header_bar.window_fullscreen)
-        self.set_property(win, 'gtk-theme', self.get_gtk_theme())
-        self.set_property(win, 'icon-theme', self.get_icon_theme())
-
-        x = self.get_position().root_x
-        y = self.get_position().root_y
-        w, h = self.get_size()
-
-        for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
-            self.set_property(win, prop, value)
-
-        # Screens
-        screens = self.screen_stack.get_children()
-        for screen in screens:
-            screen_title = self.screen_stack.child_get_property(screen, 'title')
-
-            scr = etree.SubElement(win, "screen")
-            scr.set('title', screen_title)
-
-            # Widgets
-            widgets = screen.get_children()
-            for widget in widgets:
-                wid = etree.SubElement(scr, "widget")
-                wid.set('package', widget.package)
-
-                x = screen.child_get_property(widget, 'x')
-                y = screen.child_get_property(widget, 'y')
-                w = widget.get_size_request().width
-                h = widget.get_size_request().height
-
-                for prop, value in zip(['x','y','w','h'], [x,y,w,h]):
-                    self.set_property(wid, prop, value)
-
-        with open(self.xml_file, 'w') as fh:
-            fh.write(etree.tostring(root, pretty_print=True))
-
-# =========================================================
-#  Helper functions
-# =========================================================
-
-    def set_property(self, parent, name, value):
-        prop = etree.SubElement(parent, 'property')
-        prop.set('name', name)
-        prop.text = str(value)
-
-    def get_properties(self, parent):
-        props = {}
-        for prop in parent.iterchildren('property'):
-            props[prop.get('name')] = prop.text
-        return props
 
     def set_maximized(self, maximized):
         if maximized == 'True':
@@ -435,33 +469,6 @@ class HazzyWindow(Gtk.ApplicationWindow):
         else:
             self.unfullscreen()
 
-    def get_gtk_theme(self):
-        settings = self.get_settings()
-        theme = settings.get_property("gtk-theme-name")
-        if not theme:
-            theme = settings.get_default().get_property("gtk-theme-name")
-        return theme
-
-    # ToDo: Verify that theme exists
-    def set_gtk_theme(self, theme=None):
-        settings = self.get_settings()
-        if not theme:
-            theme = settings.get_default().get_property("gtk-theme-name")
-        settings.set_string_property("gtk-theme-name", theme, "")
-
-    def get_icon_theme(self):
-        settings = self.get_settings()
-        theme = settings.get_property("gtk-icon-theme-name")
-        if not theme:
-            theme = settings.get_default().get_property("gtk-icon-theme-name")
-        return theme
-
-    # ToDo: Verify that theme exists
-    def set_icon_theme(self, theme=None):
-        settings = self.get_settings()
-        if not theme:
-            theme = settings.get_default().get_property("gtk-icon-theme-name")
-        settings.set_string_property("gtk-icon-theme-name", theme, "")
 
 if __name__ == "__main__":
     app = Hazzy()
