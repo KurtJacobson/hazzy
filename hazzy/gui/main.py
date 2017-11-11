@@ -442,8 +442,6 @@ class HazzyWindow(Gtk.ApplicationWindow):
 
         self.widget_chooser = WidgetChooser(self.screen_stack)
 
-        self.set_default_size(900, 600)
-
     def set_edit_layout(self, edit):
         screens = self.screen_stack.get_children()
         for screen in screens:
