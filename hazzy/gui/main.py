@@ -299,6 +299,7 @@ class Hazzy(Gtk.Application):
                     props = self.get_properties(widget)
                     try:
                         widget_obj = WidgetWindow(package)
+                        widget_obj.overlay.set_visible(False)
                         window.screen_stack.place_widget(screen_obj,
                                                         widget_obj,
                                                         int(props['x']),
