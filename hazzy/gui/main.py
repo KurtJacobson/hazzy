@@ -186,6 +186,8 @@ class Hazzy(Gtk.Application):
             window.set_edit_layout(state)
 
     def on_dark_theme_toggled(self, action, state):
+        print action
+        print self.dark_theme_action
         action.set_state(state)
         self.set_dark_theme(state)
 
@@ -224,6 +226,7 @@ class Hazzy(Gtk.Application):
 
     def add_simple_action(self, action_name):
         action = Gio.SimpleAction.new(action_name)
+        setattr(self, '{}_action'.format(action_name.replace('-', '_')), action)
         callback = getattr(self, 'on_{}'.format(action_name))
         action.connect("activate", callback)
         self.add_action(action)
@@ -231,6 +234,7 @@ class Hazzy(Gtk.Application):
     def add_toggle_action(self, action_name, state=False):
         toggle = Gio.SimpleAction.new_stateful(action_name,
                             None, GLib.Variant.new_boolean(state))
+        setattr(self, '{}_action'.format(action_name.replace('-', '_')), toggle)
         callback = getattr(self, 'on_{}_toggled'.format(action_name))
         toggle.connect("change-state", callback)
         self.add_action(toggle)
@@ -262,9 +266,13 @@ class Hazzy(Gtk.Application):
             props = self.get_properties(app)
 
         self.set_gtk_theme(props['gtk-theme'])
-        self.set_dark_theme(props['dark-theme'] == 'True')
         self.set_icon_theme(props['icon-theme'])
 
+        dark = props['dark-theme'] == 'True'
+        self.dark_theme_action.set_state(GLib.Variant.new_boolean(dark))
+        print self.dark_theme_action
+
+        self.set_dark_theme(dark)
         # Windows
         for win in root.iter('window'):
             window_name = win.get('name')
