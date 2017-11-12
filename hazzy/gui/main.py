@@ -188,7 +188,7 @@ class Hazzy(Gtk.Application):
         self.set_dark_theme(state)
 
     def on_new_window(self, action, data):
-        self.new_window().screen_stack.add_screen()
+        self.new_window(True).screen_stack.add_screen()
 
     def on_launch_hal_scope(self, action, data):
         p = os.popen("halscope &")
@@ -244,7 +244,7 @@ class Hazzy(Gtk.Application):
 
         if not os.path.exists(self.xml_file):
             # Add an initial screen to get started
-            self.new_window().show_all()
+            self.new_window(True).screen_stack.add_screen()
             return
 
         try:
@@ -252,7 +252,7 @@ class Hazzy(Gtk.Application):
         except etree.XMLSyntaxError as e:
             error_str = e.error_log.filter_from_level(etree.ErrorLevels.FATAL)
             log.error(error_str)
-            self.new_window.show_all()
+            self.new_window(True).screen_stack.add_screen()
             return
 
         root = tree.getroot()
@@ -373,10 +373,11 @@ class Hazzy(Gtk.Application):
 #  XML helper functions
 # =========================================================
 
-    def new_window(self):
+    def new_window(self, begin_editing=False):
         window = HazzyWindow(application=self)
         window.connect('delete-event', self.on_window_delete_event)
-        window.show_all()
+        self.edit_layout_action.set_state(GLib.Variant.new_boolean(begin_editing))
+        window.chooser_button.set_visible(begin_editing)
         self.add_window(window)
         return window
 
@@ -437,9 +438,16 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.header_bar.set_custom_title(self.stack_switcher)
 
         self.widget_chooser = WidgetChooser(self.screen_stack)
+        self.chooser_button = Gtk.MenuButton()
+        self.chooser_button.set_popover(self.widget_chooser)
+        self.header_bar.pack_start(self.chooser_button)
+
+        self.set_size_request(500, 300)
+        self.show_all()
 
     def set_edit_layout(self, edit):
         screens = self.screen_stack.get_children()
+        self.chooser_button.set_visible(edit)
         for screen in screens:
             widgets = screen.get_children()
             for widget in widgets:
