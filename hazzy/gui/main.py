@@ -19,10 +19,11 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 # Description:
-#   This modules handles the creation of the main window. If the file specified
-#   in the INI's entry [DISPLAY] XML_FILE exists, it will attempt to populate
-#   the window based on that description. If that file does not exist or is not
-#   valid, one window containing one blank screen will be displayed.
+#   This handles the initialization of the application and the creation of the
+#   the main window.  The window will be populated based on the layout defined
+#   in the XML file specified in [DISPLAY] XML_FILE in the INI.  If that file
+#   does not exist or is not valid, one window containing one blank screen will
+#   be created for the user to add widgets to.
 
 import time
 
@@ -128,7 +129,7 @@ class Hazzy(Gtk.Application):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(Paths.UIDIR, 'menu.ui'))
 
-        menu = self.builder.get_object('app_menu')
+        menu = self.builder.get_object('appmenu')
         self.set_app_menu(menu)
 
         actions = ['new_window', 'about', 'quit', 'launch_hal_meter', 'launch_hal_scope',
@@ -150,16 +151,15 @@ class Hazzy(Gtk.Application):
         if startup_warning:
             notifications.show_warning(startup_warning, timeout=0)
 
-        log_time('done doing startup')
+        log_time('app startup done')
 
     def do_activate(self):
         Gtk.Application.do_activate(self)
 
-        if len(self.get_windows()) == 0:
-            self.load_from_xml()
-        else:
-            window = self.new_window()
-            window.screen_stack.add_screen()
+        self.load_from_xml()
+
+        GLib.idle_add(log_time, "in main loop")
+        log_time("app activate done")
 
     def do_shutdown(self):
         Gtk.Application.do_shutdown(self)
@@ -169,8 +169,6 @@ class Hazzy(Gtk.Application):
         log.info("Total session duration: {}".format(run_time))
 
         self.save_to_xml()
-
-        log_time('shutdown finished')
 
     def on_window_delete_event(self, window, event):
         self.quit()
@@ -186,13 +184,11 @@ class Hazzy(Gtk.Application):
             window.set_edit_layout(state)
 
     def on_dark_theme_toggled(self, action, state):
-        print action
-        print self.dark_theme_action
         action.set_state(state)
         self.set_dark_theme(state)
 
     def on_new_window(self, action, data):
-        self.do_activate()
+        self.new_window().screen_stack.add_screen()
 
     def on_launch_hal_scope(self, action, data):
         p = os.popen("halscope &")
@@ -371,7 +367,7 @@ class Hazzy(Gtk.Application):
         with open(self.xml_file, 'w') as fh:
             fh.write(etree.tostring(root, pretty_print=True))
 
-        print etree.tostring(root, pretty_print=True)
+#        print etree.tostring(root, pretty_print=True)
 
 # =========================================================
 #  XML helper functions
@@ -405,6 +401,7 @@ class Hazzy(Gtk.Application):
     def get_icon_theme(self):
         return self.settings.get_property("gtk-icon-theme-name")
 
+    # ToDo: Verify that theme exists
     def set_icon_theme(self, theme):
         self.settings.set_string_property("gtk-icon-theme-name", theme, "")
 
@@ -473,8 +470,3 @@ class HazzyWindow(Gtk.ApplicationWindow):
             self.fullscreen()
         else:
             self.unfullscreen()
-
-
-if __name__ == "__main__":
-    app = Hazzy()
-    app.run()

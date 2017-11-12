@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <interface>
-  <menu id="app_menu">
+  <menu id="appmenu">
     <section>
 
       <item>

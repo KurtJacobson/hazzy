@@ -33,9 +33,6 @@ from gi.repository import Gdk
 
 from widget_area import WidgetArea
 
-# Setup paths
-PYDIR = os.path.abspath(os.path.dirname(__file__))
-
 
 class ScreenStack(Gtk.Stack):
     def __init__(self):
