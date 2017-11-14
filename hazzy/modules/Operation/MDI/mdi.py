@@ -63,7 +63,14 @@ class MDI(Gtk.Box):
 
     # Use MDIHistoryRow
     def submit_to_history(self, command):
-        row = Gtk.ListBoxRow()
+
+        calbacks = list()
+        calbacks.append(self.on_row_activated)
+        calbacks.append(self.remove_from_history)
+
+        row = MDIHistoryRow(calbacks, command)
+
+        """
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         row.add(box)
         row.connect('activate', self.on_row_activated, command)
@@ -73,13 +80,16 @@ class MDI(Gtk.Box):
         btn.get_style_context().add_class('flat')
         btn.get_style_context().add_class('no_padding')
         box.pack_end(btn, False, False, 0)
+        """
+
         self.cmd_history.add(row)
         row.show_all()
 
-    def on_row_activated(self, widegt, command):
+    def on_row_activated(self, widget, command):
+        print("LOL")
         self.entry.set_text(command)
 
-    def remove_from_history(self, widegt, row):
+    def remove_from_history(self, widget, row):
         self.cmd_history.remove(row)
 
     def on_entry_acitvated(self, widget):
@@ -101,20 +111,24 @@ class MDI(Gtk.Box):
 
 # Not done
 class MDIHistoryRow(Gtk.ListBoxRow):
-    def __init__(self, cmd):
+    def __init__(self, callbacks, command):
         Gtk.ListBoxRow.__init__(self)
+
+        self.on_row_activate = callbacks[0]
+        self.remove_from_history = callbacks[1]
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
         self.add(box)
 
         label = Gtk.Label(command, xalign=0)
+
         box.pack_start(label, True, True, 0)
 
         btn = Gtk.Button.new_from_icon_name('process-stop', Gtk.IconSize.BUTTON)
-        btn.connect('clicked', self.remove_from_history, row)
+        btn.connect('clicked', self.remove_from_history, self)
         btn.get_style_context().add_class('flat')
         btn.get_style_context().add_class('no_padding')
+
         box.pack_end(btn, False, False, 0)
 
-        row.connect('activate', self.on_row_activated, command)
-        row.show_all()
+        self.connect('activate', self.on_row_activate, command)
