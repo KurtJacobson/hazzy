@@ -129,8 +129,8 @@ class Hazzy(Gtk.Application):
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(Paths.UIDIR, 'menu.ui'))
 
-        menu = self.builder.get_object('appmenu')
-        self.set_app_menu(menu)
+        self.app_menu = self.builder.get_object('appmenu')
+        self.set_app_menu(self.app_menu)
 
         actions = ['new_window', 'about', 'quit', 'launch_hal_meter', 'launch_hal_scope',
             'launch_hal_configuration', 'launch_classicladder', 'launch_status']
@@ -374,7 +374,7 @@ class Hazzy(Gtk.Application):
 # =========================================================
 
     def new_window(self, begin_editing=False):
-        window = HazzyWindow(application=self)
+        window = HazzyWindow(self)
         window.connect('delete-event', self.on_window_delete_event)
         self.edit_layout_action.set_state(GLib.Variant.new_boolean(begin_editing))
         window.chooser_button.set_visible(begin_editing)
@@ -414,8 +414,11 @@ class Hazzy(Gtk.Application):
 
 
 class HazzyWindow(Gtk.ApplicationWindow):
-    def __init__(self, *args, **kwargs):
-        Gtk.ApplicationWindow.__init__(self, *args, **kwargs)
+    def __init__(self, app, *args, **kwargs):
+        Gtk.ApplicationWindow.__init__(self, application=app, *args, **kwargs)
+
+        self.app = app
+        self.set_show_menubar(False)
 
         self.connect('button-press-event', self.on_button_press)
         self.connect('key-press-event', self.on_key_press)
@@ -436,6 +439,15 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.stack_switcher = Gtk.StackSwitcher()
         self.stack_switcher.set_stack(self.screen_stack)
         self.header_bar.set_custom_title(self.stack_switcher)
+
+        self.menu_button = Gtk.MenuButton()
+        icon = Gtk.Image.new_from_icon_name('applications-system-symbolic', Gtk.IconSize.MENU)
+        self.menu_button.add(icon)
+        self.menu_button.get_style_context().add_class('flat')
+        self.menu_button.set_menu_model(self.app.app_menu)
+        self.header_bar.pack_start(self.menu_button)
+
+        self.header_bar.pack_start(Gtk.Separator())
 
         self.widget_chooser = WidgetChooser(self.screen_stack)
         self.chooser_button = Gtk.MenuButton()
