@@ -42,10 +42,6 @@ class HeaderBar(Gtk.HeaderBar):
         self.window = window
         self.window_box = window.get_child()
 
-        # Hide all but the menu button on the left
-#        self.set_show_close_button(True)
-#        self.set_decoration_layout('menu')
-
         self.window_size = None
         self.window_position = None
 

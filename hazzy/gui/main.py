@@ -441,7 +441,8 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.header_bar.set_custom_title(self.stack_switcher)
 
         self.menu_button = Gtk.MenuButton()
-        icon = Gtk.Image.new_from_icon_name('applications-system-symbolic', Gtk.IconSize.MENU)
+        icon = Gtk.Image.new_from_icon_name('applications-system-symbolic',
+                                            Gtk.IconSize.MENU)
         self.menu_button.add(icon)
         self.menu_button.get_style_context().add_class('flat')
         self.menu_button.set_menu_model(self.app.app_menu)
