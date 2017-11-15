@@ -163,7 +163,7 @@ class MDI(Gtk.Box):
 
     def append_to_history_file(self, cmd):
         with open(MDI_HISTORY_FILE, 'a') as fh:
-            fh.write(cmd)
+            fh.write(cmd + '\n')
 
     def scroll_to_bottom(self, widget, event):
         if not self.scrolled_to_bottom:
