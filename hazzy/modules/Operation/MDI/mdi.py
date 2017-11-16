@@ -32,6 +32,7 @@ from gi.repository import Gdk
 
 from utilities import command
 from utilities import ini_info
+from widget_factory.entry_widgets import ValidatableEntry
 
 MDI_HISTORY_FILE = ini_info.get_mdi_history_file()
 
@@ -64,7 +65,7 @@ class MDI(Gtk.Box):
         column = Gtk.TreeViewColumn("Command", renderer, text=0)
         self.view.append_column(column)
 
-        self.entry = Gtk.Entry()
+        self.entry = ValidatableEntry()
         self.entry.set_placeholder_text('MDI')
         self.pack_start(self.entry, False, False, 0)
 
@@ -84,7 +85,7 @@ class MDI(Gtk.Box):
         self.entry.connect('focus-in-event', self.on_entry_gets_focus)
         self.entry.connect('focus-out-event', self.on_entry_loses_focus)
         self.entry.connect('key-press-event', self.on_entry_keypress)
-        self.entry.connect_after('insert-text', self.on_text_inserted)
+        self.entry.connect_after('validate-text', self.on_text_inserted)
 
     # Capitalize text on entry
     def on_text_inserted(self, entry, new_text, new_text_length, position):
