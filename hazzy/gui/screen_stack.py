@@ -56,7 +56,12 @@ class ScreenStack(Gtk.Stack):
         return screen
 
     def remove_visible_child(self):
-        self.get_visible_child().destroy()
+        child = self.get_visible_child()
+        children = self.get_children()
+        pos = children.index(child)
+        prev_child = children[pos-1]
+        self.set_visible_child(prev_child)
+        child.destroy()
         # If no screens left, add a blank one
         if len(self.get_children()) == 0:
             self.add_screen()
@@ -64,6 +69,7 @@ class ScreenStack(Gtk.Stack):
     def add_screen_interactive(self):
         screen = self.add_screen()
         self.set_visible_child(screen)
+        return screen
 
     def set_visible_child_title(self, title):
         self.child_set_property(self.get_visible_child(), 'title', title)

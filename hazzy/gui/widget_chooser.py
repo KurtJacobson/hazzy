@@ -76,6 +76,8 @@ class WidgetChooser(Gtk.Popover):
         self.image_missing = Gtk.IconTheme.get_default().load_icon('image-missing', 48, 0)
         self.get_widgets()
 
+        self.connect('notify::visible', self.on_popup)
+
         # FixMe this is needed to keep the popover from showing at start
         # but make it so the children will show when it pops up
         self.show_all()
@@ -168,13 +170,14 @@ class WidgetChooser(Gtk.Popover):
                 count += 1
             expander.set_item_count(count)
 
-    def popup_(self):
+    def on_popup(self, widget, data):
         child = self.screen_stack.get_visible_child()
+        if child is None:
+            return
         title = self.screen_stack.child_get_property(child, 'title')
         pos = self.screen_stack.child_get_property(child, 'position')
         self.screen_editor.title_entry.set_text(title)
         self.screen_editor.pos_adj.set_value(pos)
-        self.popup()
 
 
 class Expander(Gtk.Box):
@@ -271,7 +274,8 @@ class ScreenEditor(Gtk.Box):
 
         grid.attach(Gtk.Label('Title', hexpand=True), 0 , 0 , 1 , 1)
         self.title_entry = entry_widgets.TextEntry()
-        self.title_entry.connect('activate', self.on_title_entry_activated)
+        self.title_entry.connect_after('insert-text', self.on_title_entry_insert_text)
+        self.title_entry.connect_after('delete-text', self.on_title_entry_delete_text)
         grid.attach(self.title_entry, 1, 0, 1, 1)
 
         grid.attach(Gtk.Label('Position', hexpand=True), 0 , 1 , 1 , 1)
@@ -297,17 +301,29 @@ class ScreenEditor(Gtk.Box):
         box.set_homogeneous(True)
 
         self.pack_start(box, False, False, 0)
-
         self.show_all()
 
     def on_add_screen_clicked(self, widegt):
-        self.screen_stack.add_screen_interactive()
+        screen = self.screen_stack.add_screen_interactive()
+        title = self.screen_stack.child_get_property(screen, 'title')
+        pos = self.screen_stack.child_get_property(screen, 'position')
+        self.title_entry.set_text(title)
+        self.pos_adj.set_value(pos)
 
     def on_delete_screen_clicked(self, widegt):
         self.screen_stack.remove_visible_child()
+        screen = self.screen_stack.get_visible_child()
+        title = self.screen_stack.child_get_property(screen, 'title')
+        pos = self.screen_stack.child_get_property(screen, 'position')
+        self.title_entry.set_text(title)
+        self.pos_adj.set_value(pos)
 
-    def on_title_entry_activated(self, widegt):
-        title = self.title_entry.get_text()
+    def on_title_entry_insert_text(self, editable, new, new_length, pos):
+        title = editable.get_text()
+        self.screen_stack.set_visible_child_title(title)
+
+    def on_title_entry_delete_text(self, editable, start_pos, end_pos):
+        title = editable.get_text()
         self.screen_stack.set_visible_child_title(title)
 
     def on_position_changed(self, widegt):
