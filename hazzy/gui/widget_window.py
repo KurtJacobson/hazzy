@@ -140,11 +140,8 @@ class WidgetWindow(Gtk.EventBox):
         # Remove self from the WidgetArea
         self.destroy()
 
-    def show_overlay(self, setting):
-        if setting:
-            self.overlay.show()
-        else:
-            self.overlay.hide()
+    def show_overlay(self, visible):
+        self.overlay.set_visible(visible)
 
     def get_widget_image(self):
         # Gets an image for use as an icon in the WidgetChooser
