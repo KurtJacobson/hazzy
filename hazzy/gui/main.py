@@ -428,20 +428,23 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.add(self.box)
 
         self.header_bar = HeaderBar(self)
+        self.header_bar.set_title('Hazzy')
+        self.header_bar.set_subtitle('Machine: ' + ini_info.get_machine_name())
         self.set_titlebar(self.header_bar)
 
         self.overlay = Gtk.Overlay()
         self.box.pack_start(self.overlay, True, True, 0)
 
         self.screen_stack = ScreenStack()
+        self.screen_stack.connect_after('add', self.on_screen_stack_children_changed)
+        self.screen_stack.connect_after('remove', self.on_screen_stack_children_changed)
         self.overlay.add(self.screen_stack)
 
         self.stack_switcher = Gtk.StackSwitcher()
         self.stack_switcher.set_stack(self.screen_stack)
-        self.header_bar.set_custom_title(self.stack_switcher)
 
         self.menu_button = Gtk.MenuButton()
-        icon = Gtk.Image.new_from_icon_name('applications-system-symbolic',
+        icon = Gtk.Image.new_from_icon_name('applications-system-symbolic', # 'open-menu-symbolic'
                                             Gtk.IconSize.MENU)
         self.menu_button.add(icon)
         self.menu_button.get_style_context().add_class('flat')
@@ -457,6 +460,15 @@ class HazzyWindow(Gtk.ApplicationWindow):
 
         self.set_size_request(500, 300)
         self.show_all()
+
+    def on_screen_stack_children_changed(self, stack, child):
+        if len(self.screen_stack.get_children()) > 1:
+            print "More than one screen"
+            self.header_bar.set_custom_title(self.stack_switcher)
+            self.stack_switcher.show_all()
+        else:
+            print "Only one screen"
+            self.header_bar.set_custom_title(None)
 
     def set_edit_layout(self, edit):
         screens = self.screen_stack.get_children()
