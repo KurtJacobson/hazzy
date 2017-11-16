@@ -23,8 +23,10 @@
 
 import os
 import gi
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
+
 from gi.repository import Gtk
 from gi.repository import Gdk
 
@@ -37,7 +39,7 @@ class MDI(Gtk.Box):
 
     title = 'MDI'
     author = 'TurBoss'
-    version = '0.1.0'
+    version = '0.1.1'
     date = '5/11/2017'
     description = 'MDI Prompt'
 
@@ -47,8 +49,6 @@ class MDI(Gtk.Box):
         self.set_hexpand(True)
         self.set_vexpand(True)
 
-        self.count = 0
-
         scrolled = Gtk.ScrolledWindow()
         self.vadj = scrolled.get_vadjustment()
         self.pack_start(scrolled, True, True, 0)
@@ -56,9 +56,6 @@ class MDI(Gtk.Box):
         self.model = Gtk.ListStore(str)
         self.view = Gtk.TreeView(self.model)
         self.view.set_activate_on_single_click(True)
-
-        self.selection = self.view.get_selection()
-        self.selected_iter = None
 
         self.view.set_headers_visible(False)
         scrolled.add(self.view)
@@ -76,13 +73,14 @@ class MDI(Gtk.Box):
         self.completion.set_text_column(0)
         self.entry.set_completion(self.completion)
 
+        self.selection = self.view.get_selection()
         self.scrolled_to_bottom = False
         self.load_history_from_file()
 
         self.view.connect('size-allocate', self.scroll_to_bottom)
         self.view.connect('row-activated', self.on_view_row_activated)
         self.view.connect('cursor-changed', self.on_view_cursor_changed)
-        self.entry.connect('activate', self.on_entry_acitvated)
+        self.entry.connect('activate', self.on_entry_activated)
         self.entry.connect('focus-in-event', self.on_entry_gets_focus)
         self.entry.connect('focus-out-event', self.on_entry_loses_focus)
         self.entry.connect('key-press-event', self.on_entry_keypress)
@@ -108,19 +106,15 @@ class MDI(Gtk.Box):
     def on_entry_keypress(self, widegt, event):
         kv = event.keyval
         if kv == Gdk.KEY_Up:
-            row = self.view.get_cursor()[0]
-            if not row:
-                row = Gtk.TreePath.new_from_indices([len(self.model),])
+            row = self.get_row()
             if row.prev():
                 self.view.set_cursor([row,], None, False)
             else:
                 Gdk.beep()
             return True
         elif kv == Gdk.KEY_Down:
-            row = self.view.get_cursor()[0]
+            row = self.get_row()
             last_row = Gtk.TreePath.new_from_indices([len(self.model),])
-            if not row:
-                row = last_row
             row.next()
             if row != last_row:
                 self.view.set_cursor([row,], None, False)
@@ -133,6 +127,15 @@ class MDI(Gtk.Box):
             self.set_entry_text(cmd)
             return True
 
+    def get_row(self):
+        try:
+            row = self.selection.get_selected_rows()[1][0]
+        except IndexError:
+            print "error"
+            row = Gtk.TreePath.new_from_indices([len(self.model),])
+        return row
+
+
     def on_entry_gets_focus(self, widget, event):
         selection = self.view.get_selection()
         selection.unselect_all()
@@ -140,7 +143,7 @@ class MDI(Gtk.Box):
     def on_entry_loses_focus(self, widget, event):
         pass
 
-    def on_entry_acitvated(self, widget):
+    def on_entry_activated(self, widget):
         cmd = widget.get_text().strip()
         if cmd == '':
             return
