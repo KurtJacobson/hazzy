@@ -44,8 +44,8 @@ Author: Kurt Jacobosn
         <child>
           <object class="GtkButton" id="`">
             <property name="label" translatable="yes">`</property>
-            <property name="width_request">50</property>
-            <property name="height_request">50</property>
+            <property name="width_request">40</property>
+            <property name="height_request">40</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="focus_on_click">False</property>
@@ -258,6 +258,7 @@ Author: Kurt Jacobosn
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="pixbuf">tab.png</property>
+                <property name="use_fallback">True</property>
               </object>
             </child>
           </object>
@@ -912,7 +913,7 @@ Author: Kurt Jacobosn
               <object class="GtkImage">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="pixbuf">close_keyboard.png</property>
+                <property name="pixbuf">close.png</property>
               </object>
             </child>
           </object>
@@ -924,12 +925,19 @@ Author: Kurt Jacobosn
         </child>
         <child>
           <object class="GtkToggleButton" id="caps_lock">
-            <property name="label" translatable="yes">CapsLock</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="focus_on_click">False</property>
             <property name="receives_default">False</property>
             <signal name="toggled" handler="on_caps_lock_toggled" swapped="no"/>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="pixbuf">caps_lock.png</property>
+                <property name="use_fallback">True</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -981,12 +989,19 @@ Author: Kurt Jacobosn
         </child>
         <child>
           <object class="GtkToggleButton" id="ctrl">
-            <property name="label" translatable="yes">ctrl</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="focus_on_click">False</property>
             <property name="receives_default">False</property>
             <signal name="toggled" handler="on_ctrl_toggled" swapped="no"/>
+            <child>
+              <object class="GtkImage">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="pixbuf">control.png</property>
+                <property name="use_fallback">True</property>
+              </object>
+            </child>
           </object>
           <packing>
             <property name="left_attach">0</property>
@@ -997,7 +1012,7 @@ Author: Kurt Jacobosn
       </object>
     </child>
     <style>
-      <class name="TouchPad"/>
+      <class name="VirtualKeyboard"/>
     </style>
   </object>
 </interface>

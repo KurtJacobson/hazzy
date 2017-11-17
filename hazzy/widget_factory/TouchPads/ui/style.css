@@ -1,3 +1,8 @@
-.TouchPad button {
+.VirtualKeyboard button {
+    padding: 0px;
+    font-size: 16px;
+}
+
+.VirtualKeyboard button image{
     padding: 2px;
 }

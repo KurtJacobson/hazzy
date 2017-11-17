@@ -125,9 +125,9 @@ window {
     color: #4e9a06;
 }
 
-.TouchPad button {
+.VirtualKeyboard button {
     padding: 2px;
-    font-size: 20px;
+    font-size: 16px;
 }
 
 /***************
