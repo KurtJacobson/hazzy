@@ -35,6 +35,8 @@ from gi.repository import Gdk
 from gi.repository import GObject
 
 from utilities import preferences as prefs
+from utilities import ini_info
+from utilities import command
 
 from widget_factory.TouchPads import keyboard
 
@@ -116,3 +118,72 @@ class TextEntry(ValidatableEntry):
 
     def set_use_vertual_keyboard(self, setting):
         self.use_vertual_keyboard = setting
+
+
+class MDIEntry(Gtk.Entry, Gtk.Editable):
+
+    mdi_history_file = ini_info.get_mdi_history_file()
+
+    def __init__(self):
+        super(MDIEntry, self).__init__()
+
+        self.buffer = self.get_buffer()
+        self.style_context = self.get_style_context()
+
+        self.set_placeholder_text('MDI')
+
+        self.model = Gtk.ListStore(str)
+
+        self.completion = Gtk.EntryCompletion()
+        self.completion.set_model(self.model)
+        self.completion.set_text_column(0)
+        self.set_completion(self.completion)
+
+        self.load_from_history_file()
+
+        self.connect('activate', self.on_entry_activated)
+        self.connect('focus-in-event', self.on_entry_gets_focus)
+        self.connect('focus-out-event', self.on_entry_loses_focus)
+
+    def on_entry_gets_focus(self, widget, event):
+        pass
+
+    def on_entry_loses_focus(self, widget, event):
+        pass
+
+    def on_entry_activated(self, widget):
+        cmd = widget.get_text().strip()
+        if cmd == '':
+            return
+        widget.set_text('')
+        self.model.append([cmd,])
+        self.scrolled_to_bottom = False
+        self.append_to_history_file(cmd)
+        self.get_toplevel().set_focus(None)
+        command.issue_mdi(cmd)
+
+    # Convert to UPPERCASE and do some formating. Eventually should do basic
+    # validation, checking for for multiple axis letters etc.
+    def do_insert_text(self, new_text, length, position):
+        text = self.get_text()
+        new_text = new_text.upper()
+        if new_text in 'XYZABCUVWIJKLPQRTSF' and text != '' and text[-1] != ' ':
+            new_text = ' ' + new_text
+            length += 1
+        self.buffer.insert_text(position, new_text, length)
+        return position + length
+
+    def do_delete_text(self, start_pos, end_pos):
+        self.style_context.remove_class('error')
+        self.buffer.delete_text(start_pos, end_pos)
+
+    def load_from_history_file(self):
+        with open(self.mdi_history_file, 'r') as fh:
+            lines = fh.readlines()
+        for line in lines:
+            line = line.strip()
+            self.model.append((line,))
+
+    def append_to_history_file(self, cmd):
+        with open(self.mdi_history_file, 'a') as fh:
+            fh.write(cmd + '\n')

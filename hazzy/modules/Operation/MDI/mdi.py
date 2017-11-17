@@ -32,7 +32,7 @@ from gi.repository import Gdk
 
 from utilities import command
 from utilities import ini_info
-from widget_factory.entry_widgets import ValidatableEntry
+from widget_factory.entry_widgets import MDIEntry
 
 MDI_HISTORY_FILE = ini_info.get_mdi_history_file()
 
@@ -50,14 +50,15 @@ class MDI(Gtk.Box):
         self.set_hexpand(True)
         self.set_vexpand(True)
 
+        self.entry = MDIEntry()
+        self.pack_end(self.entry, False, False, 0)
+
         scrolled = Gtk.ScrolledWindow()
         self.vadj = scrolled.get_vadjustment()
         self.pack_start(scrolled, True, True, 0)
 
-        self.model = Gtk.ListStore(str)
-        self.view = Gtk.TreeView(self.model)
+        self.view = Gtk.TreeView(self.entry.model)
         self.view.set_activate_on_single_click(True)
-
         self.view.set_headers_visible(False)
         scrolled.add(self.view)
 
@@ -65,18 +66,8 @@ class MDI(Gtk.Box):
         column = Gtk.TreeViewColumn("Command", renderer, text=0)
         self.view.append_column(column)
 
-        self.entry = ValidatableEntry()
-        self.entry.set_placeholder_text('MDI')
-        self.pack_start(self.entry, False, False, 0)
-
-        self.completion = Gtk.EntryCompletion()
-        self.completion.set_model(self.model)
-        self.completion.set_text_column(0)
-        self.entry.set_completion(self.completion)
-
         self.selection = self.view.get_selection()
         self.scrolled_to_bottom = False
-        self.load_history_from_file()
 
         self.view.connect('size-allocate', self.scroll_to_bottom)
         self.view.connect('row-activated', self.on_view_row_activated)
@@ -85,21 +76,14 @@ class MDI(Gtk.Box):
         self.entry.connect('focus-in-event', self.on_entry_gets_focus)
         self.entry.connect('focus-out-event', self.on_entry_loses_focus)
         self.entry.connect('key-press-event', self.on_entry_keypress)
-        self.entry.connect_after('validate-text', self.on_text_inserted)
-
-    # Capitalize text on entry
-    def on_text_inserted(self, entry, new_text, new_text_length, position):
-        text = entry.get_text().upper()
-        entry.set_text(text)
-        return True
 
     def on_view_row_activated(self, widget, row, column):
-        cmd = self.model[row][0]
+        cmd = self.entry.model[row][0]
         self.set_entry_text(cmd)
 
     def on_view_cursor_changed(self, widget):
         row = widget.get_cursor()[0]
-        cmd = self.model[row][0]
+        cmd = self.entry.model[row][0]
         self.view.set_search_entry(None)
         self.set_entry_text(cmd)
 
@@ -115,17 +99,12 @@ class MDI(Gtk.Box):
             return True
         elif kv == Gdk.KEY_Down:
             row = self.get_row()
-            last_row = Gtk.TreePath.new_from_indices([len(self.model),])
+            last_row = Gtk.TreePath.new_from_indices([len(self.entry.model),])
             row.next()
             if row != last_row:
                 self.view.set_cursor([row,], None, False)
             else:
                 Gdk.beep()
-            return True
-        elif kv == Gdk.KEY_Tab:
-            row = self.view.get_cursor()[0]
-            cmd = self.model[row][0]
-            self.set_entry_text(cmd)
             return True
 
     def get_row(self):
@@ -133,9 +112,8 @@ class MDI(Gtk.Box):
             row = self.selection.get_selected_rows()[1][0]
         except IndexError:
             print "error"
-            row = Gtk.TreePath.new_from_indices([len(self.model),])
+            row = Gtk.TreePath.new_from_indices([len(self.entry.model),])
         return row
-
 
     def on_entry_gets_focus(self, widget, event):
         selection = self.view.get_selection()
@@ -145,29 +123,11 @@ class MDI(Gtk.Box):
         pass
 
     def on_entry_activated(self, widget):
-        cmd = widget.get_text().strip()
-        if cmd == '':
-            return
-        widget.set_text('')
-        self.model.append([cmd,])
         self.scrolled_to_bottom = False
-        self.append_to_history_file(cmd)
-        command.issue_mdi(cmd)
 
     def set_entry_text(self, cmd):
         self.entry.set_text(cmd)
         self.entry.set_position(-1)
-
-    def load_history_from_file(self):
-        with open(MDI_HISTORY_FILE, 'r') as fh:
-            lines = fh.readlines()
-        for line in lines:
-            line = line.strip()
-            self.model.append((line,))
-
-    def append_to_history_file(self, cmd):
-        with open(MDI_HISTORY_FILE, 'a') as fh:
-            fh.write(cmd + '\n')
 
     def scroll_to_bottom(self, widget, event):
         if not self.scrolled_to_bottom:
