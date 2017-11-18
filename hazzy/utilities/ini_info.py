@@ -83,6 +83,18 @@ def get_xml_file():
         path = os.path.realpath(temp)
     return path
 
+def get_mdi_history_file():
+    temp = ini.find('DISPLAY', 'MDI_HISTORY_FILE')
+    if not temp:
+        path = os.path.expanduser('~/.axis_mdi_history')
+    elif temp.startswith('~'):
+        path = os.path.expanduser(temp)
+    elif not os.path.isabs(temp):
+        path = os.path.join(CONFIG_DIR, temp)
+    else:
+        path = os.path.realpath(temp)
+    return path
+
 def get_coordinates():
     '''Returns [TRAJ] COORDINATES or xyz'''
     temp = ini.find('TRAJ', 'COORDINATES')

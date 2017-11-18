@@ -274,7 +274,8 @@ class ScreenEditor(Gtk.Box):
 
         grid.attach(Gtk.Label('Title', hexpand=True), 0 , 0 , 1 , 1)
         self.title_entry = entry_widgets.TextEntry()
-        self.title_entry.connect_after('insert-text', self.on_title_entry_insert_text)
+        self.title_entry.set_activate_on_focus_out(True)
+        self.title_entry.connect('validate-text', self.on_title_entry_validate_text)
         self.title_entry.connect_after('delete-text', self.on_title_entry_delete_text)
         grid.attach(self.title_entry, 1, 0, 1, 1)
 
@@ -318,7 +319,8 @@ class ScreenEditor(Gtk.Box):
         self.title_entry.set_text(title)
         self.pos_adj.set_value(pos)
 
-    def on_title_entry_insert_text(self, editable, new, new_length, pos):
+    # Used to dynamicaly set the tile of the screen while typing
+    def on_title_entry_validate_text(self, editable, new_text, new_length, pos):
         title = editable.get_text()
         self.screen_stack.set_visible_child_title(title)
 
