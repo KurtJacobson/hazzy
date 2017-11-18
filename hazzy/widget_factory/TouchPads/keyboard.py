@@ -90,11 +90,11 @@ class Keyboard():
 
         # Connect letter button press events
         for l, btn in self.letter_btn_dict.iteritems():
-            btn.connect("pressed", self.emulate_key) #self.on_button_pressed)
+            btn.connect('button-press-event', self.emulate_key)
 
         # Connect number button press events
         for l, btn in self.number_btn_dict.iteritems():
-            btn.connect("pressed", self.emulate_key) #self.on_button_pressed)
+            btn.connect('button-press-event', self.emulate_key)
 
 
 # =========================================================
@@ -155,7 +155,7 @@ class Keyboard():
 # Keyboard Emulation
 # =========================================================
 
-    def emulate_key(self, widget, key=None):
+    def emulate_key(self, widget, event=None, key=None):
         try:
             event = Gdk.Event.new(Gdk.EventType.KEY_PRESS)
 
@@ -212,41 +212,40 @@ class Keyboard():
 # =========================================================
 
     # Space
-    def on_space_pressed(self, widget):
-        self.emulate_key(widget, Gdk.KEY_space)
+    def on_space_pressed(self, widget, event):
+        self.emulate_key(widget, None, Gdk.KEY_space)
 
     # Backspace
-    def on_backspace_pressed(self, widget):
-        self.emulate_key(widget, Gdk.KEY_BackSpace)
+    def on_backspace_pressed(self, widget, event):
+        self.emulate_key(widget, None, Gdk.KEY_BackSpace)
 
     # Tab
-    def on_tab_pressed(self, widget):
-        self.emulate_key(widget, Gdk.KEY_Tab)
+    def on_tab_pressed(self, widget, event):
+        self.emulate_key(widget, None, Gdk.KEY_Tab)
 
     # Return
-    def on_return_pressed(self, widget):
+    def on_return_pressed(self, widget, event):
         self.enter(widget)
-        return
 
     # Escape
     def on_escape_clicked(self, widget, data=None):
         self.escape()
 
     # Left arrow
-    def on_arrow_left_pressed(self, widget):
-        self.emulate_key(widget, Gdk.KEY_Left)
+    def on_arrow_left_pressed(self, widget, event):
+        self.emulate_key(widget, None, Gdk.KEY_Left)
 
     # Right arrow
-    def on_arrow_right_pressed(self, widget):
-        self.emulate_key(widget, Gdk.KEY_Right)
+    def on_arrow_right_pressed(self, widget, event):
+        self.emulate_key(widget, None, Gdk.KEY_Right)
 
     # Up Arrow
-    def on_arrow_up_pressed(self, widget):
-        self.emulate_key(widget,  Gdk.KEY_Up)
+    def on_arrow_up_pressed(self, widget, event):
+        self.emulate_key(widget, None,  Gdk.KEY_Up)
 
     # Down Arrow
-    def on_arrow_down_pressed(self, widget):
-        self.emulate_key(widget,  Gdk.KEY_Down)
+    def on_arrow_down_pressed(self, widget, event):
+        self.emulate_key(widget, None,  Gdk.KEY_Down)
 
     # TODO add persistence mode on double click
     def on_ctrl_toggled(self, widget):
@@ -280,7 +279,7 @@ class Keyboard():
         self.keyboard.hide()
 
     def enter(self, widget):
-        self.emulate_key(widget, Gdk.KEY_Return)
+        self.emulate_key(widget, None, Gdk.KEY_Return)
         if not self.persistent:
             self.keyboard.hide()
 
