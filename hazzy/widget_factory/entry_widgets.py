@@ -19,10 +19,10 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 # Description:
-#   Entry widgets that suport popup keyboard.
+#   Entry widgets that support popup keyboard.
 
 # ToDo:
-#   Finish and add numeric netry widgets.
+#   Finish and add numeric entry widgets.
 
 import os
 import gi
@@ -39,7 +39,6 @@ from utilities import ini_info
 from utilities import command
 
 from widget_factory.TouchPads import keyboard
-
 
 
 class ValidatableEntry(Gtk.Entry, Gtk.Editable):
@@ -77,7 +76,7 @@ class TextEntry(ValidatableEntry):
     def __init__(self):
         super(ValidatableEntry, self).__init__()
 
-        self.use_vertual_keyboard = True
+        self.show_vkb = True
         self.activate_on_focus_out = False
         self._was_activated = False
 
@@ -90,7 +89,7 @@ class TextEntry(ValidatableEntry):
 
     def on_focus_in(self, widegt, event):
         self.previous_value = self.get_text()
-        if self.use_vertual_keyboard:
+        if self.show_vkb:
             keyboard.show(self)
 
     def on_focus_out(self, widegt, event):
@@ -116,8 +115,8 @@ class TextEntry(ValidatableEntry):
     def set_activate_on_focus_out(self, setting):
         self.activate_on_focus_out = setting
 
-    def set_use_vertual_keyboard(self, setting):
-        self.use_vertual_keyboard = setting
+    def set_show_virtual_keyboard(self, show_vkb):
+        self.show_vkb = show_vkb
 
 
 class MDIEntry(Gtk.Entry, Gtk.Editable):
@@ -130,6 +129,8 @@ class MDIEntry(Gtk.Entry, Gtk.Editable):
         self.buffer = self.get_buffer()
         self.style_context = self.get_style_context()
 
+        self.show_vkb = prefs.get('MDI_ENTRY', 'SHOW_VIRTUAL_KEYBOARD', 'YES', bool)
+
         self.set_placeholder_text('MDI')
 
         self.model = Gtk.ListStore(str)
@@ -137,7 +138,11 @@ class MDIEntry(Gtk.Entry, Gtk.Editable):
         self.completion = Gtk.EntryCompletion()
         self.completion.set_model(self.model)
         self.completion.set_text_column(0)
-        self.set_completion(self.completion)
+
+        # Completion popup steals focus from the VKB, and visa-versa, so
+        # until a solution is found don't enable both at the same time.
+        if not self.show_vkb:
+            self.set_completion(self.completion)
 
         self.load_from_history_file()
 
@@ -146,7 +151,8 @@ class MDIEntry(Gtk.Entry, Gtk.Editable):
         self.connect('focus-out-event', self.on_entry_loses_focus)
 
     def on_entry_gets_focus(self, widget, event):
-        pass
+        if self.show_vkb:
+            keyboard.show(widget)
 
     def on_entry_loses_focus(self, widget, event):
         pass
@@ -187,3 +193,11 @@ class MDIEntry(Gtk.Entry, Gtk.Editable):
     def append_to_history_file(self, cmd):
         with open(self.mdi_history_file, 'a') as fh:
             fh.write(cmd + '\n')
+
+    def set_show_virtual_keyboard(self, show_vkb):
+        prefs.set('MDI_ENTRY', 'SHOW_VIRTUAL_KEYBOARD', show_vkb)
+        self.show_vkb = show_vkb
+        if show_vkb:
+            self.set_completion(None)
+        else:
+            self.set_completion(self.completion)
