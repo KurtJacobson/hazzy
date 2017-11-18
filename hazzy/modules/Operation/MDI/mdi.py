@@ -83,9 +83,10 @@ class MDI(Gtk.Box):
 
     def on_view_cursor_changed(self, widget):
         row = widget.get_cursor()[0]
-        cmd = self.entry.model[row][0]
-        self.view.set_search_entry(None)
-        self.set_entry_text(cmd)
+        if row is not None:
+            cmd = self.entry.model[row][0]
+            self.view.set_search_entry(None)
+            self.set_entry_text(cmd)
 
     # Arrow through history, TAB completion
     def on_entry_keypress(self, widegt, event):
@@ -111,7 +112,6 @@ class MDI(Gtk.Box):
         try:
             row = self.selection.get_selected_rows()[1][0]
         except IndexError:
-            print "error"
             row = Gtk.TreePath.new_from_indices([len(self.entry.model),])
         return row
 
