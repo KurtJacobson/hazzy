@@ -418,11 +418,7 @@ class HazzyWindow(Gtk.ApplicationWindow):
         Gtk.ApplicationWindow.__init__(self, application=app, *args, **kwargs)
 
         self.app = app
-        self.set_show_menubar(False)
-
-        self.connect('button-press-event', self.on_button_press)
-        self.connect('key-press-event', self.on_key_press)
-        self.connect('key-release-event', self.on_key_release)
+        self.set_show_menubar(False) # Use a menu button instead
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.add(self.box)
@@ -432,6 +428,8 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.header_bar.set_subtitle('Machine: ' + ini_info.get_machine_name())
         self.set_titlebar(self.header_bar)
 
+        # The overlay is not used anymore, should we remove it, or leave
+        # it in case somebody wants to use it for a InfoBar or the like??
         self.overlay = Gtk.Overlay()
         self.box.pack_start(self.overlay, True, True, 0)
 
@@ -442,6 +440,7 @@ class HazzyWindow(Gtk.ApplicationWindow):
 
         self.stack_switcher = Gtk.StackSwitcher()
         self.stack_switcher.set_stack(self.screen_stack)
+        self.stack_switcher.show_all()
 
         self.menu_button = Gtk.MenuButton()
         icon = Gtk.Image.new_from_icon_name('applications-system-symbolic', # 'open-menu-symbolic'
@@ -458,16 +457,20 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.chooser_button.set_popover(self.widget_chooser)
         self.header_bar.pack_start(self.chooser_button)
 
+        self.connect('button-press-event', self.on_button_press) # Clear focus
+        self.connect('key-press-event', self.on_key_press)       # Jog start
+        self.connect('key-release-event', self.on_key_release)   # Jog stop
+
         self.set_size_request(500, 300)
         self.show_all()
 
+    # Only show the StackSwitcher if there are 2 or more screens
     def on_screen_stack_children_changed(self, stack, child):
         if len(self.screen_stack.get_children()) > 1:
-            print "More than one screen"
+            # Display the StackSwitcher
             self.header_bar.set_custom_title(self.stack_switcher)
-            self.stack_switcher.show_all()
         else:
-            print "Only one screen"
+            # Display the Title / Subtitle
             self.header_bar.set_custom_title(None)
 
     def set_edit_layout(self, edit):
@@ -478,10 +481,12 @@ class HazzyWindow(Gtk.ApplicationWindow):
             for widget in widgets:
                 widget.show_overlay(edit)
 
+    # Remove focus when clicking on any non focusable area
     def on_button_press(self, widget, event):
-        # Remove focus when clicking on non focusable area
         self.get_toplevel().set_focus(None)
 
+    # If no widget has focus, then assume the user wants
+    # to jog the machine. Need to fine a way to make this safer.
     def on_key_press(self, widget, event):
         if not self.get_focus():
             jogging.on_key_press_event(widget, event)
