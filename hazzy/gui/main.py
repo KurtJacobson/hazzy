@@ -378,6 +378,7 @@ class Hazzy(Gtk.Application):
         window.connect('delete-event', self.on_window_delete_event)
         self.edit_layout_action.set_state(GLib.Variant.new_boolean(begin_editing))
         window.chooser_button.set_visible(begin_editing)
+        window.check_button.set_visible(begin_editing)
         self.add_window(window)
         return window
 
@@ -457,6 +458,18 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.chooser_button.set_popover(self.widget_chooser)
         self.header_bar.pack_start(self.chooser_button)
 
+        self.check_button = Gtk.EventBox()
+        self.check_button.set_tooltip_text('Finish editing')
+        icon = Gtk.Image.new_from_icon_name('emblem-default',
+                                            Gtk.IconSize.LARGE_TOOLBAR)
+        self.check_button.add(icon)
+        self.check_button.connect('button-press-event', lambda w, e: self.set_edit_layout(False))
+        self.check_button.set_margin_top(10)
+        self.check_button.set_margin_right(10)
+        self.check_button.set_halign(Gtk.Align.END)
+        self.check_button.set_valign(Gtk.Align.START)
+        self.overlay.add_overlay(self.check_button)
+
         self.connect('button-press-event', self.on_button_press) # Clear focus
         self.connect('key-press-event', self.on_key_press)       # Jog start
         self.connect('key-release-event', self.on_key_release)   # Jog stop
@@ -474,8 +487,10 @@ class HazzyWindow(Gtk.ApplicationWindow):
             self.header_bar.set_custom_title(None)
 
     def set_edit_layout(self, edit):
+        self.app.edit_layout_action.set_state(GLib.Variant.new_boolean(edit))
         screens = self.screen_stack.get_children()
         self.chooser_button.set_visible(edit)
+        self.check_button.set_visible(edit)
         for screen in screens:
             widgets = screen.get_children()
             for widget in widgets:
