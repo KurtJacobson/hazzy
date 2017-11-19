@@ -40,10 +40,10 @@ class Gremlin3(Gtk.Box):
     def __init__(self, widget_window):
         Gtk.Box.__init__(self)
 
-        gl_area = Gtk.GLArea()
-        gl_area.connect('render', self.area_render)
+        # gl_area = Gtk.GLArea()
+        # gl_area.connect('render', self.area_render)
 
-        self.pack_end(gl_area, True, True, 0)
+        # self.pack_end(gl_area, True, True, 0)
 
     def area_render(self, gl_area, gl_context):
         print gl_area
