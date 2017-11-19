@@ -65,27 +65,112 @@ class Gremlin3(Gtk.Box):
 
     def __init__(self, widget_window):
         Gtk.Box.__init__(self)
+        self.set_vexpand(True)
+        self.set_hexpand(True)
+
+        self.gl_area = GremlinGLArea(self)
+
+        self.pack_start(self.gl_area, False, False, 0)
+        self.show_all()
+
+
+class GremlinGLArea(Gtk.GLArea):
+    def __init__(self, parent):
+        Gtk.GLArea.__init__(self)
+        self.set_hexpand(True)
+
+        self.parent = parent
 
         screen = Gdk.Screen.get_default()
         visual = Gdk.Screen.get_rgba_visual(screen)
 
-        Gtk.Widget.set_visual(self, visual)
+        print('is composite %s' % Gdk.Screen.is_composited(screen))
 
-        self.canvas = Gtk.GLArea()
-        self.canvas.set_required_version(3, 3)
+        Gtk.Widget.set_visual(self.parent, visual)
+        self.set_required_version(3, 3)
+        self.test_features()
 
-        print(self.test_features())
+        self.vertices = [
+            0.6, 0.6, 0.0, 1.0,
+            -0.6, 0.6, 0.0, 1.0,
+            0.0, -0.6, 0.0, 1.0]
 
-        self.canvas.connect('render', self.area_render)
-        self.pack_end(self.canvas, True, True, 0)
+        self.vertices = np.array(self.vertices, dtype=np.float32)
 
-    def area_render(self, gl_area, gl_context):
-        print gl_area
-        print gl_context
-        return True
+        # self.connect("resize", self.reshape_window)
+        # self.connect("render", self.render)
+        # self.connect("key-press-event", self.key_pressed)
+        # self.connect("key-release-event", self.key_released)
+        # self.connect("scroll-event", self.mouse_scroll)
+        # self.connect("button-press-event", self.mouse_pressed)
+        # self.connect("motion-notify-event", self.mouse_motion)
+        # self.connect("button-release-event", self.mouse_released)
+        self.grab_focus()
+        self.set_events(self.get_events() | Gdk.EventMask.SCROLL_MASK
+                        | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK
+                        | Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK
+                        | Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK)
+
+        self.connect('realize', self.on_configure_event)
+        self.connect('render', self.on_draw)
+        self.set_double_buffered(False)
 
     def test_features(self):
         print('Testing features')
-        print('glGenVertexArrays Available %s' % bool(glGenVertexArrays))
-        print('Alpha Available %s' % bool(self.canvas.get_has_alpha()))
-        print('Depth buffer Available %s' % bool(self.canvas.get_has_depth_buffer()))
+        print('glGenVertexArrays Available {}'.format(bool(glGenVertexArrays)))
+        print('Alpha Available {}'.format(bool(self.get_has_alpha())))
+        print('Depth buffer Available {}'.format(bool(self.get_has_depth_buffer())))
+
+    def on_configure_event(self, widget):
+        print('realize event')
+        widget.make_current()
+        print(widget.get_error())
+
+        vs = shaders.compileShader(VERTEX_SHADER, GL.GL_VERTEX_SHADER)
+        fs = shaders.compileShader(FRAGMENT_SHADER, GL.GL_FRAGMENT_SHADER)
+        self.shader = shaders.compileProgram(vs, fs)
+
+        # Create a new Vertex Array Object
+        self.vertex_array_object = GL.glGenVertexArrays(1)
+        GL.glBindVertexArray(self.vertex_array_object)
+
+        # Generate a new array buffers for our vertices
+        self.vertex_buffer = GL.glGenBuffers(1)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self.vertex_buffer)
+
+        # Get position variable form the shader and store
+        self.position = GL.glGetAttribLocation(self.shader, 'position')
+        GL.glEnableVertexAttribArray(self.position)
+
+        # describe the data layout
+        GL.glVertexAttribPointer(self.position, 4, GL.GL_FLOAT, False, 0, ctypes.c_void_p(0))
+
+        # Copy data to the buffer
+        GL.glBufferData(GL.GL_ARRAY_BUFFER, 48, self.vertices, GL.GL_STATIC_DRAW)
+
+        # Unbind buffers once done
+        GL.glBindVertexArray(0)
+        GL.glDisableVertexAttribArray(self.position)
+        GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
+
+        return True
+
+    def on_draw(self, widget, *args):
+        print('render event')
+        print('Error: {}'.format(widget.get_error()))
+
+        self.width = 300
+        self.height = 200
+
+        # clear screen and select shader for drawing
+        GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
+        GL.glUseProgram(self.shader)
+
+        # bind and draw vertices
+        GL.glBindVertexArray(self.vertex_array_object)
+        GL.glDrawArrays(GL.GL_TRIANGLES, 0, 3)
+        GL.glBindVertexArray(0)
+
+        GL.glUseProgram(0)
+        GL.glFlush()
+        return True

@@ -33,9 +33,6 @@ FRAGMENT_SHADER = """
 
 
 class application_gui:
-    """Tutorial 01 Create and destroy a window"""
-
-    # glwrap = gtkglarea()
     def __init__(self):
         screen = Gdk.Screen.get_default()
         visual = Gdk.Screen.get_rgba_visual(screen)
