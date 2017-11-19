@@ -245,7 +245,7 @@ class WidgetView(Gtk.IconView):
         self.drag_source_set_target_list(None)
         self.drag_source_add_text_targets()
 
-        self.connect('focus-out-event', self.on_focus_out)
+        # self.connect('focus-out-event', self.on_focus_out)
 
     def add_item(self, name, image, import_str):
         self.model.append([name, image, import_str])
