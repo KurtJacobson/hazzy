@@ -76,9 +76,8 @@ class Gremlin3(Gtk.Box):
 
         print(self.test_features())
 
-        # gl_area.connect('render', self.area_render)
-
-        # self.pack_end(gl_area, True, True, 0)
+        self.canvas.connect('render', self.area_render)
+        self.pack_end(self.canvas, True, True, 0)
 
     def area_render(self, gl_area, gl_context):
         print gl_area
