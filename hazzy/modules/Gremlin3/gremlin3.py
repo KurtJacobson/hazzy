@@ -32,10 +32,9 @@ from OpenGL import GL as GL
 
 from OpenGL.GL import shaders
 from OpenGL.raw.GL.ARB.vertex_array_object import glGenVertexArrays, \
-                                                  glBindVertexArray
+    glBindVertexArray
 
 PYDIR = os.path.join(os.path.dirname(__file__))
-
 
 VERTEX_SHADER = """
     #version 330
@@ -56,7 +55,6 @@ FRAGMENT_SHADER = """
 
 
 class Gremlin3(Gtk.Box):
-
     title = 'Gremlin3'
     author = ''
     version = '0.1.0'
@@ -102,14 +100,16 @@ class GremlinGLArea(Gtk.GLArea):
         # self.connect("button-press-event", self.mouse_pressed)
         # self.connect("motion-notify-event", self.mouse_motion)
         # self.connect("button-release-event", self.mouse_released)
+
         self.grab_focus()
+        
         self.set_events(self.get_events() | Gdk.EventMask.SCROLL_MASK
                         | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK
                         | Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK
                         | Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK)
 
-        self.connect('realize', self.on_configure_event)
-        self.connect('render', self.on_draw)
+        self.connect('realize', self.on_realize)
+        self.connect('render', self.on_render)
         self.set_double_buffered(False)
 
     def test_features(self):
@@ -118,10 +118,15 @@ class GremlinGLArea(Gtk.GLArea):
         print('Alpha Available {}'.format(bool(self.get_has_alpha())))
         print('Depth buffer Available {}'.format(bool(self.get_has_depth_buffer())))
 
-    def on_configure_event(self, widget):
+    def on_realize(self, area):
         print('realize event')
-        widget.make_current()
-        print(widget.get_error())
+        area.make_current()
+
+        if area.get_error() is not None:
+            return
+
+        self.init_buffers()
+        self.init_shaders()
 
         vs = shaders.compileShader(VERTEX_SHADER, GL.GL_VERTEX_SHADER)
         fs = shaders.compileShader(FRAGMENT_SHADER, GL.GL_FRAGMENT_SHADER)
@@ -152,10 +157,9 @@ class GremlinGLArea(Gtk.GLArea):
 
         return True
 
-    def on_draw(self, widget, *args):
+    def on_render(self, area, context):
         print('render event')
-        print('Error: {}'.format(widget.get_error()))
-
+        print('Error: {}'.format(area.get_error()))
 
         # clear screen and select shader for drawing
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -172,7 +176,6 @@ class GremlinGLArea(Gtk.GLArea):
 
 
 def main():
-
     window = Gtk.Window()
 
     test = Gremlin3(None)
