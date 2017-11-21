@@ -66,14 +66,19 @@ class Gremlin3(Gtk.Box):
         self.gl_area = GremlinGLArea(self)
         self.gl_area.set_size_request(800, 400)
 
-        #self.pack_start(self.gl_area, False, False, 0)
-        self.add(self.gl_area)
+        self.pack_start(self.gl_area, False, False, 0)
+
         self.show_all()
 
 
 class GremlinGLArea(Gtk.GLArea):
     def __init__(self, parent):
         Gtk.GLArea.__init__(self)
+
+        self.props.has_alpha = True
+        self.props.has_depth_buffer = False
+        self.props.auto_render = True
+        self.props.expand = True
 
         self.parent = parent
         
