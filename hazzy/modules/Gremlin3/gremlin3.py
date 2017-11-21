@@ -65,10 +65,8 @@ class Gremlin3(Gtk.Box):
 
     def __init__(self, widget_window):
         Gtk.Box.__init__(self)
-        self.set_vexpand(True)
-        self.set_hexpand(True)
-
         self.gl_area = GremlinGLArea(self)
+        self.gl_area.set_size_request(800, 400)
 
         self.pack_start(self.gl_area, False, False, 0)
         self.show_all()
@@ -77,8 +75,6 @@ class Gremlin3(Gtk.Box):
 class GremlinGLArea(Gtk.GLArea):
     def __init__(self, parent):
         Gtk.GLArea.__init__(self)
-        self.set_hexpand(True)
-
         self.parent = parent
 
         screen = Gdk.Screen.get_default()
@@ -87,6 +83,7 @@ class GremlinGLArea(Gtk.GLArea):
         print('is composite %s' % Gdk.Screen.is_composited(screen))
 
         Gtk.Widget.set_visual(self.parent, visual)
+
         self.set_required_version(3, 3)
         self.test_features()
 
@@ -159,8 +156,6 @@ class GremlinGLArea(Gtk.GLArea):
         print('render event')
         print('Error: {}'.format(widget.get_error()))
 
-        self.width = 300
-        self.height = 200
 
         # clear screen and select shader for drawing
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
@@ -174,3 +169,17 @@ class GremlinGLArea(Gtk.GLArea):
         GL.glUseProgram(0)
         GL.glFlush()
         return True
+
+
+def main():
+
+    window = Gtk.Window()
+
+    test = Gremlin3(None)
+    window.add(test)
+    window.show_all()
+    Gtk.main()
+
+
+if __name__ == "__main__":
+    main()
