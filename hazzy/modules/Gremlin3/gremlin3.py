@@ -66,14 +66,21 @@ class Gremlin3(Gtk.Box):
         self.gl_area = GremlinGLArea(self)
         self.gl_area.set_size_request(800, 400)
 
-        self.pack_start(self.gl_area, False, False, 0)
+        #self.pack_start(self.gl_area, False, False, 0)
+        self.add(self.gl_area)
         self.show_all()
 
 
 class GremlinGLArea(Gtk.GLArea):
     def __init__(self, parent):
         Gtk.GLArea.__init__(self)
+
         self.parent = parent
+        
+        self.shader = None
+        self.vertex_array_object = None
+        self.vertex_buffer = None
+        self.position = None
 
         screen = Gdk.Screen.get_default()
         visual = Gdk.Screen.get_rgba_visual(screen)
@@ -108,10 +115,8 @@ class GremlinGLArea(Gtk.GLArea):
                         | Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK
                         | Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK)
 
-        self.connect('realize', self.on_realize)
-
         self.connect('render', self.on_render)
-        self.set_double_buffered(False)
+        self.connect('realize', self.on_realize)
 
     def test_features(self):
         print('Testing features')
@@ -120,8 +125,9 @@ class GremlinGLArea(Gtk.GLArea):
         print('Depth buffer Available {}'.format(bool(self.get_has_depth_buffer())))
 
     def on_realize(self, area):
+
         print('realize event')
-        area.make_current()
+        self.make_current()
 
         vs = shaders.compileShader(VERTEX_SHADER, GL.GL_VERTEX_SHADER)
         fs = shaders.compileShader(FRAGMENT_SHADER, GL.GL_FRAGMENT_SHADER)
@@ -169,16 +175,3 @@ class GremlinGLArea(Gtk.GLArea):
         GL.glUseProgram(0)
         GL.glFlush()
         return True
-
-
-def main():
-    window = Gtk.Window()
-
-    test = Gremlin3(None)
-    window.add(test)
-    window.show_all()
-    Gtk.main()
-
-
-if __name__ == "__main__":
-    main()
