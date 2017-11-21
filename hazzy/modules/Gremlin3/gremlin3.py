@@ -102,13 +102,14 @@ class GremlinGLArea(Gtk.GLArea):
         # self.connect("button-release-event", self.mouse_released)
 
         self.grab_focus()
-        
+
         self.set_events(self.get_events() | Gdk.EventMask.SCROLL_MASK
                         | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK
                         | Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK
                         | Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK)
 
         self.connect('realize', self.on_realize)
+
         self.connect('render', self.on_render)
         self.set_double_buffered(False)
 
@@ -122,14 +123,9 @@ class GremlinGLArea(Gtk.GLArea):
         print('realize event')
         area.make_current()
 
-        if area.get_error() is not None:
-            return
-
-        self.init_buffers()
-        self.init_shaders()
-
         vs = shaders.compileShader(VERTEX_SHADER, GL.GL_VERTEX_SHADER)
         fs = shaders.compileShader(FRAGMENT_SHADER, GL.GL_FRAGMENT_SHADER)
+
         self.shader = shaders.compileProgram(vs, fs)
 
         # Create a new Vertex Array Object
