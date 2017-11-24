@@ -87,7 +87,7 @@ class GremlinGLArea(Gtk.GLArea):
         print('is composite %s' % Gdk.Screen.is_composited(screen))
 
         Gtk.Widget.set_visual(self.parent, visual)
-        self.set_required_version(3, 3)
+        self.set_required_version(2, 2)
         self.test_features()
 
         self.vertices = [
