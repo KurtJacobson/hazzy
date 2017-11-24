@@ -94,7 +94,7 @@ class GremlinGLArea(Gtk.GLArea):
 
         Gtk.Widget.set_visual(self.parent, visual)
 
-        self.set_required_version(3, 3)
+        self.set_required_version(2, 0)
         self.test_features()
 
         self.vertices = [
