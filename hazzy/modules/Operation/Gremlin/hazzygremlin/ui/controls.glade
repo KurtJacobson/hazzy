@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk+" version="2.24"/>
+  <!-- interface-naming-policy project-wide -->
+  <object class="GtkTable" id="controls">
+    <property name="width_request">40</property>
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="n_rows">8</property>
+    <child>
+      <object class="GtkEventBox" id="mouse_mode">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_toggle_mouse_mode_pressed" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="mouse_mode_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">pan_selected.png</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="top_attach">7</property>
+        <property name="bottom_attach">8</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEventBox" id="zoom_in">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_zoom_in_pressed" swapped="no"/>
+        <signal name="button-release-event" handler="on_zoom_in_released" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="zoom_in_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">plus.png</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="top_attach">1</property>
+        <property name="bottom_attach">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEventBox" id="zoom_out">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_zoom_out_pressed" swapped="no"/>
+        <signal name="button-release-event" handler="on_zoom_out_released" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="zoom_out_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">minus.png</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="top_attach">2</property>
+        <property name="bottom_attach">3</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEventBox" id="view_x">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_view_x_pressed" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="view_x_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">x.png</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="top_attach">3</property>
+        <property name="bottom_attach">4</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEventBox" id="view_y">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_view_y_pressed" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="view_y_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">y.png</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="top_attach">4</property>
+        <property name="bottom_attach">5</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEventBox" id="view_z">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_view_z_pressed" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="view_z_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">z.png</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="top_attach">5</property>
+        <property name="bottom_attach">6</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEventBox" id="view_p">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_view_p_pressed" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="view_p_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">p.png</property>
+          </object>
+        </child>
+      </object>
+      <packing>
+        <property name="top_attach">6</property>
+        <property name="bottom_attach">7</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkEventBox" id="settings">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
+        <signal name="button-press-event" handler="on_settings_pressed" swapped="no"/>
+        <child>
+          <object class="GtkImage" id="settings_image">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="pixbuf">settings.png</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
