@@ -1,4 +1,4 @@
 name: '3DViewer'
-module: 'gremlin3dwidget'
-class: 'Gremlin3DWidget'
+module: 'Gremlin3'
+class: 'Gremlin3GL'
 image: 'gremlin3d.png'
