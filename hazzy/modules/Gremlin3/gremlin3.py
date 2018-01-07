@@ -63,7 +63,7 @@ class Gremlin3(Gtk.Box):
 
     def __init__(self, widget_window):
         Gtk.Box.__init__(self)
-        self.gl_area = GremlinGLArea(self)
+        self.gl_area = GremlinGL(self)
         self.gl_area.set_size_request(800, 400)
 
         self.pack_start(self.gl_area, False, False, 0)
@@ -71,7 +71,7 @@ class Gremlin3(Gtk.Box):
         self.show_all()
 
 
-class GremlinGLArea(Gtk.GLArea):
+class GremlinGL(Gtk.GLArea):
     def __init__(self, parent):
         Gtk.GLArea.__init__(self)
 
@@ -81,7 +81,7 @@ class GremlinGLArea(Gtk.GLArea):
         self.props.expand = True
 
         self.parent = parent
-        
+
         self.shader = None
         self.vertex_array_object = None
         self.vertex_buffer = None
@@ -94,7 +94,7 @@ class GremlinGLArea(Gtk.GLArea):
 
         Gtk.Widget.set_visual(self.parent, visual)
 
-        self.set_required_version(2, 0)
+        self.set_required_version(3, 3)
         self.test_features()
 
         self.vertices = [
@@ -105,7 +105,8 @@ class GremlinGLArea(Gtk.GLArea):
         self.vertices = np.array(self.vertices, dtype=np.float32)
 
         # self.connect("resize", self.reshape_window)
-        # self.connect("render", self.render)
+        self.connect("realize", self.on_realize)
+        self.connect("render", self.on_render)
         # self.connect("key-press-event", self.key_pressed)
         # self.connect("key-release-event", self.key_released)
         # self.connect("scroll-event", self.mouse_scroll)
@@ -130,6 +131,13 @@ class GremlinGLArea(Gtk.GLArea):
         print('Depth buffer Available {}'.format(bool(self.get_has_depth_buffer())))
 
     def on_realize(self, area):
+
+        error = area.get_error()
+        if error != None:
+            print "your graphics card is probably too old : ", error
+            return False
+        else:
+            print area, "realize... fine so far"
 
         print('realize event')
         self.make_current()
@@ -180,3 +188,44 @@ class GremlinGLArea(Gtk.GLArea):
         GL.glUseProgram(0)
         GL.glFlush()
         return True
+
+
+"""
+
+class Gremlin3GL(Gtk.Box):
+    __gtype_name__ = 'Gremlin3GL'
+
+    def __init__(self):
+        Gtk.Box.__init__(self)
+
+        gl_area = Gtk.GLArea()
+        gl_area.connect('render', self.area_render)
+        gl_area.connect('realize', self.area_realize)
+        #gl_area.connect('create-context', self.area_context)
+        box = Gtk.Box()
+        box.pack_end(gl_area, True, True, 0)
+
+        self.add(box)
+
+    def area_realize (self, gl_area):
+        error = gl_area.get_error()
+        if error != None:
+            print "your graphics card is probably too old : ", error
+        else:
+            print gl_area, "realize... fine so far"
+
+    def area_context(self, gl_area):
+        # not needed except for special instances, read the docs
+        c = gl_area.get_context()
+        print c , "context"
+        return c
+
+    def area_render(self, area, context):
+        #print gl_area
+        #print gl_context
+        glClearColor(0.1, 0.5, 0.5, 1.0)
+        glClear(GL_COLOR_BUFFER_BIT)
+        print "rendering... done"
+        return True
+        
+"""
