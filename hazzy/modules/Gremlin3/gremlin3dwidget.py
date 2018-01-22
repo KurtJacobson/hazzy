@@ -58,10 +58,10 @@ class Gremlin3DWidget(Gtk.Bin):
 class Area3D(gremlin3d.Gremlin3D):
     __gtype_name__ = "HazzyGremlin"
     __gsignals__ = {
-        'line-clicked': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (GObject.TYPE_INT,)),
-        'gcode-error': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE,
+        'line-clicked': (GObject.SignalFlags.RUN_FIRST, GObject.TYPE_NONE, (GObject.TYPE_INT,)),
+        'gcode-error': (GObject.SignalFlags.RUN_FIRST, GObject.TYPE_NONE,
                         (GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_STRING,)),
-        'loading-progress': (GObject.SIGNAL_RUN_FIRST, GObject.TYPE_NONE, (GObject.TYPE_INT,)),
+        'loading-progress': (GObject.SignalFlags.RUN_FIRST, GObject.TYPE_NONE, (GObject.TYPE_INT,)),
     }
 
     def __init__(self, inifile, width, height):

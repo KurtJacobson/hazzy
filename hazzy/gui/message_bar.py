@@ -49,7 +49,7 @@ class MessageBar(Gtk.Revealer):
         self.signal_2_id = None
 
         # Main Bar
-        self.bar = Gtk.Box(Gtk.Orientation.HORIZONTAL)
+        self.bar = Gtk.Box(homogeneous=Gtk.Orientation.HORIZONTAL)
         self.add(self.bar)
 
         # Message Icon
@@ -57,7 +57,7 @@ class MessageBar(Gtk.Revealer):
         self.bar.pack_start(self.icon, False, False, 0)
 
         # Message Label
-        self.label = Gtk.Label('Info')
+        self.label = Gtk.Label(label='Info')
         self.label.set_margin_left(5)
         self.label.set_line_wrap(True)
         self.bar.pack_start(self.label, False, False, 0)
@@ -70,10 +70,10 @@ class MessageBar(Gtk.Revealer):
         self.close_button.connect('clicked', self.close)
         self.bar.pack_end(self.close_button, False, False, 0)
 
-        self.button_2 = Gtk.Button('No')
+        self.button_2 = Gtk.Button(label='No')
         self.bar.pack_end(self.button_2, False, False, 0)
 
-        self.button_1 = Gtk.Button('Yes')
+        self.button_1 = Gtk.Button(label='Yes')
         self.bar.pack_end(self.button_1, False, False, 0)
 
     def close(self, widget=None):
