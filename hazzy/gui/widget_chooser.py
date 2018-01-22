@@ -187,7 +187,7 @@ class Expander(Gtk.Box):
         self.title = title
 
         self.arrow = Gtk.Arrow.new(Gtk.ArrowType.RIGHT, Gtk.ShadowType.NONE)
-        self.title_label = Gtk.Label(self.title)
+        self.title_label = Gtk.Label(label=self.title)
 
         # The section button
         self.button = Gtk.Button()
@@ -272,14 +272,14 @@ class ScreenEditor(Gtk.Box):
         grid = Gtk.Grid()
         grid. set_row_spacing(5)
 
-        grid.attach(Gtk.Label('Title', hexpand=True), 0 , 0 , 1 , 1)
+        grid.attach(Gtk.Label(label='Title', hexpand=True), 0, 0, 1, 1)
         self.title_entry = entry_widgets.TextEntry()
         self.title_entry.set_activate_on_focus_out(True)
         self.title_entry.connect('validate-text', self.on_title_entry_validate_text)
         self.title_entry.connect_after('delete-text', self.on_title_entry_delete_text)
         grid.attach(self.title_entry, 1, 0, 1, 1)
 
-        grid.attach(Gtk.Label('Position', hexpand=True), 0 , 1 , 1 , 1)
+        grid.attach(Gtk.Label(label='Position', hexpand=True), 0, 1, 1, 1)
         self.pos_adj = Gtk.SpinButton.new_with_range(0, 10, 1)
         self.pos_adj.connect('value_changed', self.on_position_changed)
         grid.attach(self.pos_adj, 1, 1, 1, 1)
