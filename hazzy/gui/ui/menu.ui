@@ -2,6 +2,19 @@
 <interface>
   <menu id="appmenu">
     <section>
+      <submenu>
+        <attribute name="label" translatable="yes">Machine</attribute>
+        <section>
+          <item>
+            <attribute name="label" translatable="yes">E-Stop</attribute>
+            <attribute name="action">app.estop</attribute>
+          </item>
+          <item>
+            <attribute name="label" translatable="yes">Power</attribute>
+            <attribute name="action">app.power</attribute>
+          </item>
+        </section>
+      </submenu>
       <item>
         <attribute name="label" translatable="yes">Edit Layout</attribute>
         <attribute name="action">app.edit_layout</attribute>
@@ -14,31 +27,31 @@
         <attribute name="label" translatable="yes">New Window</attribute>
         <attribute name="action">app.new_window</attribute>
       </item>
-        <submenu>
-          <attribute name="label" translatable="yes">HAL Tools</attribute>
-          <section>
-            <item>
-              <attribute name="label" translatable="yes">HAL Meter</attribute>
-              <attribute name="action">app.launch_hal_meter</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">HAL Scope</attribute>
-              <attribute name="action">app.launch_hal_scope</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">HAL Configuration</attribute>
-              <attribute name="action">app.launch_hal_configuration</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">ClassicLadder</attribute>
-              <attribute name="action">app.launch_classicladder</attribute>
-            </item>
-            <item>
-              <attribute name="label" translatable="yes">LinuxCNC Status</attribute>
-              <attribute name="action">app.launch_status</attribute>
-            </item>
-          </section>
-        </submenu>
+      <submenu>
+        <attribute name="label" translatable="yes">HAL Tools</attribute>
+        <section>
+          <item>
+            <attribute name="label" translatable="yes">HAL Meter</attribute>
+            <attribute name="action">app.launch_hal_meter</attribute>
+          </item>
+          <item>
+            <attribute name="label" translatable="yes">HAL Scope</attribute>
+            <attribute name="action">app.launch_hal_scope</attribute>
+          </item>
+          <item>
+            <attribute name="label" translatable="yes">HAL Configuration</attribute>
+            <attribute name="action">app.launch_hal_configuration</attribute>
+          </item>
+          <item>
+            <attribute name="label" translatable="yes">ClassicLadder</attribute>
+            <attribute name="action">app.launch_classicladder</attribute>
+          </item>
+          <item>
+            <attribute name="label" translatable="yes">LinuxCNC Status</attribute>
+            <attribute name="action">app.launch_status</attribute>
+          </item>
+        </section>
+      </submenu>
     </section>
     <section>
       <item>

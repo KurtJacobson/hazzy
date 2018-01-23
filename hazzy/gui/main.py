@@ -87,7 +87,9 @@ log_time('done checking requirements')
 from utilities.constants import Paths
 from utilities import notifications
 from utilities import ini_info
+from utilities import command
 from utilities import jogging
+from utilities import status
 
 # Import our own modules
 from widget_chooser import WidgetChooser
@@ -138,9 +140,11 @@ class Hazzy(Gtk.Application):
         for action in actions:
             self.add_simple_action(action)
 
-        toggle_actions = ['edit_layout', 'dark_theme']
+        toggle_actions = ['estop', 'power','edit_layout', 'dark_theme']
         for action in toggle_actions:
             self.add_toggle_action(action)
+
+        status.on_changed('stat.task_state', self.on_task_state_changed)
 
         # Show any Startup Notifications given in INI
         startup_notification = ini_info.get_startup_notification()
@@ -182,6 +186,22 @@ class Hazzy(Gtk.Application):
 # =========================================================
 # App menu action handlers
 # =========================================================
+
+    def on_estop_toggled(self, action, state):
+        if state:
+            log.debug('Machine was red<E-STOPPED> from menu')
+            command.set_state(linuxcnc.STATE_ESTOP)
+        else:
+            log.debug('Machine was green<RESET> from menu')
+            command.set_state(linuxcnc.STATE_ESTOP_RESET)
+
+    def on_power_toggled(self, action, state):
+        if state:
+            log.debug('Machine was turned green<ON> from menu')
+            command.set_state(linuxcnc.STATE_ON)
+        else:
+            log.debug('Machine was turned red<OFF> from menu')
+            command.set_state(linuxcnc.STATE_OFF)
 
     def on_edit_layout_toggled(self, action, state):
         action.set_state(state)
@@ -239,6 +259,25 @@ class Hazzy(Gtk.Application):
         callback = getattr(self, 'on_{}_toggled'.format(action_name))
         toggle.connect("change-state", callback)
         self.add_action(toggle)
+
+
+# =========================================================
+# Menu update functions
+# =========================================================
+
+    def on_task_state_changed(self, status, state):
+        if state == linuxcnc.STATE_ESTOP:
+            self.estop_action.set_state(GLib.Variant.new_boolean(True))
+            self.power_action.set_state(GLib.Variant.new_boolean(False))
+            self.power_action.set_enabled(False)
+        elif state == linuxcnc.STATE_ESTOP_RESET:
+            self.estop_action.set_state(GLib.Variant.new_boolean(False))
+            self.power_action.set_state(GLib.Variant.new_boolean(False))
+            self.power_action.set_enabled(True)
+        elif state == linuxcnc.STATE_ON:
+            self.power_action.set_state(GLib.Variant.new_boolean(True))
+        elif state == linuxcnc.STATE_OFF:
+            self.power_action.set_state(GLib.Variant.new_boolean(False))
 
 
 # =========================================================
