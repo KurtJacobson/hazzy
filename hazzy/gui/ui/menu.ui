@@ -4,14 +4,17 @@
     <section>
       <submenu>
         <attribute name="label" translatable="yes">Machine</attribute>
+        <attribute name="label" translatable="yes">_Machine</attribute>
         <section>
           <item>
             <attribute name="label" translatable="yes">E-Stop</attribute>
             <attribute name="action">app.estop</attribute>
+            <attribute name="accel">F1</attribute>
           </item>
           <item>
             <attribute name="label" translatable="yes">Power</attribute>
             <attribute name="action">app.power</attribute>
+            <attribute name="accel">F2</attribute>
           </item>
         </section>
       </submenu>
