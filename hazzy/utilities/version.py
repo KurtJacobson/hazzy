@@ -21,8 +21,8 @@
 # Description:
 #   Used to determine the current Hazzy version for logging and display in the
 #   About dialog. If running from a git repo report latest version tag and 
-#   and the commit hash. If not a got repo report version as specified in 
-#   VERSION file located in the main dir.
+#   and the commit hash, else report version as specified in VERSION file 
+#   located in the main dir.
 
 import os
 import subprocess
@@ -71,13 +71,12 @@ if os.path.exists(os.path.join(repo_dir, '.git')):
         # If length is 1 it is either a clean version or commit hash
         if len(info) == 1:
 
-            # If version the first letter will always be a "v"
-            # The hash could beginning with a "v" too, but unlikely ...
+            # If version, the first letter will always be a "v"
             if info[0].startswith('v'):
                 # Its a version tag number
                 VERSION = info[0]
 
-                # We can have enough info for a full url
+                # So we have enough info for a full url
                 VERSION_URL = 'https://github.com/KurtJacobson/hazzy/tree/{}' \
                     .format(VERSION)
 
@@ -96,7 +95,7 @@ if os.path.exists(os.path.join(repo_dir, '.git')):
             VERSION = '-'.join(info).replace('-', '.')
 
             # The commit hash is prefixed with a "g" to indicate is is a git hash
-            # We need to remove is for use in the url
+            # We need to remove it for use in the url
             commit_hash = info[2].lstrip('g')
 
         # If there is a commit hash make a url
