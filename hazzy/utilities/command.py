@@ -111,7 +111,7 @@ def set_state(state):
     linuxcnc.STATE_OFF
     '''
     stat.poll()
-    if stat.state == state:
+    if stat.task_state == state:
         return
     command.state(state)
     command.wait_complete()
