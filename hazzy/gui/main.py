@@ -171,8 +171,13 @@ class Hazzy(Gtk.Application):
         self.save_to_xml()
 
     def on_window_delete_event(self, window, event):
-        self.quit()
-        return True
+        # If only one window quit hazzy, else just close window.
+        # TODO: Add a dialog asking to quit app or close window.  
+        if len(self.get_windows()) > 1:
+            window.destroy()
+        else:
+            self.quit()
+            return True
 
 # =========================================================
 # App menu action handlers
@@ -268,6 +273,7 @@ class Hazzy(Gtk.Application):
             self.set_dark_theme(dark)
 
         # Windows
+        win = None
         for win in root.iter('window'):
             window_name = win.get('name')
             window_title = win.get('title')
@@ -282,6 +288,7 @@ class Hazzy(Gtk.Application):
             window.set_fullscreen(props['fullscreen'])
 
             # Screens
+            scr = None
             for scr in win.iter('screen'):
 
                 screen_title = scr.get('title')
@@ -304,10 +311,14 @@ class Hazzy(Gtk.Application):
                         log.error('The package "{}" could not be imported'.format(package))
                         continue
 
-            if not window.screen_stack.get_children():
-                # Add an initial screen to get started
+            if scr is None:
+                # There were no screens, add an initial one
                 window.screen_stack.add_screen()
 
+        if win is None:
+            # There were no windows, add an initial one
+            window = self.new_window()
+            window.screen_stack.add_screen()
 
     def save_to_xml(self):
 
