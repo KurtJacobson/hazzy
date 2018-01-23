@@ -30,10 +30,10 @@ import time
 from utilities import logger
 log = logger.get('MAIN')
 
-def log_time(task, _time=[time.time(), time.time()]):
+def log_time(task, times=[time.time(), time.time()]):
     now = time.time()
-    log.debug("yellow<Time:> {:.3f} (green<{:+.3f}>) - {}".format(now - _time[0], now - _time[1], task))
-    _time[1] = now
+    log.debug("yellow<Time:> {:.3f} (green<{:+.3f}>) - {}".format(now - times[0], now - times[1], task))
+    times[1] = now
 
 log_time("in script")
 
