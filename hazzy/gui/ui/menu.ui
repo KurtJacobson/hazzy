@@ -2,8 +2,12 @@
 <interface>
   <menu id="appmenu">
     <section>
+      <item>
+        <attribute name="label" translatable="yes">Open File ...</attribute>
+        <attribute name="action">app.open</attribute>
+        <attribute name="accel">&lt;Primary&gt;o</attribute>
+      </item>
       <submenu>
-        <attribute name="label" translatable="yes">Machine</attribute>
         <attribute name="label" translatable="yes">_Machine</attribute>
         <section>
           <item>

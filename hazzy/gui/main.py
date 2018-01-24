@@ -84,6 +84,7 @@ if (major, minor) < (3, 20):
 
 log_time('done checking requirements')
 
+# Import our own modules
 from utilities.constants import Paths
 from utilities import notifications
 from utilities import ini_info
@@ -91,7 +92,8 @@ from utilities import command
 from utilities import jogging
 from utilities import status
 
-# Import our own modules
+from widget_factory.dialogs.file_dialog import FileDialog
+
 from widget_chooser import WidgetChooser
 from widget_window import WidgetWindow
 from screen_stack import ScreenStack
@@ -134,8 +136,9 @@ class Hazzy(Gtk.Application):
         self.app_menu = self.builder.get_object('appmenu')
         self.set_app_menu(self.app_menu)
 
-        actions = ['new_window', 'about', 'quit', 'launch_hal_meter', 'launch_hal_scope',
-            'launch_hal_configuration', 'launch_classicladder', 'launch_status']
+        actions = ['open','new_window', 'about', 'quit', 'launch_hal_meter', 
+                'launch_hal_scope', 'launch_hal_configuration', 'launch_classicladder', 
+                'launch_status']
 
         for action in actions:
             self.add_simple_action(action)
@@ -145,6 +148,7 @@ class Hazzy(Gtk.Application):
             self.add_toggle_action(action)
 
         status.on_changed('stat.task_state', self.on_task_state_changed)
+        status.on_changed('stat.interp_state', self.on_interp_state_changed)
 
         # Show any Startup Notifications given in INI
         startup_notification = ini_info.get_startup_notification()
@@ -186,6 +190,18 @@ class Hazzy(Gtk.Application):
 # =========================================================
 # App menu action handlers
 # =========================================================
+
+    def on_open(self, action, data):
+        dialog = FileDialog(transient_for=self.get_active_window())
+        dialog.set_current_folder(ini_info.get_program_prefix())
+
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            file_name = dialog.get_filename()
+            command.load_file(file_name)
+
+        dialog.destroy()
 
     def on_estop_toggled(self, action, state):
         if state:
@@ -279,6 +295,11 @@ class Hazzy(Gtk.Application):
         elif state == linuxcnc.STATE_OFF:
             self.power_action.set_state(GLib.Variant.new_boolean(False))
 
+    def on_interp_state_changed(self, status, state):
+        if state == linuxcnc.INTERP_IDLE:
+            self.open_action.set_enabled(True)
+        else:
+            self.open_action.set_enabled(False)
 
 # =========================================================
 #  XML handlers for saving/loading screen layout
