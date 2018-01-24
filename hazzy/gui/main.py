@@ -551,18 +551,16 @@ class HazzyWindow(Gtk.ApplicationWindow):
         self.get_toplevel().set_focus(None)
 
     # If no widget has focus, then assume the user wants
-    # to jog the machine. Need to fine a way to make this safer.
+    # to jog the machine. Need to find a way to make this safer.
     def on_key_press(self, widget, event):
         if not self.get_focus():
-            jogging.on_key_press_event(widget, event)
-            return True
+            return jogging.on_key_press_event(widget, event)
 
     # Stop jogging, whenever a key is released, otherwise we
     # might miss the key release and continue jogging if some
     # other widget got focus while the jog was in progress, NOT safe!
     def on_key_release(self, widget, event):
-        jogging.on_key_release_event(widget, event)
-        return True
+        return jogging.on_key_release_event(widget, event)
 
     def set_maximized(self, maximized):
         if maximized == 'True':
