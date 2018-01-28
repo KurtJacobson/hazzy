@@ -59,3 +59,5 @@ pages:
 - Installing: installing.md
 - Utilities:
   - Status Monitor: utilities/status_monitor.md
+- Modules:
+  - CamView: modules/video.md
