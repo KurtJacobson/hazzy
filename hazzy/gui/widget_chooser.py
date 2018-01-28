@@ -242,8 +242,11 @@ class WidgetView(Gtk.IconView):
         # Enable DnD
         self.enable_model_drag_source(Gdk.ModifierType.BUTTON1_MASK, [], Gdk.DragAction.COPY)
         self.connect("drag-data-get", self.on_drag_data_get)
+        self.connect("drag-begin", self.on_drag_begin)
+        self.connect("drag-end", self.on_drag_end)
         self.drag_source_set_target_list(None)
         self.drag_source_add_text_targets()
+        self.drag = False
 
         self.connect('focus-out-event', self.on_focus_out)
 
@@ -251,7 +254,14 @@ class WidgetView(Gtk.IconView):
         self.model.append([name, image, import_str])
 
     def on_focus_out(self, widget, event):
-        self.unselect_all()
+        if not self.drag:
+            self.unselect_all()
+
+    def on_drag_begin(self, widget, event):
+        self.drag = True
+
+    def on_drag_end(self, widget, event):
+        self.drag = False
 
     def on_drag_data_get(self, widget, drag_context, data, info, time):
         selected_path = self.get_selected_items()[0]
