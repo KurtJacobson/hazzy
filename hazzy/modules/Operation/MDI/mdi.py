@@ -33,12 +33,12 @@ from gi.repository import Gdk
 
 from widget_factory.entry_widgets import MDIEntry
 
-class MDI(Gtk.Box):
 
+class MDI(Gtk.Box):
     title = 'MDI'
     author = 'TurBoss'
-    version = '0.1.2'
-    date = '5/11/2017'
+    version = '0.1.3'
+    date = '26/02/2018'
     description = 'MDI Prompt'
 
     def __init__(self, widget_window):
@@ -99,30 +99,30 @@ class MDI(Gtk.Box):
     def on_entry_keypress(self, widegt, event):
         kv = event.keyval
         if kv == Gdk.KEY_Up:
-            row = self.get_row() # Highlighted row path, or the last row's path
+            row = self.get_row()  # Highlighted row path, or the last row's path
             if row.prev():
-                self.view.set_cursor([row,], None, False)
+                self.view.set_cursor([row, ], None, False)
             else:
-                Gdk.beep() # Complain if we are already on the top row
+                Gdk.beep()  # Complain if we are already on the top row
             return True
         elif kv == Gdk.KEY_Down:
             # For some odd reason row.next() returns None, instead of a bool
             # indication if the row is valid like row.prev() does, so we have
             # to do our own validation here.
-            row = self.get_row() # Highlighted row path, or the last row's path
-            last_row = Gtk.TreePath.new_from_indices([len(self.entry.model),])
+            row = self.get_row()  # Highlighted row path, or the last row's path
+            last_row = Gtk.TreePath.new_from_indices([len(self.entry.model), ])
             row.next()
             if row != last_row:
-                self.view.set_cursor([row,], None, False)
+                self.view.set_cursor([row, ], None, False)
             else:
-                Gdk.beep() # Complain if we are already on the last row
+                Gdk.beep()  # Complain if we are already on the last row
             return True
 
     def get_row(self):
-        try: # If no row is selected the list of rows will be empty resulting in IndexError
+        try:  # If no row is selected the list of rows will be empty resulting in IndexError
             row = self.selection.get_selected_rows()[1][0]
-        except IndexError: # If IndexError then default to the last row
-            row = Gtk.TreePath.new_from_indices([len(self.entry.model),])
+        except IndexError:  # If IndexError then default to the last row
+            row = Gtk.TreePath.new_from_indices([len(self.entry.model), ])
         return row
 
     # Clear any selection when the entry gets focus. This may not be needed/wanted
@@ -131,7 +131,7 @@ class MDI(Gtk.Box):
         selection.unselect_all()
 
     def on_entry_activated(self, widget):
-        self.scrolled_to_bottom = False # Reset the flag
+        self.scrolled_to_bottom = False  # Reset the flag
 
     # Since the TreeView row is added after a sort delay, we have to listen for
     # the TreeView `size-allocate` and scroll to the end on that.

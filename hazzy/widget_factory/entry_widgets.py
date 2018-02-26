@@ -34,11 +34,14 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import GObject
 
+from utilities import logger
 from utilities import preferences as prefs
 from utilities import ini_info
 from utilities import command
 
 from widget_factory.TouchPads import keyboard
+
+log = logger.get(__name__)
 
 
 class ValidatableEntry(Gtk.Entry, Gtk.Editable):
@@ -144,6 +147,8 @@ class MDIEntry(Gtk.Entry, Gtk.Editable):
         if not self.show_vkb:
             self.set_completion(self.completion)
 
+        self.scrolled_to_bottom = False
+
         self.load_from_history_file()
 
         self.connect('activate', self.on_entry_activated)
@@ -162,7 +167,7 @@ class MDIEntry(Gtk.Entry, Gtk.Editable):
         if cmd == '':
             return
         widget.set_text('')
-        self.model.append([cmd,])
+        self.model.append([cmd, ])
         self.scrolled_to_bottom = False
         self.append_to_history_file(cmd)
         self.get_toplevel().set_focus(None)
@@ -184,11 +189,14 @@ class MDIEntry(Gtk.Entry, Gtk.Editable):
         self.buffer.delete_text(start_pos, end_pos)
 
     def load_from_history_file(self):
-        with open(self.mdi_history_file, 'r') as fh:
-            lines = fh.readlines()
-        for line in lines:
-            line = line.strip()
-            self.model.append((line,))
+        try:
+            with open(self.mdi_history_file, 'r') as fh:
+                lines = fh.readlines()
+            for line in lines:
+                line = line.strip()
+                self.model.append((line,))
+        except Exception as e:
+            log.exception(e)
 
     def append_to_history_file(self, cmd):
         with open(self.mdi_history_file, 'a') as fh:
