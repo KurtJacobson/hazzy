@@ -57,12 +57,15 @@ class GstWidget(Gtk.Box):
     title = 'Video'
     author = 'TurBoss'
     version = '0.1.0'
-    date = '9/7/2017'
+    date = '09/07/2017'
     description = 'Video'
-
 
     def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+
+        self.gst_video = GstVideo()
+
+        self.gst_widget = self.gst_video.get_gtksink()
 
         self.connect('unmap', self._on_unmap)
         self.connect('map', self._on_map)
@@ -76,18 +79,27 @@ class GstWidget(Gtk.Box):
 
         self.stack = Gtk.Stack()
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-        self.stack.set_transition_duration(500)
+        self.stack.set_transition_duration(300)
 
         self.widget_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         button_start = Gtk.ToggleButton("Start")
-        button_start.connect("toggled", self._on_button_start_toggled, "1")
+        button_start.connect("toggled", self.on_button_start_toggled, "1")
 
-        self.widget_box.pack_end(button_start, False, True, 0)
+        button_stream = Gtk.ToggleButton("Stream")
+        button_stream.connect("toggled", self.on_button_stream_toggled, "1")
+
+        self.button_box.pack_start(button_start, False, True, 0)
+        self.button_box.pack_start(button_stream, False, True, 0)
+
+        self.widget_box.pack_start(self.gst_widget, False, True, 0)
+        self.widget_box.pack_start(self.button_box, False, True, 0)
 
         self.size_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
 
+        self.video_device = None
         devices = ["/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3"]
         default = "/dev/video0"
         combo = pref_widgets.PrefComboBox('VedioWidget', 'Device', devices, default)
@@ -111,11 +123,73 @@ class GstWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
+    def on_device_changed(self, widget, device):
+        self.video_device = device
+        print 'Device changed: ', device
+
+    def on_host_chaned(self, widget, host):
+        print 'Host changed: ', host
+
+    def on_port_changed(self, widget, port):
+        print 'Port changed: ', port
+
+    def on_stream_state_changed(self, widget, streaming):
+        print 'Streaming changed: ', streaming
+        self.streaming(streaming)
+
+    def add_config_field(self, feild):
+        box = pref_widgets.PrefFeild(feild, self.size_group)
+        self.config_box.pack_start(box, False, True, 5)
+
+    def on_settings_button_pressed(self, button):
+        if self.config_stack:
+            self.config_stack = False
+            self.stack.set_visible_child_name("widget")
+        else:
+            self.config_stack = True
+            self.stack.set_visible_child_name("config")
+
+    def on_button_start_toggled(self, button, name):
+        if button.get_active():
+            self.gst_video.play()
+        else:
+            self.gst_video.pause()
+
+    def on_button_stream_toggled(self, button, name):
+        if button.get_active():
+            self.gst_video.play()
+        else:
+            self.gst_video.pause()
+
+    def _on_map(self, *args, **kwargs):
+        """It seems this is called when the widget is becoming visible"""
+        self.gst_video.play()
+
+    def _on_unmap(self, *args, **kwargs):
+        """Hopefully called when this widget is hidden,
+        e.g. when the tab of a notebook has changed"""
+        self.gst_video.stop()
+
+    def streaming(self, enabled):
+        if enabled:
+            self.stream_thread.start()
+        else:
+            self.stream_thread.stop()
+
+
+class GstVideo:
+    def __init__(self):
+
         # Initialize empty GST related vars
 
-        self.pipeline = None
+        self.pipeline = Gst.Pipeline()
 
-        self.bus = None
+        self.bus = self.pipeline.get_bus()
+
+        self.bus.add_signal_watch()
+        self.bus.connect('message::eos', self._on_eos)
+        self.bus.connect('message::tag', self._on_tag)
+        self.bus.connect('message::error', self._on_error)
 
         self.camera_gtk_filter = None
         self.camera_stream_filter = None
@@ -139,41 +213,37 @@ class GstWidget(Gtk.Box):
 
         self.gtksink_widget = None
 
-        # Threading stream server
+        self._pipe_video()
 
-        self.stream_thread = ControlThread(1, "StreamThread", 1)
+    def stop(self):
+        self.pipeline.set_state(Gst.State.PAUSED)
+        # Actually, we stop the thing for real
+        self.pipeline.set_state(Gst.State.NULL)
 
-    def on_device_changed(self, widget, device):
-        self.video_device = device
-        print 'Device changed: ', device
+    def pause(self):
+        self.pipeline.set_state(Gst.State.NULL)
 
-    def on_host_chaned(self, widget, host):
-        print 'Host changed: ', host
+    def play(self):
+        self.pipeline.set_state(Gst.State.PLAYING)
 
-    def on_port_changed(self, widget, port):
-        print 'Port changed: ', port
+    def _on_eos(self, bus, msg):
+        log.info('on_eos')
 
-    def on_stream_state_changed(self, widget, streaming):
-        print 'Streaming changed: ', streaming
-        self.streaming(streaming)
+    def _on_tag(self, bus, msg):
+        taglist = msg.parse_tag()
+        log.info('on_tag:')
+        for key in taglist.keys():
+            log.info('\t{0} = {1}'.format(key, taglist[key]))
 
-    def add_config_field(self, feild):
-        box = pref_widgets.PrefFeild(feild, self.size_group)
-        self.config_box.pack_start(box, False, True, 5)
+    def _on_error(self, bus, msg):
+        error = msg.parse_error()
+        log.error('on_error: {0}'.format(error[1]))
 
-    def run(self):
+    def _pipe_video(self):
 
-        self.pipeline = Gst.Pipeline()
-
-        self.bus = self.pipeline.get_bus()
-
-        self.bus.add_signal_watch()
-        self.bus.connect('message::eos', self._on_eos)
-        self.bus.connect('message::tag', self._on_tag)
-        self.bus.connect('message::error', self._on_error)
-
-        self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
-        self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', self.video_device, str))
+        self.video_source = Gst.ElementFactory.make('videotestsrc', 'test-source')
+        # self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
+        # self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', self.video_device, str))
         self.pipeline.add(self.video_source)
 
         caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
@@ -195,7 +265,7 @@ class GstWidget(Gtk.Box):
         """
         self.video_parse = Gst.ElementFactory.make("h264parse", None)
         self.pipeline.add(self.video_parse)
-        
+
         self.video_mux = Gst.ElementFactory.make('oggmux', None)
         self.pipeline.add(self.video_mux)
         """
@@ -212,7 +282,7 @@ class GstWidget(Gtk.Box):
         self.tcp_sink = Gst.ElementFactory.make('tcpserversink', None)
         self.tcp_sink.set_property('host', '127.0.0.1')
         self.tcp_sink.set_property('port', 5000)
-        #self.pipeline.add(self.tcp_sink)
+        # self.pipeline.add(self.tcp_sink)
 
         self.tee = Gst.ElementFactory.make('tee', None)
         self.pipeline.add(self.tee)
@@ -239,78 +309,5 @@ class GstWidget(Gtk.Box):
         self.video_pay.link(self.tcp_sink)
         """
 
-        self.gtksink_widget = self.gtk_sink.get_property("widget")
-        self.gtksink_widget.show_all()
-
-        self.widget_box.pack_start(self.gtksink_widget, True, True, 0)
-
-    def stop(self):
-        self.pipeline.set_state(Gst.State.PAUSED)
-        # Actually, we stop the thing for real
-        self.pipeline.set_state(Gst.State.NULL)
-
-    def pause(self):
-        self.pipeline.set_state(Gst.State.NULL)
-
-    def resume(self):
-        self.pipeline.set_state(Gst.State.PLAYING)
-
-    def on_settings_button_pressed(self, button):
-        if self.config_stack:
-            self.config_stack = False
-            self.stack.set_visible_child_name("widget")
-        else:
-            self.config_stack = True
-            self.stack.set_visible_child_name("config")
-
-    def _on_button_start_toggled(self, button, name):
-        if button.get_active():
-            self.resume()
-        else:
-            self.pause()
-
-    def _on_map(self, *args, **kwargs):
-        """It seems this is called when the widget is becoming visible"""
-        self.run()
-
-    def _on_unmap(self, *args, **kwargs):
-        """Hopefully called when this widget is hidden,
-        e.g. when the tab of a notebook has changed"""
-        self.stop()
-
-    def _on_eos(self, bus, msg):
-        log.info('on_eos')
-
-    def _on_tag(self, bus, msg):
-        taglist = msg.parse_tag()
-        log.info('on_tag:')
-        for key in taglist.keys():
-            log.info('\t{0} = {1}'.format(key, taglist[key]))
-
-    def _on_error(self, bus, msg):
-        error = msg.parse_error()
-        log.error('on_error: {0}'.format(error[1]))
-
-    def streaming(self, enabled):
-        if enabled:
-            self.stream_thread.start()
-        else:
-            self.stream_thread.stop()
-
-
-class ControlThread(Thread):
-    def __init__(self, thread_id, name, counter):
-        Thread.__init__(self)
-        self.thread_id = thread_id
-        self.name = name
-        self.counter = counter
-
-        self.video_streamer = VideoHttpServer("HAZZY video stream", '0.0.0.0', 1337)
-
-    def run(self):
-        print("control RUN")
-        self.video_streamer.start()
-
-    def stop(self):
-        print("Control STOP")
-        self.video_streamer.stop()
+    def get_gtksink(self):
+        return self.gtk_sink.get_property("widget")
