@@ -32,13 +32,9 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
-gi.require_version('GstVideo', '1.0')
 
 from gi.repository import Gtk
 from gi.repository import Gst
-from gi.repository import GstVideo
-from gi.repository import GObject
-from gi.repository import GLib
 
 from widget_factory import pref_widgets
 from utilities import preferences as prefs
@@ -101,16 +97,16 @@ class GstWidget(Gtk.Box):
 
         self.video_device = None
         devices = ["/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3"]
-        default = "/dev/video0"
+        default = "/dev/video1"
         combo = pref_widgets.PrefComboBox('VedioWidget', 'Device', devices, default)
         combo.connect('value-changed', self.on_device_changed)
         self.add_config_field(combo)
 
-        entry = pref_widgets.PrefEntry('VedioWidget', 'Host', '127.0.0.1')
+        entry = pref_widgets.PrefEntry('VedioWidget', 'Host', '0.0.0.0')
         entry.connect('value-changed', self.on_host_chaned)
         # self.add_config_field(entry)
 
-        entry = pref_widgets.PrefEntry('VedioWidget', 'Port', '5000')
+        entry = pref_widgets.PrefEntry('VedioWidget', 'Port', '1337')
         entry.connect('value-changed', self.on_port_changed)
         # self.add_config_field(entry)
 
@@ -178,14 +174,8 @@ class GstWidget(Gtk.Box):
 
 
 class Pipeline(object):
-    '''
-    classdocs
-    '''
 
     def __init__(self):
-        '''
-        Constructor
-        '''
         self.pipe = Gst.Pipeline.new()
         self.bus = None
 
@@ -207,12 +197,29 @@ class Pipeline(object):
         self.pipe.set_state(Gst.State.PLAYING)
 
     def stop(self):
+        self.pipe.set_state(Gst.State.PAUSED)
         self.pipe.set_state(Gst.State.NULL)
+
+    def _on_eos(self, bus, msg):
+        log.info('on_eos')
+
+    def _on_tag(self, bus, msg):
+        taglist = msg.parse_tag()
+        log.info('on_tag:')
+        for key in taglist.keys():
+            log.info('\t{0} = {1}'.format(key, taglist[key]))
+
+    def _on_error(self, bus, msg):
+        error = msg.parse_error()
+        log.error('on_error: {0}'.format(error[1]))
 
     def _set_bus(self):
         self.bus = self.pipe.get_bus()
         self.bus.add_signal_watch()
         self.bus.enable_sync_message_emission()
+        self.bus.connect('message::eos', self._on_eos)
+        self.bus.connect('message::tag', self._on_tag)
+        self.bus.connect('message::error', self._on_error)
 
     def _make_pipeline(self):
         raise NotImplementedError()
@@ -221,27 +228,29 @@ class Pipeline(object):
 class VideoModule(Pipeline):
 
     def __init__(self):
-        self.video_device = '/dev/video0'
-        self.listen_addres = '127.0.0.1'
+        self.video_device = '/dev/video1'
+        self.listen_addres = '0.0.0.0'
         self.listen_port = 1337
 
         super(VideoModule, self).__init__()
 
-        self._link_pipe()
-
     def _make_pipeline(self):
 
-        self.video_source = Gst.ElementFactory.make('videotestsrc', 'test-source')
-        # self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
-        # self.video_source.set_property("device", self.video_device)
+        # self.video_source = Gst.ElementFactory.make('videotestsrc', 'test-source')
+        self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
+        self.video_source.set_property("device", self.video_device)
 
         self.video_converter = Gst.ElementFactory.make('videoconvert', None)
 
         self.video_scale = Gst.ElementFactory.make('videoscale', None)
 
-        caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
-        self.camera_filter = Gst.ElementFactory.make("capsfilter", "cam-filter")
-        self.camera_filter.set_property("caps", caps)
+        caps = Gst.Caps.from_string("video/x-raw,width=640,height=480")
+        self.camera_gtk_filter = Gst.ElementFactory.make("capsfilter", "cam-gtk-filter")
+        self.camera_gtk_filter.set_property("caps", caps)
+
+        caps = Gst.Caps.from_string("video/x-raw,width=640,height=480")
+        self.camera_tcp_filter = Gst.ElementFactory.make("capsfilter", "cam-tcp-filter")
+        self.camera_tcp_filter.set_property("caps", caps)
 
         self.video_enc = Gst.ElementFactory.make("theoraenc", None)
 
@@ -255,14 +264,15 @@ class VideoModule(Pipeline):
 
         self.tee = Gst.ElementFactory.make('tee', None)
 
-        self.queue_1 = Gst.ElementFactory.make('queue', "GtkSink")
+        self.queue_1 = Gst.ElementFactory.make('queue', "gtk-sink")
 
-        self.queue_2 = Gst.ElementFactory.make('queue', "StreamSink")
+        self.queue_2 = Gst.ElementFactory.make('queue', "stream-sink")
 
         for ele in (self.video_source,
                     self.video_converter,
                     self.video_scale,
-                    self.camera_filter,
+                    self.camera_gtk_filter,
+                    self.camera_tcp_filter,
                     self.video_enc,
                     self.video_mux,
                     self.gtk_sink,
@@ -273,22 +283,25 @@ class VideoModule(Pipeline):
 
             self.pipe.add(ele)
 
-    def _link_pipe(self):
+        """
+        gst-launch-1.0 v4l2src device=/dev/video1 \
+         ! video/x-raw,width=320,height=240 ! theoraenc ! oggmux\
+         ! tcpserversink host=127.0.0.1 port=1337
+        """
 
-        self.video_source.link(self.tee)
+        self.video_source.link(self.camera_gtk_filter)
+        self.camera_gtk_filter.link(self.video_converter)
+        self.video_converter.link(self.tee)
 
         self.tee.link(self.queue_1)
+        self.queue_1.link(self.gtk_sink)
 
-        self.queue_1.link(self.video_converter)
-        self.video_converter.link(self.gtk_sink)
-
+        """
         self.tee.link(self.queue_2)
-        self.queue_2.link(self.video_converter)
-        self.video_converter.link(self.video_scale)
-        self.video_scale.link(self.camera_filter)
-        self.camera_filter.link(self.video_enc)
+        self.queue_2.link(self.video_enc)
         self.video_enc.link(self.video_mux)
         self.video_mux.link(self.tcp_sink)
+        """
 
     def get_gtksink(self):
         return self.gtk_sink.get_property("widget")
