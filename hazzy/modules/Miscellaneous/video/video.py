@@ -222,17 +222,18 @@ class VideoModule(Pipeline):
 
     def __init__(self):
         self.video_device = '/dev/video0'
+        self.listen_addres = '127.0.0.1'
+        self.listen_port = 1337
 
         super(VideoModule, self).__init__()
 
         self._link_pipe()
 
-
     def _make_pipeline(self):
 
-        # self.video_source = Gst.ElementFactory.make('videotestsrc', 'test-source')
-        self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
-        self.video_source.set_property("device", self.video_device)
+        self.video_source = Gst.ElementFactory.make('videotestsrc', 'test-source')
+        # self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
+        # self.video_source.set_property("device", self.video_device)
 
         self.video_converter = Gst.ElementFactory.make('videoconvert', None)
 
@@ -249,8 +250,8 @@ class VideoModule(Pipeline):
         self.gtk_sink = Gst.ElementFactory.make('gtksink', None)
 
         self.tcp_sink = Gst.ElementFactory.make('tcpserversink', None)
-        self.tcp_sink.set_property('host', '127.0.0.1')
-        self.tcp_sink.set_property('port', 1337)
+        self.tcp_sink.set_property('host', self.listen_addres)
+        self.tcp_sink.set_property('port', self.listen_port)
 
         self.tee = Gst.ElementFactory.make('tee', None)
 
