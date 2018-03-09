@@ -32,15 +32,17 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
+gi.require_version('GstVideo', '1.0')
 
 from gi.repository import Gtk
 from gi.repository import Gst
+from gi.repository import GstVideo
+from gi.repository import GObject
+from gi.repository import GLib
 
 from widget_factory import pref_widgets
 from utilities import preferences as prefs
 from utilities import logger
-
-from stream import VideoHttpServer
 
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
@@ -49,11 +51,10 @@ PYDIR = os.path.abspath(os.path.dirname(__file__))
 log = logger.get(__name__)
 
 Gst.init(None)
-Gst.init_check(None)
+GObject.threads_init()
 
 
 class GstWidget(Gtk.Box):
-
     title = 'Video'
     author = 'TurBoss'
     version = '0.1.0'
@@ -63,9 +64,9 @@ class GstWidget(Gtk.Box):
     def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
-        self.gst_video = GstVideo()
+        self.gst_video = VideoModule()
 
-        self.gst_widget = self.gst_video.get_gtksink()
+        # self.gst_widget = self.gst_video.get_gtksink()
 
         self.connect('unmap', self._on_unmap)
         self.connect('map', self._on_map)
@@ -85,19 +86,19 @@ class GstWidget(Gtk.Box):
         self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        button_start = Gtk.ToggleButton("Start")
+        button_start = Gtk.ToggleButton(label="Start")
         button_start.connect("toggled", self.on_button_start_toggled, "1")
 
-        button_stream = Gtk.ToggleButton("Stream")
+        button_stream = Gtk.ToggleButton(label="Stream")
         button_stream.connect("toggled", self.on_button_stream_toggled, "1")
 
         self.button_box.pack_start(button_start, False, True, 0)
         self.button_box.pack_start(button_stream, False, True, 0)
 
-        self.widget_box.pack_start(self.gst_widget, False, True, 0)
+        # self.widget_box.pack_start(self.gst_widget, False, True, 0)
         self.widget_box.pack_start(self.button_box, False, True, 0)
 
-        self.size_group = Gtk.SizeGroup(Gtk.SizeGroupMode.HORIZONTAL)
+        self.size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
         self.video_device = None
         devices = ["/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3"]
@@ -151,19 +152,19 @@ class GstWidget(Gtk.Box):
 
     def on_button_start_toggled(self, button, name):
         if button.get_active():
-            self.gst_video.play()
+            self.gst_video.run()
         else:
-            self.gst_video.pause()
+            self.gst_video.stop()
 
     def on_button_stream_toggled(self, button, name):
         if button.get_active():
-            self.gst_video.play()
+            self.gst_video.run()
         else:
-            self.gst_video.pause()
+            self.gst_video.stop()
 
     def _on_map(self, *args, **kwargs):
         """It seems this is called when the widget is becoming visible"""
-        self.gst_video.play()
+        self.gst_video.run()
 
     def _on_unmap(self, *args, **kwargs):
         """Hopefully called when this widget is hidden,
@@ -177,12 +178,20 @@ class GstWidget(Gtk.Box):
             self.stream_thread.stop()
 
 
-class GstVideo:
+class Settings:
+    stream_location = 'https://127.0.0.1:1337/video.mpd'
+    speed_preset = 3
+    amplification = 4
+
+
+class VideoModule:
     def __init__(self):
 
-        # Initialize empty GST related vars
+        self.mainloop = GLib.MainLoop()
 
         self.pipeline = Gst.Pipeline()
+
+        self.clock = self.pipeline.get_pipeline_clock()
 
         self.bus = self.pipeline.get_bus()
 
@@ -191,40 +200,61 @@ class GstVideo:
         self.bus.connect('message::tag', self._on_tag)
         self.bus.connect('message::error', self._on_error)
 
-        self.camera_gtk_filter = None
-        self.camera_stream_filter = None
+        rates = [
+            ['low', 'video/x-raw, width=320, height=240', 500, 3],
+            ['med', 'video/x-raw, width=640, height=480', 1500, 3],
+            ['high', 'video/x-raw, width=1024, height=768', 5000, 4]
+        ]
 
-        self.video_device = None
-        self.video_source = None
-        self.video_enc = None
-        self.video_parse = None
-        self.video_mux = None
-        self.video_pay = None
-        self.video_converter = None
+        # Video input
+        self.malm([
+            ['videotestsrc', None, {}],
+            ['capsfilter', None, {'caps': 'video/x-raw, width=320, height=240'}],
+            ['videoconvert', None, {}],
+            ['deinterlace', None, {}],
+            ['videorate', None, {}],
+            ['capsfilter', None, {'caps': 'video/x-raw, framerate=30000/1001'}],
+            ['tee', 'vinput', {}]
+        ])
 
-        self.gtk_sink = None
-        self.udp_sink = None
-        self.tcp_sink = None
+        # Create each encoder, muxer, and rtmpsink.
+        for rate in rates:
+            self.malm([
+                ['queue', 'v{}'.format(rate[0]), {'max-size-bytes': 104857600}],
+                ['videoscale', None, {}],
+                ['capsfilter', None, {'caps': rate[1]}],
+                ['x264enc', None, {
+                    'speed-preset': Settings.speed_preset,
+                    'tune': 'zerolatency',
+                    'bitrate': rate[2],
+                    'threads': rate[3],
+                    'option-string': 'scenecut=0'
+                }],
+                ['capsfilter', None, {'caps': 'video/x-h264, profile=baseline'}],
+                ['h264parse', None, {}],
+                ['flvmux', 'm{}'.format(rate[0]), {'streamable': True}],
+                ['rtmpsink', None, {'location': Settings.stream_location + rate[0]}]
+            ])
 
-        self.tee = None
+            self.vinput.link(getattr(self, 'v{}'.format(rate[0])))
 
-        self.queue_1 = None
-        self.queue_2 = None
-
-        self.gtksink_widget = None
-
-        self._pipe_video()
+    def run(self):
+        self.pipeline.set_state(Gst.State.PLAYING)
+        GLib.timeout_add(2 * 1000, self.do_keyframe, None)
+        self.mainloop.run()
 
     def stop(self):
-        self.pipeline.set_state(Gst.State.PAUSED)
-        # Actually, we stop the thing for real
+        print('Exiting...')
+        Gst.debug_bin_to_dot_file(self.pipeline, Gst.DebugGraphDetails.ALL, 'stream')
         self.pipeline.set_state(Gst.State.NULL)
+        self.mainloop.quit()
 
-    def pause(self):
-        self.pipeline.set_state(Gst.State.NULL)
+    def do_keyframe(self, user_data):
+        # Forces a keyframe on all video encoders
+        event = GstVideo.video_event_new_downstream_force_key_unit(self.clock.get_time(), 0, 0, True, 0)
+        self.pipeline.send_event(event)
 
-    def play(self):
-        self.pipeline.set_state(Gst.State.PLAYING)
+        return True
 
     def _on_eos(self, bus, msg):
         log.info('on_eos')
@@ -241,48 +271,35 @@ class GstVideo:
 
     def _pipe_video(self):
 
-        self.video_source = Gst.ElementFactory.make('videotestsrc', 'test-source')
-        # self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
-        # self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', self.video_device, str))
+        # self.video_source = Gst.ElementFactory.make('videotestsrc', 'test-source')
+        self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
+        self.video_source.set_property("device", prefs.get('VedioWidget', 'Device', self.video_device, str))
         self.pipeline.add(self.video_source)
-
-        caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
-        self.camera_gtk_filter = Gst.ElementFactory.make("capsfilter", "gtk-filter")
-        self.camera_gtk_filter.set_property("caps", caps)
-        self.pipeline.add(self.camera_gtk_filter)
-
-        caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
-        self.camera_stream_filter = Gst.ElementFactory.make("capsfilter", "stream-filter")
-        self.camera_stream_filter.set_property("caps", caps)
-        self.pipeline.add(self.camera_stream_filter)
 
         self.video_converter = Gst.ElementFactory.make('videoconvert', None)
         self.pipeline.add(self.video_converter)
 
-        self.video_enc = Gst.ElementFactory.make("vp8enc", None)
-        self.pipeline.add(self.video_enc)
+        self.video_scale = Gst.ElementFactory.make('videoscale', None)
+        self.pipeline.add(self.video_scale)
 
-        """
-        self.video_parse = Gst.ElementFactory.make("h264parse", None)
-        self.pipeline.add(self.video_parse)
+        caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
+        self.camera_filter = Gst.ElementFactory.make("capsfilter", "gtk-filter")
+        self.camera_filter.set_property("caps", caps)
+        self.pipeline.add(self.camera_filter)
+
+        self.video_enc = Gst.ElementFactory.make("theoraenc", None)
+        self.pipeline.add(self.video_enc)
 
         self.video_mux = Gst.ElementFactory.make('oggmux', None)
         self.pipeline.add(self.video_mux)
-        """
-
-        self.video_pay = Gst.ElementFactory.make("gdppay", None)
-        self.pipeline.add(self.video_pay)
-
-        self.video_converter = Gst.ElementFactory.make('videoconvert', None)
-        self.pipeline.add(self.video_converter)
 
         self.gtk_sink = Gst.ElementFactory.make('gtksink', None)
         self.pipeline.add(self.gtk_sink)
 
         self.tcp_sink = Gst.ElementFactory.make('tcpserversink', None)
         self.tcp_sink.set_property('host', '127.0.0.1')
-        self.tcp_sink.set_property('port', 5000)
-        # self.pipeline.add(self.tcp_sink)
+        self.tcp_sink.set_property('port', 1337)
+        self.pipeline.add(self.tcp_sink)
 
         self.tee = Gst.ElementFactory.make('tee', None)
         self.pipeline.add(self.tee)
@@ -293,21 +310,39 @@ class GstVideo:
         self.queue_2 = Gst.ElementFactory.make('queue', "StreamSink")
         self.pipeline.add(self.queue_2)
 
-        self.video_source.link(self.tee)
+        self.video_source.link(self.video_converter)
+        self.video_converter.link(self.video_scale)
+        self.video_scale.link(self.camera_filter)
+        self.camera_filter.link(self.tee)
 
         self.tee.link(self.queue_1)
-        self.queue_1.link(self.video_converter)
-        self.video_converter.link(self.camera_gtk_filter)
-        self.camera_gtk_filter.link(self.gtk_sink)
+        self.queue_1.link(self.gtk_sink)
 
-        """
         self.tee.link(self.queue_2)
-        self.queue_2.link(self.video_converter)
-        self.video_converter.link(self.camera_stream_filter)
-        self.camera_stream_filter.link(self.video_enc)
-        self.video_enc.link(self.video_pay)
-        self.video_pay.link(self.tcp_sink)
-        """
+        self.queue_2.link(self.tcp_sink)
 
     def get_gtksink(self):
         return self.gtk_sink.get_property("widget")
+
+    def malm(self, to_add):
+        # Make-add-link multi
+        prev = None
+        for n in to_add:
+            element = Gst.ElementFactory.make(n[0], n[1])
+
+            if not element:
+                raise Exception('cannot create element {}'.format(n[0]))
+
+            if n[1]: setattr(self, n[1], element)
+
+            for p, v in n[2].items():
+                if p == 'caps':
+                    caps = Gst.Caps.from_string(v)
+                    element.set_property('caps', caps)
+                else:
+                    element.set_property(p, v)
+
+            self.pipeline.add(element)
+            if prev: prev.link(element)
+
+            prev = element

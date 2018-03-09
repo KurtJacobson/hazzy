@@ -124,3 +124,12 @@ class VideoHttpServer:
     def stop(self):
         print("stoping HTTP server")
         self.server.serve_stop()
+
+def main():
+
+    video = VideoHttpServer('test', '127.0.0.1', 1337)
+    video.start()
+
+
+if __name__ == "__main__":
+    main()
