@@ -31,12 +31,14 @@ import time
 import gi
 
 from gi.repository import GObject
+from gi.repository import GLib
 
 from utilities import ini_info
 from utilities import notifications
 
 # Setup logging
 from utilities import logger
+
 log = logger.get(__name__)
 
 
@@ -120,7 +122,7 @@ class Status(GObject.GObject):
         self.on_changed('stat.mcodes', self._update_active_mcodes)
         self.on_changed('stat.file', self._update_file)
 
-        GObject.timeout_add(50, self._periodic)
+        GLib.timeout_add(50, self._periodic)
 
     # This allows monitoring any of the linuxcnc.stat attributes
     # and connecting a callback to be called on attribute value change
