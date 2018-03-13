@@ -1,1 +1,1 @@
-from video import Image2Gcode as Widget
+from i2g import I2GWidget as Widget

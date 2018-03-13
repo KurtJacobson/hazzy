@@ -1,0 +1,4 @@
+name: 'I2G'
+module: 'Image2Gcode'
+class: 'I2GWidget'
+image: 'i2g.png'
