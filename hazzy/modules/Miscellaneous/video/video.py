@@ -95,22 +95,24 @@ class GstWidget(Gtk.Box):
 
         self.size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
-        self.video_device = None
         devices = ["/dev/video0", "/dev/video1", "/dev/video2", "/dev/video3"]
-        default = "/dev/video1"
-        combo = pref_widgets.PrefComboBox('VedioWidget', 'Device', devices, default)
+        default = "/dev/video0"
+
+        self.video_device = default
+
+        combo = pref_widgets.PrefComboBox('VideoWidget', 'Device', devices, default)
         combo.connect('value-changed', self.on_device_changed)
         self.add_config_field(combo)
 
-        entry = pref_widgets.PrefEntry('VedioWidget', 'Host', '0.0.0.0')
+        entry = pref_widgets.PrefEntry('VideoWidget', 'Host', '0.0.0.0')
         entry.connect('value-changed', self.on_host_chaned)
         # self.add_config_field(entry)
 
-        entry = pref_widgets.PrefEntry('VedioWidget', 'Port', '1337')
+        entry = pref_widgets.PrefEntry('VideoWidget', 'Port', '1337')
         entry.connect('value-changed', self.on_port_changed)
         # self.add_config_field(entry)
 
-        switch = pref_widgets.PrefSwitch('VedioWidget', 'Stream', True)
+        switch = pref_widgets.PrefSwitch('VideoWidget', 'Stream', True)
         switch.connect('value-changed', self.on_stream_state_changed)
         # self.add_config_field(switch)
 
@@ -121,16 +123,16 @@ class GstWidget(Gtk.Box):
 
     def on_device_changed(self, widget, device):
         self.video_device = device
-        print 'Device changed: ', device
+        log.debug('Device changed: {}'.format(device))
 
     def on_host_chaned(self, widget, host):
-        print 'Host changed: ', host
+        log.debug('Host changed: {}'.format(host))
 
     def on_port_changed(self, widget, port):
-        print 'Port changed: ', port
+        log.debug('Port changed: {}'.format(port))
 
     def on_stream_state_changed(self, widget, streaming):
-        print 'Streaming changed: ', streaming
+        log.debug('Stream changed: {}'.format(streaming))
         self.streaming(streaming)
 
     def add_config_field(self, feild):
@@ -228,80 +230,69 @@ class Pipeline(object):
 class VideoModule(Pipeline):
 
     def __init__(self):
-        self.video_device = '/dev/video1'
-        self.listen_addres = '0.0.0.0'
+        self.video_device = '/dev/video0'
+        self.listen_address = '0.0.0.0'
         self.listen_port = 1337
 
         super(VideoModule, self).__init__()
 
     def _make_pipeline(self):
+        factory = self.pipe.get_factory()
 
-        # self.video_source = Gst.ElementFactory.make('videotestsrc', 'test-source')
+        # self.video_source = factory.make('videotestsrc', 'test-source')
         self.video_source = Gst.ElementFactory.make('v4l2src', 'v4l2-source')
         self.video_source.set_property("device", self.video_device)
 
-        self.video_converter = Gst.ElementFactory.make('videoconvert', None)
+        self.video_conv1 = factory.make('videoconvert', "gtk-conv")
+        self.video_conv2 = factory.make('videoconvert', "tcp-conv")
 
-        self.video_scale = Gst.ElementFactory.make('videoscale', None)
+        self.video_scale = factory.make('videoscale', None)
 
-        caps = Gst.Caps.from_string("video/x-raw,width=640,height=480")
-        self.camera_gtk_filter = Gst.ElementFactory.make("capsfilter", "cam-gtk-filter")
-        self.camera_gtk_filter.set_property("caps", caps)
+        caps = Gst.Caps.from_string("video/x-raw,width=320,height=240")
+        self.camera_filter = factory.make("capsfilter", "cam-gtk-filter")
+        self.camera_filter.set_property("caps", caps)
 
-        caps = Gst.Caps.from_string("video/x-raw,width=640,height=480")
-        self.camera_tcp_filter = Gst.ElementFactory.make("capsfilter", "cam-tcp-filter")
-        self.camera_tcp_filter.set_property("caps", caps)
+        self.video_enc = factory.make("theoraenc", None)
 
-        self.video_enc = Gst.ElementFactory.make("theoraenc", None)
+        self.video_mux = factory.make('oggmux', None)
 
-        self.video_mux = Gst.ElementFactory.make('oggmux', None)
+        self.gtk_sink = factory.make('gtksink', None)
 
-        self.gtk_sink = Gst.ElementFactory.make('gtksink', None)
-
-        self.tcp_sink = Gst.ElementFactory.make('tcpserversink', None)
-        self.tcp_sink.set_property('host', self.listen_addres)
+        self.tcp_sink = factory.make('tcpserversink', None)
+        self.tcp_sink.set_property('host', self.listen_address)
         self.tcp_sink.set_property('port', self.listen_port)
 
-        self.tee = Gst.ElementFactory.make('tee', None)
+        self.tee = factory.make('tee', None)
 
-        self.queue_1 = Gst.ElementFactory.make('queue', "gtk-sink")
+        self.queue_1 = factory.make('queue', "gtk-sink")
 
-        self.queue_2 = Gst.ElementFactory.make('queue', "stream-sink")
+        self.queue_2 = factory.make('queue', "tcp-sink")
 
         for ele in (self.video_source,
-                    self.video_converter,
-                    self.video_scale,
-                    self.camera_gtk_filter,
-                    self.camera_tcp_filter,
-                    self.video_enc,
-                    self.video_mux,
-                    self.gtk_sink,
-                    self.tcp_sink,
+                    self.camera_filter,
                     self.tee,
                     self.queue_1,
-                    self.queue_2):
-
+                    self.video_conv1,
+                    self.gtk_sink,
+                    self.queue_2,
+                    self.video_conv2,
+                    self.video_enc,
+                    self.video_mux,
+                    self.tcp_sink):
             self.pipe.add(ele)
 
-        """
-        gst-launch-1.0 v4l2src device=/dev/video1 \
-         ! video/x-raw,width=320,height=240 ! theoraenc ! oggmux\
-         ! tcpserversink host=127.0.0.1 port=1337
-        """
-
-        self.video_source.link(self.camera_gtk_filter)
-        self.camera_gtk_filter.link(self.video_converter)
-        self.video_converter.link(self.tee)
+        self.video_source.link(self.camera_filter)
+        self.camera_filter.link(self.tee)
 
         self.tee.link(self.queue_1)
-        self.queue_1.link(self.gtk_sink)
+        self.queue_1.link(self.video_conv1)
+        self.video_conv1.link(self.gtk_sink)
 
-        """
         self.tee.link(self.queue_2)
-        self.queue_2.link(self.video_enc)
+        self.queue_2.link(self.video_conv2)
+        self.video_conv2.link(self.video_enc)
         self.video_enc.link(self.video_mux)
         self.video_mux.link(self.tcp_sink)
-        """
 
     def get_gtksink(self):
         return self.gtk_sink.get_property("widget")
