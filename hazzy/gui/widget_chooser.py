@@ -44,7 +44,10 @@ WIDGET_DIR = os.path.join(HAZZYDIR, 'hazzy/modules')
 WIDGET_DIRS = [WIDGET_DIR, os.environ['CONFIG_DIR']]
 
 from widget_factory import entry_widgets
+from utilities import logger
 
+# Setup logging
+log = logger.get(__name__)
 class WidgetChooser(Gtk.Popover):
     def __init__(self, screen_stack):
         Gtk.Popover.__init__(self)
@@ -132,6 +135,8 @@ class WidgetChooser(Gtk.Popover):
                     package = path[1]
 
                 info['import_str'] = '.'.join(path)
+
+                log.debug("LOADING: {} in {} category".format(package, category))
 
                 if not category in categories.keys():
                     categories[category] = {}
