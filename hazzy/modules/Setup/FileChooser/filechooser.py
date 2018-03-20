@@ -754,9 +754,9 @@ class FileChooser(Gtk.Bin):
 
     def on_remove_bookmark_button_release_event(self, widget, data=None):
         row = self.bookmark_listbox.get_selected_row()
-        path = row.get_tooltip_text()
-        if path is None:
+        if row is None:
             return
+        path = row.get_tooltip_text()
         self.bookmark_listbox.remove(row)
         self.bookmarks.remove(path)
 
