@@ -59,5 +59,7 @@ pages:
 - Installing: installing.md
 - Utilities:
   - Status Monitor: utilities/status_monitor.md
-- Modules:
-  - CamView: modules/video.md
+- Widgets:
+  - Miscellaneous:
+    - Video: widgets/miscellaneous/video.md
+    - Terminal: widgets/miscellaneous/terminal.md
