@@ -57,6 +57,7 @@ markdown_extensions:
 pages:
 - Home: index.md
 - Installing: installing.md
+- Dependencies: dependencies.md
 - Utilities:
   - Status Monitor: utilities/status_monitor.md
 - Widgets:
