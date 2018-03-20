@@ -25,10 +25,7 @@ import os
 
 import gettext
 
-try:
-    from PIL import Image
-except Exception as e:
-    import Image
+from PIL import Image
 
 import numpy.core
 
@@ -83,8 +80,27 @@ class I2GWidget(Gtk.Box):
         self.stack.set_transition_duration(300)
 
         self.widget_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.unit_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        self.unit_label = Gtk.Label(label="Unit system")
+
+        self.unit_store = Gtk.ListStore(int, str, str)
+
+        self.unit_store.append([0, "Inches", "G20"])
+        self.unit_store.append([1, "Milimeters", "G21"])
+
+        self.unit_combo = Gtk.ComboBox.new_with_model(self.unit_store)
+        self.unit_combo.set_entry_text_column(1)
+
+        self.unit_renderer_text = Gtk.CellRendererText()
+        self.unit_combo.pack_start(self.unit_renderer_text, True)
+        self.unit_combo.add_attribute(self.unit_renderer_text, "text", 1)
+
+        self.unit_box.pack_start(self.unit_label, False, False, 0)
+        self.unit_box.pack_start(self.unit_combo, False, False, 0)
+
+        self.widget_box.pack_start(self.unit_box, False, False, 0)
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
         self.stack.add_titled(self.config_box, "config", "Widget Config")
