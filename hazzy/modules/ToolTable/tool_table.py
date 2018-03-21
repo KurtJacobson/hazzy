@@ -57,6 +57,10 @@ log = logger.get(__name__)
 class ToolTable(Gtk.Box):
 
     title = "Tool Table"
+    author = 'Kurt Jacobson'
+    version = '0.1.0'
+    date = '03/21/2018'
+    description = 'Tooltable viewer/editor'
 
     def __init__(self, widget_window):
         Gtk.Box.__init__(self)
@@ -302,16 +306,3 @@ class ToolTable(Gtk.Box):
             self.treeview.set_cursor(row)
         else:
             log.warning("Did not find tool {0} in the tool table".format(toolnum))
-
-
-def main():
-    Gtk.main()
-
-if __name__ == '__main__':
-    win = Gtk.Window()
-    win.connect('destroy', Gtk.main_quit)
-    tt = ToolTable()
-    tt.load_tool_table()
-    win.add(tt)
-    win.show_all()
-    main()
