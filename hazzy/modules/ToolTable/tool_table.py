@@ -44,6 +44,7 @@ import linuxcnc
 
 # Setup logging
 from utilities import status
+from utilities import command
 from utilities import ini_info
 from utilities import entry_eval
 from utilities.constants import Paths
@@ -69,12 +70,14 @@ class ToolTable(Gtk.Box):
         self.tooltable = self.builder.get_object('tooltable')
         self.add(self.tooltable)
 
+        self.treeview = self.builder.get_object('tool_treeview')
         self.model = self.builder.get_object('tool_liststore')
 
         self.tool_table_file = ini_info.get_tool_table_file()
         self.load_tool_table()
         self.use_touchpad = False
 
+        status.on_changed('stat.tool_in_spindle', lambda s, tn: self.highlight_tool(tn))
 
 # =========================================================
 # ToolTable handlers
@@ -181,11 +184,12 @@ class ToolTable(Gtk.Box):
         for row in rows:
             self.model.remove(self.model.get_iter(row))
 
-    def on_change_to_selected_tool_clicked(self, widget, data=None):
+    def change_to_selected_tool(self, widget=None):
         selected = self.get_selected_tools()
         if len(selected) == 1:
             tool_num = selected[0]
-            self.issue_mdi('M6 T{0} G43'.format(tool_num))
+            command.issue_mdi('M6 T{0} G43'.format(tool_num))
+            self.treeview.get_selection().unselect_all()
         else:
             num = len(selected)
             msg = "{0} tools selected, you must select exactly one".format(num)
@@ -295,7 +299,7 @@ class ToolTable(Gtk.Box):
                 break
         if found:
             self.model[row][0] = 1 # Check the box
-            self.widgets.tooltable_treeview.set_cursor(row)
+            self.treeview.set_cursor(row)
         else:
             log.warning("Did not find tool {0} in the tool table".format(toolnum))
 

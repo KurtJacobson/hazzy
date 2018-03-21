@@ -9,6 +9,13 @@
     <property name="use_fallback">True</property>
     <property name="icon_size">3</property>
   </object>
+  <object class="GtkImage" id="icon_change_tool">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">system-run-symbolic</property>
+    <property name="use_fallback">True</property>
+    <property name="icon_size">3</property>
+  </object>
   <object class="GtkImage" id="icon_down">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -238,6 +245,38 @@
             <property name="position">8</property>
           </packing>
         </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="orientation">vertical</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">9</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="change_to_selected">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Change to selected tool</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="image">icon_change_tool</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="change_to_selected_tool" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">10</property>
+          </packing>
+        </child>
       </object>
       <packing>
         <property name="expand">False</property>
@@ -266,7 +305,7 @@
         <property name="propagate_natural_width">True</property>
         <property name="propagate_natural_height">True</property>
         <child>
-          <object class="GtkTreeView">
+          <object class="GtkTreeView" id="tool_treeview">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="hexpand">True</property>
