@@ -44,9 +44,9 @@ import linuxcnc
 
 # Setup logging
 from utilities import status
-from utilities.constants import Paths
+from utilities import ini_info
 from utilities import entry_eval
-#from utilities.getiniinfo import GetIniInfo
+from utilities.constants import Paths
 
 # Setup logging
 from utilities import logger
@@ -71,7 +71,7 @@ class ToolTable(Gtk.Box):
 
         self.model = self.builder.get_object('tool_liststore')
 
-        self.tool_table = os.path.join(PYDIR, 'tool.tbl')
+        self.tool_table_file = ini_info.get_tool_table_file()
         self.load_tool_table()
         self.use_touchpad = False
 
@@ -85,7 +85,7 @@ class ToolTable(Gtk.Box):
     def load_tool_table(self, fn = None):
         # If no valid tool table given
         if fn is None:
-            fn = self.tool_table
+            fn = self.tool_table_file
         if not os.path.exists(fn):
             log.warning("Tool table does not exist")
             return
@@ -139,7 +139,7 @@ class ToolTable(Gtk.Box):
     # More or less copied from Chris Morley's GladeVcp tooledit widget
     def save_tool_table(self, fn=None):
         if fn is None:
-            fn = self.tool_table
+            fn = self.tool_table_file
         if fn is None:
             return
         log.debug("Saving tool table as: {0}".format(fn))
