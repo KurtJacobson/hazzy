@@ -104,13 +104,14 @@ class LcncStats(Resource):
     def get(self):
         self.stat.poll()
 
-        a_dict = dict()
+        jdict = None
+
         for a in dir(self.stat):
             if not a.startswith('_') and not callable(getattr(self.stat, a)):
                 val = getattr(self.stat, a)
-                jdic = jsonify(val)
+                jdict = jsonify(val)
 
-        return jdic
+        return jdict
 
 
 api.add_resource(LcncStats, '/stats')
