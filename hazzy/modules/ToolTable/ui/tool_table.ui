@@ -287,6 +287,9 @@
         <child>
           <object class="GtkTreeViewColumn" id="tool_pocket">
             <property name="title" translatable="yes">Pocket</property>
+            <property name="clickable">True</property>
+            <property name="sort_indicator">True</property>
+            <property name="sort_column_id">2</property>
             <child>
               <object class="GtkCellRendererText" id="cell_tool_pocket">
                 <property name="editable">True</property>
@@ -303,6 +306,9 @@
         <child>
           <object class="GtkTreeViewColumn" id="tool_dia">
             <property name="title" translatable="yes">Diameter</property>
+            <property name="clickable">True</property>
+            <property name="sort_indicator">True</property>
+            <property name="sort_column_id">3</property>
             <child>
               <object class="GtkCellRendererText" id="cell_tool_dia">
                 <property name="editable">True</property>
@@ -319,6 +325,9 @@
         <child>
           <object class="GtkTreeViewColumn" id="tool_z_offset">
             <property name="title" translatable="yes">Z Offset</property>
+            <property name="clickable">True</property>
+            <property name="sort_indicator">True</property>
+            <property name="sort_column_id">4</property>
             <child>
               <object class="GtkCellRendererText" id="cell_tool_z_offset">
                 <property name="editable">True</property>
