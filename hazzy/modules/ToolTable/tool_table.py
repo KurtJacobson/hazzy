@@ -19,7 +19,7 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 # Description:
-#   TBA
+#   Tooltable viewer/editor.
 
 import os
 import sys
@@ -39,6 +39,8 @@ if HAZZYDIR not in sys.path:
     sys.path.insert(1, HAZZYDIR)
 
 UIDIR = os.path.join(PYDIR, 'ui')
+
+import linuxcnc
 
 # Setup logging
 from utilities import status
@@ -62,18 +64,10 @@ class ToolTable(Gtk.Box):
         self.builder.add_from_file(os.path.join(UIDIR, 'tool_table.ui'))
         self.builder.connect_signals(self)
 
-        self.treeview = self.builder.get_object('treeview')
-        self.toolbar = self.builder.get_object('toolbar')
-        self.liststore = self.builder.get_object('tool_liststore')
+        self.tooltable = self.builder.get_object('tooltable')
+        self.add(self.tooltable)
 
-        box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-
-        #box.pack_start(self.toolbar, True, False, 0)
-        #box.pack_start(self.treeview, True, False, 0)
-
-        #self.add(box)
-
-        self.add(self.treeview)
+        self.model = self.builder.get_object('tool_liststore')
 
         self.tool_table = os.path.join(PYDIR, 'tool.tbl')
         self.load_tool_table()
@@ -93,7 +87,7 @@ class ToolTable(Gtk.Box):
         if not os.path.exists(fn):
             log.warning("Tool table does not exist")
             return
-        self.liststore.clear()  # Clear any existing data
+        self.model.clear()  # Clear any existing data
         log.debug("Loading tool table: {0}".format(fn))
         with open(fn, "r") as tf:
             tool_table = tf.readlines()
@@ -148,7 +142,7 @@ class ToolTable(Gtk.Box):
             return
         log.debug("Saving tool table as: {0}".format(fn))
         fn = open(fn, "w")
-        for row in self.liststore:
+        for row in self.model:
             values = [value for value in row]
             line = ""
             for num,i in enumerate(values):
@@ -167,25 +161,23 @@ class ToolTable(Gtk.Box):
         linuxcnc.command().load_tool_table()
 
     def add_tool(self, data=None):
-        self.liststore.append(data)
+        self.model.append(data)
 
     def get_selected_tools(self):
-        model = self.liststore
         tools = []
-        for row in range(len(model)):
-            if model[row][0] == 1:
-                tools.append(int(model[row][1]))
+        for row in range(len(self.model)):
+            if self.model[row][0] == 1:
+                tools.append(int(self.model[row][1]))
         return tools
 
     def on_delete_selected_clicked(self, widget):
-        model = self.liststore
         rows = []
-        for row in range(len(model)):
-            if model[row][0] == 1:
+        for row in range(len(self.model)):
+            if self.model[row][0] == 1:
                 rows.append(row)
         rows.reverse()  # So we don't invalidate iters
         for row in rows:
-            model.remove(model.get_iter(row))
+            self.model.remove(self.model.get_iter(row))
 
     def on_change_to_selected_tool_clicked(self, widget, data=None):
         selected = self.get_selected_tools()
@@ -199,7 +191,7 @@ class ToolTable(Gtk.Box):
             # self._show_message(["ERROR", msg])
 
     def on_add_tool_clicked(self, widget, data=None):
-        num = len(self.liststore) + 1
+        num = len(self.model) + 1
         array = [0, num, num, '0.0000', '0.0000', 'New Tool', None]
         self.add_tool(array)
 
@@ -218,8 +210,8 @@ class ToolTable(Gtk.Box):
     def on_tool_num_edited(self, widget, path, new_text):
         try:
             new_int = int(new_text)
-            self.liststore[path][1] = new_int
-            self.liststore[path][2] = new_int
+            self.model[path][1] = new_int
+            self.model[path][2] = new_int
         except:
             msg = '"{0}" is not a valid tool number'.format(new_text)
             log.error(msg)
@@ -228,7 +220,7 @@ class ToolTable(Gtk.Box):
     def on_tool_pocket_edited(self, widget, path, new_text):
         try:
             new_int = int(new_text)
-            self.liststore[path][2] = new_int
+            self.model[path][2] = new_int
         except:
             msg = '"{0}" is not a valid tool pocket'.format(new_text)
             log.error(msg)
@@ -237,7 +229,7 @@ class ToolTable(Gtk.Box):
     def on_tool_dia_edited(self, widget, path, new_text):
         try:
             num = entry_eval.eval(new_text)
-            self.liststore[path][3] = "{:.4f}".format(float(num))
+            self.model[path][3] = "{:.4f}".format(float(num))
         except:
             msg = '"{0}" does not evaluate to a valid tool diameter'.format(new_text)
             log.error(msg)
@@ -246,14 +238,14 @@ class ToolTable(Gtk.Box):
     def on_z_offset_edited(self, widget, path, new_text):
         try:
             num = entry_eval.eval(new_text)
-            self.liststore[path][4] = "{:.4f}".format(float(num))
+            self.model[path][4] = "{:.4f}".format(float(num))
         except:
             msg = '"{0}" does not evaluate to a valid tool length'.format(new_text)
             log.error(msg)
             # self._show_message(["ERROR", msg])
 
     def on_tool_remark_edited(self, widget, path, new_text):
-        self.liststore[path][5] =  new_text
+        self.model[path][5] =  new_text
 
     # Popup int numpad on int edit
     def on_int_editing_started(self, renderer, entry, row):
@@ -272,8 +264,7 @@ class ToolTable(Gtk.Box):
 
     # Toggle selection checkbox value
     def on_select_toggled(self, widget, row):
-        model = self.liststore
-        model[row][0] = not model[row][0]
+        self.model[row][0] = not self.model[row][0]
 
     # For single click selection and edit
     def on_treeview_button_press_event(self, widget, event):
@@ -286,24 +277,22 @@ class ToolTable(Gtk.Box):
 
     # Used for indicating tool in spindle
     def highlight_tool(self, tool_num):
-        model = self.liststore
-        for row in range(len(model)):
-            model[row][0] = 0
-            model[row][6] = None
-            if model[row][1] == tool_num:
-                self.current_tool_data = model[row]
-                model[row][6] = "gray"
+        for row in range(len(self.model)):
+            self.model[row][0] = 0
+            self.model[row][6] = None
+            if self.model[row][1] == tool_num:
+                self.current_tool_data = self.model[row]
+                self.model[row][6] = "gray"
 
     # This is not used now, but might be useful at some point
     def set_selected_tool(self, toolnum):
-        model = self.liststore
         found = False
-        for row in range(len(model)):
-            if model[row][1] == toolnum:
+        for row in range(len(self.model)):
+            if self.model[row][1] == toolnum:
                 found = True
                 break
         if found:
-            model[row][0] = 1 # Check the box
+            self.model[row][0] = 1 # Check the box
             self.widgets.tooltable_treeview.set_cursor(row)
         else:
             log.warning("Did not find tool {0} in the tool table".format(toolnum))

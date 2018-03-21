@@ -5,211 +5,44 @@
   <object class="GtkImage" id="icon_add">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixel_size">32</property>
-    <property name="icon_name">list-add</property>
+    <property name="icon_name">list-add-symbolic</property>
     <property name="use_fallback">True</property>
     <property name="icon_size">3</property>
   </object>
   <object class="GtkImage" id="icon_down">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixel_size">32</property>
-    <property name="icon_name">go-down</property>
+    <property name="icon_name">go-down-symbolic</property>
     <property name="use_fallback">True</property>
+    <property name="icon_size">3</property>
   </object>
   <object class="GtkImage" id="icon_remove">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixel_size">32</property>
-    <property name="icon_name">list-remove</property>
+    <property name="icon_name">list-remove-symbolic</property>
     <property name="use_fallback">True</property>
+    <property name="icon_size">3</property>
   </object>
   <object class="GtkImage" id="icon_save">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixel_size">32</property>
-    <property name="icon_name">document-save</property>
+    <property name="icon_name">document-save-symbolic</property>
     <property name="use_fallback">True</property>
+    <property name="icon_size">3</property>
   </object>
   <object class="GtkImage" id="icon_undo">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixel_size">32</property>
-    <property name="icon_name">undo</property>
+    <property name="icon_name">document-revert-symbolic</property>
     <property name="use_fallback">True</property>
+    <property name="icon_size">3</property>
   </object>
   <object class="GtkImage" id="icon_up">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixel_size">32</property>
-    <property name="icon_name">go-up</property>
+    <property name="icon_name">go-up-symbolic</property>
     <property name="use_fallback">True</property>
-  </object>
-  <object class="GtkBox" id="toolbar">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="halign">start</property>
-    <property name="valign">start</property>
-    <property name="hexpand">False</property>
-    <property name="vexpand">False</property>
-    <child>
-      <object class="GtkButton" id="add">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">5</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="image">icon_add</property>
-        <property name="relief">none</property>
-        <signal name="clicked" handler="on_add_tool_clicked" swapped="no"/>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">0</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButton" id="remove">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">5</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="image">icon_remove</property>
-        <property name="relief">none</property>
-        <signal name="clicked" handler="on_delete_selected_clicked" swapped="no"/>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">1</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSeparator">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">5</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="orientation">vertical</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">2</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButton" id="up">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">5</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="image">icon_up</property>
-        <property name="relief">none</property>
-        <signal name="clicked" handler="on_move_up_clicked" swapped="no"/>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">3</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButton" id="down">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="image">icon_down</property>
-        <property name="relief">none</property>
-        <signal name="clicked" handler="on_move_down_clicked" swapped="no"/>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">4</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSeparator">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">5</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="orientation">vertical</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">5</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButton" id="undo">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">5</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="image">icon_undo</property>
-        <property name="relief">none</property>
-        <signal name="clicked" handler="on_load_tool_table_clicked" swapped="no"/>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">6</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkSeparator">
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="margin_left">5</property>
-        <property name="margin_right">5</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="orientation">vertical</property>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">7</property>
-      </packing>
-    </child>
-    <child>
-      <object class="GtkButton" id="save">
-        <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="receives_default">True</property>
-        <property name="margin_top">5</property>
-        <property name="margin_bottom">5</property>
-        <property name="image">icon_save</property>
-        <property name="relief">none</property>
-        <signal name="clicked" handler="on_save_tool_table_clicked" swapped="no"/>
-      </object>
-      <packing>
-        <property name="expand">False</property>
-        <property name="fill">True</property>
-        <property name="position">8</property>
-      </packing>
-    </child>
+    <property name="icon_size">3</property>
   </object>
   <object class="GtkListStore" id="tool_liststore">
     <columns>
@@ -229,135 +62,337 @@
       <column type="gchararray"/>
     </columns>
   </object>
-  <object class="GtkScrolledWindow" id="treeview">
+  <object class="GtkBox" id="tooltable">
     <property name="visible">True</property>
-    <property name="can_focus">True</property>
-    <property name="hexpand">True</property>
-    <property name="vexpand">True</property>
-    <property name="border_width">0</property>
-    <property name="propagate_natural_width">True</property>
-    <property name="propagate_natural_height">True</property>
+    <property name="can_focus">False</property>
+    <property name="orientation">vertical</property>
     <child>
-      <object class="GtkTreeView" id="tooltable_treeview">
+      <object class="GtkBox" id="toolbar">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="halign">start</property>
+        <property name="valign">start</property>
+        <property name="hexpand">False</property>
+        <property name="vexpand">False</property>
+        <child>
+          <object class="GtkButton" id="add">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Add new tool</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="image">icon_add</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="on_add_tool_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="remove">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Remove selected tools</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="image">icon_remove</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="on_delete_selected_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="orientation">vertical</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="up">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Select previous tool</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="image">icon_up</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="on_move_up_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="down">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Select next tool</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="image">icon_down</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="on_move_down_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="orientation">vertical</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">5</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="undo">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Reload tool-table</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="image">icon_undo</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="on_load_tool_table_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="margin_left">5</property>
+            <property name="margin_right">5</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="orientation">vertical</property>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">7</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="save">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="tooltip_text" translatable="yes">Save tool-table</property>
+            <property name="margin_top">5</property>
+            <property name="margin_bottom">5</property>
+            <property name="image">icon_save</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="on_save_tool_table_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">8</property>
+          </packing>
+        </child>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">1</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkSeparator">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">2</property>
+      </packing>
+    </child>
+    <child>
+      <object class="GtkScrolledWindow">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="hexpand">True</property>
         <property name="vexpand">True</property>
-        <property name="model">tool_liststore</property>
-        <property name="rules_hint">True</property>
-        <property name="search_column">1</property>
-        <property name="enable_grid_lines">horizontal</property>
-        <signal name="button-press-event" handler="on_treeview_button_press_event" swapped="no"/>
-        <child internal-child="selection">
-          <object class="GtkTreeSelection"/>
-        </child>
+        <property name="border_width">0</property>
+        <property name="propagate_natural_width">True</property>
+        <property name="propagate_natural_height">True</property>
         <child>
-          <object class="GtkTreeViewColumn" id="select">
-            <child>
-              <object class="GtkCellRendererToggle" id="cell_toggle">
-                <property name="indicator_size">18</property>
-                <signal name="toggled" handler="on_select_toggled" swapped="no"/>
-              </object>
-              <attributes>
-                <attribute name="cell-background">6</attribute>
-                <attribute name="active">0</attribute>
-              </attributes>
+          <object class="GtkTreeView">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="model">tool_liststore</property>
+            <property name="rules_hint">True</property>
+            <property name="search_column">1</property>
+            <property name="enable_grid_lines">horizontal</property>
+            <signal name="button-press-event" handler="on_treeview_button_press_event" swapped="no"/>
+            <child internal-child="selection">
+              <object class="GtkTreeSelection"/>
             </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkTreeViewColumn" id="tool_num">
-            <property name="title" translatable="yes">Tool#</property>
-            <property name="clickable">True</property>
-            <property name="sort_indicator">True</property>
-            <property name="sort_column_id">1</property>
             <child>
-              <object class="GtkCellRendererText" id="cell_tool_num">
-                <property name="editable">True</property>
-                <signal name="edited" handler="on_tool_num_edited" swapped="no"/>
-                <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
+              <object class="GtkTreeViewColumn" id="select">
+                <child>
+                  <object class="GtkCellRendererToggle" id="cell_toggle">
+                    <property name="indicator_size">18</property>
+                    <signal name="toggled" handler="on_select_toggled" swapped="no"/>
+                  </object>
+                  <attributes>
+                    <attribute name="cell-background">6</attribute>
+                    <attribute name="active">0</attribute>
+                  </attributes>
+                </child>
               </object>
-              <attributes>
-                <attribute name="cell-background">6</attribute>
-                <attribute name="text">1</attribute>
-              </attributes>
             </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkTreeViewColumn" id="tool_pocket">
-            <property name="title" translatable="yes">Pocket</property>
-            <property name="clickable">True</property>
-            <property name="sort_indicator">True</property>
-            <property name="sort_column_id">2</property>
             <child>
-              <object class="GtkCellRendererText" id="cell_tool_pocket">
-                <property name="editable">True</property>
-                <signal name="edited" handler="on_tool_pocket_edited" swapped="no"/>
-                <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
+              <object class="GtkTreeViewColumn" id="tool_num">
+                <property name="title" translatable="yes">Tool#</property>
+                <property name="clickable">True</property>
+                <property name="sort_indicator">True</property>
+                <property name="sort_column_id">1</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cell_tool_num">
+                    <property name="editable">True</property>
+                    <signal name="edited" handler="on_tool_num_edited" swapped="no"/>
+                    <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
+                  </object>
+                  <attributes>
+                    <attribute name="cell-background">6</attribute>
+                    <attribute name="text">1</attribute>
+                  </attributes>
+                </child>
               </object>
-              <attributes>
-                <attribute name="cell-background">6</attribute>
-                <attribute name="text">2</attribute>
-              </attributes>
             </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkTreeViewColumn" id="tool_dia">
-            <property name="title" translatable="yes">Diameter</property>
-            <property name="clickable">True</property>
-            <property name="sort_indicator">True</property>
-            <property name="sort_column_id">3</property>
             <child>
-              <object class="GtkCellRendererText" id="cell_tool_dia">
-                <property name="editable">True</property>
-                <signal name="edited" handler="on_tool_dia_edited" swapped="no"/>
-                <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
+              <object class="GtkTreeViewColumn" id="tool_pocket">
+                <property name="title" translatable="yes">Pocket</property>
+                <property name="clickable">True</property>
+                <property name="sort_indicator">True</property>
+                <property name="sort_column_id">2</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cell_tool_pocket">
+                    <property name="editable">True</property>
+                    <signal name="edited" handler="on_tool_pocket_edited" swapped="no"/>
+                    <signal name="editing-started" handler="on_int_editing_started" swapped="no"/>
+                  </object>
+                  <attributes>
+                    <attribute name="cell-background">6</attribute>
+                    <attribute name="text">2</attribute>
+                  </attributes>
+                </child>
               </object>
-              <attributes>
-                <attribute name="cell-background">6</attribute>
-                <attribute name="text">3</attribute>
-              </attributes>
             </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkTreeViewColumn" id="tool_z_offset">
-            <property name="title" translatable="yes">Z Offset</property>
-            <property name="clickable">True</property>
-            <property name="sort_indicator">True</property>
-            <property name="sort_column_id">4</property>
             <child>
-              <object class="GtkCellRendererText" id="cell_tool_z_offset">
-                <property name="editable">True</property>
-                <signal name="edited" handler="on_z_offset_edited" swapped="no"/>
-                <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
+              <object class="GtkTreeViewColumn" id="tool_dia">
+                <property name="title" translatable="yes">Diameter</property>
+                <property name="clickable">True</property>
+                <property name="sort_indicator">True</property>
+                <property name="sort_column_id">3</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cell_tool_dia">
+                    <property name="editable">True</property>
+                    <signal name="edited" handler="on_tool_dia_edited" swapped="no"/>
+                    <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
+                  </object>
+                  <attributes>
+                    <attribute name="cell-background">6</attribute>
+                    <attribute name="text">3</attribute>
+                  </attributes>
+                </child>
               </object>
-              <attributes>
-                <attribute name="cell-background">6</attribute>
-                <attribute name="text">4</attribute>
-              </attributes>
             </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkTreeViewColumn" id="tool_remark">
-            <property name="title" translatable="yes">Remark</property>
             <child>
-              <object class="GtkCellRendererText" id="cell_tool_remark">
-                <property name="editable">True</property>
-                <signal name="edited" handler="on_tool_remark_edited" swapped="no"/>
-                <signal name="editing-started" handler="on_remark_editing_started" swapped="no"/>
+              <object class="GtkTreeViewColumn" id="tool_z_offset">
+                <property name="title" translatable="yes">Z Offset</property>
+                <property name="clickable">True</property>
+                <property name="sort_indicator">True</property>
+                <property name="sort_column_id">4</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cell_tool_z_offset">
+                    <property name="editable">True</property>
+                    <signal name="edited" handler="on_z_offset_edited" swapped="no"/>
+                    <signal name="editing-started" handler="on_float_editing_started" swapped="no"/>
+                  </object>
+                  <attributes>
+                    <attribute name="cell-background">6</attribute>
+                    <attribute name="text">4</attribute>
+                  </attributes>
+                </child>
               </object>
-              <attributes>
-                <attribute name="cell-background">6</attribute>
-                <attribute name="text">5</attribute>
-              </attributes>
+            </child>
+            <child>
+              <object class="GtkTreeViewColumn" id="tool_remark">
+                <property name="title" translatable="yes">Remark</property>
+                <child>
+                  <object class="GtkCellRendererText" id="cell_tool_remark">
+                    <property name="editable">True</property>
+                    <signal name="edited" handler="on_tool_remark_edited" swapped="no"/>
+                    <signal name="editing-started" handler="on_remark_editing_started" swapped="no"/>
+                  </object>
+                  <attributes>
+                    <attribute name="cell-background">6</attribute>
+                    <attribute name="text">5</attribute>
+                  </attributes>
+                </child>
+              </object>
             </child>
           </object>
         </child>
       </object>
+      <packing>
+        <property name="expand">False</property>
+        <property name="fill">True</property>
+        <property name="position">3</property>
+      </packing>
     </child>
   </object>
 </interface>
