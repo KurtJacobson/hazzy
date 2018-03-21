@@ -60,6 +60,8 @@ class ToolTable(Gtk.Box):
     def __init__(self, widget_window):
         Gtk.Box.__init__(self)
 
+        self.widget_window = widget_window
+
         self.builder = Gtk.Builder()
         self.builder.add_from_file(os.path.join(UIDIR, 'tool_table.ui'))
         self.builder.connect_signals(self)
@@ -119,7 +121,7 @@ class ToolTable(Gtk.Box):
                                 msg = 'Error reading tool table, can\'t convert "{0}" to integer in {1}' \
                                     .format(word.lstrip(i), line)
                                 log.error(msg)
-                                # self._show_message(["ERROR", msg])
+                                self.widget_window.show_error(msg)
                         else:
                             try:
                                 array[offset] = "%.4f" % float(word.lstrip(i))
@@ -127,7 +129,7 @@ class ToolTable(Gtk.Box):
                                 msg = 'Error reading tool table, can\'t convert "{0}" to float in {1}' \
                                     .format(word.lstrip(i), line)
                                 log.error(msg)
-                                # self._show_message(["ERROR", msg])
+                                self.widget_window.show_error(msg)
                         break
 
             # Add array to liststore
@@ -188,7 +190,7 @@ class ToolTable(Gtk.Box):
             num = len(selected)
             msg = "{0} tools selected, you must select exactly one".format(num)
             log.error(msg)
-            # self._show_message(["ERROR", msg])
+            self.widget_window.show_error(msg, 1.5)
 
     def on_add_tool_clicked(self, widget, data=None):
         num = len(self.model) + 1
@@ -215,7 +217,7 @@ class ToolTable(Gtk.Box):
         except:
             msg = '"{0}" is not a valid tool number'.format(new_text)
             log.error(msg)
-            # self._show_message(["ERROR", msg])
+            self.widget_window.show_error(msg, 1.5)
 
     def on_tool_pocket_edited(self, widget, path, new_text):
         try:
@@ -224,7 +226,7 @@ class ToolTable(Gtk.Box):
         except:
             msg = '"{0}" is not a valid tool pocket'.format(new_text)
             log.error(msg)
-            # self._show_message(["ERROR", msg])
+            self.widget_window.show_error(msg, 1.5)
 
     def on_tool_dia_edited(self, widget, path, new_text):
         try:
@@ -233,7 +235,7 @@ class ToolTable(Gtk.Box):
         except:
             msg = '"{0}" does not evaluate to a valid tool diameter'.format(new_text)
             log.error(msg)
-            # self._show_message(["ERROR", msg])
+            self.widget_window.show_error(msg, 1.5)
 
     def on_z_offset_edited(self, widget, path, new_text):
         try:
@@ -242,7 +244,7 @@ class ToolTable(Gtk.Box):
         except:
             msg = '"{0}" does not evaluate to a valid tool length'.format(new_text)
             log.error(msg)
-            # self._show_message(["ERROR", msg])
+            self.widget_window.show_error(msg, 1.5)
 
     def on_tool_remark_edited(self, widget, path, new_text):
         self.model[path][5] =  new_text
