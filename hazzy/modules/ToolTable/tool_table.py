@@ -108,7 +108,7 @@ class ToolTable(Gtk.Box):
             else:
                 comment = (line[index+1:]).rstrip("\n")
                 line = line[0:index].rstrip()
-            array = [False, 1, 1, '0', '0', comment, 'white']
+            array = [False, 1, 1, '0', '0', comment, None]
             # search beginning of each word for keyword letters
             # offset 0 is the checkbox so ignore it
             # if i = ';' that is the comment and we have already added it
@@ -200,7 +200,7 @@ class ToolTable(Gtk.Box):
 
     def on_add_tool_clicked(self, widget, data=None):
         num = len(self.liststore) + 1
-        array = [0, num, num, '0.0000', '0.0000', 'New Tool', 'white']
+        array = [0, num, num, '0.0000', '0.0000', 'New Tool', None]
         self.add_tool(array)
 
     def on_load_tool_table_clicked(self, widget, data=None):
@@ -289,7 +289,7 @@ class ToolTable(Gtk.Box):
         model = self.liststore
         for row in range(len(model)):
             model[row][0] = 0
-            model[row][6] = "white"
+            model[row][6] = None
             if model[row][1] == tool_num:
                 self.current_tool_data = model[row]
                 model[row][6] = "gray"
