@@ -16,13 +16,6 @@
     <property name="use_fallback">True</property>
     <property name="icon_size">3</property>
   </object>
-  <object class="GtkImage" id="icon_down">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">go-down-symbolic</property>
-    <property name="use_fallback">True</property>
-    <property name="icon_size">3</property>
-  </object>
   <object class="GtkImage" id="icon_remove">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -41,13 +34,6 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="icon_name">document-revert-symbolic</property>
-    <property name="use_fallback">True</property>
-    <property name="icon_size">3</property>
-  </object>
-  <object class="GtkImage" id="icon_up">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">go-up-symbolic</property>
     <property name="use_fallback">True</property>
     <property name="icon_size">3</property>
   </object>
@@ -93,7 +79,7 @@
             <property name="margin_bottom">5</property>
             <property name="image">icon_add</property>
             <property name="relief">none</property>
-            <signal name="clicked" handler="on_add_tool_clicked" swapped="no"/>
+            <signal name="clicked" handler="add_tool" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -113,66 +99,12 @@
             <property name="margin_bottom">5</property>
             <property name="image">icon_remove</property>
             <property name="relief">none</property>
-            <signal name="clicked" handler="on_delete_selected_clicked" swapped="no"/>
+            <signal name="clicked" handler="delete_selected_tool" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkSeparator">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="margin_left">5</property>
-            <property name="margin_right">5</property>
-            <property name="margin_top">5</property>
-            <property name="margin_bottom">5</property>
-            <property name="orientation">vertical</property>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="up">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Select previous tool</property>
-            <property name="margin_left">5</property>
-            <property name="margin_right">5</property>
-            <property name="margin_top">5</property>
-            <property name="margin_bottom">5</property>
-            <property name="image">icon_up</property>
-            <property name="relief">none</property>
-            <signal name="clicked" handler="on_move_up_clicked" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">3</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButton" id="down">
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="receives_default">True</property>
-            <property name="tooltip_text" translatable="yes">Select next tool</property>
-            <property name="margin_top">5</property>
-            <property name="margin_bottom">5</property>
-            <property name="image">icon_down</property>
-            <property name="relief">none</property>
-            <signal name="clicked" handler="on_move_down_clicked" swapped="no"/>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">4</property>
           </packing>
         </child>
         <child>
@@ -203,7 +135,7 @@
             <property name="margin_bottom">5</property>
             <property name="image">icon_undo</property>
             <property name="relief">none</property>
-            <signal name="clicked" handler="on_load_tool_table_clicked" swapped="no"/>
+            <signal name="clicked" handler="reload_tool_table" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -237,7 +169,7 @@
             <property name="margin_bottom">5</property>
             <property name="image">icon_save</property>
             <property name="relief">none</property>
-            <signal name="clicked" handler="on_save_tool_table_clicked" swapped="no"/>
+            <signal name="clicked" handler="save_changes" swapped="no"/>
           </object>
           <packing>
             <property name="expand">False</property>

@@ -89,7 +89,7 @@ class ToolTable(Gtk.Box):
 
     # Parse and load tool table into the treeview
     # More or less copied from Chris Morley's GladeVcp tooledit widget
-    def load_tool_table(self, fn = None):
+    def load_tool_table(self, fn=None):
         # If no valid tool table given
         if fn is None:
             fn = self.tool_table_file
@@ -140,7 +140,7 @@ class ToolTable(Gtk.Box):
                         break
 
             # Add array to liststore
-            self.add_tool(array)
+            self.model.append(array)
 
     # Save tool table
     # More or less copied from Chris Morley's GladeVcp tooledit widget
@@ -169,9 +169,6 @@ class ToolTable(Gtk.Box):
         os.fsync(fn.fileno())
         linuxcnc.command().load_tool_table()
 
-    def add_tool(self, data=None):
-        self.model.append(data)
-
     def get_selected_tools(self):
         tools = []
         for row in range(len(self.model)):
@@ -179,7 +176,7 @@ class ToolTable(Gtk.Box):
                 tools.append(int(self.model[row][1]))
         return tools
 
-    def on_delete_selected_clicked(self, widget):
+    def delete_selected_tool(self, data=None):
         rows = []
         for row in range(len(self.model)):
             if self.model[row][0] == 1:
@@ -188,7 +185,7 @@ class ToolTable(Gtk.Box):
         for row in rows:
             self.model.remove(self.model.get_iter(row))
 
-    def change_to_selected_tool(self, widget=None):
+    def change_to_selected_tool(self, data=None):
         selected = self.get_selected_tools()
         if len(selected) == 1:
             tool_num = selected[0]
@@ -200,22 +197,16 @@ class ToolTable(Gtk.Box):
             log.error(msg)
             self.widget_window.show_error(msg, 1.5)
 
-    def on_add_tool_clicked(self, widget, data=None):
+    def add_tool(self, data=None):
         num = len(self.model) + 1
         array = [0, num, num, '0.0000', '0.0000', 'New Tool', None]
-        self.add_tool(array)
+        self.model.append(array)
 
-    def on_load_tool_table_clicked(self, widget, data=None):
+    def reload_tool_table(self, data=None):
         self.load_tool_table()
 
-    def on_save_tool_table_clicked(self, widget, data=None):
+    def save_changes(self, data=None):
         self.save_tool_table()
-
-    def on_move_down_clicked(self, widget):
-        raise NotImplemented
-
-    def on_move_up_clicked(self, widget):
-        raise NotImplemented
 
     def on_tool_num_edited(self, widget, path, new_text):
         try:
