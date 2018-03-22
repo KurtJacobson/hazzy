@@ -101,7 +101,7 @@ class LcncStats(Resource):
             print "error", detail
         """
 
-    def get(self):
+    def get(self, name):
         self.stat.poll()
 
         jdict = None
@@ -114,7 +114,7 @@ class LcncStats(Resource):
         return jdict
 
 
-api.add_resource(LcncStats, '/stats')
+api.add_resource(LcncStats, '/stat/<name>')
 
 if __name__ == '__main__':
     app.run(port='5002')
