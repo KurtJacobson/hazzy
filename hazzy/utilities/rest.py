@@ -93,27 +93,19 @@ class LcncStats(Resource):
     def __init__(self):
         super(LcncStats, self).__init__()
         self.stat = stat()
-        """
-        try:
-            self.stat = stat()  # create a connection to the status channel
-            self.stat.poll()  # get current values
-        except error, detail:
-            print "error", detail
-        """
 
     def get(self, name):
         self.stat.poll()
-
-        """
-        jdict = None
-
-        for a in dir(self.stat):
-            if not a.startswith('_') and not callable(getattr(self.stat, a)):
-                val = getattr(self.stat, a)
-                jdict = jsonify(val)
-        """
+        value = None
         try:
-            value = getattr(self.stat, name)
+            attr = getattr(self.stat, name)
+            value = list()
+            for element in attr:
+                a_dict = dict()
+                for a in element:
+                    a_dict[str(element)] = a
+                value.append(a_dict)
+
         except AttributeError as ae:
             print(ae)
             value = None
