@@ -89,9 +89,9 @@ app = Flask("HAZZY")
 api = Api(app)
 
 
-class LcncStats(Resource):
+class LcncSTAT(Resource):
     def __init__(self):
-        super(LcncStats, self).__init__()
+        super(LcncSTAT, self).__init__()
         self.stat = stat()
 
     def get(self, name):
@@ -113,7 +113,19 @@ class LcncStats(Resource):
         return value
 
 
-api.add_resource(LcncStats, '/stat/<name>')
+class LcncCMD(Resource):
+    def __init__(self):
+        super(LcncCMD, self).__init__()
+        self.cmd = command()
+
+    def get(self, name):
+        print(name)
+
+        return "200"
+
+
+api.add_resource(LcncSTAT, '/stat/<name>')
+api.add_resource(LcncCMD, '/cmd/<name>')
 
 if __name__ == '__main__':
     app.run(port=5002)
