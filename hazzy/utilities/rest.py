@@ -124,4 +124,4 @@ class LcncStats(Resource):
 api.add_resource(LcncStats, '/stat/<name>')
 
 if __name__ == '__main__':
-    app.run(port='5002')
+    app.run(port=5002)
