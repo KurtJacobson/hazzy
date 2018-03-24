@@ -100,11 +100,14 @@ class LcncSTAT(Resource):
         try:
             attr = getattr(self.stat, name)
             value = list()
-            for element in attr:
-                a_dict = dict()
-                for a in element:
-                    a_dict[str(element)] = a
-                value.append(a_dict)
+            try:
+                for element in attr:
+                    a_dict = dict()
+                    for a in element:
+                        a_dict[str(element)] = a
+                    value.append(a_dict)
+            except Exception as e:
+                value = attr
 
         except AttributeError as ae:
             print(ae)
@@ -118,14 +121,14 @@ class LcncCMD(Resource):
         super(LcncCMD, self).__init__()
         self.cmd = command()
 
-    def get(self, name):
-        print(name)
-
+    def get(self, name, args):
+        cmd = getattr(self.cmd, name)
+        cmd(args)
         return "200"
 
 
 api.add_resource(LcncSTAT, '/stat/<name>')
-api.add_resource(LcncCMD, '/cmd/<name>')
+api.add_resource(LcncCMD, '/cmd/<name>:<int:args>')
 
 if __name__ == '__main__':
     app.run(port=5002)
