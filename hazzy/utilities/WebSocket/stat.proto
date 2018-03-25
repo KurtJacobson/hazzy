@@ -1,0 +1,39 @@
+syntax = "proto2";
+
+package linuxcnc;
+
+message Stat {
+    optional float min_position_limit = 1;
+    optional int32 active_queue = 2;
+}
+
+message Axis {
+    optional float max_position_limit = 1;
+    optional float min_position_limit = 2;
+    optional float velocity = 3;
+}
+
+message Joint {
+    optional int32 joint_type = 1;
+    optional float backlash = 2;
+    optional int32 enabled = 3;
+    optional int32 fault = 4;
+    optional float ferror_current = 5;
+    optional float ferror_highmark = 6;
+    optional int32 homed = 7;
+    optional int32 homing = 8;
+    optional int32 inpos = 9;
+    optional float input = 10;
+    optional float max_ferror = 11;
+    optional int32 max_hard_limit = 12;
+    optional float max_position_limit = 13;
+    optional int32 max_soft_limit = 14;
+    optional float min_ferror = 15;
+    optional int32 min_hard_limit = 16;
+    optional float min_position_limit = 17;
+    optional int32 min_soft_limit = 18;
+    optional float output = 19;
+    optional int32 override_limits = 20;
+    optional float units = 21;
+    optional float velocity = 22;
+}
