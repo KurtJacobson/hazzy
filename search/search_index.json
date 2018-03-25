@@ -1,0 +1,154 @@
+{
+    "docs": [
+        {
+            "location": "/", 
+            "text": "Welcome to hazzy Docs!\n\n\nHazzy is an attempt at a highly configurable and touchscreen friendly UI for \n\nLinuxCNC\n. It is written in python and GTK+ 3, and takes\nadvantage of the latest GTK+ widgets and their touchscreen support.\n\n\nIt is designed to work with LinuxCNC 2.8 and currently supports machines with\ntrivial kinematics and up to 9 axes, including gantry configurations.\n\n\nFeatures\n\n\n\n\nPop-up virtual keyboards on all entries\n\n\nType in DRO to set work offsets\n\n\nExpression evaluation in entry fields\n\n\nEx. entering 23/64 \n .3594\n\n\nEx. entering 1 + 1/64 \n 1.0156\n\n\nWorks in all floating point entries\n\n\n\n\n\n\nUnit conversions in entry fields\n\n\nEx. entering 1in \n 25.4 if the machine is metric or G21 is active\n\n\nEx. entering 6 + .35mm \n .25 if the machine is Imperial or G20 is active\n\n\nWorks in all unit specific entries\n\n\n\n\n\n\nFull touchscreen friendly file manager\n\n\nCut, Copy and Paste files and folders\n\n\nRename files and folders\n\n\nMove files and folders to trash\n\n\nBookmark frequently used folders\n\n\n\n\n\n\n\n\nNotes\n\n\nI started working on this project in the summer of 2015 with the intention of\nlearning some basic programing, while also learning about Linux and LinuxCNC.\nMy plan was to make a Haas-like interface for LinuxCNC; hence, the name hazzy.\nIt has since morphed into something \nvery\n different. It has been a great\nlearning experience. I have had a lot of fun working on the project, and\nI hope it might be of some value to others.", 
+            "title": "Home"
+        }, 
+        {
+            "location": "/#welcome-to-hazzy-docs", 
+            "text": "Hazzy is an attempt at a highly configurable and touchscreen friendly UI for  LinuxCNC . It is written in python and GTK+ 3, and takes\nadvantage of the latest GTK+ widgets and their touchscreen support.  It is designed to work with LinuxCNC 2.8 and currently supports machines with\ntrivial kinematics and up to 9 axes, including gantry configurations.", 
+            "title": "Welcome to hazzy Docs!"
+        }, 
+        {
+            "location": "/#features", 
+            "text": "Pop-up virtual keyboards on all entries  Type in DRO to set work offsets  Expression evaluation in entry fields  Ex. entering 23/64   .3594  Ex. entering 1 + 1/64   1.0156  Works in all floating point entries    Unit conversions in entry fields  Ex. entering 1in   25.4 if the machine is metric or G21 is active  Ex. entering 6 + .35mm   .25 if the machine is Imperial or G20 is active  Works in all unit specific entries    Full touchscreen friendly file manager  Cut, Copy and Paste files and folders  Rename files and folders  Move files and folders to trash  Bookmark frequently used folders", 
+            "title": "Features"
+        }, 
+        {
+            "location": "/#notes", 
+            "text": "I started working on this project in the summer of 2015 with the intention of\nlearning some basic programing, while also learning about Linux and LinuxCNC.\nMy plan was to make a Haas-like interface for LinuxCNC; hence, the name hazzy.\nIt has since morphed into something  very  different. It has been a great\nlearning experience. I have had a lot of fun working on the project, and\nI hope it might be of some value to others.", 
+            "title": "Notes"
+        }, 
+        {
+            "location": "/installing/", 
+            "text": "Installing\n\n\nThe UI is very much under development, so I would not recommend running a machine\nwith it at this stage. However, if you want to give hazzy a spin, I have included\nseveral sim configs in the sim.hazzy folder. You should also be able to run\nalmost any of the sim configs included with LinuxCNC.\n\n\nIf you have git installed, the easiest way to try hazzy is to clone the\n\nhazzy repository\n, and place a symbolic link \nto hazzy.py in your usr/bin directory. If you don't have git, you can download \nand extract the zip, then continue from Step 2. To clone this repository:\n\n\n\n\n\n\nOpen a terminal at the destination location and say\n\n\n$ git clone https://github.com/KurtJacobson/hazzy\n\n\n\n\n\n\nEnter the hazzy folder in the newly cloned hazzy directory\n\n\n$ cd hazzy/hazzy\n\n\n\n\n\n\nLink the hazzy startup script to your usr/bin directory\n\n\n$ sudo ln -sf $(pwd)/hazzy /usr/bin/hazzy\n\n\n\n\n\n\nTell LinuxCNC to use hazzy as the UI. In your machine's INI file set\n\n\n[DISPLAY] DISPLAY = hazzy\n\n\n\n\n\n\n\n\nNote\n\n\nIf you don't want to add a link to \nusr/bin\n, you can skip Step 3\nand simply enter the full path to the startup script in the INI file.\n\n\nEx.\n \nDISPLAY = /home/kurt/Desktop/hazzy/hazzy/hazzy.py\n\n\nThis is fine, but keep in mind that you will have to change the DISPLAY\nentries in all the example configurations before they will run.\n\n\n\n\nRunning the Example Configs\n\n\nHazzy ships with several example configs. These can be launched by specifying\nthem when starting LCNC from the comand line\n\n\n$ linuxcnc /path/to/hazzy/sim.hazzy/hazzy_XYZ.ini\n\n\nOr they can be made available from the LCNC config picker by recursively\ncopying the entire \nsim.hazzy\n directory to \n~/linuxcnc/configs\n\n\n$ cp $(pwd)/sim.hazzy $HOME/linuxcnc/configs -r\n\n\nUpdating\n\n\nThis repo is updated frequently. To get the latest version, enter the\ndirectory were you cloned hazzy and say\n\n\n$ git pull origin master\n\n\nIf you have any problems, questions or suggestions, however minor, do not\nhesitate to \nopen an issue\n,\nor better yet, a pull request!", 
+            "title": "Installing"
+        }, 
+        {
+            "location": "/installing/#installing", 
+            "text": "The UI is very much under development, so I would not recommend running a machine\nwith it at this stage. However, if you want to give hazzy a spin, I have included\nseveral sim configs in the sim.hazzy folder. You should also be able to run\nalmost any of the sim configs included with LinuxCNC.  If you have git installed, the easiest way to try hazzy is to clone the hazzy repository , and place a symbolic link \nto hazzy.py in your usr/bin directory. If you don't have git, you can download \nand extract the zip, then continue from Step 2. To clone this repository:    Open a terminal at the destination location and say  $ git clone https://github.com/KurtJacobson/hazzy    Enter the hazzy folder in the newly cloned hazzy directory  $ cd hazzy/hazzy    Link the hazzy startup script to your usr/bin directory  $ sudo ln -sf $(pwd)/hazzy /usr/bin/hazzy    Tell LinuxCNC to use hazzy as the UI. In your machine's INI file set  [DISPLAY] DISPLAY = hazzy     Note  If you don't want to add a link to  usr/bin , you can skip Step 3\nand simply enter the full path to the startup script in the INI file.  Ex.   DISPLAY = /home/kurt/Desktop/hazzy/hazzy/hazzy.py  This is fine, but keep in mind that you will have to change the DISPLAY\nentries in all the example configurations before they will run.", 
+            "title": "Installing"
+        }, 
+        {
+            "location": "/installing/#running-the-example-configs", 
+            "text": "Hazzy ships with several example configs. These can be launched by specifying\nthem when starting LCNC from the comand line  $ linuxcnc /path/to/hazzy/sim.hazzy/hazzy_XYZ.ini  Or they can be made available from the LCNC config picker by recursively\ncopying the entire  sim.hazzy  directory to  ~/linuxcnc/configs  $ cp $(pwd)/sim.hazzy $HOME/linuxcnc/configs -r", 
+            "title": "Running the Example Configs"
+        }, 
+        {
+            "location": "/installing/#updating", 
+            "text": "This repo is updated frequently. To get the latest version, enter the\ndirectory were you cloned hazzy and say  $ git pull origin master  If you have any problems, questions or suggestions, however minor, do not\nhesitate to  open an issue ,\nor better yet, a pull request!", 
+            "title": "Updating"
+        }, 
+        {
+            "location": "/dependencies/", 
+            "text": "Dependencies\n\n\n\n\nLinuxCNC master (2.8~pre)\n\n\nGtk+ v3.22.11 or later\n\n\nPython 2.7\n\n\n\n\nHazzy is developed and tested using the LinuxCNC Debian 9 (stretch) Live ISO,\navailable \nhere\n.\nIt is highly recommended that you use that OS, since it is officially supported\nand will require minimal effort to get hazzy running. However, hazzy \nshould\n run\nfine on any recent Linux distro that ships with GTK+ 3.22.11 or later. Users\nhave not been able to successfully run hazzy on older OSs like Mint 18.3 do to\ndifficulty installing the required version of GTK+ 3.", 
+            "title": "Dependencies"
+        }, 
+        {
+            "location": "/dependencies/#dependencies", 
+            "text": "LinuxCNC master (2.8~pre)  Gtk+ v3.22.11 or later  Python 2.7   Hazzy is developed and tested using the LinuxCNC Debian 9 (stretch) Live ISO,\navailable  here .\nIt is highly recommended that you use that OS, since it is officially supported\nand will require minimal effort to get hazzy running. However, hazzy  should  run\nfine on any recent Linux distro that ships with GTK+ 3.22.11 or later. Users\nhave not been able to successfully run hazzy on older OSs like Mint 18.3 do to\ndifficulty installing the required version of GTK+ 3.", 
+            "title": "Dependencies"
+        }, 
+        {
+            "location": "/utilities/status_monitor/", 
+            "text": "Status Monitor\n\n\nHazzy uses GObject signaling to inform its widgets of any changes to the status\nof linuxcnc. status.py runs in a 50ms loop and 'listens' for any changes in the\n\nlinuxcnc.stat\n attributes. When a change is detected, status.py emits a GObject\nsignal with the same name as the attribute that changed, and passes along\nthe updated value. A python script can connect a callback to these signals, which\ncan then perform any necessary updates when a signal is received.\n\n\nThis is referred to as event-driven programing, and has several advantages:\n\n\n\n\n\n\nInstead of having each widget actively polling LinuxCNC for status updates, at\n  (say) 100ms intervals (regardless of whether a change has actually occurred),\n  only one script (status.py) needs to poll for changes. This reduces the load on \n  the LinuxCNC status channel.\n\n\n\n\n\n\nWidgets can simply connect a callback, wait for a signal to be received,\n  and then update only what is necessary. This greatly reduces the load on the\n  system by avoiding useless screen refreshes, etc.\n\n\n\n\n\n\n\n\nNote\n\n\nstatus.py monitors only the \nlinuxcnc.stat\n attributes which have been\nconnected to a callback. This is to avoid needless monitoring of attributes,\nand emission of signals which are not used.\n\n\n\n\nConnecting Callbacks\n\n\nstatus.on_changed(\nattribute\n, \ncallback\n)\n\n\nwhere \nattribute\n is any \nlinuxcnc.stat\n attribute and \ncallback\n is the method to be called when the value of that attribute changes.\n\n\nExamples\n\n\nHere is a basic example that prints the tool number when the\n\nlinuxcnc.stat.tool_in_spindle\n attribute changes.\n\n\n1\n2\n3\n4\n5\n6\n7\n8\n9\n#!/usr/bin/env python\n\n\n\nfrom\n \nhazzy.utilities\n \nimport\n \nstatus\n\n\n\ndef\n \nupdate_tool\n(\nstatus\n,\n \ntool_num\n):\n\n    \nprint\n \ntool_num\n\n\n\n# Connect \ntool_in_spindle\n changed signal to \nupdate_tool\n callback\n\n\nstatus\n.\non_changed\n(\nstat.tool_in_spindle\n,\n \nupdate_tool\n)\n\n\n\n\n\n\n\nstatus.py also monitors the \nlinuxcnc.stat.joint\n dictionaries for changes. So \nit is simple to do things like keep track of the homing status, report the current\nfollowing error, etc.\n\n\nHere is an example of printing the following error for each joint used in the machine\n\n\n1\n2\n3\n4\n5\ndef\n \nprint_ferror\n(\nstatus\n,\n \njoint_num\n,\n \nferror\n):\n\n    \nprint\n \njoint {} f-error: {:.5f}\n.\nformat\n(\njoint_num\n,\n \nferror\n)\n\n\n\n# Connect \njoint.ferror_current\n changed signal to \nprint_ferror\n callback\n\n\nstatus\n.\non_changed\n(\njoint.ferror_current\n,\n \nprint_ferror\n)\n\n\n\n\n\n\n\n\n\nNote\n\n\nThis is roughly equivalent to the pseudo code\n\n\n1\n2\n3\n4\n5\n6\n7\n8\nwhile\n \nTrue\n:\n\n    \nstat\n.\npoll\n()\n\n\n    \nfor\n \njnum\n \nin\n \nrange\n(\nnum_joints\n):\n\n        \nif\n \nferror\n \nhas\n \nchanged\n:\n\n            \nprint\n \nstat\n.\njoint\n[\njnum\n][\nferror_current\n]\n\n\n    \nsleep\n(\n.\n05\n)\n\n\n\n\n\n\n\nSo the signal will only be emitted if the value has changed since the previous \nemission. If no joints are moving no signal will be emitted. If one joint\nis moving, only the ferror for that joint will be emitted, etc.\n\n\n\n\nAdditional Signals\n\n\nIn addition to the \nlinuxcnc.stat\n\nattributes, status.py also has five convenience signals.\n\n\naxis-positions\n\n\nThe \naxis-position\n signal is emitted every cycle and returns a tuple of \nthree tuples of floats representing:\n\n\n\n\n\n\nCurrent absolute axis positions in machine units, taking into account the \n  setting of \n[DISPLAY] POSITION_FEEDBACK\n in the INI\n\n\n\n\n\n\nCurrent g5x relative position in machine units, taking into account any\n  active g92 offsets, rotation in the XY plane, and/or tool offsets\n\n\n\n\n\n\nRemaining distance of the current move, as reported by the trajectory planner\n\n\n\n\n\n\n\n\nNote\n\n\nOnly the position values for used axes are calculated, the positions of all\nunused axes will be reported as 0. Status.py uses the the value of\nlinuxcnc.axis_mask do determine which axes are in use. This should reflect\nthe axes as defined by \n[TRAJ] COORDINATES\n in the INI.\n\n\n\n\njoint-positions\n\n\nThe \njoint-positions\n signal is emitted every cycle and returns a tuple of\nfloats representing:\n\n\n\n\nCurrent absolute joint positions in machine units, taking into account the\n  setting of \n[DISPLAY] POSITION_FEEDBACK\n in the INI\n\n\n\n\nformated-gcodes\n\n\nThe \nformated-gcodes\n signal returns a list containing the currently active\ng-codes formed as strings.\n\n\nExample:\n\n\n1\n2\n3\n4\ndef\n \nupdate_gcodes\n(\nwidget\n,\n \ngcodes\n):\n\n    \nprint\n \nG-codes: \n,\n \n \n.\njoin\n(\ngcodes\n)\n\n\n\nstatus\n.\non_changed\n(\nformated_gcodes\n,\n \nupdate_gcodes\n)\n\n\n\n\n\n\n\nResult: \nG-codes:  G8 G17 G20 G40 G49 G54 G64 G80 G90 G91.1 G94 G97 G99\n\n\nformated-mcodes\n\n\nThe \nformated-mcodes\n signal returns a list containing the currently active\nm-codes formed as strings.\n\n\nExample:\n\n\n1\n2\n3\n4\ndef\n \nupdate_mcodes\n(\nwidget\n,\n \nmcodes\n):\n\n    \nprint\n \nM-codes: \n,\n \n \n.\njoin\n(\nmcodes\n)\n\n\n\nstatus\n.\non_changed\n(\nformated_mcodes\n,\n \nupdate_mcodes\n)\n\n\n\n\n\n\n\nResult: \nM-codes:  M0 M5 M9 M48 M53\n\n\nfile-loaded\n\n\nThe \nfile-loaded\n signal is emitted when a file is loaded and returns the full\npath to the file. This makes an attempt to avoid spurious emissions resulting\nfrom remap procedures.", 
+            "title": "Status Monitor"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#status-monitor", 
+            "text": "Hazzy uses GObject signaling to inform its widgets of any changes to the status\nof linuxcnc. status.py runs in a 50ms loop and 'listens' for any changes in the linuxcnc.stat  attributes. When a change is detected, status.py emits a GObject\nsignal with the same name as the attribute that changed, and passes along\nthe updated value. A python script can connect a callback to these signals, which\ncan then perform any necessary updates when a signal is received.  This is referred to as event-driven programing, and has several advantages:    Instead of having each widget actively polling LinuxCNC for status updates, at\n  (say) 100ms intervals (regardless of whether a change has actually occurred),\n  only one script (status.py) needs to poll for changes. This reduces the load on \n  the LinuxCNC status channel.    Widgets can simply connect a callback, wait for a signal to be received,\n  and then update only what is necessary. This greatly reduces the load on the\n  system by avoiding useless screen refreshes, etc.     Note  status.py monitors only the  linuxcnc.stat  attributes which have been\nconnected to a callback. This is to avoid needless monitoring of attributes,\nand emission of signals which are not used.", 
+            "title": "Status Monitor"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#connecting-callbacks", 
+            "text": "status.on_changed( attribute ,  callback )  where  attribute  is any  linuxcnc.stat  attribute and  callback  is the method to be called when the value of that attribute changes.", 
+            "title": "Connecting Callbacks"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#examples", 
+            "text": "Here is a basic example that prints the tool number when the linuxcnc.stat.tool_in_spindle  attribute changes.  1\n2\n3\n4\n5\n6\n7\n8\n9 #!/usr/bin/env python  from   hazzy.utilities   import   status  def   update_tool ( status ,   tool_num ): \n     print   tool_num  # Connect  tool_in_spindle  changed signal to  update_tool  callback  status . on_changed ( stat.tool_in_spindle ,   update_tool )    status.py also monitors the  linuxcnc.stat.joint  dictionaries for changes. So \nit is simple to do things like keep track of the homing status, report the current\nfollowing error, etc.  Here is an example of printing the following error for each joint used in the machine  1\n2\n3\n4\n5 def   print_ferror ( status ,   joint_num ,   ferror ): \n     print   joint {} f-error: {:.5f} . format ( joint_num ,   ferror )  # Connect  joint.ferror_current  changed signal to  print_ferror  callback  status . on_changed ( joint.ferror_current ,   print_ferror )     Note  This is roughly equivalent to the pseudo code  1\n2\n3\n4\n5\n6\n7\n8 while   True : \n     stat . poll () \n\n     for   jnum   in   range ( num_joints ): \n         if   ferror   has   changed : \n             print   stat . joint [ jnum ][ ferror_current ] \n\n     sleep ( . 05 )    So the signal will only be emitted if the value has changed since the previous \nemission. If no joints are moving no signal will be emitted. If one joint\nis moving, only the ferror for that joint will be emitted, etc.", 
+            "title": "Examples"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#additional-signals", 
+            "text": "In addition to the  linuxcnc.stat \nattributes, status.py also has five convenience signals.", 
+            "title": "Additional Signals"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#axis-positions", 
+            "text": "The  axis-position  signal is emitted every cycle and returns a tuple of \nthree tuples of floats representing:    Current absolute axis positions in machine units, taking into account the \n  setting of  [DISPLAY] POSITION_FEEDBACK  in the INI    Current g5x relative position in machine units, taking into account any\n  active g92 offsets, rotation in the XY plane, and/or tool offsets    Remaining distance of the current move, as reported by the trajectory planner     Note  Only the position values for used axes are calculated, the positions of all\nunused axes will be reported as 0. Status.py uses the the value of\nlinuxcnc.axis_mask do determine which axes are in use. This should reflect\nthe axes as defined by  [TRAJ] COORDINATES  in the INI.", 
+            "title": "axis-positions"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#joint-positions", 
+            "text": "The  joint-positions  signal is emitted every cycle and returns a tuple of\nfloats representing:   Current absolute joint positions in machine units, taking into account the\n  setting of  [DISPLAY] POSITION_FEEDBACK  in the INI", 
+            "title": "joint-positions"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#formated-gcodes", 
+            "text": "The  formated-gcodes  signal returns a list containing the currently active\ng-codes formed as strings.  Example:  1\n2\n3\n4 def   update_gcodes ( widget ,   gcodes ): \n     print   G-codes:  ,     . join ( gcodes )  status . on_changed ( formated_gcodes ,   update_gcodes )    Result:  G-codes:  G8 G17 G20 G40 G49 G54 G64 G80 G90 G91.1 G94 G97 G99", 
+            "title": "formated-gcodes"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#formated-mcodes", 
+            "text": "The  formated-mcodes  signal returns a list containing the currently active\nm-codes formed as strings.  Example:  1\n2\n3\n4 def   update_mcodes ( widget ,   mcodes ): \n     print   M-codes:  ,     . join ( mcodes )  status . on_changed ( formated_mcodes ,   update_mcodes )    Result:  M-codes:  M0 M5 M9 M48 M53", 
+            "title": "formated-mcodes"
+        }, 
+        {
+            "location": "/utilities/status_monitor/#file-loaded", 
+            "text": "The  file-loaded  signal is emitted when a file is loaded and returns the full\npath to the file. This makes an attempt to avoid spurious emissions resulting\nfrom remap procedures.", 
+            "title": "file-loaded"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/video/", 
+            "text": "Video\n\n\n\n\nThis widget provides a video viewer and http streamer.\nThe stream can be viewed by pointing your web browser to \nhttp://127.0.0.1:1337/\n\n\nDependencies\n\n\nIn addition to the main hazzy dependencies, the video widget requires\n\n\n\n\ngstreamer1.0-plugins-bad 1.10.4 or later\n\n\n\n\nInstalling dependencies\n\n\nDebian Stretch\n\n\n$ sudo apt-get install gstreamer1.0-plugins-bad", 
+            "title": "Video"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/video/#video", 
+            "text": "This widget provides a video viewer and http streamer.\nThe stream can be viewed by pointing your web browser to  http://127.0.0.1:1337/", 
+            "title": "Video"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/video/#dependencies", 
+            "text": "In addition to the main hazzy dependencies, the video widget requires   gstreamer1.0-plugins-bad 1.10.4 or later", 
+            "title": "Dependencies"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/video/#installing-dependencies", 
+            "text": "", 
+            "title": "Installing dependencies"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/video/#debian-stretch", 
+            "text": "$ sudo apt-get install gstreamer1.0-plugins-bad", 
+            "title": "Debian Stretch"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/terminal/", 
+            "text": "Terminal\n\n\n\n\nThis widget provides an embedded terminal for running tests etc.\nwithin the same python interpretor as hazzy.\n\n\nDependencies\n\n\nIn addition to the main hazzy dependencies, the terminal widget requires\n\n\n\n\nvte 2.91 or later\n\n\n\n\nInstalling dependencies\n\n\nDebian Stretch\n\n\n$ sudo apt-get install gir1.2-vte-2.91", 
+            "title": "Terminal"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/terminal/#terminal", 
+            "text": "This widget provides an embedded terminal for running tests etc.\nwithin the same python interpretor as hazzy.", 
+            "title": "Terminal"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/terminal/#dependencies", 
+            "text": "In addition to the main hazzy dependencies, the terminal widget requires   vte 2.91 or later", 
+            "title": "Dependencies"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/terminal/#installing-dependencies", 
+            "text": "", 
+            "title": "Installing dependencies"
+        }, 
+        {
+            "location": "/widgets/miscellaneous/terminal/#debian-stretch", 
+            "text": "$ sudo apt-get install gir1.2-vte-2.91", 
+            "title": "Debian Stretch"
+        }
+    ]
+}

@@ -1,0 +1,888 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="Documentation for hazzy, a modular Gtk3 based LinuxCNC interface written in python.">
+      
+      
+        <link rel="canonical" href="https://kurtjacobson.github.io/hazzy/utilities/status_monitor/">
+      
+      
+        <meta name="author" content="Kurt Jacobson">
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-0.17.3, mkdocs-material-2.7.1">
+    
+    
+      
+        <title>Status Monitor - hazzy</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/application.78aab2dc.css">
+      
+        <link rel="stylesheet" href="../../assets/stylesheets/application-palette.6079476c.css">
+      
+    
+    
+      <script src="../../assets/javascripts/modernizr.1aa3b519.js"></script>
+    
+    
+      <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+      
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+      <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    
+    
+    
+  </head>
+  
+    
+    
+    <body dir="ltr" data-md-color-primary="grey" data-md-color-accent="indigo">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
+    viewBox="0 0 416 448" id="github">
+  <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
+        8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
+        18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
+        19-18.125 8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19
+        18.125-8.5 18.125 8.5 10.75 19 3.125 20.5zM360
+        304q0-30-17.25-51t-46.75-21q-10.25 0-48.75 5.25-17.75 2.75-39.25
+        2.75t-39.25-2.75q-38-5.25-48.75-5.25-29.5 0-46.75 21t-17.25 51q0 22 8
+        38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0
+        37.25-1.75t35-7.375 30.5-15 20.25-25.75 8-38.375zM416 260q0 51.75-15.25
+        82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5-41.75
+        1.125q-19.5 0-35.5-0.75t-36.875-3.125-38.125-7.5-34.25-12.875-30.25-20.25-21.5-28.75q-15.5-30.75-15.5-82.75
+        0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25
+        30.875q36.75-8.75 77.25-8.75 37 0 70 8 26.25-20.5
+        46.75-30.25t47.25-9.75q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34
+        99.5z" />
+</svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="drawer"></label>
+    
+      <a href="#status-monitor" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="https://kurtjacobson.github.io/hazzy/" title="hazzy" class="md-header-nav__button md-logo">
+          
+            <i class="md-icon"></i>
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            
+              <span class="md-header-nav__topic">
+                hazzy
+              </span>
+              <span class="md-header-nav__topic">
+                Status Monitor
+              </span>
+            
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          
+            <label class="md-icon md-icon--search md-header-nav__button" for="search"></label>
+            
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+          
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+
+  <a href="https://github.com/KurtJacobson/hazzy/" title="Go to repository" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      KurtJacobson/hazzy
+    </div>
+  </a>
+
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+        
+
+  
+
+<nav class="md-tabs md-tabs--active" data-md-component="tabs">
+  <div class="md-tabs__inner md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  <li class="md-tabs__item">
+    
+      <a href="../.." title="Home" class="md-tabs__link">
+        Home
+      </a>
+    
+  </li>
+
+      
+        
+      
+        
+      
+        
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="./" title="Utilities" class="md-tabs__link md-tabs__link--active">
+          Utilities
+        </a>
+      
+    </li>
+  
+
+      
+        
+  
+  
+    
+    
+  
+  
+    <li class="md-tabs__item">
+      
+        <a href="../../widgets/miscellaneous/video/" title="Widgets" class="md-tabs__link">
+          Widgets
+        </a>
+      
+    </li>
+  
+
+  
+
+      
+    </ul>
+  </div>
+</nav>
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="drawer">
+    <span class="md-nav__button md-logo">
+      
+        <i class="md-icon"></i>
+      
+    </span>
+    hazzy
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+
+  <a href="https://github.com/KurtJacobson/hazzy/" title="Go to repository" class="md-source" data-md-source="github">
+    
+      <div class="md-source__icon">
+        <svg viewBox="0 0 24 24" width="24" height="24">
+          <use xlink:href="#github" width="24" height="24"></use>
+        </svg>
+      </div>
+    
+    <div class="md-source__repository">
+      KurtJacobson/hazzy
+    </div>
+  </a>
+
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../.." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../installing/" title="Installing" class="md-nav__link">
+      Installing
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../../dependencies/" title="Dependencies" class="md-nav__link">
+      Dependencies
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-4" type="checkbox" id="nav-4" checked>
+    
+    <label class="md-nav__link" for="nav-4">
+      Utilities
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-4">
+        Utilities
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="toc">
+        Status Monitor
+      </label>
+    
+    <a href="./" title="Status Monitor" class="md-nav__link md-nav__link--active">
+      Status Monitor
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#connecting-callbacks" title="Connecting Callbacks" class="md-nav__link">
+    Connecting Callbacks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" title="Examples" class="md-nav__link">
+    Examples
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-signals" title="Additional Signals" class="md-nav__link">
+    Additional Signals
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#axis-positions" title="axis-positions" class="md-nav__link">
+    axis-positions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#joint-positions" title="joint-positions" class="md-nav__link">
+    joint-positions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formated-gcodes" title="formated-gcodes" class="md-nav__link">
+    formated-gcodes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formated-mcodes" title="formated-mcodes" class="md-nav__link">
+    formated-mcodes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-loaded" title="file-loaded" class="md-nav__link">
+    file-loaded
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5" type="checkbox" id="nav-5">
+    
+    <label class="md-nav__link" for="nav-5">
+      Widgets
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="1">
+      <label class="md-nav__title" for="nav-5">
+        Widgets
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item md-nav__item--nested">
+    
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-5-1" type="checkbox" id="nav-5-1">
+    
+    <label class="md-nav__link" for="nav-5-1">
+      Miscellaneous
+    </label>
+    <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
+      <label class="md-nav__title" for="nav-5-1">
+        Miscellaneous
+      </label>
+      <ul class="md-nav__list" data-md-scrollfix>
+        
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../widgets/miscellaneous/video/" title="Video" class="md-nav__link">
+      Video
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../../widgets/miscellaneous/terminal/" title="Terminal" class="md-nav__link">
+      Terminal
+    </a>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+        
+      </ul>
+    </nav>
+  </li>
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#connecting-callbacks" title="Connecting Callbacks" class="md-nav__link">
+    Connecting Callbacks
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" title="Examples" class="md-nav__link">
+    Examples
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-signals" title="Additional Signals" class="md-nav__link">
+    Additional Signals
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#axis-positions" title="axis-positions" class="md-nav__link">
+    axis-positions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#joint-positions" title="joint-positions" class="md-nav__link">
+    joint-positions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formated-gcodes" title="formated-gcodes" class="md-nav__link">
+    formated-gcodes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#formated-mcodes" title="formated-mcodes" class="md-nav__link">
+    formated-mcodes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#file-loaded" title="file-loaded" class="md-nav__link">
+    file-loaded
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                
+                <h1 id="status-monitor">Status Monitor<a class="headerlink" href="#status-monitor" title="Permanent link">&para;</a></h1>
+<p>Hazzy uses GObject signaling to inform its widgets of any changes to the status
+of linuxcnc. status.py runs in a 50ms loop and 'listens' for any changes in the
+<code>linuxcnc.stat</code> attributes. When a change is detected, status.py emits a GObject
+signal with the same name as the attribute that changed, and passes along
+the updated value. A python script can connect a callback to these signals, which
+can then perform any necessary updates when a signal is received.</p>
+<p>This is referred to as event-driven programing, and has several advantages:</p>
+<ul>
+<li>
+<p>Instead of having each widget actively polling LinuxCNC for status updates, at
+  (say) 100ms intervals (regardless of whether a change has actually occurred),
+  only one script (status.py) needs to poll for changes. This reduces the load on 
+  the LinuxCNC status channel.</p>
+</li>
+<li>
+<p>Widgets can simply connect a callback, wait for a signal to be received,
+  and then update only what is necessary. This greatly reduces the load on the
+  system by avoiding useless screen refreshes, etc.</p>
+</li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>status.py monitors only the <code>linuxcnc.stat</code> attributes which have been
+connected to a callback. This is to avoid needless monitoring of attributes,
+and emission of signals which are not used.</p>
+</div>
+<h2 id="connecting-callbacks">Connecting Callbacks<a class="headerlink" href="#connecting-callbacks" title="Permanent link">&para;</a></h2>
+<p>status.on_changed(<em><strong>attribute</strong></em>, <em><strong>callback</strong></em>)</p>
+<p>where <em><strong>attribute</strong></em> is any <a href="http://linuxcnc.org/docs/devel/html/config/python-interface.html#_linuxcnc_stat_attributes">linuxcnc.stat</a> attribute and <em><strong>callback</strong></em> is the method to be called when the value of that attribute changes.</p>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
+<p>Here is a basic example that prints the tool number when the
+<code>linuxcnc.stat.tool_in_spindle</code> attribute changes.</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8
+9</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="ch">#!/usr/bin/env python</span>
+
+<span class="kn">from</span> <span class="nn">hazzy.utilities</span> <span class="kn">import</span> <span class="n">status</span>
+
+<span class="k">def</span> <span class="nf">update_tool</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">tool_num</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">tool_num</span>
+
+<span class="c1"># Connect &quot;tool_in_spindle&quot; changed signal to &quot;update_tool&quot; callback</span>
+<span class="n">status</span><span class="o">.</span><span class="n">on_changed</span><span class="p">(</span><span class="s1">&#39;stat.tool_in_spindle&#39;</span><span class="p">,</span> <span class="n">update_tool</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>status.py also monitors the <code>linuxcnc.stat.joint</code> dictionaries for changes. So 
+it is simple to do things like keep track of the homing status, report the current
+following error, etc.</p>
+<p>Here is an example of printing the following error for each joint used in the machine</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">print_ferror</span><span class="p">(</span><span class="n">status</span><span class="p">,</span> <span class="n">joint_num</span><span class="p">,</span> <span class="n">ferror</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s1">&#39;joint {} f-error: {:.5f}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">joint_num</span><span class="p">,</span> <span class="n">ferror</span><span class="p">)</span>
+
+<span class="c1"># Connect &quot;joint.ferror_current&quot; changed signal to &quot;print_ferror&quot; callback</span>
+<span class="n">status</span><span class="o">.</span><span class="n">on_changed</span><span class="p">(</span><span class="s1">&#39;joint.ferror_current&#39;</span><span class="p">,</span> <span class="n">print_ferror</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This is roughly equivalent to the pseudo code</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4
+5
+6
+7
+8</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="n">stat</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">jnum</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_joints</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">ferror</span> <span class="n">has</span> <span class="n">changed</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">stat</span><span class="o">.</span><span class="n">joint</span><span class="p">[</span><span class="n">jnum</span><span class="p">][</span><span class="s1">&#39;ferror_current&#39;</span><span class="p">]</span>
+
+    <span class="n">sleep</span><span class="p">(</span><span class="o">.</span><span class="mo">05</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>So the signal will only be emitted if the value has changed since the previous 
+emission. If no joints are moving no signal will be emitted. If one joint
+is moving, only the ferror for that joint will be emitted, etc.</p>
+</div>
+<h2 id="additional-signals">Additional Signals<a class="headerlink" href="#additional-signals" title="Permanent link">&para;</a></h2>
+<p>In addition to the <a href="http://linuxcnc.org/docs/devel/html/config/python-interface.html#_linuxcnc_stat_attributes">linuxcnc.stat</a>
+attributes, status.py also has five convenience signals.</p>
+<h3 id="axis-positions">axis-positions<a class="headerlink" href="#axis-positions" title="Permanent link">&para;</a></h3>
+<p>The <em>axis-position</em> signal is emitted every cycle and returns a tuple of 
+three tuples of floats representing:</p>
+<ol>
+<li>
+<p>Current absolute axis positions in machine units, taking into account the 
+  setting of <code>[DISPLAY] POSITION_FEEDBACK</code> in the INI</p>
+</li>
+<li>
+<p>Current g5x relative position in machine units, taking into account any
+  active g92 offsets, rotation in the XY plane, and/or tool offsets</p>
+</li>
+<li>
+<p>Remaining distance of the current move, as reported by the trajectory planner</p>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Only the position values for used axes are calculated, the positions of all
+unused axes will be reported as 0. Status.py uses the the value of
+linuxcnc.axis_mask do determine which axes are in use. This should reflect
+the axes as defined by <code>[TRAJ] COORDINATES</code> in the INI.</p>
+</div>
+<h3 id="joint-positions">joint-positions<a class="headerlink" href="#joint-positions" title="Permanent link">&para;</a></h3>
+<p>The <em>joint-positions</em> signal is emitted every cycle and returns a tuple of
+floats representing:</p>
+<ul>
+<li>Current absolute joint positions in machine units, taking into account the
+  setting of <code>[DISPLAY] POSITION_FEEDBACK</code> in the INI</li>
+</ul>
+<h3 id="formated-gcodes">formated-gcodes<a class="headerlink" href="#formated-gcodes" title="Permanent link">&para;</a></h3>
+<p>The <em>formated-gcodes</em> signal returns a list containing the currently active
+g-codes formed as strings.</p>
+<p>Example:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">update_gcodes</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">gcodes</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s2">&quot;G-codes: &quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">gcodes</span><span class="p">)</span>
+
+<span class="n">status</span><span class="o">.</span><span class="n">on_changed</span><span class="p">(</span><span class="s1">&#39;formated_gcodes&#39;</span><span class="p">,</span> <span class="n">update_gcodes</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Result: <code>G-codes:  G8 G17 G20 G40 G49 G54 G64 G80 G90 G91.1 G94 G97 G99</code></p>
+<h3 id="formated-mcodes">formated-mcodes<a class="headerlink" href="#formated-mcodes" title="Permanent link">&para;</a></h3>
+<p>The <em>formated-mcodes</em> signal returns a list containing the currently active
+m-codes formed as strings.</p>
+<p>Example:</p>
+<table class="codehilitetable"><tr><td class="linenos"><div class="linenodiv"><pre>1
+2
+3
+4</pre></div></td><td class="code"><div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">update_mcodes</span><span class="p">(</span><span class="n">widget</span><span class="p">,</span> <span class="n">mcodes</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s2">&quot;M-codes: &quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mcodes</span><span class="p">)</span>
+
+<span class="n">status</span><span class="o">.</span><span class="n">on_changed</span><span class="p">(</span><span class="s1">&#39;formated_mcodes&#39;</span><span class="p">,</span> <span class="n">update_mcodes</span><span class="p">)</span>
+</pre></div>
+</td></tr></table>
+
+<p>Result: <code>M-codes:  M0 M5 M9 M48 M53</code></p>
+<h3 id="file-loaded">file-loaded<a class="headerlink" href="#file-loaded" title="Permanent link">&para;</a></h3>
+<p>The <em>file-loaded</em> signal is emitted when a file is loaded and returns the full
+path to the file. This makes an attempt to avoid spurious emissions resulting
+from remap procedures.</p>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        
+<footer class="md-footer">
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+        
+          <a href="../../dependencies/" title="Dependencies" class="md-flex md-footer-nav__link md-footer-nav__link--prev" rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Dependencies
+              </span>
+            </div>
+          </a>
+        
+        
+          <a href="../../widgets/miscellaneous/video/" title="Video" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Video
+              </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          </a>
+        
+      </nav>
+    </div>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-footer-copyright">
+        
+          <div class="md-footer-copyright__highlight">
+            Copyright &copy; 2017 - 2018 Kurt Jacobson
+          </div>
+        
+        powered by
+        <a href="http://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+      
+        
+  <div class="md-footer-social">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+      <a href="https://github.com/KurtJacobson" class="md-footer-social__link fa fa-github"></a>
+    
+  </div>
+
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../../assets/javascripts/application.8eb9be28.js"></script>
+      
+      <script>app.initialize({version:"0.17.3",url:{base:"../.."}})</script>
+      
+    
+    
+      
+    
+  </body>
+</html>
