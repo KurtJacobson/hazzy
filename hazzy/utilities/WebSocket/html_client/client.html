@@ -31,7 +31,7 @@
           };
         }
 
-        function onSubmit() {
+        function onSubmitMDI() {
           var msg = {
             type: "command",
             command_type: "mdi",
@@ -44,6 +44,16 @@
           output("send: " + input.value);
           input.value = "";
           input.focus();
+        }
+
+        function onSubmitJOINT() {
+          var msg = {
+            type: "joint",
+            id: id,
+          };
+          ws.send(JSON.stringify(msg));
+          id += 1 // Increment message ID
+          output("send: joint request");
         }
 
         function onCloseClick() {
@@ -62,12 +72,19 @@
 </head>
 
     <body onload="init();">
-        <form onsubmit="onSubmit(); return false;">
+        <form onsubmit="onSubmitMDI(); return false;">
             <label for="input">Send MDI</label>
             <input type="text" id="input">
             <input type="submit" value="Send">
-            <button onclick="onCloseClick(); return false;">close</button>
         </form>
+
+        <form onsubmit="onSubmitJOINT(); return false;">
+            <label for="input">request Joints info</label>
+            <input type="submit" value="Send">
+        </form>
+
+        <button onclick="onCloseClick(); return false;">close</button>
+
         <div id="log"></div>
     </body>
 

@@ -13,6 +13,7 @@ RunTime requirements(apt):
 
 ```
 # apt install python-protobuf
+# apt install python-websocket
 ```
 
 Build requirements(to update linuxcnc.proto):
