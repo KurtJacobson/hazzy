@@ -14,7 +14,7 @@ message Axis {
 }
 
 message Joint {
-    optional int32 joint_type = 1;
+    optional int32 jointType = 1;
     optional float backlash = 2;
     optional int32 enabled = 3;
     optional int32 fault = 4;

@@ -92,7 +92,7 @@ class API():
 
 class WebsocketServer(ThreadingMixIn, TCPServer, API):
     """
-	A websocket server waiting for clients to connect.
+    A websocket server waiting for clients to connect.
 
     Args:
         port(int): Port to bind to

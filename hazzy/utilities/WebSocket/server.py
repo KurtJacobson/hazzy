@@ -4,6 +4,9 @@ import json
 import linuxcnc
 from websocket_server import WebsocketServer
 
+from google.protobuf.json_format import MessageToJson
+from linuxcnc_pb2 import Joint
+
 command = linuxcnc.command()
 
 
@@ -14,6 +17,24 @@ def new_client(client, server):
     print("New client connected and was given id {}".format(client_id))
     server.send_message(client, "This client's ID is {0} and has address {1}".format(client_id, client_address))
     server.send_message_to_all("Hey all, a new client has joined us")
+
+    # wild test just here
+
+    s = linuxcnc.stat()
+    s.poll()
+
+    for joint in s.joint:
+        for key, value in joint.items():
+            # print("linuxcnc - {},{}".format(key, value))
+            setattr(Joint, key, value)
+            print("protobuf - {},{}".format(key, getattr(Joint, key)))
+
+    joint = Joint()
+    print(type(joint))
+
+    # server.send_message(client, joint.SerializeToString())
+
+    # end of the wild test
 
 
 # Called for every client disconnecting
