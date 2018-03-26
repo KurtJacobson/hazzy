@@ -26,6 +26,7 @@
 
 import os
 import subprocess
+from git import Repo
 
 from utilities import logger
 log = logger.get(__name__)
@@ -35,6 +36,33 @@ repo_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
 VERSION = None
 VERSION_URL = None
 
+try:
+    repo = Repo(repo_dir)
+
+    repo_branch = repo.active_branch
+    repo_remote = repo.remote()
+
+    commit_hex_sha = repo.head.commit.hexsha
+    commit_date = repo.head.commit.committed_datetime
+
+    VERSION_HASH = "Commit hash = {}".format(commit_hex_sha)
+    VERSION_BRANCH = "Branch = {}".format(repo_branch)
+    VERSION_DATE = "Commit date = {}".format(commit_date)
+    VERSION_REMOTE = "Remote = {}".format(repo_remote)
+    VERSION_URL = "URL = {}".format(repo_remote.url)
+
+    log.info('Running from a git repository...')
+    log.info(VERSION_HASH)
+    log.info(VERSION_BRANCH)
+    log.info(VERSION_DATE)
+    log.info(VERSION_REMOTE)
+    log.info(VERSION_URL)
+
+except Exception as e:
+    log.debug(e)
+    log.info("not a git")
+
+"""
 # Check if we are running in a git repo
 if os.path.exists(os.path.join(repo_dir, '.git')):
 
@@ -124,5 +152,4 @@ if not VERSION:
             VERSION_URL = 'https://github.com/KurtJacobson/hazzy/tree/{}' \
                 .format('v' + VERSION)
 
-log.info(VERSION)
-log.info(VERSION_URL)
+"""
