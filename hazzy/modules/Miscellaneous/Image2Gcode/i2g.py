@@ -70,7 +70,7 @@ class I2GWidget(Gtk.Box):
 
         self.config_stack = False
 
-        self.set_size_request(320, 240)
+        self.set_size_request(640, 400)
 
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -79,16 +79,39 @@ class I2GWidget(Gtk.Box):
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.stack.set_transition_duration(300)
 
+        # Boxes
+
         self.widget_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        self.image_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.option_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
         self.unit_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.invert_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.normalize_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.extend_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.tolerance_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        # Image
+
+        self.image_view = Gtk.Image.new()
+
+        self.image_box.set_size_request(320, 240)
+        self.image_box.pack_start(self.image_view, False, False, 0)
+
+        # Unit
 
         self.unit_label = Gtk.Label(label="Unit system")
+
+        self.unit_box.pack_start(self.unit_label, False, False, 0)
 
         self.unit_store = Gtk.ListStore(int, str, str)
 
         self.unit_store.append([0, "Inches", "G20"])
-        self.unit_store.append([1, "Milimeters", "G21"])
+        self.unit_store.append([1, "Millimeters", "G21"])
 
         self.unit_combo = Gtk.ComboBox.new_with_model(self.unit_store)
         self.unit_combo.set_entry_text_column(1)
@@ -97,10 +120,67 @@ class I2GWidget(Gtk.Box):
         self.unit_combo.pack_start(self.unit_renderer_text, True)
         self.unit_combo.add_attribute(self.unit_renderer_text, "text", 1)
 
-        self.unit_box.pack_start(self.unit_label, False, False, 0)
         self.unit_box.pack_start(self.unit_combo, False, False, 0)
+        self.option_box.pack_start(self.unit_box, False, False, 0)
 
-        self.widget_box.pack_start(self.unit_box, False, False, 0)
+        # Invert
+
+        self.invert = Gtk.CheckButton("Invert Color")
+        # self.invert_image.connect("toggled", self.on_invert_toggled)
+
+        self.invert_box.pack_start(self.invert, False, False, 0)
+        self.option_box.pack_start(self.invert_box, False, False, 0)
+
+        # Normalize
+
+        self.normalize = Gtk.CheckButton("Normalize Image")
+        # self.normalize.connect("toggled", self.on_normalize_toggled)
+
+        self.normalize_box.pack_start(self.normalize, False, False, 0)
+        self.option_box.pack_start(self.normalize_box, False, False, 0)
+
+        # Extend
+
+        self.extend_label = Gtk.Label(label="Extend")
+
+        self.extend_box.pack_start(self.extend_label, False, False, 0)
+
+        self.extend_store = Gtk.ListStore(int, str)
+
+        self.extend_store.append([0, "None"])
+        self.extend_store.append([1, "White"])
+        self.extend_store.append([2, "Black"])
+
+        self.extend_combo = Gtk.ComboBox.new_with_model(self.extend_store)
+        self.extend_combo.set_entry_text_column(1)
+
+        self.extend_renderer_text = Gtk.CellRendererText()
+        self.extend_combo.pack_start(self.extend_renderer_text, True)
+        self.extend_combo.add_attribute(self.extend_renderer_text, "text", 1)
+
+        self.extend_box.pack_start(self.extend_combo, False, False, 0)
+        self.option_box.pack_start(self.extend_box, False, False, 0)
+
+        # Tolerance
+
+        self.tolerance_label = Gtk.Label(label="Tolerance (Unit)")
+
+        self.tolerance_box.pack_start(self.tolerance_label, False, False, 0)
+
+        self.tolerance_entry = Gtk.Entry()
+        self.tolerance_entry.set_text("0.001")
+
+        self.tolerance_box.pack_start(self.tolerance_entry, False, False, 0)
+        self.option_box.pack_start(self.tolerance_box, False, False, 0)
+
+
+
+        # End
+
+        self.main_box.pack_start(self.image_box, False, False, 0)
+        self.main_box.pack_start(self.option_box, False, False, 0)
+
+        self.widget_box.pack_start(self.main_box, False, False, 0)
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
         self.stack.add_titled(self.config_box, "config", "Widget Config")
