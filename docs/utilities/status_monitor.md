@@ -45,7 +45,7 @@ def update_tool(status, tool_num):
     print tool_num
 
 # Connect "tool_in_spindle" changed signal to "update_tool" callback
-status.on_changed('tool_in_spindle', update_tool)
+status.on_changed('stat.tool_in_spindle', update_tool)
 ```
 
 status.py also monitors the `linuxcnc.stat.joint` dictionaries for changes. So 

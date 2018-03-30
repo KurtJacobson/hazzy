@@ -2,13 +2,13 @@
 
 Hazzy is an attempt at a highly configurable and touchscreen friendly UI for 
 [LinuxCNC](http://linuxcnc.org/). It is written in python and GTK+ 3, and takes
-advantage of the latest GTK+ widgets and their excellent touchscreen support.
+advantage of the latest GTK+ widgets and their touchscreen support.
 
-It is designed to work with LinuxCNC 2.8 and currently supports any machine with
+It is designed to work with LinuxCNC 2.8 and currently supports machines with
 trivial kinematics and up to 9 axes, including gantry configurations.
 
 ## Features
-* Pop-up keypads on all entries
+* Pop-up virtual keyboards on all entries
 * Type in DRO to set work offsets
 * Expression evaluation in entry fields
     * Ex. entering 23/64 --> .3594

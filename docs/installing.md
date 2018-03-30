@@ -1,4 +1,4 @@
-# Installing
+## Installing
 
 The UI is very much under development, so I would not recommend running a machine
 with it at this stage. However, if you want to give hazzy a spin, I have included
@@ -12,23 +12,23 @@ and extract the zip, then continue from Step 2. To clone this repository:
 
 1. Open a terminal at the destination location and say
 
-    ```$ git clone https://github.com/KurtJacobson/hazzy```
+    `$ git clone https://github.com/KurtJacobson/hazzy`
 
 2. Enter the hazzy folder in the newly cloned hazzy directory
 
-    ```$ cd hazzy/hazzy```
+    `$ cd hazzy/hazzy`
 
-3. Add a link to hazzy.py to your usr/bin directory
+3. Link the hazzy startup script to your usr/bin directory
 
-    ```$ sudo ln -sf $(pwd)/hazzy.py /usr/bin/hazzy```
+    `$ sudo ln -sf $(pwd)/hazzy /usr/bin/hazzy`
 
 4. Tell LinuxCNC to use hazzy as the UI. In your machine's INI file set
 
-    ```[DISPLAY] DISPLAY = hazzy```
+    `[DISPLAY] DISPLAY = hazzy`
 
 !!! note
-    If you prefer not to add a link to ```usr/bin```, you could skip Step 3
-    and enter the full path to hazzy.py in the INI file.
+    If you don't want to add a link to ```usr/bin```, you can skip Step 3
+    and simply enter the full path to the startup script in the INI file.
 
     **Ex.** ```DISPLAY = /home/kurt/Desktop/hazzy/hazzy/hazzy.py```
 
@@ -36,18 +36,25 @@ and extract the zip, then continue from Step 2. To clone this repository:
     entries in all the example configurations before they will run.
 
 
-If all went well, you should be able to start LinuxCNC as usual.
+## Running the Example Configs
 
-Click the Reset button. If the machine starts up in E-stop, clicking Reset the
-first time will put the machine in E-stop Reset. Click Reset again to turn the
-machine ON. Home the machine by clicking on the ABS DROs. If you click on the
-ABS DRO label, all axes will be homed (assuming the INI file is configured correctly).
+Hazzy ships with several example configs. These can be launched by specifying
+them when starting LCNC from the comand line
+
+`$ linuxcnc /path/to/hazzy/sim.hazzy/hazzy_XYZ.ini`
+
+Or they can be made available from the LCNC config picker by recursively
+copying the entire `sim.hazzy` directory to `~/linuxcnc/configs`
+
+`$ cp $(pwd)/sim.hazzy $HOME/linuxcnc/configs -r`
 
 
-I will be updating this repository frequently. To get the latest version, enter
-your hazzy directory and say
+## Updating
 
-   ```$ git pull origin master```
+This repo is updated frequently. To get the latest version, enter the
+directory were you cloned hazzy and say
+
+   `$ git pull origin master`
 
 If you have any problems, questions or suggestions, however minor, do not
 hesitate to [open an issue](https://github.com/KurtJacobson/hazzy/issues/new),

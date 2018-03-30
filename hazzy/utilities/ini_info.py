@@ -95,6 +95,18 @@ def get_mdi_history_file():
         path = os.path.realpath(temp)
     return path
 
+def get_tool_table_file():
+    temp = ini.find('EMCIO', 'TOOL_TABLE')
+    if not temp:
+        path = os.path.join(CONFIG_DIR, 'tool.tbl')
+    elif temp.startswith('~'):
+        path = os.path.expanduser(temp)
+    elif not os.path.isabs(temp):
+        path = os.path.join(CONFIG_DIR, temp)
+    else:
+        path = os.path.realpath(temp)
+    return path
+
 def get_coordinates():
     '''Returns [TRAJ] COORDINATES or xyz'''
     temp = ini.find('TRAJ', 'COORDINATES')
@@ -153,7 +165,7 @@ def get_is_lathe():
         return False
     return True
 
-def is_backtool_lathe():
+def get_is_backtool_lathe():
     temp = ini.find('DISPLAY', 'BACK_TOOL_LATHE')
     if not temp or temp == "0":
         return False
@@ -268,12 +280,6 @@ def get_increments():
         jog_increments = [ "0", "1.000", "0.100", "0.010", "0.001" ]
         log.warning("No default jog increments entry found in [DISPLAY] of INI file")
     return jog_increments
-
-def get_tool_table():
-    temp = ini.find('EMCIO', 'TOOL_TABLE')
-    if not temp:
-        return False
-    return temp
 
 def get_subroutine_paths():
     subroutines_paths = ini.find('RS274NGC', 'SUBROUTINE_PATH')

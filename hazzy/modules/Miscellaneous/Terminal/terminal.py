@@ -29,10 +29,28 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-gi.require_version('Vte', '2.91')
 
-from gi.repository import Gtk, Gdk
-from gi.repository import Vte, GLib
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GLib
+
+from utilities import logger
+from utilities import notifications
+
+# Setup logging
+log = logger.get(__name__)
+
+# Check if VTE is installed
+try:
+    gi.require_version('Vte', '2.91')
+    from gi.repository import Vte
+except ValueError as e:
+    log.exception(e)
+    msg = "You don't seem to have the required version of VTE installed." \
+    "The Terminal widget requires VTE 2.91 or latter."
+    notifications.show_error(msg, summary='Import Error!', timeout=0)
+    raise ImportError('VTE 2.91 is not installed or cannot be imported')
+
 
 PYDIR = os.path.join(os.path.dirname(__file__))
 

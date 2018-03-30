@@ -2,7 +2,7 @@
 [![LinuxCNC 2.8][linuxcnc-badge]](https://github.com/LinuxCNC/linuxcnc)
 [![Chat on IRC ][irc-badge]](https://kiwiirc.com/client/irc.kiwiirc.com/hazzy)
 
-[Travis-badge]: https://img.shields.io/travis/KurtJacobson/hazzy/GTK3.svg?label=docs
+[Travis-badge]: https://img.shields.io/travis/KurtJacobson/hazzy/master.svg?label=docs
 [linuxcnc-badge]: https://img.shields.io/badge/LinuxCNC-%202.8-blue.svg
 [irc-badge]: https://img.shields.io/badge/Chat%20on%20IRC-%23hazzy-green.svg
 
