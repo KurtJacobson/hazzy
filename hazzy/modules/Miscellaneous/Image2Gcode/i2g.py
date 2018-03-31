@@ -53,6 +53,7 @@ from utilities import preferences as prefs
 from utilities import logger
 """
 
+
 # Setup paths
 # PYDIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -67,7 +68,7 @@ class I2GWidget(Gtk.Box):
     date = '13/07/2018'
     description = 'converts images to gcode'
 
-    def __init__(self, widget_window):
+    def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
         self.config_stack = False
@@ -424,9 +425,11 @@ class I2GWidget(Gtk.Box):
         self.roughing_depth_box.pack_start(self.roughing_depth_entry, False, False, 0)
         self.option_box.pack_start(self.roughing_depth_box, False, False, 0)
 
-        # Open Close
+        # Open Close Buttons
 
         self.open_button = Gtk.Button(label="Open")
+        self.open_button.connect("clicked", self.on_open_file_clicked)
+
         self.close_button = Gtk.Button(label="Close")
 
         self.button_box.pack_start(self.open_button, False, False, 0)
@@ -445,11 +448,45 @@ class I2GWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
+        # Image Stuff
+
+        self.image_file = None
+
+    def on_open_file_clicked(self, widget):
+        dialog = Gtk.FileChooserDialog("Please choose a file", None, Gtk.FileChooserAction.OPEN, (
+            Gtk.STOCK_CANCEL,
+            Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN,
+            Gtk.ResponseType.OK)
+                                       )
+
+        self.add_filters(dialog)
+
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
+            print("Open clicked")
+            self.image_file = dialog.get_filename()
+        elif response == Gtk.ResponseType.CANCEL:
+            print("Cancel clicked")
+
+        dialog.destroy()
+
+    @staticmethod
+    def add_filters(dialog):
+        filter_text = Gtk.FileFilter()
+        filter_text.set_name("Image files")
+        filter_text.add_mime_type("text/plain")
+        dialog.add_filter(filter_text)
+
+        filter_any = Gtk.FileFilter()
+        filter_any.set_name("Any files")
+        filter_any.add_pattern("*")
+        dialog.add_filter(filter_any)
+
 
 def main():
-
     window = Gtk.Window()
-    w_box = I2GWidget(window)
+    w_box = I2GWidget()
     window.add(w_box)
     window.show_all()
 
