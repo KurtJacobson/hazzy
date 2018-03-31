@@ -71,6 +71,8 @@ class I2GWidget(Gtk.Box):
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
+        self.parent = self.get_parent()
+
         self.config_stack = False
 
         self.set_size_request(600, 800)
@@ -453,21 +455,23 @@ class I2GWidget(Gtk.Box):
         self.image_file = None
 
     def on_open_file_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog("Please choose a file", None, Gtk.FileChooserAction.OPEN, (
-            Gtk.STOCK_CANCEL,
-            Gtk.ResponseType.CANCEL,
-            Gtk.STOCK_OPEN,
-            Gtk.ResponseType.OK)
-                                       )
+        dialog = Gtk.FileChooserDialog(
+            "Please choose a file",
+            self.parent,
+            Gtk.FileChooserAction.OPEN, (
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_OPEN,
+                Gtk.ResponseType.OK)
+        )
 
         self.add_filters(dialog)
 
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            print("Open clicked")
             self.image_file = dialog.get_filename()
         elif response == Gtk.ResponseType.CANCEL:
-            print("Cancel clicked")
+            pass
 
         dialog.destroy()
 
@@ -475,7 +479,7 @@ class I2GWidget(Gtk.Box):
     def add_filters(dialog):
         filter_text = Gtk.FileFilter()
         filter_text.set_name("Image files")
-        filter_text.add_mime_type("text/plain")
+        filter_text.add_mime_type("image/*")
         dialog.add_filter(filter_text)
 
         filter_any = Gtk.FileFilter()
