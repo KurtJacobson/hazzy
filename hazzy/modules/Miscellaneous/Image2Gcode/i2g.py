@@ -59,7 +59,7 @@ Gst.init(None)
 
 
 class I2GWidget(Gtk.Box):
-    title = 'Image2Gcode'
+    title = 'Image 2 g-code'
     author = 'TurBoss'
     version = '0.1.0'
     date = '13/07/2018'
@@ -94,6 +94,14 @@ class I2GWidget(Gtk.Box):
         self.normalize_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.extend_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.tolerance_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.pixel_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.feed_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.plunge_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.spindle_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.pattern_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.direction_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.angle_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.depth_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
         # Image
 
@@ -173,7 +181,121 @@ class I2GWidget(Gtk.Box):
         self.tolerance_box.pack_start(self.tolerance_entry, False, False, 0)
         self.option_box.pack_start(self.tolerance_box, False, False, 0)
 
+        # Pixel size
 
+        self.pixel_label = Gtk.Label(label="Pixel size (Units)")
+
+        self.pixel_box.pack_start(self.pixel_label, False, False, 0)
+
+        self.pixel_entry = Gtk.Entry()
+        self.pixel_entry.set_text("0.08")
+
+        self.pixel_box.pack_start(self.pixel_entry, False, False, 0)
+        self.option_box.pack_start(self.pixel_box, False, False, 0)
+
+        # Feed
+
+        self.feed_label = Gtk.Label(label="Feed (Units per minute)")
+
+        self.feed_box.pack_start(self.feed_label, False, False, 0)
+
+        self.feed_entry = Gtk.Entry()
+        self.feed_entry.set_text("1000")
+
+        self.feed_box.pack_start(self.feed_entry, False, False, 0)
+        self.option_box.pack_start(self.feed_box, False, False, 0)
+
+        # Plunge
+
+        self.plunge_label = Gtk.Label(label="Plunge (Units per minute)")
+
+        self.plunge_box.pack_start(self.plunge_label, False, False, 0)
+
+        self.plunge_entry = Gtk.Entry()
+        self.plunge_entry.set_text("300")
+
+        self.plunge_box.pack_start(self.plunge_entry, False, False, 0)
+        self.option_box.pack_start(self.plunge_box, False, False, 0)
+
+        # Spindle
+
+        self.spindle_label = Gtk.Label(label="Spindle (RPM)")
+
+        self.spindle_box.pack_start(self.spindle_label, False, False, 0)
+
+        self.spindle_entry = Gtk.Entry()
+        self.spindle_entry.set_text("10000")
+
+        self.spindle_box.pack_start(self.spindle_entry, False, False, 0)
+        self.option_box.pack_start(self.spindle_box, False, False, 0)
+
+        # Scan Pattern
+
+        self.pattern_label = Gtk.Label(label="Scan pattern")
+
+        self.pattern_box.pack_start(self.pattern_label, False, False, 0)
+
+        self.pattern_store = Gtk.ListStore(int, str)
+
+        self.pattern_store.append([0, "Rows"])
+        self.pattern_store.append([1, "Cols"])
+        self.pattern_store.append([2, "Test"])
+
+        self.pattern_combo = Gtk.ComboBox.new_with_model(self.pattern_store)
+        self.pattern_combo.set_entry_text_column(1)
+
+        self.pattern_renderer_text = Gtk.CellRendererText()
+        self.pattern_combo.pack_start(self.pattern_renderer_text, True)
+        self.pattern_combo.add_attribute(self.pattern_renderer_text, "text", 1)
+
+        self.pattern_box.pack_start(self.pattern_combo, False, False, 0)
+        self.option_box.pack_start(self.pattern_box, False, False, 0)
+
+        # Scan Direction
+
+        self.direction_label = Gtk.Label(label="Scan direction")
+
+        self.direction_box.pack_start(self.direction_label, False, False, 0)
+
+        self.direction_store = Gtk.ListStore(int, str)
+
+        self.direction_store.append([0, "Positive"])
+        self.direction_store.append([1, "Negative"])
+        self.direction_store.append([2, "Test"])
+
+        self.direction_combo = Gtk.ComboBox.new_with_model(self.direction_store)
+        self.direction_combo.set_entry_text_column(1)
+
+        self.direction_renderer_text = Gtk.CellRendererText()
+        self.direction_combo.pack_start(self.direction_renderer_text, True)
+        self.direction_combo.add_attribute(self.direction_renderer_text, "text", 1)
+
+        self.direction_box.pack_start(self.direction_combo, False, False, 0)
+        self.option_box.pack_start(self.direction_box, False, False, 0)
+
+        # Angle
+
+        self.angle_label = Gtk.Label(label="Angle (Degrees)")
+
+        self.angle_box.pack_start(self.angle_label, False, False, 0)
+
+        self.angle_entry = Gtk.Entry()
+        self.angle_entry.set_text("90")
+
+        self.angle_box.pack_start(self.angle_entry, False, False, 0)
+        self.option_box.pack_start(self.angle_box, False, False, 0)
+
+        # Depth
+
+        self.depth_label = Gtk.Label(label="Depth (Unit)")
+
+        self.depth_box.pack_start(self.depth_label, False, False, 0)
+
+        self.depth_entry = Gtk.Entry()
+        self.depth_entry.set_text("90")
+
+        self.depth_box.pack_start(self.depth_entry, False, False, 0)
+        self.option_box.pack_start(self.depth_box, False, False, 0)
 
         # End
 
