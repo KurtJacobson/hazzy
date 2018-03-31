@@ -20,6 +20,8 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+
+
 import sys
 import os
 
@@ -31,11 +33,13 @@ import numpy.core
 
 plus_inf = numpy.core.Inf
 
+"""
 from rs274.author import Gcode
 import rs274.options
 
 from math import *
 import operator
+"""
 
 import gi
 
@@ -45,17 +49,17 @@ gi.require_version('Gst', '1.0')
 from gi.repository import Gtk
 from gi.repository import Gst
 
+"""
 from widget_factory import pref_widgets
 from utilities import preferences as prefs
 from utilities import logger
+"""
 
 # Setup paths
-PYDIR = os.path.abspath(os.path.dirname(__file__))
+# PYDIR = os.path.abspath(os.path.dirname(__file__))
 
 # Setup logging
-log = logger.get(__name__)
-
-Gst.init(None)
+# log = logger.get(__name__)
 
 
 class I2GWidget(Gtk.Box):
@@ -70,7 +74,7 @@ class I2GWidget(Gtk.Box):
 
         self.config_stack = False
 
-        self.set_size_request(640, 400)
+        self.set_size_request(600, 800)
 
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -102,6 +106,11 @@ class I2GWidget(Gtk.Box):
         self.direction_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.angle_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.depth_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.step_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.tool_dia_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.security_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.tool_type_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.lace_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
         # Image
 
@@ -297,6 +306,86 @@ class I2GWidget(Gtk.Box):
         self.depth_box.pack_start(self.depth_entry, False, False, 0)
         self.option_box.pack_start(self.depth_box, False, False, 0)
 
+        # Step-over
+
+        self.step_label = Gtk.Label(label="Step-over (pixels)")
+
+        self.step_box.pack_start(self.step_label, False, False, 0)
+
+        self.step_adjustment = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
+        self.step_scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=self.step_adjustment)
+
+        self.step_box.pack_start(self.step_scale, False, False, 0)
+        self.option_box.pack_start(self.step_box, False, False, 0)
+
+        # Tool diameter
+
+        self.tool_dia_label = Gtk.Label(label="Tool diameter (Unit)")
+
+        self.tool_dia_box.pack_start(self.tool_dia_label, False, False, 0)
+
+        self.tool_dia_entry = Gtk.Entry()
+        self.tool_dia_entry.set_text("1.5")
+
+        self.tool_dia_box.pack_start(self.tool_dia_entry, False, False, 0)
+        self.option_box.pack_start(self.tool_dia_box, False, False, 0)
+
+        # Security
+
+        self.security_label = Gtk.Label(label="Security height (Unit)")
+
+        self.security_box.pack_start(self.security_label, False, False, 0)
+
+        self.security_entry = Gtk.Entry()
+        self.security_entry.set_text("5")
+
+        self.security_box.pack_start(self.security_entry, False, False, 0)
+        self.option_box.pack_start(self.security_box, False, False, 0)
+
+        # Tool type
+
+        self.tool_type_label = Gtk.Label(label="Tool type")
+
+        self.tool_type_box.pack_start(self.tool_type_label, False, False, 0)
+
+        self.tool_type_store = Gtk.ListStore(int, str)
+
+        self.tool_type_store.append([0, "Ball"])
+        self.tool_type_store.append([1, "Flat"])
+        self.tool_type_store.append([2, "V-Carve"])
+
+        self.tool_type_combo = Gtk.ComboBox.new_with_model(self.direction_store)
+        self.tool_type_combo.set_entry_text_column(1)
+
+        self.tool_type_renderer_text = Gtk.CellRendererText()
+        self.tool_type_combo.pack_start(self.tool_type_renderer_text, True)
+        self.tool_type_combo.add_attribute(self.tool_type_renderer_text, "text", 1)
+
+        self.tool_type_box.pack_start(self.tool_type_combo, False, False, 0)
+        self.option_box.pack_start(self.tool_type_box, False, False, 0)
+
+        # Lace Bounding
+
+        self.lace_label = Gtk.Label(label="Lace Bounding")
+
+        self.lace_box.pack_start(self.lace_label, False, False, 0)
+
+        self.lace_store = Gtk.ListStore(int, str)
+
+        self.lace_store.append([0, "Ball"])
+        self.lace_store.append([1, "Flat"])
+        self.lace_store.append([2, "V-Carve"])
+
+        self.lace_combo = Gtk.ComboBox.new_with_model(self.direction_store)
+        self.lace_combo.set_entry_text_column(1)
+
+        self.lace_renderer_text = Gtk.CellRendererText()
+        self.lace_combo.pack_start(self.lace_renderer_text, True)
+        self.lace_combo.add_attribute(self.lace_renderer_text, "text", 1)
+
+        self.lace_box.pack_start(self.lace_combo, False, False, 0)
+        self.option_box.pack_start(self.lace_box, False, False, 0)
+
         # End
 
         self.main_box.pack_start(self.image_box, False, False, 0)
@@ -308,3 +397,17 @@ class I2GWidget(Gtk.Box):
         self.stack.add_titled(self.config_box, "config", "Widget Config")
 
         self.pack_start(self.stack, True, True, 0)
+
+
+def main():
+
+    window = Gtk.Window()
+    w_box = I2GWidget(window)
+    window.add(w_box)
+    window.show_all()
+
+    Gtk.main()
+
+
+if __name__ == "__main__":
+    main()
