@@ -4,6 +4,8 @@
 #      <chris@timeguy.com>
 #   Copyright (C) 2006 Jeff Epler
 #      <jepler@unpy.net>
+#   Copyright (C) 2018 TurBoss
+#      <j.l.toledano.l@gmail.com>
 #
 #   This file is part of Hazzy.
 #
@@ -19,8 +21,6 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
-
-
 
 import sys
 import os
@@ -44,10 +44,8 @@ import operator
 import gi
 
 gi.require_version('Gtk', '3.0')
-gi.require_version('Gst', '1.0')
 
 from gi.repository import Gtk
-from gi.repository import Gst
 
 """
 from widget_factory import pref_widgets
@@ -111,6 +109,10 @@ class I2GWidget(Gtk.Box):
         self.security_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.tool_type_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.lace_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.contact_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.roughing_offset_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.roughing_depth_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
         # Image
 
@@ -121,7 +123,7 @@ class I2GWidget(Gtk.Box):
 
         # Unit
 
-        self.unit_label = Gtk.Label(label="Unit system")
+        self.unit_label = Gtk.Label(label="Unit System")
 
         self.unit_box.pack_start(self.unit_label, False, False, 0)
 
@@ -192,7 +194,7 @@ class I2GWidget(Gtk.Box):
 
         # Pixel size
 
-        self.pixel_label = Gtk.Label(label="Pixel size (Units)")
+        self.pixel_label = Gtk.Label(label="Pixel Size (Units)")
 
         self.pixel_box.pack_start(self.pixel_label, False, False, 0)
 
@@ -240,7 +242,7 @@ class I2GWidget(Gtk.Box):
 
         # Scan Pattern
 
-        self.pattern_label = Gtk.Label(label="Scan pattern")
+        self.pattern_label = Gtk.Label(label="Scan Pattern")
 
         self.pattern_box.pack_start(self.pattern_label, False, False, 0)
 
@@ -262,7 +264,7 @@ class I2GWidget(Gtk.Box):
 
         # Scan Direction
 
-        self.direction_label = Gtk.Label(label="Scan direction")
+        self.direction_label = Gtk.Label(label="Scan Direction")
 
         self.direction_box.pack_start(self.direction_label, False, False, 0)
 
@@ -320,7 +322,7 @@ class I2GWidget(Gtk.Box):
 
         # Tool diameter
 
-        self.tool_dia_label = Gtk.Label(label="Tool diameter (Unit)")
+        self.tool_dia_label = Gtk.Label(label="Tool Diameter (Unit)")
 
         self.tool_dia_box.pack_start(self.tool_dia_label, False, False, 0)
 
@@ -332,7 +334,7 @@ class I2GWidget(Gtk.Box):
 
         # Security
 
-        self.security_label = Gtk.Label(label="Security height (Unit)")
+        self.security_label = Gtk.Label(label="Security Height (Unit)")
 
         self.security_box.pack_start(self.security_label, False, False, 0)
 
@@ -344,7 +346,7 @@ class I2GWidget(Gtk.Box):
 
         # Tool type
 
-        self.tool_type_label = Gtk.Label(label="Tool type")
+        self.tool_type_label = Gtk.Label(label="Tool Type")
 
         self.tool_type_box.pack_start(self.tool_type_label, False, False, 0)
 
@@ -385,6 +387,51 @@ class I2GWidget(Gtk.Box):
 
         self.lace_box.pack_start(self.lace_combo, False, False, 0)
         self.option_box.pack_start(self.lace_box, False, False, 0)
+
+        # Contact Angle
+
+        self.contact_label = Gtk.Label(label="Contact Angle (degrees)")
+
+        self.contact_box.pack_start(self.contact_label, False, False, 0)
+
+        self.contact_entry = Gtk.Entry()
+        self.contact_entry.set_text("45")
+
+        self.contact_box.pack_start(self.contact_entry, False, False, 0)
+        self.option_box.pack_start(self.contact_box, False, False, 0)
+
+        # Roughing Offset
+
+        self.roughing_offset_label = Gtk.Label(label="Roughing Offset (Units, 0 = none)")
+
+        self.roughing_offset_box.pack_start(self.roughing_offset_label, False, False, 0)
+
+        self.roughing_offset_entry = Gtk.Entry()
+        self.roughing_offset_entry.set_text("0.00")
+
+        self.roughing_offset_box.pack_start(self.roughing_offset_entry, False, False, 0)
+        self.option_box.pack_start(self.roughing_offset_box, False, False, 0)
+
+        # Roughing Depth
+
+        self.roughing_depth_label = Gtk.Label(label="Roughing Depth per pass (Units)")
+
+        self.roughing_depth_box.pack_start(self.roughing_depth_label, False, False, 0)
+
+        self.roughing_depth_entry = Gtk.Entry()
+        self.roughing_depth_entry.set_text("0.25")
+
+        self.roughing_depth_box.pack_start(self.roughing_depth_entry, False, False, 0)
+        self.option_box.pack_start(self.roughing_depth_box, False, False, 0)
+
+        # Open Close
+
+        self.open_button = Gtk.Button(label="Open")
+        self.close_button = Gtk.Button(label="Close")
+
+        self.button_box.pack_start(self.open_button, False, False, 0)
+        self.button_box.pack_start(self.close_button, False, False, 0)
+        self.option_box.pack_start(self.button_box, False, False, 0)
 
         # End
 
