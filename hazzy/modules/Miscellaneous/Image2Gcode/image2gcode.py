@@ -14,7 +14,7 @@
 # image-to-gcode.py is Copyright (C) 2005 Chris Radek
 # chris@timeguy.com
 # image-to-gcode.py is Copyright (C) 2006 Jeff Epler
-# jepler@unpy.net 
+# jepler@unpy.net
 
 import sys
 import os
@@ -33,6 +33,8 @@ from math import *
 import operator
 
 epsilon = 1e-5
+
+progress_msg = False
 
 
 def tobytes(img):
@@ -218,8 +220,8 @@ convert_makers = [ConvertScanIncreasing, ConvertScanDecreasing, ConvertScanAlter
 
 
 def progress(a, b):
-    print("FILTER_PROGRESS={0}".format(a * 100. / b + .5), sys.stderr)
-    sys.stderr.flush()
+    if progress_msg:
+        print("FILTER_PROGRESS={0}".format(a * 100. / b + .5))
 
 
 class Converter:
@@ -315,7 +317,7 @@ class Converter:
             self.image = numpy.zeros((w, h), dtype=numpy.float32)
 
             for j in range(0, w):
-                # progress(j, w)
+                progress(j, w)
                 for i in range(0, h):
                     self.image[j, i] = (nim1[j:j + tw, i:i + th] - rough).max()
 
@@ -373,7 +375,7 @@ class Converter:
         irange = range(h1)
 
         for j in jrange:
-            # progress(jrange.index(j), len(jrange))
+            progress(jrange.index(j), len(jrange))
             y = (w1 - j) * pixelsize
             scan = []
             for i in irange:
@@ -551,7 +553,7 @@ class ArcEntryCut:
 
 
 def main():
-    file_name = "/home/turboss/Projects/i2gTest/B.tif"
+    file_name = "/home/turboss/Projects/i2gTest/A.tif"
     image_file = Image.open(file_name)
 
     size = image_file.size
@@ -563,14 +565,14 @@ def main():
     numpy_image = None
 
     if bit_depth == "I;16":
-        print("16 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
+        # print("16 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
         numpy_image = numpy.fromstring(
             tobytes(image_file),
             dtype=numpy.uint16).reshape((h, w)).astype(numpy.float32)
         numpy_image = numpy_image / int(0xffff)
 
     elif bit_depth == "L":
-        print("8 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
+        # print("8 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
         numpy_image = numpy.fromstring(
             tobytes(image_file),
             dtype=numpy.uint8).reshape((h, w)).astype(numpy.float32)
