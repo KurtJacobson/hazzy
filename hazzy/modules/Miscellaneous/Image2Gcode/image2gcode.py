@@ -15,6 +15,8 @@
 # chris@timeguy.com
 # image-to-gcode.py is Copyright (C) 2006 Jeff Epler
 # jepler@unpy.net
+# image-to-gcode.py is Copyright (C) 2018 TurBoss
+# j.l.toledano.l@gmail.com
 
 import sys
 import os
@@ -568,7 +570,7 @@ class ArcEntryCut:
 
 
 def main():
-    file_name = "/home/turboss/Projects/i2gTest/F.tif"
+    file_name = "/home/turboss/Projects/i2gTest/A.tif"
     image_file = Image.open(file_name)
 
     size = image_file.size
