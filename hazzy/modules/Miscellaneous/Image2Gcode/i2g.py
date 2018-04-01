@@ -68,10 +68,11 @@ class I2GWidget(Gtk.Box):
     date = '13/07/2018'
     description = 'converts images to gcode'
 
-    def __init__(self):
+    def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
-        self.parent = self.get_parent()
+        # Create buffer
+        self.double_buffer = None
 
         self.config_stack = False
 
@@ -119,10 +120,18 @@ class I2GWidget(Gtk.Box):
 
         # Image
 
-        self.image_view = Gtk.Image.new()
+        self.image_view = None
 
-        self.image_box.set_size_request(320, 240)
-        self.image_box.pack_start(self.image_view, False, False, 0)
+        self.image_file = None
+
+        self.image = Gtk.Image()
+
+        self.load_image(self.image_file)
+
+        self.image_box.set_size_request(320, 320)
+
+        self.image_box.set_hexpand(True)
+        self.image_box.set_vexpand(True)
 
         # Unit
 
@@ -433,6 +442,7 @@ class I2GWidget(Gtk.Box):
         self.open_button.connect("clicked", self.on_open_file_clicked)
 
         self.close_button = Gtk.Button(label="Close")
+        self.close_button.connect("clicked", self.on_close_file_clicked)
 
         self.button_box.pack_start(self.open_button, False, False, 0)
         self.button_box.pack_start(self.close_button, False, False, 0)
@@ -450,14 +460,24 @@ class I2GWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
-        # Image Stuff
+    def load_image(self, image_file):
+        self.image_file = image_file
+        print(image_file)
 
-        self.image_file = None
+        self.image_box.remove(self.image)
+
+        if image_file:
+            self.image = Gtk.Image.new_from_file(image_file)
+        else:
+            self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
+
+        self.image_box.pack_start(self.image, False, False, 0)
+        self.image.show()
 
     def on_open_file_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
-            "Please choose a file",
-            self.parent,
+            "Please choose an image",
+            self.get_parent(),
             Gtk.FileChooserAction.OPEN, (
                 Gtk.STOCK_CANCEL,
                 Gtk.ResponseType.CANCEL,
@@ -468,12 +488,19 @@ class I2GWidget(Gtk.Box):
         self.add_filters(dialog)
 
         response = dialog.run()
+
         if response == Gtk.ResponseType.OK:
-            self.image_file = dialog.get_filename()
+            print("OK")
+            self.load_image(dialog.get_filename())
+
         elif response == Gtk.ResponseType.CANCEL:
-            pass
+            print("CANCEL")
+            self.load_image(None)
 
         dialog.destroy()
+
+    def on_close_file_clicked(self, widget):
+        self.load_image(None)
 
     @staticmethod
     def add_filters(dialog):
@@ -490,7 +517,7 @@ class I2GWidget(Gtk.Box):
 
 def main():
     window = Gtk.Window()
-    w_box = I2GWidget()
+    w_box = I2GWidget(window)
     window.add(w_box)
     window.show_all()
 
