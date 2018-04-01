@@ -569,96 +569,135 @@ class ArcEntryCut:
             conv.g.set_feed(conv.feed)
 
 
-def main():
-    file_name = "/home/turboss/Projects/i2gTest/A.tif"
-    image_file = Image.open(file_name)
+class Image2Gcode:
 
-    size = image_file.size
-    dpi_w, dpi_h = image_file.info['dpi']
-    bit_depth = image_file.mode
+    def __init__(self):
+        self.file_name = None
 
-    w, h = size
+        self.numpy_image = None
 
-    numpy_image = None
+        self.maker = None
+        self.tool_diameter = None
 
-    if bit_depth == "I;16":
-        # print("16 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
-        numpy_image = numpy.fromstring(
-            tobytes(image_file),
-            dtype=numpy.uint16).reshape((h, w)).astype(numpy.float32)
-        numpy_image = numpy_image / int(0xffff)
+        self.units = None
+        self.tool = None
+        self.pixel_size = None
+        self.step = None
+        self.depth = None
+        self.tolerance = None
+        self.feed = None
+        self.convert_rows = None
+        self.convert_cols = None
+        self.columns_first = None
+        # ArcEntryCut(plunge, .125)
+        self.spindle_speed = None
+        # 0
+        # 0
+        self.feed = None
+        self.output = None
+        self.plunge = None
 
-    elif bit_depth == "L":
-        # print("8 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
-        numpy_image = numpy.fromstring(
-            tobytes(image_file),
-            dtype=numpy.uint8).reshape((h, w)).astype(numpy.float32)
-        numpy_image = numpy_image / int(0xff)
+    def load(self, file_name):
 
-    maker = tool_makers[0]
-    tool_diameter = 1.5
-    pixel_size = 0.08
-    tool = make_tool_shape(maker, tool_diameter, pixel_size)
-    step = w / float(dpi_w)
+        self.file_name = file_name
+        image_file = Image.open(self.file_name)
 
-    depth = 2
+        size = image_file.size
+        dpi_w, dpi_h = image_file.info['dpi']
+        bit_depth = image_file.mode
 
-    numpy_image = numpy_image * depth
-    numpy_image = numpy_image - depth
+        w, h = size
 
-    rows = 1
-    columns = 0
-    columns_first = 3
-    spindle_speed = 24000
+        if bit_depth == "I;16":
+            print("16 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
+            self.numpy_image = numpy.fromstring(
+                tobytes(image_file),
+                dtype=numpy.uint16).reshape((h, w)).astype(numpy.float32)
+            self.numpy_image = self.numpy_image / int(0xffff)
 
-    if rows:
-        convert_rows = convert_makers[0]()
-    else:
-        convert_rows = None
-    if columns:
-        convert_cols = convert_makers[0]()
-    else:
-        convert_cols = None
+        elif bit_depth == "L":
+            print("8 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
+            self.numpy_image = numpy.fromstring(
+                tobytes(image_file),
+                dtype=numpy.uint8).reshape((h, w)).astype(numpy.float32)
+            self.numpy_image = self.numpy_image / int(0xff)
 
-    if 0 and rows and columns:
-        slope = tan(45 * pi / 180)
-        if columns_first:
-            convert_rows = ReduceScanLace(convert_rows, slope, step + 1)
+        self.maker = tool_makers[0]
+        self.tool_diameter = 1.5
+        self.pixel_size = 0.08
+        self.tool = make_tool_shape(self.maker, self.tool_diameter, self.pixel_size)
+        self.step = w / float(dpi_w)
+
+        self.depth = 2
+
+        self.numpy_image = self.numpy_image * self.depth
+        self.numpy_image = self.numpy_image - self.depth
+
+        rows = 1
+        columns = 0
+        self.columns_first = 3
+        self.spindle_speed = 24000
+
+        if rows:
+            self.convert_rows = convert_makers[0]()
         else:
-            convert_cols = ReduceScanLace(convert_cols, slope, step + 1)
-        if 0 > 1:
-            if columns_first:
-                convert_cols = ReduceScanLace(convert_cols, slope, step + 1)
+            self.convert_rows = None
+        if columns:
+            self.convert_cols = convert_makers[0]()
+        else:
+            self.convert_cols = None
+
+        if 0 and rows and columns:
+            slope = tan(45 * pi / 180)
+            if self.columns_first:
+                self.convert_rows = ReduceScanLace(self.convert_rows, slope, step + 1)
             else:
-                convert_rows = ReduceScanLace(convert_rows, slope, step + 1)
+                self.convert_cols = ReduceScanLace(self.convert_cols, slope, step + 1)
+            if 0 > 1:
+                if self.columns_first:
+                    self.convert_cols = ReduceScanLace(self.convert_cols, slope, step + 1)
+                else:
+                    self.convert_rows = ReduceScanLace(self.convert_rows, slope, step + 1)
 
-    units = "G21"
-    tolerance = 0.0001
-    feed = 2000
-    plunge = 600
+        self.units = "G21"
+        self.tolerance = 0.0001
+        self.feed = 2000
+        self.plunge = 600
 
-    output = "/home/turboss/Projects/i2gTest/test.ngc"
+    def set_output(self, file_name):
 
-    i2g = Converter(numpy_image,
-                    units,
-                    tool,
-                    pixel_size,
-                    step,
-                    depth,
-                    tolerance,
-                    feed,
-                    convert_rows,
-                    convert_cols,
-                    columns_first,
-                    ArcEntryCut(plunge, .125),
-                    spindle_speed,
-                    0,
-                    0,
-                    feed,
-                    output
-                    )
+        self.output = file_name
 
-    i2g.convert()
+    def run(self):
+
+        i2g = Converter(self.numpy_image,
+                        self.units,
+                        self.tool,
+                        self.pixel_size,
+                        self.step,
+                        self.depth,
+                        self.tolerance,
+                        self.feed,
+                        self.convert_rows,
+                        self.convert_cols,
+                        self.columns_first,
+                        ArcEntryCut(self.plunge, .125),
+                        self.spindle_speed,
+                        0,
+                        0,
+                        self.feed,
+                        self.output
+                        )
+
+        i2g.convert()
+
+
+def main():
+
+    i2g = Image2Gcode()
+    i2g.load("/home/turboss/Projects/i2gTest/A.tif")
+    i2g.set_output("/home/turboss/Projects/i2gTest/test.ngc")
+    i2g.run()
 
 
 if __name__ == "__main__":
