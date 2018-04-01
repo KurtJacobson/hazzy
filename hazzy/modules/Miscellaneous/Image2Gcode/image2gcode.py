@@ -34,7 +34,7 @@ import operator
 
 epsilon = 1e-5
 
-progress_msg = False
+progress_msg = True
 
 
 def tobytes(img):
@@ -221,7 +221,7 @@ convert_makers = [ConvertScanIncreasing, ConvertScanDecreasing, ConvertScanAlter
 
 def progress(a, b):
     if progress_msg:
-        print("FILTER_PROGRESS={0}".format(a * 100. / b + .5))
+        print("PROGRESS = {0:.2f}%".format(a * 100. / b + .5))
 
 
 class Converter:
@@ -241,8 +241,8 @@ class Converter:
                  spindle_speed,
                  roughing_offset,
                  roughing_delta,
-                 roughing_feed
-                 ):
+                 roughing_feed,
+                 output):
 
         self.image = image
         self.units = units
@@ -260,6 +260,9 @@ class Converter:
         self.roughing_offset = roughing_offset
         self.roughing_delta = roughing_delta
         self.roughing_feed = roughing_feed
+        self.output = output
+
+        self.target = None
 
         self.cache = {}
 
@@ -298,10 +301,18 @@ class Converter:
         g.safety()
 
     def convert(self):
-        self.g = g = Gcode(safetyheight=self.safetyheight,
-                           tolerance=self.tolerance,
-                           spindle_speed=self.spindle_speed,
-                           units=self.units)
+
+        file = open(self.output, "wb")
+        self.target = lambda x: file.write(str(x) + "\n")
+
+        self.g = Gcode(safetyheight=self.safetyheight,
+                       tolerance=self.tolerance,
+                       spindle_speed=self.spindle_speed,
+                       units=self.units,
+                       target=self.target
+                       )
+        g = self.g
+
         g.begin()
         g.continuous(self.tolerance)
         g.safety()
@@ -620,6 +631,8 @@ def main():
     feed = 2000
     plunge = 600
 
+    output = "/home/turboss/Projects/i2gTest/test.ngc"
+
     i2g = Converter(numpy_image,
                     units,
                     tool,
@@ -635,7 +648,8 @@ def main():
                     spindle_speed,
                     0,
                     0,
-                    feed
+                    feed,
+                    output
                     )
 
     i2g.convert()
