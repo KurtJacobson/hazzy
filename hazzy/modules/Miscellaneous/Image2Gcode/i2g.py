@@ -1,9 +1,5 @@
 #!/usr/bin/env python
 
-#   Copyright (C) 2005 Chris Radek
-#      <chris@timeguy.com>
-#   Copyright (C) 2006 Jeff Epler
-#      <jepler@unpy.net>
 #   Copyright (C) 2018 TurBoss
 #      <j.l.toledano.l@gmail.com>
 #
