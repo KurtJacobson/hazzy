@@ -88,7 +88,8 @@ def make_tool_shape(f, wdia, resp):
 def amax(seq):
     res = 0
     for i in seq:
-        if abs(i) > abs(res): res = i
+        if abs(i) > abs(res):
+            res = i
     return res
 
 
@@ -107,7 +108,8 @@ def group_by_sign(seq, slop=sin(pi / 18), key=lambda x: x):
                 sign = ki / abs(ki)
                 yield subseq
                 subseq = [i]
-    if subseq: yield subseq
+    if subseq:
+        yield subseq
 
 
 class ConvertScanAlternating:
@@ -116,7 +118,8 @@ class ConvertScanAlternating:
 
     def __call__(self, primary, items):
         st = self.st = self.st + 1
-        if st % 2: items.reverse()
+        if st % 2:
+            items.reverse()
         if st == 1:
             yield True, items
         else:
@@ -127,6 +130,10 @@ class ConvertScanAlternating:
 
 
 class ConvertScanIncreasing:
+
+    def __init__(self):
+        pass
+
     def __call__(self, primary, items):
         yield True, items
 
@@ -135,6 +142,10 @@ class ConvertScanIncreasing:
 
 
 class ConvertScanDecreasing:
+
+    def __init__(self):
+        pass
+
     def __call__(self, primary, items):
         items.reverse()
         yield True, items
@@ -158,6 +169,7 @@ class ConvertScanUpmill:
 
 
 class ConvertScanDownmill:
+
     def __init__(self, slop=sin(pi / 18)):
         self.slop = slop
 
@@ -172,6 +184,7 @@ class ConvertScanDownmill:
 
 
 class ReduceScanLace:
+
     def __init__(self, converter, slope, keep):
         self.converter = converter
         self.slope = slope
@@ -191,12 +204,16 @@ class ReduceScanLace:
             return j - j % keep
 
         def eos(j):
-            if j % keep == 0: return j
+            if j % keep == 0:
+                return j
             return j + keep - j % keep
 
         for i, (flag, span) in enumerate(self.converter(primary, items)):
+
             subspan = []
+
             a = None
+            b = None
             for i, si in enumerate(span):
                 ki = si[idx]
                 if a is None:
@@ -206,7 +223,8 @@ class ReduceScanLace:
                     if test(abs(ki), slope):
                         b = i
                     else:
-                        if i - b < keep: continue
+                        if i - b < keep:
+                            continue
                         yield True, span[bos(a):eos(b + 1)]
                         a = None
             if a is not None:
@@ -288,13 +306,15 @@ class Converter:
         if self.convert_cols and self.cols_first_flag:
             self.g.set_plane(19)
             self.mill_cols(self.convert_cols, True)
-            if self.convert_rows: g.safety()
+            if self.convert_rows:
+                g.safety()
         if self.convert_rows:
             self.g.set_plane(18)
             self.mill_rows(self.convert_rows, not self.cols_first_flag)
         if self.convert_cols and not self.cols_first_flag:
             self.g.set_plane(19)
-            if self.convert_rows: g.safety()
+            if self.convert_rows:
+                g.safety()
             self.mill_cols(self.convert_cols, not self.convert_rows)
         if self.convert_cols:
             self.convert_cols.reset()
@@ -304,8 +324,8 @@ class Converter:
 
     def convert(self):
 
-        file = open(self.output, "wb")
-        self.target = lambda x: file.write(str(x) + "\n")
+        gcode_file = open(self.output, "wb")
+        self.target = lambda x: gcode_file.write("{0}\n".format(x))
 
         self.g = Gcode(safetyheight=self.safetyheight,
                        tolerance=self.tolerance,
@@ -380,8 +400,10 @@ class Converter:
     def mill_rows(self, convert_scan, primary):
         w1 = self.w1
         h1 = self.h1
+
         pixelsize = self.pixelsize
         pixelstep = self.pixelstep
+
         jrange = range(0, w1, 1)
         if w1 - 1 not in jrange:
             jrange.append(w1 - 1)
@@ -410,7 +432,8 @@ class Converter:
         pixelstep = self.pixelstep
         jrange = range(0, h1, pixelstep)
         irange = range(w1)
-        if h1 - 1 not in jrange: jrange.append(h1 - 1)
+        if h1 - 1 not in jrange:
+            jrange.append(h1 - 1)
         jrange.reverse()
 
         for j in jrange:
@@ -431,6 +454,7 @@ class Converter:
 
 
 class SimpleEntryCut:
+
     def __init__(self, feed):
         self.feed = feed
 
@@ -499,10 +523,12 @@ class ArcEntryCut:
             for di in r:
                 dx = di * pixelsize
                 i = i0 + cx * di
-                if i < 0 or i >= h1: break
+                if i < 0 or i >= h1:
+                    break
                 z1 = conv.get_z(i, j0)
                 dz = (z1 - z0)
-                if dz <= 0: continue
+                if dz <= 0:
+                    continue
                 if dz > dx:
                     conv.g.write("(case 1)")
                     radius = dx
@@ -558,9 +584,9 @@ class ArcEntryCut:
             conv.g.flush()
             conv.g.lastgcode = None
             if cy > 0:
-                conv.g.write("G2 Y%f Z%f R%f" % (p1[1], p1[2], radius))
+                conv.g.write("G2 Y{0} Z{1} R{2}".format(p1[1], p1[2], radius))
             else:
-                conv.g.write("G3 Y%f Z%f R%f" % (p1[1], p1[2], radius))
+                conv.g.write("G3 Y{0} Z{1} R{2}".format(p1[1], p1[2], radius))
             conv.g.lastx = p1[0]
             conv.g.lasty = p1[1]
             conv.g.lastz = p1[2]
@@ -586,6 +612,9 @@ class Image2Gcode:
         self.depth = None
         self.tolerance = None
         self.feed = None
+
+        self.bounded = None
+
         self.convert_rows = None
         self.convert_cols = None
         self.columns_first = None
@@ -647,17 +676,17 @@ class Image2Gcode:
         else:
             self.convert_cols = None
 
-        if 0 and rows and columns:
+        if self.bounded and rows and columns:
             slope = tan(45 * pi / 180)
             if self.columns_first:
-                self.convert_rows = ReduceScanLace(self.convert_rows, slope, step + 1)
+                self.convert_rows = ReduceScanLace(self.convert_rows, slope, self.step + 1)
             else:
-                self.convert_cols = ReduceScanLace(self.convert_cols, slope, step + 1)
-            if 0 > 1:
+                self.convert_cols = ReduceScanLace(self.convert_cols, slope, self.step + 1)
+            if self.bounded > 1:
                 if self.columns_first:
-                    self.convert_cols = ReduceScanLace(self.convert_cols, slope, step + 1)
+                    self.convert_cols = ReduceScanLace(self.convert_cols, slope, self.step + 1)
                 else:
-                    self.convert_rows = ReduceScanLace(self.convert_rows, slope, step + 1)
+                    self.convert_rows = ReduceScanLace(self.convert_rows, slope, self.step + 1)
 
         self.units = "G21"
         self.tolerance = 0.0001
@@ -665,7 +694,6 @@ class Image2Gcode:
         self.plunge = 600
 
     def set_output(self, file_name):
-
         self.output = file_name
 
     def run(self):
