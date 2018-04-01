@@ -533,16 +533,20 @@ class ArcEntryCut:
             for dj in r:
                 dy = dj * pixelsize
                 j = j0 - cy * dj
-                if j < 0 or j >= w1: break
+                if j < 0 or j >= w1:
+                    break
                 z1 = conv.get_z(i0, j)
                 dz = (z1 - z0)
-                if dz <= 0: continue
+                if dz <= 0:
+                    continue
                 if dz > dy:
                     radius = dy
                     break
                 rad1 = (dy * dy / dz + dz) / 2
-                if rad1 < radius: radius = rad1
-                if dy > radius: break
+                if rad1 < radius:
+                    radius = rad1
+                if dy > radius:
+                    break
 
             z1 = min(p1[2] + radius, conv.safetyheight)
             y1 = p1[1] + cy * circ(radius, z1 - p1[2])
@@ -564,7 +568,7 @@ class ArcEntryCut:
 
 
 def main():
-    file_name = "/home/turboss/Projects/i2gTest/A.tif"
+    file_name = "/home/turboss/Projects/i2gTest/F.tif"
     image_file = Image.open(file_name)
 
     size = image_file.size
@@ -591,11 +595,11 @@ def main():
 
     maker = tool_makers[0]
     tool_diameter = 1.5
-    pixel_size = dpi_w / float(w)
+    pixel_size = 0.08
     tool = make_tool_shape(maker, tool_diameter, pixel_size)
     step = w / float(dpi_w)
 
-    depth = 5
+    depth = 2
 
     numpy_image = numpy_image * depth
     numpy_image = numpy_image - depth
