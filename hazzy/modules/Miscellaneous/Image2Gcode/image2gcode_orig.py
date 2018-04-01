@@ -14,13 +14,22 @@
 # image-to-gcode.py is Copyright (C) 2005 Chris Radek
 # chris@timeguy.com
 # image-to-gcode.py is Copyright (C) 2006 Jeff Epler
-# jepler@unpy.net 
+# jepler@unpy.net
 
 import sys
 import os
+
+BASE = os.path.abspath(os.path.join(os.path.dirname(sys.argv[0]), ".."))
+sys.path.insert(0, os.path.join(BASE, "lib", "python"))
+
 import gettext
 
-from PIL import Image
+gettext.install("linuxcnc", localedir=os.path.join(BASE, "share", "locale"), unicode=True)
+
+try:
+    from PIL import Image
+except Exception as e:
+    import Image
 
 import numpy.core
 
@@ -36,8 +45,7 @@ epsilon = 1e-5
 
 
 def tobytes(img):
-    if hasattr(img, 'tobytes'):
-        return img.tobytes()
+    if hasattr(img, 'tobytes'): return img.tobytes()
     return img.tostring()
 
 
@@ -106,7 +114,7 @@ def group_by_sign(seq, slop=sin(pi / 18), key=lambda x: x):
     if subseq: yield subseq
 
 
-class ConvertScanAlternating:
+class Convert_Scan_Alternating:
     def __init__(self):
         self.st = 0
 
@@ -122,7 +130,7 @@ class ConvertScanAlternating:
         self.st = 0
 
 
-class ConvertScanIncreasing:
+class Convert_Scan_Increasing:
     def __call__(self, primary, items):
         yield True, items
 
@@ -130,7 +138,7 @@ class ConvertScanIncreasing:
         pass
 
 
-class ConvertScanDecreasing:
+class Convert_Scan_Decreasing:
     def __call__(self, primary, items):
         items.reverse()
         yield True, items
@@ -139,7 +147,7 @@ class ConvertScanDecreasing:
         pass
 
 
-class ConvertScanUpmill:
+class Convert_Scan_Upmill:
     def __init__(self, slop=sin(pi / 18)):
         self.slop = slop
 
@@ -153,7 +161,7 @@ class ConvertScanUpmill:
         pass
 
 
-class ConvertScanDownmill:
+class Convert_Scan_Downmill:
     def __init__(self, slop=sin(pi / 18)):
         self.slop = slop
 
@@ -167,7 +175,7 @@ class ConvertScanDownmill:
         pass
 
 
-class ReduceScanLace:
+class Reduce_Scan_Lace:
     def __init__(self, converter, slope, keep):
         self.converter = converter
         self.slope = slope
@@ -213,35 +221,22 @@ class ReduceScanLace:
 
 
 unitcodes = ['G20', 'G21']
-convert_makers = [ConvertScanIncreasing, ConvertScanDecreasing, ConvertScanAlternating, ConvertScanUpmill,
-                  ConvertScanDownmill]
+convert_makers = [Convert_Scan_Increasing, Convert_Scan_Decreasing, Convert_Scan_Alternating, Convert_Scan_Upmill,
+                  Convert_Scan_Downmill]
 
 
 def progress(a, b):
-    print("FILTER_PROGRESS={0}".format(a * 100. / b + .5), sys.stderr)
-    sys.stderr.flush()
+    if os.environ.has_key("AXIS_PROGRESS_BAR"):
+        print >> sys.stderr, "FILTER_PROGRESS=%d" % int(a * 100. / b + .5)
+        sys.stderr.flush()
 
 
 class Converter:
     def __init__(self,
-                 image,
-                 units,
-                 tool_shape,
-                 pixelsize,
-                 pixelstep,
-                 safetyheight,
-                 tolerance,
-                 feed,
-                 convert_rows,
-                 convert_cols,
-                 cols_first_flag,
-                 entry_cut,
-                 spindle_speed,
-                 roughing_offset,
-                 roughing_delta,
-                 roughing_feed
-                 ):
-
+                 image, units, tool_shape, pixelsize, pixelstep, safetyheight, \
+                 tolerance, feed, convert_rows, convert_cols, cols_first_flag,
+                 entry_cut, spindle_speed, roughing_offset, roughing_delta,
+                 roughing_feed):
         self.image = image
         self.units = units
         self.tool = tool_shape
@@ -267,12 +262,7 @@ class Converter:
         self.h1 = h - ts
         self.w1 = w - ts
 
-        self.tool_shape = tool_shape * self.pixelsize * ts / 2
-
-        self.g = None
-        self.feed = None
-        self.ro = None
-        self.rd = None
+        self.tool_shape = tool_shape * self.pixelsize * ts / 2;
 
     def one_pass(self):
         g = self.g
@@ -305,7 +295,8 @@ class Converter:
         g.safety()
         if self.roughing_delta and self.roughing_offset:
             base_image = self.image
-            rough = make_tool_shape(ball_tool, 2 * self.roughing_offset, self.pixelsize)
+            rough = make_tool_shape(ball_tool,
+                                    2 * self.roughing_offset, self.pixelsize)
             w, h = base_image.shape
             tw, th = rough.shape
             w1 = w + tw
@@ -313,29 +304,23 @@ class Converter:
             nim1 = numpy.zeros((w1, h1), dtype=numpy.float32) + base_image.min()
             nim1[tw / 2:tw / 2 + w, th / 2:th / 2 + h] = base_image
             self.image = numpy.zeros((w, h), dtype=numpy.float32)
-
             for j in range(0, w):
-                # progress(j, w)
+                progress(j, w)
                 for i in range(0, h):
                     self.image[j, i] = (nim1[j:j + tw, i:i + th] - rough).max()
-
             self.feed = self.roughing_feed
             r = -self.roughing_delta
             m = self.image.min()
             self.ro = self.roughing_offset
-
             while r > m:
                 self.rd = r
                 self.one_pass()
                 r = r - self.roughing_delta
-
             if r < m + epsilon:
                 self.rd = m
                 self.one_pass()
-
             self.image = base_image
             self.cache.clear()
-
         self.feed = self.base_feed
         self.ro = 0
         self.rd = self.image.min()
@@ -363,17 +348,16 @@ class Converter:
         return (self.get_z(x2, y) - self.get_z(x1, y)) / dx
 
     def mill_rows(self, convert_scan, primary):
-        w1 = self.w1
-        h1 = self.h1
-        pixelsize = self.pixelsize
+        w1 = self.w1;
+        h1 = self.h1;
+        pixelsize = self.pixelsize;
         pixelstep = self.pixelstep
-        jrange = range(0, w1, 1)
-        if w1 - 1 not in jrange:
-            jrange.append(w1 - 1)
+        jrange = range(0, w1, pixelstep)
+        if w1 - 1 not in jrange: jrange.append(w1 - 1)
         irange = range(h1)
 
         for j in jrange:
-            # progress(jrange.index(j), len(jrange))
+            progress(jrange.index(j), len(jrange))
             y = (w1 - j) * pixelsize
             scan = []
             for i in irange:
@@ -389,9 +373,9 @@ class Converter:
             self.g.flush()
 
     def mill_cols(self, convert_scan, primary):
-        w1 = self.w1
-        h1 = self.h1
-        pixelsize = self.pixelsize
+        w1 = self.w1;
+        h1 = self.h1;
+        pixelsize = self.pixelsize;
         pixelstep = self.pixelstep
         jrange = range(0, h1, pixelstep)
         irange = range(w1)
@@ -413,6 +397,10 @@ class Converter:
                 for p in points:
                     self.g.cut(*p[1])
             self.g.flush()
+
+
+def convert(*args, **kw):
+    return Converter(*args, **kw).convert()
 
 
 class SimpleEntryCut:
@@ -447,7 +435,6 @@ class ArcEntryCut:
         self.max_radius = max_radius
 
     def __call__(self, conv, i0, j0, points):
-
         if len(points) < 2:
             p = points[0][1]
             if self.feed:
@@ -467,7 +454,6 @@ class ArcEntryCut:
 
         if self.feed:
             conv.g.set_feed(self.feed)
-
         conv.g.safety()
 
         x, y, z = p1
@@ -505,16 +491,13 @@ class ArcEntryCut:
 
             conv.g.flush()
             conv.g.lastgcode = None
-
             if cx > 0:
-                conv.g.write("G3 X{0} Z{1} R{2}".format(p1[0], p1[2], radius))
+                conv.g.write("G3 X%f Z%f R%f" % (p1[0], p1[2], radius))
             else:
-                conv.g.write("G2 X{0} Z{1} R{2}".format(p1[0], p1[2], radius))
-
+                conv.g.write("G2 X%f Z%f R%f" % (p1[0], p1[2], radius))
             conv.g.lastx = p1[0]
             conv.g.lasty = p1[1]
             conv.g.lastz = p1[2]
-
         else:
             w1 = conv.w1
             for dj in r:
@@ -545,99 +528,366 @@ class ArcEntryCut:
             conv.g.lastx = p1[0]
             conv.g.lasty = p1[1]
             conv.g.lastz = p1[2]
-
         if self.feed:
             conv.g.set_feed(conv.feed)
 
 
+def ui(im, nim, im_name):
+    import Tkinter
+    import ImageTk
+    import pickle
+    import nf
+
+    app = Tkinter.Tk()
+    rs274.options.install(app)
+    app.tk.call("source", os.path.join(BASE, "share", "axis", "tcl", "combobox.tcl"))
+
+    name = os.path.basename(im_name)
+    app.wm_title(_("%s: Image to gcode") % name)
+    app.wm_iconname(_("Image to gcode"))
+    w, h = im.size
+    r1 = w / 300.
+    r2 = h / 300.
+    nw = int(w / max(r1, r2))
+    nh = int(h / max(r1, r2))
+
+    ui_image = im.resize((nw, nh), Image.ANTIALIAS)
+    ui_image = ImageTk.PhotoImage(ui_image, master=app)
+    i = Tkinter.Label(app, image=ui_image, compound="top",
+                      text=_("Image size: %(w)d x %(h)d pixels\n"
+                             "Minimum pixel value: %(min)d\nMaximum pixel value: %(max)d")
+                           % {'w': im.size[0], 'h': im.size[1], 'min': nim.min(), 'max': nim.max()},
+                      justify="left")
+    f = Tkinter.Frame(app)
+    g = Tkinter.Frame(app)
+    b = Tkinter.Frame(app)
+    i.grid(row=0, column=0, sticky="nw")
+    f.grid(row=0, column=1, sticky="nw")
+    b.grid(row=1, column=0, columnspan=2, sticky="ne")
+
+    def filter_nonint(event):
+        if event.keysym in ("Return", "Tab", "ISO_Left_Tab", "BackSpace"):
+            return
+        if event.char == "": return
+        if event.char in "0123456789": return
+        return "break"
+
+    def filter_nonfloat(event):
+        if event.keysym in ("Return", "Tab", "ISO_Left_Tab", "BackSpace"):
+            return
+        if event.char == "": return
+        if event.char in "0123456789.": return
+        return "break"
+
+    validate_float = "expr {![regexp {^-?([0-9]+(\.[0-9]*)?|\.[0-9]+|)$} %P]}"
+    validate_int = "expr {![regexp {^-?([0-9]+|)$} %P]}"
+    validate_posfloat = "expr {![regexp {^?([0-9]+(\.[0-9]*)?|\.[0-9]+|)$} %P]}"
+    validate_posint = "expr {![regexp {^([0-9]+|)$} %P]}"
+
+    def floatentry(f, v):
+        var = Tkinter.DoubleVar(f)
+        var.set(v)
+        w = Tkinter.Entry(f, textvariable=var, validatecommand=validate_float, validate="key", width=10)
+        return w, var
+
+    def intentry(f, v):
+        var = Tkinter.IntVar(f)
+        var.set(v)
+        w = Tkinter.Entry(f, textvariable=var, validatecommand=validate_int, validate="key", width=10)
+        return w, var
+
+    def checkbutton(k, v):
+        var = Tkinter.BooleanVar(f)
+        var.set(v)
+        g = Tkinter.Frame(f)
+        w = Tkinter.Checkbutton(g, variable=var, text=_("Yes"))
+        w.pack(side="left")
+        return g, var
+
+    def intscale(k, v, min=1, max=100):
+        var = Tkinter.IntVar(f)
+        var.set(v)
+        g = Tkinter.Frame(f, borderwidth=0)
+        w = Tkinter.Scale(g, orient="h", variable=var, from_=min, to=max, showvalue=False)
+        l = Tkinter.Label(g, textvariable=var, width=3)
+        l.pack(side="left")
+        w.pack(side="left", fill="x", expand=1)
+        return g, var
+
+    def _optionmenu(k, v, *options):
+        options = list(options)
+
+        def trace(*args):
+            try:
+                var.set(options.index(svar.get()))
+            except ValueError:
+                pass
+
+        try:
+            opt = options[v]
+        except (TypeError, IndexError):
+            v = 0
+            opt = options[0]
+
+        var = Tkinter.IntVar(f)
+        var.set(v)
+        svar = Tkinter.StringVar(f)
+        svar.set(options[v])
+        svar.trace("w", trace)
+        wp = f._w.rstrip(".") + ".c" + svar._name
+        f.tk.call("combobox::combobox", wp, "-editable", 0, "-width",
+                  max(len(opt) for opt in options) + 3, "-textvariable", svar._name,
+                  "-background", "white")
+        f.tk.call(wp, "list", "insert", "end", *options)
+        w = nf.makewidget(f, Tkinter.Widget, wp)
+        return w, var
+
+    def optionmenu(*options):
+        return lambda f, v: _optionmenu(f, v, *options)
+
+    rc = os.path.expanduser("~/.image2gcoderc")
+    constructors = [
+        ("units", optionmenu(_("G20 (in)"), _("G21 (mm)"))),
+        ("invert", checkbutton),
+        ("normalize", checkbutton),
+        ("expand", optionmenu(_("None"), _("White"), _("Black"))),
+        ("tolerance", floatentry),
+        ("pixel_size", floatentry),
+        ("feed_rate", floatentry),
+        ("plunge_feed_rate", floatentry),
+        ("spindle_speed", floatentry),
+        ("pattern", optionmenu(_("Rows"), _("Columns"), _("Rows then Columns"), _("Columns then Rows"))),
+        ("converter", optionmenu(_("Positive"), _("Negative"), _("Alternating"), _("Up Milling"), _("Down Milling"))),
+        ("depth", floatentry),
+        ("pixelstep", intscale),
+        ("tool_diameter", floatentry),
+        ("safety_height", floatentry),
+        ("tool_type", optionmenu(_("Ball End"), _("Flat End"), _("30 Degree"), _("45 Degree"), _("60 Degree"))),
+        ("bounded", optionmenu(_("None"), _("Secondary"), _("Full"))),
+        ("contact_angle", floatentry),
+        ("roughing_offset", floatentry),
+        ("roughing_depth", floatentry),
+    ]
+
+    defaults = dict(
+        invert=False,
+        normalize=False,
+        expand=0,
+        pixel_size=.006,
+        depth=0.25,
+        pixelstep=8,
+        tool_diameter=1 / 16.,
+        safety_height=.012,
+        tool_type=0,
+        tolerance=.001,
+        feed_rate=12,
+        plunge_feed_rate=12,
+        units=0,
+        pattern=0,
+        converter=0,
+        bounded=0,
+        contact_angle=45,
+        spindle_speed=1000,
+        roughing_offset=.1,
+        roughing_depth=.25,
+    )
+
+    texts = dict(
+        invert=_("Invert Image"),
+        normalize=_("Normalize Image"),
+        expand=_("Extend Image Border"),
+        pixel_size=_("Pixel Size (Units)"),
+        depth=_("Depth (units)"),
+        tolerance=_("Tolerance (units)"),
+        pixelstep=_("Stepover (pixels)"),
+        tool_diameter=_("Tool Diameter (units)"),
+        tool_type=_("Tool Type"),
+        feed_rate=_("Feed Rate (units per minute)"),
+        plunge_feed_rate=_("Plunge Feed Rate (units per minute)"),
+        units=_("Units"),
+        safety_height=_("Safety Height (units)"),
+        pattern=_("Scan Pattern"),
+        converter=_("Scan Direction"),
+        bounded=_("Lace Bounding"),
+        contact_angle=_("Contact Angle (degrees)"),
+        spindle_speed=_("Spindle Speed (RPM)"),
+        roughing_offset=_("Roughing offset (units, 0=no roughing)"),
+        roughing_depth=_("Roughing depth per pass (units)"),
+    )
+
+    try:
+        defaults.update(pickle.load(open(rc, "rb")))
+    except (IOError, pickle.PickleError):
+        pass
+
+    vars = {}
+    widgets = {}
+    for j, (k, con) in enumerate(constructors):
+        v = defaults[k]
+        text = texts.get(k, k.replace("_", " "))
+        lab = Tkinter.Label(f, text=text)
+        widgets[k], vars[k] = con(f, v)
+        lab.grid(row=j, column=0, sticky="w")
+        widgets[k].grid(row=j, column=1, sticky="ew")
+
+    def trace_pattern(*args):
+        if vars['pattern'].get() > 1:
+            widgets['bounded'].configure(state="normal")
+            trace_bounded()
+        else:
+            widgets['bounded'].configure(state="disabled")
+            widgets['contact_angle'].configure(state="disabled")
+
+    def trace_bounded(*args):
+        if vars['bounded'].get() != 0:
+            widgets['contact_angle'].configure(state="normal")
+        else:
+            widgets['contact_angle'].configure(state="disabled")
+
+    def trace_offset(*args):
+        if vars['roughing_offset'].get() > 0:
+            widgets['roughing_depth'].configure(state='normal')
+        else:
+            widgets['roughing_depth'].configure(state='disabled')
+
+    vars['pattern'].trace('w', trace_pattern)
+    vars['bounded'].trace('w', trace_bounded)
+    vars['roughing_offset'].trace('w', trace_offset)
+
+    trace_pattern()
+    trace_bounded()
+    trace_offset()
+
+    status = Tkinter.IntVar()
+    bb = Tkinter.Button(b, text=_("OK"), command=lambda: status.set(1), width=8, default="active")
+    bb.pack(side="left", padx=4, pady=4)
+    bb = Tkinter.Button(b, text=_("Cancel"), command=lambda: status.set(-1), width=8, default="normal")
+    bb.pack(side="left", padx=4, pady=4)
+
+    app.bind("<Escape>", lambda evt: status.set(-1))
+    app.bind("<Return>", lambda evt: status.set(1))
+    app.wm_protocol("WM_DELETE_WINDOW", lambda: status.set(-1))
+    app.wm_resizable(0, 0)
+
+    app.wait_visibility()
+    app.tk.call("after", "idle", ("after", "idle", "focus [tk_focusNext .]"))
+    # app.tk_focusNext().focus()
+    app.wait_variable(status)
+
+    for k, v in vars.items():
+        defaults[k] = v.get()
+
+    app.destroy()
+
+    if status.get() == -1:
+        raise SystemExit(_("image-to-gcode: User pressed cancel"))
+
+    pickle.dump(defaults, open(rc, "wb"))
+
+    return defaults
+
+
 def main():
-    file_name = "/home/turboss/Projects/i2gTest/B.tif"
-    image_file = Image.open(file_name)
+    if len(sys.argv) > 1:
+        im_name = sys.argv[1]
+    else:
+        import tkFileDialog, Tkinter
+        im_name = tkFileDialog.askopenfilename(defaultextension=".png",
+                                               filetypes=(
+                                                   (_("Depth images"), ".gif .png .jpg"),
+                                                   (_("All files"), "*")))
+        if not im_name: raise SystemExit
+        Tkinter._default_root.destroy()
+        Tkinter._default_root = None
+    im = Image.open(im_name)
+    size = im.size
+    im = im.convert("L")  # grayscale
+    w, h = im.size
 
-    size = image_file.size
-    dpi_w, dpi_h = image_file.info['dpi']
-    bit_depth = image_file.mode
+    nim = numpy.fromstring(tobytes(im), dtype=numpy.uint8).reshape((h, w)).astype(numpy.float32)
+    options = ui(im, nim, im_name)
 
-    w, h = size
+    step = options['pixelstep']
+    depth = options['depth']
 
-    numpy_image = None
+    if options['normalize']:
+        a = nim.min()
+        b = nim.max()
+        if a != b:
+            nim = (nim - a) / (b - a)
+    else:
+        nim = nim / 255.0
 
-    if bit_depth == "I;16":
-        print("16 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
-        numpy_image = numpy.fromstring(
-            tobytes(image_file),
-            dtype=numpy.uint16).reshape((h, w)).astype(numpy.float32)
-        numpy_image = numpy_image / int(0xffff)
-
-    elif bit_depth == "L":
-        print("8 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
-        numpy_image = numpy.fromstring(
-            tobytes(image_file),
-            dtype=numpy.uint8).reshape((h, w)).astype(numpy.float32)
-        numpy_image = numpy_image / int(0xff)
-
-    maker = tool_makers[0]
-    tool_diameter = 1.5
-    pixel_size = dpi_w / float(w)
+    maker = tool_makers[options['tool_type']]
+    tool_diameter = options['tool_diameter']
+    pixel_size = options['pixel_size']
     tool = make_tool_shape(maker, tool_diameter, pixel_size)
-    step = w / float(dpi_w)
 
-    depth = 5
+    if options['expand']:
+        if options['expand'] == 1:
+            pixel = 1
+        else:
+            pixel = 0
+        w, h = nim.shape
+        tw, th = tool.shape
+        w1 = w + 2 * tw
+        h1 = h + 2 * th
+        nim1 = numpy.zeros((w1, h1), dtype=numpy.float32) + pixel
+        nim1[tw:tw + w, th:th + h] = nim
+        nim = nim1
+        w, h = w1, h1
+    nim = nim * depth
 
-    numpy_image = numpy_image * depth
-    numpy_image = numpy_image - depth
+    if options['invert']:
+        nim = -nim
+    else:
+        nim = nim - depth
 
-    rows = 1
-    columns = 0
-    columns_first = 3
-    spindle_speed = 24000
-
+    rows = options['pattern'] != 1
+    columns = options['pattern'] != 0
+    columns_first = options['pattern'] == 3
+    spindle_speed = options['spindle_speed']
     if rows:
-        convert_rows = convert_makers[0]()
+        convert_rows = convert_makers[options['converter']]()
     else:
         convert_rows = None
     if columns:
-        convert_cols = convert_makers[0]()
+        convert_cols = convert_makers[options['converter']]()
     else:
         convert_cols = None
 
-    if 0 and rows and columns:
-        slope = tan(45 * pi / 180)
+    if options['bounded'] and rows and columns:
+        slope = tan(options['contact_angle'] * pi / 180)
         if columns_first:
-            convert_rows = ReduceScanLace(convert_rows, slope, step + 1)
+            convert_rows = Reduce_Scan_Lace(convert_rows, slope, step + 1)
         else:
-            convert_cols = ReduceScanLace(convert_cols, slope, step + 1)
-        if 0 > 1:
+            convert_cols = Reduce_Scan_Lace(convert_cols, slope, step + 1)
+        if options['bounded'] > 1:
             if columns_first:
-                convert_cols = ReduceScanLace(convert_cols, slope, step + 1)
+                convert_cols = Reduce_Scan_Lace(convert_cols, slope, step + 1)
             else:
-                convert_rows = ReduceScanLace(convert_rows, slope, step + 1)
+                convert_rows = Reduce_Scan_Lace(convert_rows, slope, step + 1)
 
-    units = "G21"
-    tolerance = 0.0001
-    feed = 2000
-    plunge = 600
-
-    i2g = Converter(numpy_image,
-                    units,
-                    tool,
-                    pixel_size,
-                    step,
-                    depth,
-                    tolerance,
-                    feed,
-                    convert_rows,
-                    convert_cols,
-                    columns_first,
-                    ArcEntryCut(plunge, .125),
-                    spindle_speed,
-                    0,
-                    0,
-                    feed
-                    )
-
-    i2g.convert()
+    units = unitcodes[options['units']]
+    convert(nim,
+            units,
+            tool,
+            pixel_size,
+            step,
+            options['safety_height'],
+            options['tolerance'],
+            options['feed_rate'],
+            convert_rows,
+            convert_cols,
+            columns_first,
+            ArcEntryCut(options['plunge_feed_rate'], .125),
+            spindle_speed,
+            options['roughing_offset'],
+            options['roughing_depth'],
+            options['feed_rate'])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
+
+# vim:sw=4:sts=4:et:
