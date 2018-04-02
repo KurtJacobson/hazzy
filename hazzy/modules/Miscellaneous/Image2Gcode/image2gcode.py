@@ -725,7 +725,7 @@ class Image2Gcode:
 def main():
 
     i2g = Image2Gcode()
-    i2g.load("/home/turboss/Projects/i2gTest/A.tif")
+    i2g.load_file("/home/turboss/Projects/i2gTest/A.tif")
     i2g.set_output("/home/turboss/Projects/i2gTest/test.ngc")
     i2g.execute()
 
