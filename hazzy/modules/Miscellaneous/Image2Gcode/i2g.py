@@ -56,7 +56,7 @@ class I2GWidget(Gtk.Box):
 
         # I2G module
 
-        self.i2g = Image2Gcode
+        self.i2g = Image2Gcode()
 
         # Boxes
 

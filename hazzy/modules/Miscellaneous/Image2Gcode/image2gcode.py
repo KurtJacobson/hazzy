@@ -628,7 +628,7 @@ class Image2Gcode:
         self.output = None
         self.plunge = None
 
-    def load(self, file_name=None):
+    def load_file(self, file_name=None):
 
         self.file_name = file_name
         image_file = Image.open(self.file_name)
