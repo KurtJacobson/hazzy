@@ -72,7 +72,7 @@ class I2GWidget(Gtk.Box):
 
         self.config_stack = False
 
-        self.set_size_request(600, 800)
+        self.set_size_request(480, 768)
 
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -91,27 +91,6 @@ class I2GWidget(Gtk.Box):
         self.image_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.options_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        self.unit_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.invert_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.normalize_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.extend_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.tolerance_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.pixel_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.feed_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.plunge_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.spindle_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.pattern_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.direction_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.angle_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.depth_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.step_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.tool_dia_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.security_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.tool_type_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.lace_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.contact_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.roughing_offset_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.roughing_depth_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
         # Image
@@ -221,7 +200,7 @@ class I2GWidget(Gtk.Box):
 
         # Tool type
 
-        self.combobox_2_constructor(label_text="Path Direction",
+        self.combobox_2_constructor(label_text="Tool type",
                                     list_options=[
                                         [0, "Ball End"],
                                         [1, "Flat End"],
@@ -232,7 +211,7 @@ class I2GWidget(Gtk.Box):
 
         # Lace Bounding
 
-        self.combobox_2_constructor(label_text="Path Direction",
+        self.combobox_2_constructor(label_text="Lace Bounding",
                                     list_options=[
                                         [0, "None"],
                                         [1, "Secondary"],
@@ -255,6 +234,9 @@ class I2GWidget(Gtk.Box):
 
         self.open_button = Gtk.Button(label="Open")
         self.open_button.connect("clicked", self.on_open_file_clicked)
+
+        self.execute_button = Gtk.Button(label="Execute")
+        self.execute_button.connect("clicked", self.on_execute_file_clicked)
 
         self.close_button = Gtk.Button(label="Close")
         self.close_button.connect("clicked", self.on_close_file_clicked)
@@ -408,6 +390,9 @@ class I2GWidget(Gtk.Box):
         dialog.destroy()
 
         return True
+
+    def on_execute_file_clicked(self, widget):
+        pass
 
     def on_close_file_clicked(self, widget):
         self.load_image(None)
