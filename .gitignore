@@ -10,3 +10,7 @@
 .idea/
 *~
 *#
+
+hazzy/modules/Miscellaneous/Image2Gcode/gcode\.py
+hazzy/modules/Miscellaneous/Image2Gcode/nf\.py
+hazzy/modules/Miscellaneous/Image2Gcode/rs274/
