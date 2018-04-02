@@ -201,11 +201,11 @@ class I2GWidget(Gtk.Box):
 
         # Roughing Offset
 
-        self.entry_constructor(label_text="Roughing Offset (Units, 0 = none)", default_value=0.0)
+        self.entry_constructor(label_text="Rough Offset (Units, 0 = none)", default_value=0.0)
 
         # Roughing Depth
 
-        self.entry_constructor(label_text="Roughing Depth per pass (Units)", default_value=0.25)
+        self.entry_constructor(label_text="Rough Depth per pass (Units)", default_value=0.25)
 
         # Open Close Buttons
 
@@ -335,10 +335,11 @@ class I2GWidget(Gtk.Box):
             transient_for=self.get_parent(),
             modal=True,
             destroy_with_parent=True,
-            action=Gtk.FileChooserAction.OPEN,
-            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                     Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+            action=Gtk.FileChooserAction.OPEN
         )
+
+        dialog.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
 
         self.add_filters(dialog)
 
@@ -383,13 +384,12 @@ class I2GWidget(Gtk.Box):
 
         if image_file:
             self.image = Gtk.Image.new_from_file(image_file)
+            self.i2g.load_file(file_name=self.image_file)
         else:
             self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
 
         self.image_box.pack_start(self.image, False, False, 0)
         self.image.show()
-
-        self.i2g.load(file_name=self.image_file)
 
 
 def main():
