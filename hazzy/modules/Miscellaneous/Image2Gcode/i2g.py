@@ -24,6 +24,7 @@ from pprint import pprint
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk
+from gi.repository import GdkPixbuf
 
 from image2gcode import Image2Gcode
 
@@ -374,6 +375,17 @@ class I2GWidget(Gtk.Box):
 
         return True
 
+    def on_close_file_clicked(self, widget):
+        self.load_image(None)
+
+        return True
+
+    def on_save_preset_clicked(self, widget):
+        return True
+
+    def on_load_preset_clicked(self, widget):
+        return True
+
     def on_execute_program_clicked(self, widget):
 
         self.get_settings()
@@ -415,16 +427,29 @@ class I2GWidget(Gtk.Box):
 
         return True
 
-    def on_close_file_clicked(self, widget):
-        self.load_image(None)
+    def load_image(self, image_file):
 
-        return True
+        image_loaded = False
 
-    def on_save_preset_clicked(self, widget):
-        return True
+        self.image_file = image_file
 
-    def on_load_preset_clicked(self, widget):
-        return True
+        self.image_box.remove(self.image)
+
+        if image_file:
+            image_loaded = self.i2g.load_file(file_name=image_file)
+
+            image_pixbuf = GdkPixbuf.Pixbuf.new_from_file(image_file)
+
+            print(GdkPixbuf.Pixbuf.get_file_info(image_file))
+
+            self.image = Gtk.Image.new_from_pixbuf(image_pixbuf)
+        else:
+            self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
+
+        self.image.show()
+        self.image_box.pack_start(self.image, False, False, 0)
+
+        return image_loaded
 
     @staticmethod
     def add_filters(dialog):
@@ -437,20 +462,6 @@ class I2GWidget(Gtk.Box):
         filter_any.set_name("Any files")
         filter_any.add_pattern("*")
         dialog.add_filter(filter_any)
-
-    def load_image(self, image_file):
-        self.image_file = image_file
-
-        self.image_box.remove(self.image)
-
-        if image_file:
-            self.image = Gtk.Image.new_from_file(image_file)
-            self.i2g.load_file(file_name=self.image_file)
-        else:
-            self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
-
-        self.image_box.pack_start(self.image, False, False, 0)
-        self.image.show()
 
 
 def main():
