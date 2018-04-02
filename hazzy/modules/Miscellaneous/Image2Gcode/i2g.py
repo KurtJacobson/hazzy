@@ -26,6 +26,7 @@ from gi.repository import Gtk
 
 from image2gcode import Image2Gcode
 
+
 # Setup paths
 # PYDIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -96,14 +97,12 @@ class I2GWidget(Gtk.Box):
         # Invert
 
         self.checkbox_constructor(label_text="Invert Color",
-                                  default_value=False,
-                                  callback=None)
+                                  default_value=False)
 
         # Normalize
 
         self.checkbox_constructor(label_text="Normalize Image",
-                                  default_value=False,
-                                  callback=None)
+                                  default_value=False)
 
         # Extend
 
@@ -286,11 +285,8 @@ class I2GWidget(Gtk.Box):
 
         self.options_box.pack_start(box, False, False, 0)
 
-    def checkbox_constructor(self, label_text=None, default_value=False, callback=None):
+    def checkbox_constructor(self, label_text=None, default_value=False):
         check_button = Gtk.CheckButton(label=label_text)
-
-        if callback:
-            check_button.connect("toggled", callback)
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.pack_start(check_button, True, False, 0)

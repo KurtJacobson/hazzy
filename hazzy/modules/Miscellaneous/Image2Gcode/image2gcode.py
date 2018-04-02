@@ -652,6 +652,9 @@ class Image2Gcode:
                 tobytes(image_file),
                 dtype=numpy.uint8).reshape((h, w)).astype(numpy.float32)
             self.numpy_image = self.numpy_image / int(0xff)
+        else:
+            print("NOT GREY SCALE IMAGE")
+            return False
 
         self.maker = tool_makers[0]
         self.tool_diameter = 1.5
@@ -695,6 +698,8 @@ class Image2Gcode:
         self.feed = 2000
         self.plunge = 600
 
+        return True
+
     def set_output(self, file_name):
         self.output = file_name
 
@@ -723,7 +728,6 @@ class Image2Gcode:
 
 
 def main():
-
     i2g = Image2Gcode()
     i2g.load_file("/home/turboss/Projects/i2gTest/A.tif")
     i2g.set_output("/home/turboss/Projects/i2gTest/test.ngc")
