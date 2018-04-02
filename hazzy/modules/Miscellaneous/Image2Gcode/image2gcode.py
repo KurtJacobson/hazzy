@@ -22,6 +22,8 @@ import sys
 import os
 import gettext
 
+from tempfile import tempdir
+
 from PIL import Image
 
 import numpy.core
@@ -626,7 +628,7 @@ class Image2Gcode:
         self.output = None
         self.plunge = None
 
-    def load(self, file_name):
+    def load(self, file_name=None):
 
         self.file_name = file_name
         image_file = Image.open(self.file_name)
@@ -696,7 +698,7 @@ class Image2Gcode:
     def set_output(self, file_name):
         self.output = file_name
 
-    def run(self):
+    def execute(self):
 
         i2g = Converter(self.numpy_image,
                         self.units,
@@ -725,7 +727,7 @@ def main():
     i2g = Image2Gcode()
     i2g.load("/home/turboss/Projects/i2gTest/A.tif")
     i2g.set_output("/home/turboss/Projects/i2gTest/test.ngc")
-    i2g.run()
+    i2g.execute()
 
 
 if __name__ == "__main__":
