@@ -19,6 +19,7 @@
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
 import gi
+from pprint import pprint
 
 gi.require_version('Gtk', '3.0')
 
@@ -86,147 +87,160 @@ class I2GWidget(Gtk.Box):
         self.image_box.set_hexpand(True)
         self.image_box.set_vexpand(True)
 
-        # Unit
+        # Settings
 
-        self.combobox_3_constructor(label_text="Unit System",
-                                    list_options=[
-                                        [0, "Inches", "G20"],
-                                        [1, "Millimeters", "G21"]
-                                    ])
+        self.settings = None
 
-        # Invert
+        # Unit System
 
-        self.checkbox_constructor(label_text="Invert Color",
-                                  default_value=False)
+        self.unit_system_combo = self.combobox_3_constructor(label_text="Unit System",
+                                                             list_options=[
+                                                                 [0, "Inches", "G20"],
+                                                                 [1, "Millimeters", "G21"]
+                                                             ])
+
+        # Invert BW
+
+        self.invert_bw_check = self.checkbox_constructor(label_text="Invert BW",
+                                                         default_value=False)
 
         # Normalize
 
-        self.checkbox_constructor(label_text="Normalize Image",
-                                  default_value=False)
+        self.normalize_image_check = self.checkbox_constructor(label_text="Normalize Image",
+                                                               default_value=False)
 
         # Extend
 
-        self.combobox_2_constructor(label_text="Extend",
-                                    list_options=[
-                                        [0, "None"],
-                                        [1, "White"],
-                                        [2, "Black"]
-                                    ])
+        self.extend_combo = self.combobox_2_constructor(label_text="Extend",
+                                                        list_options=[
+                                                            [0, "None"],
+                                                            [1, "White"],
+                                                            [2, "Black"]
+                                                        ])
 
         # Tolerance
 
-        self.entry_constructor(label_text="Tolerance (Unit)", default_value=0.0001)
+        self.tolerance_entry = self.entry_constructor(label_text="Tolerance (Unit)", default_value=0.0001)
 
         # Pixel size
 
-        self.entry_constructor(label_text="Pixel Size (Units)", default_value=0.08)
+        self.pixel_size_entry = self.entry_constructor(label_text="Pixel Size (Units)", default_value=0.08)
 
         # Feed
 
-        self.entry_constructor(label_text="Feed (Units per minute)", default_value=1000)
+        self.feed_entry = self.entry_constructor(label_text="Feed (Units per minute)", default_value=1000)
 
         # Plunge
 
-        self.entry_constructor(label_text="Plunge (Units per minute)", default_value=300)
+        self.plunge_entry = self.entry_constructor(label_text="Plunge (Units per minute)", default_value=300)
 
         # Spindle
 
-        self.entry_constructor(label_text="Spindle (RPM)", default_value=24000)
+        self.spindle_entry = self.entry_constructor(label_text="Spindle (RPM)", default_value=24000)
 
         # Scan Pattern
 
-        self.combobox_2_constructor(label_text="Scan Pattern",
-                                    list_options=[
-                                        [0, "Rows"],
-                                        [1, "Columns"],
-                                        [2, "Rows Columns"],
-                                        [3, "Columns Rows"]
-                                    ])
+        self.scan_pattern_combo = self.combobox_2_constructor(label_text="Scan Pattern",
+                                                              list_options=[
+                                                                  [0, "Rows"],
+                                                                  [1, "Columns"],
+                                                                  [2, "Rows Columns"],
+                                                                  [3, "Columns Rows"]
+                                                              ])
 
         # Path Direction
 
-        self.combobox_2_constructor(label_text="Path Direction",
-                                    list_options=[
-                                        [0, "Positive"],
-                                        [1, "Negative"],
-                                        [2, "Alternating"],
-                                        [3, "Up Milling"],
-                                        [3, "Down Milling"]
-                                    ])
+        self.path_direction_combo = self.combobox_2_constructor(label_text="Path Direction",
+                                                                list_options=[
+                                                                    [0, "Positive"],
+                                                                    [1, "Negative"],
+                                                                    [2, "Alternating"],
+                                                                    [3, "Up Milling"],
+                                                                    [3, "Down Milling"]
+                                                                ])
 
         # Angle
 
-        self.entry_constructor(label_text="Angle (Degrees)", default_value=90)
+        self.angle_entry = self.entry_constructor(label_text="Angle (Degrees)", default_value=90)
 
         # Depth
 
-        self.entry_constructor(label_text="Depth (Unit)", default_value=2.0)
+        self.depth_entry = self.entry_constructor(label_text="Depth (Unit)", default_value=2.0)
 
         # Step-over
 
-        self.scale_constructor(label_text="Step-over (pixels)", lower_value=0, upper_value=100)
+        self.step_over_scale = self.scale_constructor(label_text="Step-over (pixels)", lower_value=0, upper_value=100)
 
         # Tool diameter
 
-        self.entry_constructor(label_text="Tool Diameter (Unit)", default_value=1.5)
+        self.tool_diameter_entry = self.entry_constructor(label_text="Tool Diameter (Unit)", default_value=1.5)
 
-        # Security
+        # Security Height
 
-        self.entry_constructor(label_text="Security Height (Unit)", default_value=10.0)
+        self.security_height_entry = self.entry_constructor(label_text="Security Height (Unit)", default_value=10.0)
 
         # Tool type
 
-        self.combobox_2_constructor(label_text="Tool type",
-                                    list_options=[
-                                        [0, "Ball End"],
-                                        [1, "Flat End"],
-                                        [2, "30 Degree"],
-                                        [3, "45 Degree"],
-                                        [4, "60 Degree"]
-                                    ])
+        self.tool_type_combo = self.combobox_2_constructor(label_text="Tool type",
+                                                           list_options=[
+                                                               [0, "Ball End"],
+                                                               [1, "Flat End"],
+                                                               [2, "30 Degree"],
+                                                               [3, "45 Degree"],
+                                                               [4, "60 Degree"]
+                                                           ])
 
         # Lace Bounding
 
-        self.combobox_2_constructor(label_text="Lace Bounding",
-                                    list_options=[
-                                        [0, "None"],
-                                        [1, "Secondary"],
-                                        [2, "Full"]
-                                    ])
+        self.lace_bounding_combo = self.combobox_2_constructor(label_text="Lace Bounding",
+                                                               list_options=[
+                                                                   [0, "None"],
+                                                                   [1, "Secondary"],
+                                                                   [2, "Full"]
+                                                               ])
 
         # Contact Angle
 
-        self.entry_constructor(label_text="Contact Angle (degrees)", default_value=45)
+        self.contacnt_angle_entry = self.entry_constructor(label_text="Contact Angle (degrees)", default_value=45)
 
-        # Roughing Offset
+        # Rough Offset
 
-        self.entry_constructor(label_text="Rough Offset (Units, 0 = none)", default_value=0.0)
+        self.rough_offset_entry = self.entry_constructor(label_text="Rough Offset (Units, 0 = none)", default_value=0.0)
 
-        # Roughing Depth
+        # Rough Depth
 
-        self.entry_constructor(label_text="Rough Depth per pass (Units)", default_value=0.25)
+        self.rough_depth_entry = self.entry_constructor(label_text="Rough Depth per pass (Units)", default_value=0.25)
 
-        # Open Close Buttons
+        # Buttons
 
-        self.open_button = Gtk.Button(label="Open")
+        self.open_button = Gtk.Button(label="Open File")
         self.open_button.connect("clicked", self.on_open_file_clicked)
 
-        self.execute_button = Gtk.Button(label="Execute")
-        self.execute_button.connect("clicked", self.on_execute_file_clicked)
-
-        self.close_button = Gtk.Button(label="Close")
+        self.close_button = Gtk.Button(label="Close File")
         self.close_button.connect("clicked", self.on_close_file_clicked)
 
-        self.button_box.pack_start(self.open_button, False, False, 0)
-        self.button_box.pack_start(self.close_button, False, False, 0)
-        self.options_box.pack_start(self.button_box, False, False, 0)
+        self.load_button = Gtk.Button(label="Load Preset")
+        self.load_button.connect("clicked", self.on_load_preset_clicked)
 
-        # End
+        self.save_button = Gtk.Button(label="Save Preset")
+        self.save_button.connect("clicked", self.on_save_preset_clicked)
+
+        self.execute_button = Gtk.Button(label="Execute Program")
+        self.execute_button.connect("clicked", self.on_execute_program_clicked)
+
+        # pack all
+
+        self.button_box.pack_start(self.open_button, True, True, 0)
+        self.button_box.pack_start(self.close_button, True, True, 0)
+        self.button_box.pack_start(self.save_button, True, True, 0)
+        self.button_box.pack_start(self.load_button, True, True, 0)
+        self.button_box.pack_start(self.execute_button, True, True, 0)
 
         self.main_box.pack_start(self.image_box, False, False, 0)
         self.main_box.pack_start(self.options_box, False, False, 0)
 
         self.widget_box.pack_start(self.main_box, False, False, 0)
+        self.widget_box.pack_start(self.button_box, True, True, 0)
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
         self.stack.add_titled(self.config_box, "config", "Widget Config")
@@ -259,6 +273,8 @@ class I2GWidget(Gtk.Box):
 
         self.options_box.pack_start(box, False, False, 0)
 
+        return combo
+
     def combobox_3_constructor(self,
                                label_text=None,
                                list_options=None):
@@ -285,12 +301,16 @@ class I2GWidget(Gtk.Box):
 
         self.options_box.pack_start(box, False, False, 0)
 
+        return combo
+
     def checkbox_constructor(self, label_text=None, default_value=False):
         check_button = Gtk.CheckButton(label=label_text)
 
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         box.pack_start(check_button, True, False, 0)
         self.options_box.pack_start(box, False, False, 0)
+
+        return check_button
 
     def entry_constructor(self, label_text, default_value):
 
@@ -305,6 +325,7 @@ class I2GWidget(Gtk.Box):
         box.pack_start(entry, False, True, 0)
 
         self.options_box.pack_start(box, False, False, 0)
+        return entry
 
     def scale_constructor(self, label_text, lower_value=0, upper_value=100):
 
@@ -325,9 +346,11 @@ class I2GWidget(Gtk.Box):
         box.pack_start(scale, True, True, 0)
         self.options_box.pack_start(box, False, False, 0)
 
+        return scale
+
     def on_open_file_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
-            title="Please choose an image",
+            title="Choose an image",
             transient_for=self.get_parent(),
             modal=True,
             destroy_with_parent=True,
@@ -351,14 +374,56 @@ class I2GWidget(Gtk.Box):
 
         return True
 
-    def on_execute_file_clicked(self, widget):
-        self.i2g.execute()
+    def on_execute_program_clicked(self, widget):
+
+        self.get_settings()
+        # self.i2g.execute(args)
+
+        return True
+
+    def get_settings(self):
+
+        self.settings = {
+            "settings":  {
+                "unit_system": self.unit_system_combo.get_active(),
+                "invert_bw": self.invert_bw_check.get_active(),
+                "normalize_image": self.normalize_image_check.get_active(),
+                "extend": self.extend_combo.get_active(),
+                "tolerance": self.tolerance_entry.get_text(),
+                "pixel_size": self.pixel_size_entry.get_text(),
+                "feed": self.feed_entry.get_text(),
+                "plunge": self.plunge_entry.get_text(),
+                "spindle": self.spindle_entry.get_text(),
+                "scan_pattern": self.scan_pattern_combo.get_active(),
+                "path_direction": self.path_direction_combo.get_active(),
+                "angle": self.angle_entry.get_text(),
+                "depth": self.depth_entry.get_text(),
+                "step_over": self.step_over_scale.get_value(),
+                "tool_diameter": self.tool_diameter_entry.get_text(),
+                "security_height": self.security_height_entry.get_text(),
+                "tool_type": self.tool_type_combo.get_active(),
+                "lace_bounding": self.lace_bounding_combo.get_active(),
+                "contacnt_angle": self.contacnt_angle_entry.get_text(),
+                "rough_offset": self.rough_offset_entry.get_text(),
+                "rough_depth": self.rough_depth_entry.get_text()
+            }
+        }
+
+        pprint(self.settings)
+
+        # self.i2g.execute(args)
 
         return True
 
     def on_close_file_clicked(self, widget):
         self.load_image(None)
 
+        return True
+
+    def on_save_preset_clicked(self, widget):
+        return True
+
+    def on_load_preset_clicked(self, widget):
         return True
 
     @staticmethod
