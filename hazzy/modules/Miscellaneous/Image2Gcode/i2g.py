@@ -48,7 +48,7 @@ class I2GWidget(Gtk.Box):
 
         self.config_stack = False
 
-        self.set_size_request(480, 768)
+        self.set_size_request(1024, 768)
 
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -72,6 +72,34 @@ class I2GWidget(Gtk.Box):
         self.options_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        # Image Properties
+
+        self.image_properties = None
+
+        self.image_error_label = Gtk.Label()
+        self.image_dpi_label = Gtk.Label()
+        self.image_depth_label = Gtk.Label()
+        self.image_pixels_label = Gtk.Label()
+
+        self.properties_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        dpi_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        depth_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        pixels_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        dpi_box.pack_start(Gtk.Label(label="dpi:"), False, False, 0)
+        dpi_box.pack_start(self.image_dpi_label, False, False, 0)
+
+        depth_box.pack_start(Gtk.Label(label="bit depth:"), False, False, 0)
+        depth_box.pack_start(self.image_depth_label, False, False, 0)
+
+        pixels_box.pack_start(Gtk.Label(label="pixels:"), False, False, 0)
+        pixels_box.pack_start(self.image_pixels_label, False, False, 0)
+
+        self.properties_box.pack_start(self.image_error_label, False, False, 0)
+        self.properties_box.pack_start(dpi_box, False, False, 0)
+        self.properties_box.pack_start(depth_box, False, False, 0)
+        self.properties_box.pack_start(pixels_box, False, False, 0)
 
         # Image
 
@@ -326,6 +354,7 @@ class I2GWidget(Gtk.Box):
         box.pack_start(entry, False, True, 0)
 
         self.options_box.pack_start(box, False, False, 0)
+
         return entry
 
     def scale_constructor(self, label_text, lower_value=0, upper_value=100):
@@ -396,7 +425,7 @@ class I2GWidget(Gtk.Box):
     def get_settings(self):
 
         self.settings = {
-            "settings":  {
+            "settings": {
                 "unit_system": self.unit_system_combo.get_active(),
                 "invert_bw": self.invert_bw_check.get_active(),
                 "normalize_image": self.normalize_image_check.get_active(),
@@ -423,33 +452,51 @@ class I2GWidget(Gtk.Box):
 
         pprint(self.settings)
 
-        # self.i2g.execute(args)
-
-        return True
-
     def load_image(self, image_file):
 
         image_loaded = False
 
         self.image_file = image_file
+        self.image_properties = None
 
         self.image_box.remove(self.image)
-
+        self.image_box.remove(self.properties_box)
         if image_file:
-            image_loaded = self.i2g.load_file(file_name=image_file)
-
-            image_pixbuf = GdkPixbuf.Pixbuf.new_from_file(image_file)
-
-            print(GdkPixbuf.Pixbuf.get_file_info(image_file))
+            self.image_properties = self.i2g.load_file(file_name=image_file)
+            image_pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(filename=image_file,
+                                                                   width=600,
+                                                                   height=400,
+                                                                   preserve_aspect_ratio=True)
 
             self.image = Gtk.Image.new_from_pixbuf(image_pixbuf)
+
+            image_loaded = True
+
+            self.draw_image_properties()
+
         else:
             self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
+            self.draw_image_properties()
 
         self.image.show()
-        self.image_box.pack_start(self.image, False, False, 0)
+        self.image_box.pack_start(self.image, True, False, 0)
+        self.image_box.pack_start(self.properties_box, False, False, 0)
 
         return image_loaded
+
+    def draw_image_properties(self):
+
+        if self.image_properties:
+            self.image_error_label.set_text("")
+            self.image_dpi_label.set_text("\t{0[0]}:{0[1]}".format(self.image_properties["properties"]["dpi"]))
+            self.image_depth_label.set_text("\t{0}".format(self.image_properties["properties"]["depth"]))
+            self.image_pixels_label.set_text("\t{0[0]} x {0[1]}".format(self.image_properties["properties"]["pixels"]))
+        else:
+            self.image_error_label.set_text("\tNOT VALID IMAGE LOADED")
+            self.image_dpi_label.set_text("")
+            self.image_depth_label.set_text("")
+            self.image_pixels_label.set_text("")
+
 
     @staticmethod
     def add_filters(dialog):
@@ -466,9 +513,14 @@ class I2GWidget(Gtk.Box):
 
 def main():
     window = Gtk.Window()
+
     w_box = I2GWidget(window)
+
     window.add(w_box)
+
     window.show_all()
+
+    window.connect("destroy", Gtk.main_quit)
 
     Gtk.main()
 

@@ -634,27 +634,28 @@ class Image2Gcode:
         image_file = Image.open(self.file_name)
 
         size = image_file.size
-        dpi_w, dpi_h = image_file.info['dpi']
+
         bit_depth = image_file.mode
 
         w, h = size
 
         if bit_depth == "I;16":
-            print("16 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
+            depth = 16
             self.numpy_image = numpy.fromstring(
                 tobytes(image_file),
                 dtype=numpy.uint16).reshape((h, w)).astype(numpy.float32)
             self.numpy_image = self.numpy_image / int(0xffff)
 
         elif bit_depth == "L":
-            print("8 BIT BW {0} {1} dpi".format(dpi_w, dpi_h))
+            depth = 8
             self.numpy_image = numpy.fromstring(
                 tobytes(image_file),
                 dtype=numpy.uint8).reshape((h, w)).astype(numpy.float32)
             self.numpy_image = self.numpy_image / int(0xff)
         else:
-            print("NOT GREY SCALE IMAGE")
             return False
+
+        dpi_w, dpi_h = image_file.info['dpi']
 
         self.maker = tool_makers[0]
         self.tool_diameter = 1.5
@@ -698,7 +699,15 @@ class Image2Gcode:
         self.feed = 2000
         self.plunge = 600
 
-        return True
+        image_properties = {
+            "properties": {
+                "pixels": [w, h],
+                "dpi": [dpi_w, dpi_h],
+                "depth": depth
+            }
+        }
+
+        return image_properties
 
     def set_output(self, file_name):
         self.output = file_name
