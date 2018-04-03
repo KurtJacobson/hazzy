@@ -82,11 +82,15 @@ class I2GWidget(Gtk.Box):
         self.image_dpi_label = Gtk.Label()
         self.image_depth_label = Gtk.Label()
         self.image_pixels_label = Gtk.Label()
+        self.image_pixel_size_label = Gtk.Label()
+        self.image_size_label = Gtk.Label()
 
         self.properties_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         dpi_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         depth_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         pixels_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        pixel_size_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        image_size_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
         dpi_box.pack_start(Gtk.Label(label="dpi:"), False, False, 0)
         dpi_box.pack_start(self.image_dpi_label, False, False, 0)
@@ -97,10 +101,18 @@ class I2GWidget(Gtk.Box):
         pixels_box.pack_start(Gtk.Label(label="pixels:"), False, False, 0)
         pixels_box.pack_start(self.image_pixels_label, False, False, 0)
 
+        pixel_size_box.pack_start(Gtk.Label(label="pixel size:"), False, False, 0)
+        pixel_size_box.pack_start(self.image_pixel_size_label, False, False, 0)
+
+        image_size_box.pack_start(Gtk.Label(label="image size:"), False, False, 0)
+        image_size_box.pack_start(self.image_size_label, False, False, 0)
+
         self.properties_box.pack_start(self.image_error_label, False, False, 0)
         self.properties_box.pack_start(dpi_box, False, False, 0)
         self.properties_box.pack_start(depth_box, False, False, 0)
         self.properties_box.pack_start(pixels_box, False, False, 0)
+        self.properties_box.pack_start(pixel_size_box, False, False, 0)
+        self.properties_box.pack_start(image_size_box, False, False, 0)
 
         # Image
 
@@ -464,15 +476,6 @@ class I2GWidget(Gtk.Box):
 
         self.get_settings()
 
-        dpi = self.image_properties["properties"]["dpi"][0]
-
-        if self.settings["settings"]["unit_system"] == 1:
-            pixel_size = 25.4 / float(dpi)
-            print("pixel size mm = {}".format(pixel_size))
-        else:
-            pixel_size = 0.1 / float(dpi)
-            print("pixel size inchs = {}".format(pixel_size))
-
         # self.i2g.execute(args)
 
         return True
@@ -557,6 +560,21 @@ class I2GWidget(Gtk.Box):
 
             image_loaded = True
 
+            dpi = self.image_properties["properties"]["dpi"][0]
+
+            self.get_settings()
+            if self.settings["settings"]["unit_system"] == 1:  # MM
+                pixel_size = 25.4 / float(dpi)
+                print("pixel size mm = {}".format(pixel_size))
+            else:  # INCH
+                pixel_size = 0.1 / float(dpi)
+                print("pixel size inchs = {}".format(pixel_size))
+
+            self.image_properties["properties"]["pixel_size"] = pixel_size
+
+            self.image_properties["properties"]["size"][0] = pixel_size * self.image_properties["properties"]["pixels"][0]
+            self.image_properties["properties"]["size"][1] = pixel_size * self.image_properties["properties"]["pixels"][1]
+
             self.draw_image_properties()
 
         else:
@@ -576,11 +594,15 @@ class I2GWidget(Gtk.Box):
             self.image_dpi_label.set_text("\t{0[0]}:{0[1]}".format(self.image_properties["properties"]["dpi"]))
             self.image_depth_label.set_text("\t{0}".format(self.image_properties["properties"]["depth"]))
             self.image_pixels_label.set_text("\t{0[0]} x {0[1]}".format(self.image_properties["properties"]["pixels"]))
+            self.image_pixel_size_label.set_text("\t{0:.3f}".format(self.image_properties["properties"]["pixel_size"]))
+            self.image_size_label.set_text("\t{0[0]:.3f} x {0[1]:.3f}".format(self.image_properties["properties"]["size"]))
         else:
             self.image_error_label.set_text("NOT VALID IMAGE LOADED")
             self.image_dpi_label.set_text("")
             self.image_depth_label.set_text("")
             self.image_pixels_label.set_text("")
+            self.image_pixel_size_label.set_text("")
+            self.image_size_label.set_text("")
 
     @staticmethod
     def add_image_filters(dialog):

@@ -703,7 +703,8 @@ class Image2Gcode:
             "properties": {
                 "pixels": [w, h],
                 "dpi": [dpi_w, dpi_h],
-                "depth": depth
+                "depth": depth,
+                "size": [0, 0]
             }
         }
 
