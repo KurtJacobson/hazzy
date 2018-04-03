@@ -1,0 +1,25 @@
+{
+    "settings": {
+        "angle": "90", 
+        "contacnt_angle": "45", 
+        "depth": "2.0", 
+        "extend": 0, 
+        "feed": "1000", 
+        "invert_bw": false, 
+        "lace_bounding": 0, 
+        "normalize_image": false, 
+        "path_direction": 2, 
+        "pixel_size": "0.08", 
+        "plunge": "300", 
+        "rough_depth": "0.25", 
+        "rough_offset": "0.0", 
+        "scan_pattern": 0, 
+        "security_height": "10.0", 
+        "spindle": "24000", 
+        "step_over": 0.0, 
+        "tolerance": "0.0001", 
+        "tool_diameter": "1.5", 
+        "tool_type": 4, 
+        "unit_system": 1
+    }
+}

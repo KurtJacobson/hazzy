@@ -18,8 +18,9 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+
 import gi
-from pprint import pprint
 
 gi.require_version('Gtk', '3.0')
 
@@ -151,10 +152,6 @@ class I2GWidget(Gtk.Box):
 
         self.tolerance_entry = self.entry_constructor(label_text="Tolerance (Unit)", default_value=0.0001)
 
-        # Pixel size
-
-        self.pixel_size_entry = self.entry_constructor(label_text="Pixel Size (Units)", default_value=0.08)
-
         # Feed
 
         self.feed_entry = self.entry_constructor(label_text="Feed (Units per minute)", default_value=1000)
@@ -276,6 +273,8 @@ class I2GWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
+        self.load_settings("default.i2g")
+
     def combobox_2_constructor(self,
                                label_text=None,
                                list_options=None):
@@ -390,7 +389,7 @@ class I2GWidget(Gtk.Box):
         dialog.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
         dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
 
-        self.add_filters(dialog)
+        self.add_image_filters(dialog)
 
         response = dialog.run()
 
@@ -410,14 +409,70 @@ class I2GWidget(Gtk.Box):
         return True
 
     def on_save_preset_clicked(self, widget):
+        dialog = Gtk.FileChooserDialog(
+            title="Save settings preset",
+            transient_for=self.get_parent(),
+            modal=True,
+            destroy_with_parent=True,
+            action=Gtk.FileChooserAction.SAVE
+        )
+
+        dialog.add_button(Gtk.STOCK_SAVE, Gtk.ResponseType.OK)
+        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
+
+        self.add_i2g_filters(dialog)
+
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            self.save_settings(dialog.get_filename())
+
+        elif response == Gtk.ResponseType.CANCEL:
+            pass
+
+        dialog.destroy()
+
         return True
 
     def on_load_preset_clicked(self, widget):
+        dialog = Gtk.FileChooserDialog(
+            title="Load settings preset",
+            transient_for=self.get_parent(),
+            modal=True,
+            destroy_with_parent=True,
+            action=Gtk.FileChooserAction.SAVE
+        )
+
+        dialog.add_button(Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
+
+        self.add_i2g_filters(dialog)
+
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            self.load_settings(dialog.get_filename())
+
+        elif response == Gtk.ResponseType.CANCEL:
+            pass
+
+        dialog.destroy()
+
         return True
 
     def on_execute_program_clicked(self, widget):
 
         self.get_settings()
+
+        dpi = self.image_properties["properties"]["dpi"][0]
+
+        if self.settings["settings"]["unit_system"] == 1:
+            pixel_size = 25.4 / float(dpi)
+            print("pixel size mm = {}".format(pixel_size))
+        else:
+            pixel_size = 0.1 / float(dpi)
+            print("pixel size inchs = {}".format(pixel_size))
+
         # self.i2g.execute(args)
 
         return True
@@ -431,7 +486,6 @@ class I2GWidget(Gtk.Box):
                 "normalize_image": self.normalize_image_check.get_active(),
                 "extend": self.extend_combo.get_active(),
                 "tolerance": self.tolerance_entry.get_text(),
-                "pixel_size": self.pixel_size_entry.get_text(),
                 "feed": self.feed_entry.get_text(),
                 "plunge": self.plunge_entry.get_text(),
                 "spindle": self.spindle_entry.get_text(),
@@ -450,7 +504,38 @@ class I2GWidget(Gtk.Box):
             }
         }
 
-        pprint(self.settings)
+    def set_settings(self):
+
+        self.unit_system_combo.set_active(self.settings["settings"]["unit_system"])
+        self.invert_bw_check.set_active(self.settings["settings"]["invert_bw"])
+        self.normalize_image_check.set_active(self.settings["settings"]["normalize_image"])
+        self.extend_combo.set_active(self.settings["settings"]["extend"])
+        self.tolerance_entry.set_text(self.settings["settings"]["tolerance"])
+        self.feed_entry.set_text(self.settings["settings"]["feed"])
+        self.plunge_entry.set_text(self.settings["settings"]["plunge"])
+        self.spindle_entry.set_text(self.settings["settings"]["spindle"])
+        self.scan_pattern_combo.set_active(self.settings["settings"]["scan_pattern"])
+        self.path_direction_combo.set_active(self.settings["settings"]["path_direction"])
+        self.angle_entry.set_text(self.settings["settings"]["angle"])
+        self.depth_entry.set_text(self.settings["settings"]["depth"])
+        self.step_over_scale.set_value(self.settings["settings"]["step_over"])
+        self.tool_diameter_entry.set_text(self.settings["settings"]["tool_diameter"])
+        self.security_height_entry.set_text(self.settings["settings"]["security_height"])
+        self.tool_type_combo.set_active(self.settings["settings"]["tool_type"])
+        self.lace_bounding_combo.set_active(self.settings["settings"]["lace_bounding"])
+        self.contacnt_angle_entry.set_text(self.settings["settings"]["contacnt_angle"])
+        self.rough_offset_entry.set_text(self.settings["settings"]["rough_offset"])
+        self.rough_depth_entry.set_text(self.settings["settings"]["rough_depth"])
+
+    def save_settings(self, file_name):
+        self.get_settings()
+        with open(file_name, "wb") as i2g_file:
+            i2g_file.write(json.dumps(self.settings, indent=4, sort_keys=True))
+
+    def load_settings(self, file_name):
+        with open(file_name, "rb") as i2g_file:
+            self.settings = json.load(i2g_file)
+            self.set_settings()
 
     def load_image(self, image_file):
 
@@ -492,14 +577,13 @@ class I2GWidget(Gtk.Box):
             self.image_depth_label.set_text("\t{0}".format(self.image_properties["properties"]["depth"]))
             self.image_pixels_label.set_text("\t{0[0]} x {0[1]}".format(self.image_properties["properties"]["pixels"]))
         else:
-            self.image_error_label.set_text("\tNOT VALID IMAGE LOADED")
+            self.image_error_label.set_text("NOT VALID IMAGE LOADED")
             self.image_dpi_label.set_text("")
             self.image_depth_label.set_text("")
             self.image_pixels_label.set_text("")
 
-
     @staticmethod
-    def add_filters(dialog):
+    def add_image_filters(dialog):
         filter_text = Gtk.FileFilter()
         filter_text.set_name("Image files")
         filter_text.add_mime_type("image/*")
@@ -509,6 +593,13 @@ class I2GWidget(Gtk.Box):
         filter_any.set_name("Any files")
         filter_any.add_pattern("*")
         dialog.add_filter(filter_any)
+
+    @staticmethod
+    def add_i2g_filters(dialog):
+        filter_text = Gtk.FileFilter()
+        filter_text.set_name("I2G files")
+        filter_text.add_pattern("*.i2g")
+        dialog.add_filter(filter_text)
 
 
 def main():
