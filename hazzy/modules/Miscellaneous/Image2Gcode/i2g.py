@@ -18,6 +18,7 @@
 #   You should have received a copy of the GNU General Public License
 #   along with Hazzy.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import json
 
 import gi
@@ -31,7 +32,7 @@ from image2gcode import Image2Gcode
 
 
 # Setup paths
-# PYDIR = os.path.abspath(os.path.dirname(__file__))
+PYDIR = os.path.abspath(os.path.dirname(__file__))
 
 # Setup logging
 # log = logger.get(__name__)
@@ -285,7 +286,7 @@ class I2GWidget(Gtk.Box):
 
         self.pack_start(self.stack, True, True, 0)
 
-        self.load_settings("default.i2g")
+        self.load_settings(os.path.join(PYDIR, "default.i2g"))
 
     def combobox_2_constructor(self,
                                label_text=None,
