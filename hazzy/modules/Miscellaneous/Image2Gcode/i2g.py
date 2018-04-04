@@ -78,6 +78,8 @@ class I2GWidget(Gtk.Box):
 
         self.image_properties = None
 
+        self.image_pixel_size = None
+
         self.image_error_label = Gtk.Label()
         self.image_dpi_label = Gtk.Label()
         self.image_depth_label = Gtk.Label()
@@ -474,9 +476,32 @@ class I2GWidget(Gtk.Box):
 
     def on_execute_program_clicked(self, widget):
 
+        dialog = Gtk.FileChooserDialog(
+            title="Save GCODE",
+            transient_for=self.get_parent(),
+            modal=True,
+            destroy_with_parent=True,
+            action=Gtk.FileChooserAction.SAVE
+        )
+
+        dialog.add_button(Gtk.STOCK_SAVE, Gtk.ResponseType.OK)
+        dialog.add_button(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL)
+
+        self.add_ngc_filters(dialog)
+
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            self.i2g.set_output(dialog.get_filename())
+
+        elif response == Gtk.ResponseType.CANCEL:
+            pass
+
+        dialog.destroy()
+
         self.get_settings()
 
-        # self.i2g.execute(args)
+        self.i2g.execute(self.settings)
 
         return True
 
@@ -503,7 +528,8 @@ class I2GWidget(Gtk.Box):
                 "lace_bounding": self.lace_bounding_combo.get_active(),
                 "contacnt_angle": self.contacnt_angle_entry.get_text(),
                 "rough_offset": self.rough_offset_entry.get_text(),
-                "rough_depth": self.rough_depth_entry.get_text()
+                "rough_depth": self.rough_depth_entry.get_text(),
+                "pixel_size": self.image_pixel_size
             }
         }
 
@@ -570,11 +596,12 @@ class I2GWidget(Gtk.Box):
                 pixel_size = 0.1 / float(dpi)
                 print("pixel size inchs = {}".format(pixel_size))
 
-            self.image_properties["properties"]["pixel_size"] = pixel_size
+            self.settings["settings"]["pixel_size"] = pixel_size
 
-            self.image_properties["properties"]["size"][0] = pixel_size * self.image_properties["properties"]["pixels"][0]
-            self.image_properties["properties"]["size"][1] = pixel_size * self.image_properties["properties"]["pixels"][1]
-
+            self.image_properties["properties"]["size"][0] = pixel_size * self.image_properties["properties"]["pixels"][
+                0]
+            self.image_properties["properties"]["size"][1] = pixel_size * self.image_properties["properties"]["pixels"][
+                1]
             self.draw_image_properties()
 
         else:
@@ -594,8 +621,9 @@ class I2GWidget(Gtk.Box):
             self.image_dpi_label.set_text("\t{0[0]}:{0[1]}".format(self.image_properties["properties"]["dpi"]))
             self.image_depth_label.set_text("\t{0}".format(self.image_properties["properties"]["depth"]))
             self.image_pixels_label.set_text("\t{0[0]} x {0[1]}".format(self.image_properties["properties"]["pixels"]))
-            self.image_pixel_size_label.set_text("\t{0:.3f}".format(self.image_properties["properties"]["pixel_size"]))
-            self.image_size_label.set_text("\t{0[0]:.3f} x {0[1]:.3f}".format(self.image_properties["properties"]["size"]))
+            self.image_pixel_size_label.set_text("\t{0:.3f}".format(self.settings["settings"]["pixel_size"]))
+            self.image_size_label.set_text(
+                "\t{0[0]:.3f} x {0[1]:.3f}".format(self.image_properties["properties"]["size"]))
         else:
             self.image_error_label.set_text("NOT VALID IMAGE LOADED")
             self.image_dpi_label.set_text("")
@@ -621,6 +649,13 @@ class I2GWidget(Gtk.Box):
         filter_text = Gtk.FileFilter()
         filter_text.set_name("I2G files")
         filter_text.add_pattern("*.i2g")
+        dialog.add_filter(filter_text)
+
+    @staticmethod
+    def add_ngc_filters(dialog):
+        filter_text = Gtk.FileFilter()
+        filter_text.set_name("LinuxCNC Gcode")
+        filter_text.add_pattern("*.ngc")
         dialog.add_filter(filter_text)
 
 

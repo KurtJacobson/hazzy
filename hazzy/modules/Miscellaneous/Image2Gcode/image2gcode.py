@@ -22,6 +22,8 @@ import sys
 import os
 import gettext
 
+from pprint import pprint
+
 from tempfile import tempdir
 
 from PIL import Image
@@ -600,6 +602,11 @@ class ArcEntryCut:
 class Image2Gcode:
 
     def __init__(self):
+
+        self.i2g = None
+
+        self.settings = None
+
         self.file_name = None
 
         self.numpy_image = None
@@ -713,36 +720,30 @@ class Image2Gcode:
     def set_output(self, file_name):
         self.output = file_name
 
-    def execute(self):
+    def execute(self, settings):
 
-        i2g = Converter(self.numpy_image,
-                        self.units,
-                        self.tool,
-                        self.pixel_size,
-                        self.step,
-                        self.depth,
-                        self.tolerance,
-                        self.feed,
-                        self.convert_rows,
-                        self.convert_cols,
-                        self.columns_first,
-                        ArcEntryCut(self.plunge, .125),
-                        self.spindle_speed,
-                        0,
-                        0,
-                        self.feed,
-                        self.output
-                        )
+        self.settings = settings
 
-        i2g.convert()
+        pprint(self.settings)
+        print(self.tool)
 
+        self.i2g = Converter(self.numpy_image,
+                             self.settings["settings"]["unit_system"],
+                             self.tool,
+                             self.settings["settings"]["pixel_size"],
+                             self.settings["settings"]["step_over"],
+                             self.settings["settings"]["depth"],
+                             self.settings["settings"]["tolerance"],
+                             self.settings["settings"]["feed"],
+                             self.convert_rows,
+                             self.convert_cols,
+                             self.columns_first,
+                             ArcEntryCut(self.settings["settings"]["plunge"], .125),
+                             self.settings["settings"]["spindle"],
+                             self.settings["settings"]["rough_offset"],
+                             self.settings["settings"]["rough_depth"],
+                             self.settings["settings"]["plunge"],
+                             self.output
+                             )
 
-def main():
-    i2g = Image2Gcode()
-    i2g.load_file("/home/turboss/Projects/i2gTest/A.tif")
-    i2g.set_output("/home/turboss/Projects/i2gTest/test.ngc")
-    i2g.execute()
-
-
-if __name__ == "__main__":
-    main()
+        self.i2g.convert()
