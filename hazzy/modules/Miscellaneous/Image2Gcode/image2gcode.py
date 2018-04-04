@@ -72,14 +72,15 @@ tool_makers = [ball_tool, endmill, vee_common(30), vee_common(45), vee_common(60
 
 def make_tool_shape(f, wdia, resp):
     res = 1. / resp
-    dia = int(wdia * res + .5)
+    dia = wdia * int(res) + int(.5)
     wrad = wdia / 2.
-    if dia < 2: dia = 2
-    n = numpy.array([[plus_inf] * dia] * dia, dtype=numpy.float32)
+    if dia < 2:
+        dia = 2
+    n = numpy.array([[plus_inf] * int(dia)] * int(dia), dtype=numpy.float32)
     hdia = dia / 2.
     l = []
-    for x in range(dia):
-        for y in range(dia):
+    for x in range(int(dia)):
+        for y in range(int(dia)):
             r = hypot(x - hdia, y - hdia) * resp
             if r < wrad:
                 z = f(r, wrad)
@@ -724,15 +725,34 @@ class Image2Gcode:
 
         self.settings = settings
 
-        pprint(self.settings)
-        print(self.tool)
+        """
+        def __init__(self,
+             image,
+             units,
+             tool_shape,
+             pixelsize,
+             pixelstep,
+             safetyheight,
+             tolerance,
+             feed,
+             convert_rows,
+             convert_cols,
+             cols_first_flag,
+             entry_cut,
+             spindle_speed,
+             roughing_offset,
+             roughing_delta,
+             roughing_feed,
+             output):
+        """
+
 
         self.i2g = Converter(self.numpy_image,
                              self.settings["settings"]["unit_system"],
                              self.tool,
                              self.settings["settings"]["pixel_size"],
                              self.settings["settings"]["step_over"],
-                             self.settings["settings"]["depth"],
+                             self.settings["settings"]["security_height"],
                              self.settings["settings"]["tolerance"],
                              self.settings["settings"]["feed"],
                              self.convert_rows,
