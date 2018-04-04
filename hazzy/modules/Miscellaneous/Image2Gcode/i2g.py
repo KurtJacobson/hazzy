@@ -509,53 +509,51 @@ class I2GWidget(Gtk.Box):
     def get_settings(self):
 
         self.settings = {
-            "settings": {
-                "unit_system": self.unit_system_combo.get_active(),
-                "invert_bw": self.invert_bw_check.get_active(),
-                "normalize_image": self.normalize_image_check.get_active(),
-                "extend": self.extend_combo.get_active(),
-                "tolerance": float(self.tolerance_entry.get_text()),
-                "feed": float(self.feed_entry.get_text()),
-                "plunge": float(self.plunge_entry.get_text()),
-                "spindle": float(self.spindle_entry.get_text()),
-                "scan_pattern": self.scan_pattern_combo.get_active(),
-                "path_direction": self.path_direction_combo.get_active(),
-                "angle": float(self.angle_entry.get_text()),
-                "depth": float(self.depth_entry.get_text()),
-                "step_over": float(self.step_over_scale.get_value()),
-                "tool_diameter": float(self.tool_diameter_entry.get_text()),
-                "security_height": float(self.security_height_entry.get_text()),
-                "tool_type": self.tool_type_combo.get_active(),
-                "lace_bounding": self.lace_bounding_combo.get_active(),
-                "contacnt_angle": self.contacnt_angle_entry.get_text(),
-                "rough_offset": float(self.rough_offset_entry.get_text()),
-                "rough_depth": float(self.rough_depth_entry.get_text()),
-                "pixel_size": self.image_pixel_size
-            }
+            "unit_system": self.unit_system_combo.get_active(),
+            "invert_bw": self.invert_bw_check.get_active(),
+            "normalize_image": self.normalize_image_check.get_active(),
+            "extend": self.extend_combo.get_active(),
+            "tolerance": float(self.tolerance_entry.get_text()),
+            "feed": float(self.feed_entry.get_text()),
+            "plunge": float(self.plunge_entry.get_text()),
+            "spindle": float(self.spindle_entry.get_text()),
+            "scan_pattern": self.scan_pattern_combo.get_active(),
+            "path_direction": self.path_direction_combo.get_active(),
+            "angle": float(self.angle_entry.get_text()),
+            "depth": float(self.depth_entry.get_text()),
+            "step_over": float(self.step_over_scale.get_value()),
+            "tool_diameter": float(self.tool_diameter_entry.get_text()),
+            "security_height": float(self.security_height_entry.get_text()),
+            "tool_type": self.tool_type_combo.get_active(),
+            "lace_bounding": self.lace_bounding_combo.get_active(),
+            "contacnt_angle": self.contacnt_angle_entry.get_text(),
+            "rough_offset": float(self.rough_offset_entry.get_text()),
+            "rough_depth": float(self.rough_depth_entry.get_text()),
+            "pixel_size": self.image_pixel_size
         }
 
     def set_settings(self):
 
-        self.unit_system_combo.set_active(self.settings["settings"]["unit_system"])
-        self.invert_bw_check.set_active(self.settings["settings"]["invert_bw"])
-        self.normalize_image_check.set_active(self.settings["settings"]["normalize_image"])
-        self.extend_combo.set_active(self.settings["settings"]["extend"])
-        self.tolerance_entry.set_text(self.settings["settings"]["tolerance"])
-        self.feed_entry.set_text(self.settings["settings"]["feed"])
-        self.plunge_entry.set_text(self.settings["settings"]["plunge"])
-        self.spindle_entry.set_text(self.settings["settings"]["spindle"])
-        self.scan_pattern_combo.set_active(self.settings["settings"]["scan_pattern"])
-        self.path_direction_combo.set_active(self.settings["settings"]["path_direction"])
-        self.angle_entry.set_text(self.settings["settings"]["angle"])
-        self.depth_entry.set_text(self.settings["settings"]["depth"])
-        self.step_over_scale.set_value(self.settings["settings"]["step_over"])
-        self.tool_diameter_entry.set_text(self.settings["settings"]["tool_diameter"])
-        self.security_height_entry.set_text(self.settings["settings"]["security_height"])
-        self.tool_type_combo.set_active(self.settings["settings"]["tool_type"])
-        self.lace_bounding_combo.set_active(self.settings["settings"]["lace_bounding"])
-        self.contacnt_angle_entry.set_text(self.settings["settings"]["contacnt_angle"])
-        self.rough_offset_entry.set_text(self.settings["settings"]["rough_offset"])
-        self.rough_depth_entry.set_text(self.settings["settings"]["rough_depth"])
+        self.unit_system_combo.set_active(self.settings["unit_system"])
+        self.invert_bw_check.set_active(self.settings["invert_bw"])
+        self.normalize_image_check.set_active(self.settings["normalize_image"])
+        self.extend_combo.set_active(self.settings["extend"])
+        self.tolerance_entry.set_text(self.settings["tolerance"])
+        self.feed_entry.set_text(self.settings["feed"])
+        self.plunge_entry.set_text(self.settings["plunge"])
+        self.spindle_entry.set_text(self.settings["spindle"])
+        self.scan_pattern_combo.set_active(self.settings["scan_pattern"])
+        self.path_direction_combo.set_active(self.settings["path_direction"])
+        self.angle_entry.set_text(self.settings["angle"])
+        self.depth_entry.set_text(self.settings["depth"])
+        self.step_over_scale.set_value(self.settings["step_over"])
+        self.tool_diameter_entry.set_text(self.settings["tool_diameter"])
+        self.security_height_entry.set_text(self.settings["security_height"])
+        self.tool_type_combo.set_active(self.settings["tool_type"])
+        self.lace_bounding_combo.set_active(self.settings["lace_bounding"])
+        self.contacnt_angle_entry.set_text(self.settings["contacnt_angle"])
+        self.rough_offset_entry.set_text(self.settings["rough_offset"])
+        self.rough_depth_entry.set_text(self.settings["rough_depth"])
 
     def save_settings(self, file_name):
         self.get_settings()
@@ -590,7 +588,7 @@ class I2GWidget(Gtk.Box):
             dpi = self.image_properties["properties"]["dpi"][0]
 
             self.get_settings()
-            if self.settings["settings"]["unit_system"] == 1:  # MM
+            if self.settings["unit_system"] == 1:  # MM
                 pixel_size = 25.4 / float(dpi)
                 print("pixel size mm = {}".format(pixel_size))
             else:  # INCH
@@ -622,7 +620,7 @@ class I2GWidget(Gtk.Box):
             self.image_dpi_label.set_text("\t{0[0]}:{0[1]}".format(self.image_properties["properties"]["dpi"]))
             self.image_depth_label.set_text("\t{0}".format(self.image_properties["properties"]["depth"]))
             self.image_pixels_label.set_text("\t{0[0]} x {0[1]}".format(self.image_properties["properties"]["pixels"]))
-            self.image_pixel_size_label.set_text("\t{0}".format(self.settings["settings"]["pixel_size"]))
+            self.image_pixel_size_label.set_text("\t{0}".format(self.settings["pixel_size"]))
             self.image_size_label.set_text(
                 "\t{0[0]:.3f} x {0[1]:.3f}".format(self.image_properties["properties"]["size"]))
         else:

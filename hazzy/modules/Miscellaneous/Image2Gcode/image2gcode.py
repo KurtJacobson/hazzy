@@ -49,25 +49,33 @@ def tobytes(img):
     return img.tostring()
 
 
-def ball_tool(r, rad):
-    s = -sqrt(rad ** 2 - r ** 2)
-    return s
+class Tools:
 
+    def __init__(self):
 
-def endmill(r, dia):
-    return 0
+        self.tool_makers = [self.ball_tool,
+                            self.endmill,
+                            self.vee_common(30),
+                            self.vee_common(45),
+                            self.vee_common(60)]
 
+    def get_tool(self, index):
+        return self.tool_makers[index]
 
-def vee_common(angle):
-    slope = tan(angle * pi / 180)
+    def ball_tool(self, r, rad):
+        s = -sqrt(rad ** 2 - r ** 2)
+        return s
 
-    def f(r, dia):
-        return r * slope
+    def endmill(self, r, dia):
+        return 0
 
-    return f
+    def vee_common(self, angle):
+        slope = tan(angle * pi / 180)
 
+        def f(r, dia):
+            return r * slope
 
-tool_makers = [ball_tool, endmill, vee_common(30), vee_common(45), vee_common(60)]
+        return f
 
 
 def make_tool_shape(f, wdia, resp):
@@ -269,6 +277,8 @@ class Converter:
                  roughing_feed,
                  output):
 
+        self.tools = Tools()
+
         self.image = image
         self.units = units
         self.tool = tool_shape
@@ -292,12 +302,12 @@ class Converter:
         self.cache = {}
 
         w, h = self.w, self.h = image.shape
-        ts = self.ts = tool_shape.shape[0]
+        ts = self.ts = self.tool.shape[0]
 
         self.h1 = h - ts
         self.w1 = w - ts
 
-        self.tool_shape = tool_shape * self.pixelsize * ts / 2
+        self.tool = self.tool * self.pixelsize * ts / 2
 
         self.g = None
         self.feed = None
@@ -345,7 +355,7 @@ class Converter:
         g.safety()
         if self.roughing_delta and self.roughing_offset:
             base_image = self.image
-            rough = make_tool_shape(ball_tool, 2 * self.roughing_offset, self.pixelsize)
+            rough = make_tool_shape(self.tools.ball_tool, 2 * self.roughing_offset, self.pixelsize)
             w, h = base_image.shape
             tw, th = rough.shape
             w1 = w + tw
@@ -606,6 +616,8 @@ class Image2Gcode:
 
         self.i2g = None
 
+        self.tools = None
+
         self.settings = None
 
         self.file_name = None
@@ -665,10 +677,6 @@ class Image2Gcode:
 
         dpi_w, dpi_h = image_file.info['dpi']
 
-        self.maker = tool_makers[0]
-        self.tool_diameter = 1.5
-        self.pixel_size = 0.08
-        self.tool = make_tool_shape(self.maker, self.tool_diameter, self.pixel_size)
         self.step = w / float(dpi_w)
 
         self.depth = 2
@@ -725,6 +733,13 @@ class Image2Gcode:
 
         self.settings = settings
 
+        self.tools = Tools()
+
+        maker = self.tools.get_tool(self.settings['tool_type'])
+        tool_diameter = self.settings['tool_diameter']
+        pixel_size = self.settings['pixel_size']
+        self.tool = make_tool_shape(maker, tool_diameter, pixel_size)
+
         """
         def __init__(self,
              image,
@@ -748,21 +763,21 @@ class Image2Gcode:
 
 
         self.i2g = Converter(self.numpy_image,
-                             self.settings["settings"]["unit_system"],
+                             self.settings["unit_system"],
                              self.tool,
-                             self.settings["settings"]["pixel_size"],
-                             self.settings["settings"]["step_over"],
-                             self.settings["settings"]["security_height"],
-                             self.settings["settings"]["tolerance"],
-                             self.settings["settings"]["feed"],
+                             self.settings["pixel_size"],
+                             self.settings["step_over"],
+                             self.settings["security_height"],
+                             self.settings["tolerance"],
+                             self.settings["feed"],
                              self.convert_rows,
                              self.convert_cols,
                              self.columns_first,
-                             ArcEntryCut(self.settings["settings"]["plunge"], .125),
-                             self.settings["settings"]["spindle"],
-                             self.settings["settings"]["rough_offset"],
-                             self.settings["settings"]["rough_depth"],
-                             self.settings["settings"]["plunge"],
+                             ArcEntryCut(self.settings["plunge"], .125),
+                             self.settings["spindle"],
+                             self.settings["rough_offset"],
+                             self.settings["rough_depth"],
+                             self.settings["plunge"],
                              self.output
                              )
 
