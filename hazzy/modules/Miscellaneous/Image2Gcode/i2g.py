@@ -79,7 +79,7 @@ class I2GWidget(Gtk.Box):
 
         self.image_properties = None
 
-        self.image_pixel_size = None
+        self.image_pixel_size = 0.0
 
         self.image_error_label = Gtk.Label()
         self.image_dpi_label = Gtk.Label()
@@ -514,22 +514,22 @@ class I2GWidget(Gtk.Box):
                 "invert_bw": self.invert_bw_check.get_active(),
                 "normalize_image": self.normalize_image_check.get_active(),
                 "extend": self.extend_combo.get_active(),
-                "tolerance": self.tolerance_entry.get_text(),
-                "feed": self.feed_entry.get_text(),
-                "plunge": self.plunge_entry.get_text(),
-                "spindle": self.spindle_entry.get_text(),
+                "tolerance": float(self.tolerance_entry.get_text()),
+                "feed": float(self.feed_entry.get_text()),
+                "plunge": float(self.plunge_entry.get_text()),
+                "spindle": float(self.spindle_entry.get_text()),
                 "scan_pattern": self.scan_pattern_combo.get_active(),
                 "path_direction": self.path_direction_combo.get_active(),
-                "angle": self.angle_entry.get_text(),
-                "depth": self.depth_entry.get_text(),
-                "step_over": self.step_over_scale.get_value(),
-                "tool_diameter": self.tool_diameter_entry.get_text(),
-                "security_height": self.security_height_entry.get_text(),
+                "angle": float(self.angle_entry.get_text()),
+                "depth": float(self.depth_entry.get_text()),
+                "step_over": float(self.step_over_scale.get_value()),
+                "tool_diameter": float(self.tool_diameter_entry.get_text()),
+                "security_height": float(self.security_height_entry.get_text()),
                 "tool_type": self.tool_type_combo.get_active(),
                 "lace_bounding": self.lace_bounding_combo.get_active(),
                 "contacnt_angle": self.contacnt_angle_entry.get_text(),
-                "rough_offset": self.rough_offset_entry.get_text(),
-                "rough_depth": self.rough_depth_entry.get_text(),
+                "rough_offset": float(self.rough_offset_entry.get_text()),
+                "rough_depth": float(self.rough_depth_entry.get_text()),
                 "pixel_size": self.image_pixel_size
             }
         }
@@ -597,7 +597,7 @@ class I2GWidget(Gtk.Box):
                 pixel_size = 0.1 / float(dpi)
                 print("pixel size inchs = {}".format(pixel_size))
 
-            self.settings["settings"]["pixel_size"] = pixel_size
+            self.image_pixel_size = pixel_size
 
             self.image_properties["properties"]["size"][0] = pixel_size * self.image_properties["properties"]["pixels"][
                 0]
@@ -622,7 +622,7 @@ class I2GWidget(Gtk.Box):
             self.image_dpi_label.set_text("\t{0[0]}:{0[1]}".format(self.image_properties["properties"]["dpi"]))
             self.image_depth_label.set_text("\t{0}".format(self.image_properties["properties"]["depth"]))
             self.image_pixels_label.set_text("\t{0[0]} x {0[1]}".format(self.image_properties["properties"]["pixels"]))
-            self.image_pixel_size_label.set_text("\t{0:.3f}".format(self.settings["settings"]["pixel_size"]))
+            self.image_pixel_size_label.set_text("\t{0}".format(self.settings["settings"]["pixel_size"]))
             self.image_size_label.set_text(
                 "\t{0[0]:.3f} x {0[1]:.3f}".format(self.image_properties["properties"]["size"]))
         else:
