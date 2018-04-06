@@ -30,9 +30,9 @@ from gi.repository import GdkPixbuf
 
 from image2gcode import Image2Gcode
 
-
 # Setup paths
 PYDIR = os.path.abspath(os.path.dirname(__file__))
+
 
 # Setup logging
 # log = logger.get(__name__)
@@ -301,6 +301,8 @@ class I2GWidget(Gtk.Box):
     def on_realized(self, widget):
         if self.widget_window.get_parent():
             self.main_window = self.widget_window.get_parent().get_toplevel()
+        else:
+            self.main_window = self.widget_window
 
     def combobox_2_constructor(self,
                                label_text=None,
@@ -611,13 +613,14 @@ class I2GWidget(Gtk.Box):
 
                 self.image_pixel_size = pixel_size
 
-                self.image_properties["properties"]["size"][0] = pixel_size * self.image_properties["properties"]["pixels"][
-                    0]
-                self.image_properties["properties"]["size"][1] = pixel_size * self.image_properties["properties"]["pixels"][
-                    1]
+                self.image_properties["properties"]["size"][0] = pixel_size * \
+                                                                 self.image_properties["properties"]["pixels"][0]
+                self.image_properties["properties"]["size"][1] = pixel_size * \
+                                                                 self.image_properties["properties"]["pixels"][1]
                 self.draw_image_properties()
 
                 self.execute_button.set_sensitive(True)
+
             else:
                 self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
                 self.draw_image_properties()
@@ -641,7 +644,7 @@ class I2GWidget(Gtk.Box):
             self.image_dpi_label.set_text("\t{0[0]}:{0[1]}".format(self.image_properties["properties"]["dpi"]))
             self.image_depth_label.set_text("\t{0}".format(self.image_properties["properties"]["depth"]))
             self.image_pixels_label.set_text("\t{0[0]} x {0[1]}".format(self.image_properties["properties"]["pixels"]))
-            self.image_pixel_size_label.set_text("\t{0}".format(self.settings["pixel_size"]))
+            self.image_pixel_size_label.set_text("\t{0:3f}".format(self.image_pixel_size))
             self.image_size_label.set_text(
                 "\t{0[0]:.3f} x {0[1]:.3f}".format(self.image_properties["properties"]["size"]))
         else:
@@ -687,6 +690,7 @@ def main():
     window.add(w_box)
 
     window.show_all()
+    window.set_title("I2G")
 
     window.connect("destroy", Gtk.main_quit)
 
