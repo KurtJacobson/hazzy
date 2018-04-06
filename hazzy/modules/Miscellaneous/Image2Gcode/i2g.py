@@ -298,7 +298,8 @@ class I2GWidget(Gtk.Box):
         self.connect('realize', self.on_realized)
 
     def on_realized(self, widget):
-        self.main_window = self.widget_window.get_parent().get_toplevel()
+        if self.widget_window.get_parent():
+            self.main_window = self.widget_window.get_parent().get_toplevel()
 
     def combobox_2_constructor(self,
                                label_text=None,
@@ -505,14 +506,14 @@ class I2GWidget(Gtk.Box):
         if response == Gtk.ResponseType.OK:
             self.i2g.set_output(dialog.get_filename())
 
+            self.get_settings()
+    
+            self.i2g.execute(self.settings)
+
         elif response == Gtk.ResponseType.CANCEL:
             pass
 
         dialog.destroy()
-
-        self.get_settings()
-
-        self.i2g.execute(self.settings)
 
         return True
 
@@ -595,23 +596,28 @@ class I2GWidget(Gtk.Box):
 
             image_loaded = True
 
-            dpi = self.image_properties["properties"]["dpi"][0]
+            if self.image_properties:
 
-            self.get_settings()
-            if self.settings["unit_system"]:  # MM
-                pixel_size = 25.4 / float(dpi)
-                print("pixel size mm = {}".format(pixel_size))
-            else:  # INCH
-                pixel_size = 0.1 / float(dpi)
-                print("pixel size inchs = {}".format(pixel_size))
+                dpi = self.image_properties["properties"]["dpi"][0]
 
-            self.image_pixel_size = pixel_size
+                self.get_settings()
+                if self.settings["unit_system"]:  # MM
+                    pixel_size = 25.4 / float(dpi)
+                    print("pixel size mm = {}".format(pixel_size))
+                else:  # INCH
+                    pixel_size = 0.1 / float(dpi)
+                    print("pixel size inchs = {}".format(pixel_size))
 
-            self.image_properties["properties"]["size"][0] = pixel_size * self.image_properties["properties"]["pixels"][
-                0]
-            self.image_properties["properties"]["size"][1] = pixel_size * self.image_properties["properties"]["pixels"][
-                1]
-            self.draw_image_properties()
+                self.image_pixel_size = pixel_size
+
+                self.image_properties["properties"]["size"][0] = pixel_size * self.image_properties["properties"]["pixels"][
+                    0]
+                self.image_properties["properties"]["size"][1] = pixel_size * self.image_properties["properties"]["pixels"][
+                    1]
+                self.draw_image_properties()
+            else:
+                self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
+                self.draw_image_properties()
 
         else:
             self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
