@@ -48,6 +48,10 @@ class I2GWidget(Gtk.Box):
     def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
+        self.widget_window = widget_window
+
+        self.main_window = self.widget_window.get_toplevel()
+
         self.config_stack = False
 
         self.set_size_request(1024, 768)
@@ -395,7 +399,7 @@ class I2GWidget(Gtk.Box):
     def on_open_file_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
             title="Choose an image",
-            transient_for=self.get_parent(),
+            transient_for=self.main_window,
             modal=True,
             destroy_with_parent=True,
             action=Gtk.FileChooserAction.OPEN
@@ -426,7 +430,7 @@ class I2GWidget(Gtk.Box):
     def on_save_preset_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
             title="Save settings preset",
-            transient_for=self.get_parent(),
+            transient_for=self.main_window,
             modal=True,
             destroy_with_parent=True,
             action=Gtk.FileChooserAction.SAVE
@@ -452,7 +456,7 @@ class I2GWidget(Gtk.Box):
     def on_load_preset_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
             title="Load settings preset",
-            transient_for=self.get_parent(),
+            transient_for=self.main_window,
             modal=True,
             destroy_with_parent=True,
             action=Gtk.FileChooserAction.SAVE
@@ -479,7 +483,7 @@ class I2GWidget(Gtk.Box):
 
         dialog = Gtk.FileChooserDialog(
             title="Save GCODE",
-            transient_for=self.get_parent(),
+            transient_for=self.main_window,
             modal=True,
             destroy_with_parent=True,
             action=Gtk.FileChooserAction.SAVE
