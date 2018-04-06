@@ -49,8 +49,7 @@ class I2GWidget(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
         self.widget_window = widget_window
-
-        self.main_window = self.widget_window.get_toplevel()
+        self.main_window = None  # Fixme get the current Window
 
         self.config_stack = False
 
