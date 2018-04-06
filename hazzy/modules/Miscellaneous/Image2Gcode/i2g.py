@@ -270,6 +270,7 @@ class I2GWidget(Gtk.Box):
         self.save_button.connect("clicked", self.on_save_preset_clicked)
 
         self.execute_button = Gtk.Button(label="Execute Program")
+        self.execute_button.set_sensitive(False)
         self.execute_button.connect("clicked", self.on_execute_program_clicked)
 
         # pack all
@@ -507,7 +508,7 @@ class I2GWidget(Gtk.Box):
             self.i2g.set_output(dialog.get_filename())
 
             self.get_settings()
-    
+
             self.i2g.execute(self.settings)
 
         elif response == Gtk.ResponseType.CANCEL:
@@ -615,9 +616,13 @@ class I2GWidget(Gtk.Box):
                 self.image_properties["properties"]["size"][1] = pixel_size * self.image_properties["properties"]["pixels"][
                     1]
                 self.draw_image_properties()
+
+                self.execute_button.set_sensitive(True)
             else:
                 self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
                 self.draw_image_properties()
+
+                self.execute_button.set_sensitive(False)
 
         else:
             self.image = Gtk.Image.new_from_stock(Gtk.STOCK_MISSING_IMAGE, Gtk.IconSize.BUTTON)
