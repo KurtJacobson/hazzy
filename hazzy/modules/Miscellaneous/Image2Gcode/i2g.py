@@ -49,7 +49,7 @@ class I2GWidget(Gtk.Box):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
 
         self.widget_window = widget_window
-        self.main_window = None  # Fixme get the current Window
+        self.main_window = None  # Current Window can no be known until it is realized
 
         self.config_stack = False
 
@@ -292,6 +292,13 @@ class I2GWidget(Gtk.Box):
         self.pack_start(self.stack, True, True, 0)
 
         self.load_settings(os.path.join(PYDIR, "default.i2g"))
+
+        # Need current window to pass to file dialog, but can't
+        # find until the window is realized.
+        self.connect('realize', self.on_realized)
+
+    def on_realized(self, widget):
+        self.main_window = self.widget_window.get_parent().get_toplevel()
 
     def combobox_2_constructor(self,
                                label_text=None,
