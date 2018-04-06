@@ -280,7 +280,9 @@ class Converter:
         self.tools = Tools()
 
         self.image = image
-        self.units = units
+
+        self.units = "G2{}".format(units)
+
         self.tool = tool_shape
         self.pixelsize = pixelsize
         self.pixelstep = pixelstep

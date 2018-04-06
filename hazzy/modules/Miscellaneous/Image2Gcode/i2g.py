@@ -588,7 +588,7 @@ class I2GWidget(Gtk.Box):
             dpi = self.image_properties["properties"]["dpi"][0]
 
             self.get_settings()
-            if self.settings["unit_system"] == 1:  # MM
+            if self.settings["unit_system"]:  # MM
                 pixel_size = 25.4 / float(dpi)
                 print("pixel size mm = {}".format(pixel_size))
             else:  # INCH
