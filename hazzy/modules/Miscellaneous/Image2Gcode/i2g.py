@@ -392,8 +392,8 @@ class I2GWidget(Gtk.Box):
         adjustment = Gtk.Adjustment(value=0,
                                     lower=lower_value,
                                     upper=upper_value,
-                                    step_increment=1,
-                                    page_increment=10,
+                                    step_increment=0.1,
+                                    page_increment=1,
                                     page_size=0)
 
         scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=adjustment)
