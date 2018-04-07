@@ -511,14 +511,30 @@ class I2GWidget(Gtk.Box):
 
             self.get_settings()
 
+            dialog.destroy()
+            self.set_sensitive(False)
+
+            self.finish_dialog()
+
             self.i2g.execute(self.settings)
 
-        elif response == Gtk.ResponseType.CANCEL:
-            pass
+            self.set_sensitive(True)
 
-        dialog.destroy()
+        elif response == Gtk.ResponseType.CANCEL:
+            dialog.destroy()
 
         return True
+
+    def finish_dialog(self):
+        dialog = DialogExample(self.main_window)
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            print("The OK button was clicked")
+        elif response == Gtk.ResponseType.CANCEL:
+            print("The Cancel button was clicked")
+
+        dialog.destroy()
 
     def get_settings(self):
 
@@ -680,6 +696,22 @@ class I2GWidget(Gtk.Box):
         filter_text.set_name("LinuxCNC Gcode")
         filter_text.add_pattern("*.ngc")
         dialog.add_filter(filter_text)
+
+
+class DialogExample(Gtk.Dialog):
+
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self, "My Dialog", parent, 0,
+                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+
+        self.set_default_size(150, 100)
+
+        label = Gtk.Label("This is a dialog to display additional information")
+
+        box = self.get_content_area()
+        box.add(label)
+        self.show_all()
 
 
 def main():
