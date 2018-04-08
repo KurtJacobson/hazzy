@@ -20,11 +20,14 @@
 
 import os
 import json
+import threading
 
 import gi
 
 gi.require_version('Gtk', '3.0')
 
+from gi.repository import GLib
+from gi.repository import GObject
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
 
@@ -47,6 +50,13 @@ class I2GWidget(Gtk.Box):
 
     def __init__(self, widget_window):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+
+        # Threading
+
+        self.thread = threading.Thread(target=self.execute)
+        self.thread.daemon = True
+
+        # Widgets
 
         self.widget_window = widget_window
         self.main_window = None  # Current Window can no be known until it is realized
@@ -77,6 +87,10 @@ class I2GWidget(Gtk.Box):
         self.options_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        # Spinner
+
+        self.spinner = Gtk.Spinner()
 
         # Image Properties
 
@@ -285,6 +299,7 @@ class I2GWidget(Gtk.Box):
         self.main_box.pack_start(self.options_box, False, False, 0)
 
         self.widget_box.pack_start(self.main_box, False, False, 0)
+        self.widget_box.pack_start(self.spinner, False, False, 0)
         self.widget_box.pack_start(self.button_box, True, True, 0)
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
@@ -293,6 +308,8 @@ class I2GWidget(Gtk.Box):
         self.pack_start(self.stack, True, True, 0)
 
         self.load_settings(os.path.join(PYDIR, "default.i2g"))
+
+        self.ngc_file = None
 
         # Need current window to pass to file dialog, but can't
         # find until the window is realized.
@@ -303,108 +320,6 @@ class I2GWidget(Gtk.Box):
             self.main_window = self.widget_window.get_parent().get_toplevel()
         else:
             self.main_window = self.widget_window
-
-    def combobox_2_constructor(self,
-                               label_text=None,
-                               list_options=None):
-
-        label = Gtk.Label(label=label_text)
-        label.set_hexpand(True)
-
-        store = Gtk.ListStore(int, str)
-
-        for i in range(len(list_options)):
-            store.append(list_options[i])
-
-        combo = Gtk.ComboBox.new_with_model(store)
-        combo.set_entry_text_column(1)
-
-        renderer_text = Gtk.CellRendererText()
-        combo.pack_start(renderer_text, True)
-        combo.add_attribute(renderer_text, "text", 1)
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-
-        box.pack_start(label, True, False, 0)
-        box.pack_start(combo, True, True, 0)
-
-        self.options_box.pack_start(box, False, False, 0)
-
-        return combo
-
-    def combobox_3_constructor(self,
-                               label_text=None,
-                               list_options=None):
-
-        label = Gtk.Label(label=label_text)
-        label.set_hexpand(True)
-
-        store = Gtk.ListStore(int, str, str)
-
-        for i in range(len(list_options)):
-            store.append(list_options[i])
-
-        combo = Gtk.ComboBox.new_with_model(store)
-        combo.set_entry_text_column(1)
-
-        renderer_text = Gtk.CellRendererText()
-        combo.pack_start(renderer_text, True)
-        combo.add_attribute(renderer_text, "text", 1)
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-
-        box.pack_start(label, True, False, 0)
-        box.pack_start(combo, True, True, 0)
-
-        self.options_box.pack_start(box, False, False, 0)
-
-        return combo
-
-    def checkbox_constructor(self, label_text=None, default_value=False):
-        check_button = Gtk.CheckButton(label=label_text)
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        box.pack_start(check_button, True, False, 0)
-        self.options_box.pack_start(box, False, False, 0)
-
-        return check_button
-
-    def entry_constructor(self, label_text, default_value):
-
-        label = Gtk.Label(label=label_text)
-
-        entry = Gtk.Entry()
-        entry.set_text(str(default_value))
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-
-        box.pack_start(label, True, False, 0)
-        box.pack_start(entry, False, True, 0)
-
-        self.options_box.pack_start(box, False, False, 0)
-
-        return entry
-
-    def scale_constructor(self, label_text, lower_value=0, upper_value=100):
-
-        label = Gtk.Label(label=label_text)
-
-        adjustment = Gtk.Adjustment(value=0,
-                                    lower=lower_value,
-                                    upper=upper_value,
-                                    step_increment=0.1,
-                                    page_increment=1,
-                                    page_size=0)
-
-        scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=adjustment)
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-
-        box.pack_start(label, True, False, 0)
-        box.pack_start(scale, True, True, 0)
-        self.options_box.pack_start(box, False, False, 0)
-
-        return scale
 
     def on_open_file_clicked(self, widget):
         dialog = Gtk.FileChooserDialog(
@@ -507,34 +422,119 @@ class I2GWidget(Gtk.Box):
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
-            self.i2g.set_output(dialog.get_filename())
-
-            self.get_settings()
+            self.ngc_file = dialog.get_filename()
 
             dialog.destroy()
-            self.set_sensitive(False)
 
-            self.finish_dialog()
-
-            self.i2g.execute(self.settings)
-
-            self.set_sensitive(True)
+            self.thread.start()
 
         elif response == Gtk.ResponseType.CANCEL:
+
             dialog.destroy()
 
         return True
 
-    def finish_dialog(self):
-        dialog = DialogExample(self.main_window)
-        response = dialog.run()
+    def combobox_2_constructor(self,
+                               label_text=None,
+                               list_options=None):
 
-        if response == Gtk.ResponseType.OK:
-            print("The OK button was clicked")
-        elif response == Gtk.ResponseType.CANCEL:
-            print("The Cancel button was clicked")
+        label = Gtk.Label(label=label_text)
+        label.set_hexpand(True)
 
-        dialog.destroy()
+        store = Gtk.ListStore(int, str)
+
+        for i in range(len(list_options)):
+            store.append(list_options[i])
+
+        combo = Gtk.ComboBox.new_with_model(store)
+        combo.set_entry_text_column(1)
+
+        renderer_text = Gtk.CellRendererText()
+        combo.pack_start(renderer_text, True)
+        combo.add_attribute(renderer_text, "text", 1)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        box.pack_start(label, True, False, 0)
+        box.pack_start(combo, True, True, 0)
+
+        self.options_box.pack_start(box, False, False, 0)
+
+        return combo
+
+    def combobox_3_constructor(self,
+                               label_text=None,
+                               list_options=None):
+
+        label = Gtk.Label(label=label_text)
+        label.set_hexpand(True)
+
+        store = Gtk.ListStore(int, str, str)
+
+        for i in range(len(list_options)):
+            store.append(list_options[i])
+
+        combo = Gtk.ComboBox.new_with_model(store)
+        combo.set_entry_text_column(1)
+
+        renderer_text = Gtk.CellRendererText()
+        combo.pack_start(renderer_text, True)
+        combo.add_attribute(renderer_text, "text", 1)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        box.pack_start(label, True, False, 0)
+        box.pack_start(combo, True, True, 0)
+
+        self.options_box.pack_start(box, False, False, 0)
+
+        return combo
+
+    def checkbox_constructor(self, label_text=None, default_value=False):
+        check_button = Gtk.CheckButton(label=label_text)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        box.pack_start(check_button, True, False, 0)
+        self.options_box.pack_start(box, False, False, 0)
+
+        return check_button
+
+    def entry_constructor(self, label_text, default_value):
+
+        label = Gtk.Label(label=label_text)
+
+        entry = Gtk.Entry()
+        entry.set_text(str(default_value))
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        box.pack_start(label, True, False, 0)
+        box.pack_start(entry, False, True, 0)
+
+        self.options_box.pack_start(box, False, False, 0)
+
+        return entry
+
+    def scale_constructor(self, label_text, lower_value=0, upper_value=100):
+
+        label = Gtk.Label(label=label_text)
+
+        adjustment = Gtk.Adjustment(value=0,
+                                    lower=lower_value,
+                                    upper=upper_value,
+                                    step_increment=0.1,
+                                    page_increment=1,
+                                    page_size=0)
+
+        scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=adjustment)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+
+        box.pack_start(label, True, False, 0)
+        box.pack_start(scale, True, True, 0)
+        self.options_box.pack_start(box, False, False, 0)
+
+        return scale
 
     def get_settings(self):
 
@@ -671,6 +671,21 @@ class I2GWidget(Gtk.Box):
             self.image_pixel_size_label.set_text("")
             self.image_size_label.set_text("")
 
+    def execute(self):
+
+
+        GLib.idle_add(self.calc)
+
+    def calc(self):
+
+        self.i2g.set_output(self.ngc_file)
+        self.get_settings()
+        self.set_sensitive(False)
+        self.spinner.start()
+        self.i2g.execute(self.settings)
+        self.spinner.stop()
+        self.set_sensitive(True)
+
     @staticmethod
     def add_image_filters(dialog):
         filter_text = Gtk.FileFilter()
@@ -696,22 +711,6 @@ class I2GWidget(Gtk.Box):
         filter_text.set_name("LinuxCNC Gcode")
         filter_text.add_pattern("*.ngc")
         dialog.add_filter(filter_text)
-
-
-class DialogExample(Gtk.Dialog):
-
-    def __init__(self, parent):
-        Gtk.Dialog.__init__(self, "My Dialog", parent, 0,
-                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                             Gtk.STOCK_OK, Gtk.ResponseType.OK))
-
-        self.set_default_size(150, 100)
-
-        label = Gtk.Label("This is a dialog to display additional information")
-
-        box = self.get_content_area()
-        box.add(label)
-        self.show_all()
 
 
 def main():

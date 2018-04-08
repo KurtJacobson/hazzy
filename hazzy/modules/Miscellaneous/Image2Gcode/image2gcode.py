@@ -742,28 +742,6 @@ class Image2Gcode:
         pixel_size = self.settings['pixel_size']
         self.tool = make_tool_shape(maker, tool_diameter, pixel_size)
 
-        """
-        def __init__(self,
-             image,
-             units,
-             tool_shape,
-             pixelsize,
-             pixelstep,
-             safetyheight,
-             tolerance,
-             feed,
-             convert_rows,
-             convert_cols,
-             cols_first_flag,
-             entry_cut,
-             spindle_speed,
-             roughing_offset,
-             roughing_delta,
-             roughing_feed,
-             output):
-        """
-
-
         self.i2g = Converter(self.numpy_image,
                              self.settings["unit_system"],
                              self.tool,
