@@ -21,9 +21,6 @@
 import sys
 import os
 import gettext
-
-from pprint import pprint
-
 from tempfile import tempdir
 
 from PIL import Image
@@ -39,8 +36,6 @@ from math import *
 import operator
 
 epsilon = 1e-5
-
-progress_msg = True
 
 
 def tobytes(img):
@@ -168,6 +163,7 @@ class ConvertScanDecreasing:
 
 
 class ConvertScanUpmill:
+
     def __init__(self, slop=sin(pi / 18)):
         self.slop = slop
 
@@ -247,14 +243,13 @@ class ReduceScanLace:
         self.converter.reset()
 
 
-unitcodes = ['G20', 'G21']
-convert_makers = [ConvertScanIncreasing, ConvertScanDecreasing, ConvertScanAlternating, ConvertScanUpmill,
+convert_makers = [ConvertScanIncreasing,
+                  ConvertScanDecreasing,
+                  ConvertScanAlternating,
+                  ConvertScanUpmill,
                   ConvertScanDownmill]
 
 
-def progress(a, b):
-    if progress_msg:
-        print("PROGRESS = {0:.2f}%".format(a * 100. / b + .5))
 
 
 class Converter:
@@ -275,7 +270,8 @@ class Converter:
                  roughing_offset,
                  roughing_delta,
                  roughing_feed,
-                 output):
+                 output,
+                 callback):
 
         self.tools = Tools()
 
@@ -298,6 +294,7 @@ class Converter:
         self.roughing_delta = roughing_delta
         self.roughing_feed = roughing_feed
         self.output = output
+        self.callback = callback
 
         self.target = None
 
@@ -367,7 +364,7 @@ class Converter:
             self.image = numpy.zeros((w, h), dtype=numpy.float32)
 
             for j in range(0, w):
-                progress(j, w)
+                self.progress(j, w)
                 for i in range(0, h):
                     self.image[j, i] = (nim1[j:j + tw, i:i + th] - rough).max()
 
@@ -427,7 +424,7 @@ class Converter:
         irange = range(h1)
 
         for j in jrange:
-            progress(jrange.index(j), len(jrange))
+            self.progress(jrange.index(j), len(jrange))
             y = (w1 - j) * pixelsize
             scan = []
             for i in irange:
@@ -454,7 +451,7 @@ class Converter:
         jrange.reverse()
 
         for j in jrange:
-            progress(jrange.index(j), len(jrange))
+            self.progress(jrange.index(j), len(jrange))
             x = j * pixelsize
             scan = []
             for i in irange:
@@ -468,6 +465,10 @@ class Converter:
                 for p in points:
                     self.g.cut(*p[1])
             self.g.flush()
+
+    def progress(self, a, b):
+        value = a * 100. / b + .5
+        self.callback(value)
 
 
 class SimpleEntryCut:
@@ -731,9 +732,10 @@ class Image2Gcode:
     def set_output(self, file_name):
         self.output = file_name
 
-    def execute(self, settings):
+    def execute(self, settings, callback):
 
         self.settings = settings
+        self.callback = callback
 
         self.tools = Tools()
 
@@ -758,7 +760,8 @@ class Image2Gcode:
                              self.settings["rough_offset"],
                              self.settings["rough_depth"],
                              self.settings["plunge"],
-                             self.output
+                             self.output,
+                             self.callback
                              )
 
         self.i2g.convert()

@@ -28,6 +28,7 @@ gi.require_version('Gtk', '3.0')
 
 from gi.repository import GLib
 from gi.repository import GObject
+from gi.repository import Gio
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
 
@@ -53,8 +54,11 @@ class I2GWidget(Gtk.Box):
 
         # Threading
 
-        self.thread = threading.Thread(target=self.execute)
-        self.thread.daemon = True
+        self.running = False
+
+        self.stop_event = threading.Event()
+
+        self.thread = None
 
         # Widgets
 
@@ -88,9 +92,10 @@ class I2GWidget(Gtk.Box):
 
         self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
 
-        # Spinner
+        # Progress bar
 
-        self.spinner = Gtk.Spinner()
+        self.progressbar = Gtk.ProgressBar()
+        self.progressbar.set_show_text(True)
 
         # Image Properties
 
@@ -299,7 +304,7 @@ class I2GWidget(Gtk.Box):
         self.main_box.pack_start(self.options_box, False, False, 0)
 
         self.widget_box.pack_start(self.main_box, False, False, 0)
-        self.widget_box.pack_start(self.spinner, False, False, 0)
+        self.widget_box.pack_start(self.progressbar, False, False, 0)
         self.widget_box.pack_start(self.button_box, True, True, 0)
 
         self.stack.add_titled(self.widget_box, "widget", "Widget View")
@@ -426,6 +431,8 @@ class I2GWidget(Gtk.Box):
 
             dialog.destroy()
 
+            self.thread = threading.Thread(target=self.execute)
+            self.thread.daemon = True
             self.thread.start()
 
         elif response == Gtk.ResponseType.CANCEL:
@@ -522,8 +529,8 @@ class I2GWidget(Gtk.Box):
         adjustment = Gtk.Adjustment(value=0,
                                     lower=lower_value,
                                     upper=upper_value,
-                                    step_increment=0.1,
-                                    page_increment=1,
+                                    step_increment=1,
+                                    page_increment=10,
                                     page_size=0)
 
         scale = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL, adjustment=adjustment)
@@ -673,18 +680,16 @@ class I2GWidget(Gtk.Box):
 
     def execute(self):
 
-
-        GLib.idle_add(self.calc)
-
-    def calc(self):
-
         self.i2g.set_output(self.ngc_file)
+
         self.get_settings()
-        self.set_sensitive(False)
-        self.spinner.start()
-        self.i2g.execute(self.settings)
-        self.spinner.stop()
-        self.set_sensitive(True)
+
+        self.execute_button.set_sensitive(False)
+        self.i2g.execute(self.settings, self.update_progress_cb)
+        self.execute_button.set_sensitive(True)
+
+    def update_progress_cb(self, value):
+        self.progressbar.set_fraction(value/100)
 
     @staticmethod
     def add_image_filters(dialog):
@@ -715,14 +720,11 @@ class I2GWidget(Gtk.Box):
 
 def main():
     window = Gtk.Window()
+    i2g = I2GWidget(window)
 
-    w_box = I2GWidget(window)
-
-    window.add(w_box)
-
+    window.add(i2g)
     window.show_all()
     window.set_title("I2G")
-
     window.connect("destroy", Gtk.main_quit)
 
     Gtk.main()
