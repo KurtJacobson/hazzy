@@ -23,7 +23,7 @@ import os
 import gettext
 from tempfile import tempdir
 
-import cStringIO
+from io import BytesIO
 
 from PIL import Image
 
@@ -332,7 +332,6 @@ class Converter:
 
     def convert(self):
 
-        # gcode_file = open(self.output, "wb")
         self.target = lambda x: self.output_buffer.write("{0}\n".format(x))
 
         self.g = Gcode(safetyheight=self.safetyheight,
@@ -655,7 +654,7 @@ class Image2Gcode:
         # 0
         # 0
         self.feed = None
-        self.output_buffer = cStringIO.StringIO()
+        self.output_buffer = BytesIO('w')
         self.output_file = None
         self.plunge = None
 

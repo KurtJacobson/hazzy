@@ -67,7 +67,7 @@ class I2GWidget(Gtk.Box):
 
         self.config_stack = False
 
-        self.set_size_request(1024, 768)
+        self.set_size_request(768, 512)
 
         self.set_hexpand(True)
         self.set_vexpand(True)
