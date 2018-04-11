@@ -575,22 +575,22 @@ class I2GWidget(Gtk.Box):
         self.invert_bw_check.set_active(self.settings["invert_bw"])
         self.normalize_image_check.set_active(self.settings["normalize_image"])
         self.extend_combo.set_active(self.settings["extend"])
-        self.tolerance_entry.set_text(self.settings["tolerance"])
-        self.feed_entry.set_text(self.settings["feed"])
-        self.plunge_entry.set_text(self.settings["plunge"])
-        self.spindle_entry.set_text(self.settings["spindle"])
+        self.tolerance_entry.set_text(str(self.settings["tolerance"]))
+        self.feed_entry.set_text(str(self.settings["feed"]))
+        self.plunge_entry.set_text(str(self.settings["plunge"]))
+        self.spindle_entry.set_text(str(self.settings["spindle"]))
         self.scan_pattern_combo.set_active(self.settings["scan_pattern"])
         self.path_direction_combo.set_active(self.settings["path_direction"])
-        self.angle_entry.set_text(self.settings["angle"])
-        self.depth_entry.set_text(self.settings["depth"])
+        self.angle_entry.set_text(str(self.settings["angle"]))
+        self.depth_entry.set_text(str(self.settings["depth"]))
         self.step_over_scale.set_value(self.settings["step_over"])
-        self.tool_diameter_entry.set_text(self.settings["tool_diameter"])
-        self.security_height_entry.set_text(self.settings["security_height"])
+        self.tool_diameter_entry.set_text(str(self.settings["tool_diameter"]))
+        self.security_height_entry.set_text(str(self.settings["security_height"]))
         self.tool_type_combo.set_active(self.settings["tool_type"])
         self.lace_bounding_combo.set_active(self.settings["lace_bounding"])
         self.contacnt_angle_entry.set_text(self.settings["contacnt_angle"])
-        self.rough_offset_entry.set_text(self.settings["rough_offset"])
-        self.rough_depth_entry.set_text(self.settings["rough_depth"])
+        self.rough_offset_entry.set_text(str(self.settings["rough_offset"]))
+        self.rough_depth_entry.set_text(str(self.settings["rough_depth"]))
 
     def save_settings(self, file_name):
         self.get_settings()
@@ -629,10 +629,10 @@ class I2GWidget(Gtk.Box):
                 self.get_settings()
                 if self.settings["unit_system"]:  # MM
                     pixel_size = 25.4 / float(dpi)
-                    print("pixel size mm = {}".format(pixel_size))
+                    # print("pixel size mm = {}".format(pixel_size))
                 else:  # INCH
                     pixel_size = 0.1 / float(dpi)
-                    print("pixel size inchs = {}".format(pixel_size))
+                    # print("pixel size inchs = {}".format(pixel_size))
 
                 self.image_pixel_size = pixel_size
 
@@ -680,16 +680,17 @@ class I2GWidget(Gtk.Box):
 
     def execute(self):
 
-        self.i2g.set_output(self.ngc_file)
+        self.i2g.set_output_file(self.ngc_file)
 
         self.get_settings()
 
         self.execute_button.set_sensitive(False)
         self.i2g.execute(self.settings, self.update_progress_cb)
+
         self.execute_button.set_sensitive(True)
 
     def update_progress_cb(self, value):
-        self.progressbar.set_fraction(value/100)
+        self.progressbar.set_fraction(value / 100)
 
     @staticmethod
     def add_image_filters(dialog):

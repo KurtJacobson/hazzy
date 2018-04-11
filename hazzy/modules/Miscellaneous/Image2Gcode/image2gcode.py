@@ -17,11 +17,13 @@
 # jepler@unpy.net
 # image-to-gcode.py is Copyright (C) 2018 TurBoss
 # j.l.toledano.l@gmail.com
-
+import shutil
 import sys
 import os
 import gettext
 from tempfile import tempdir
+
+import cStringIO
 
 from PIL import Image
 
@@ -47,7 +49,6 @@ def tobytes(img):
 class Tools:
 
     def __init__(self):
-
         self.tool_makers = [self.ball_tool,
                             self.endmill,
                             self.vee_common(30),
@@ -243,15 +244,6 @@ class ReduceScanLace:
         self.converter.reset()
 
 
-convert_makers = [ConvertScanIncreasing,
-                  ConvertScanDecreasing,
-                  ConvertScanAlternating,
-                  ConvertScanUpmill,
-                  ConvertScanDownmill]
-
-
-
-
 class Converter:
     def __init__(self,
                  image,
@@ -270,7 +262,8 @@ class Converter:
                  roughing_offset,
                  roughing_delta,
                  roughing_feed,
-                 output,
+                 output_buffer,
+                 output_file,
                  callback):
 
         self.tools = Tools()
@@ -293,7 +286,8 @@ class Converter:
         self.roughing_offset = roughing_offset
         self.roughing_delta = roughing_delta
         self.roughing_feed = roughing_feed
-        self.output = output
+        self.output_buffer = output_buffer
+        self.output_file = output_file
         self.callback = callback
 
         self.target = None
@@ -338,8 +332,8 @@ class Converter:
 
     def convert(self):
 
-        gcode_file = open(self.output, "wb")
-        self.target = lambda x: gcode_file.write("{0}\n".format(x))
+        # gcode_file = open(self.output, "wb")
+        self.target = lambda x: self.output_buffer.write("{0}\n".format(x))
 
         self.g = Gcode(safetyheight=self.safetyheight,
                        tolerance=self.tolerance,
@@ -390,6 +384,12 @@ class Converter:
         self.rd = self.image.min()
         self.one_pass()
         g.end()
+
+        with open(self.output_file, 'w') as of:
+            self.output_buffer.seek(0)
+            shutil.copyfileobj(self.output_buffer, of)
+
+        self.output_buffer.close()
 
     def get_z(self, x, y):
         try:
@@ -486,18 +486,6 @@ class SimpleEntryCut:
             conv.g.set_feed(conv.feed)
 
 
-def circ(r, b):
-    """
-    Calculate the portion of the arc to do so that none is above the
-    safety height (that's just silly)
-    """
-
-    z = r ** 2 - (r - b) ** 2
-    if z < 0:
-        z = 0
-    return z ** .5
-
-
 class ArcEntryCut:
     def __init__(self, feed, max_radius):
         self.feed = feed
@@ -558,7 +546,7 @@ class ArcEntryCut:
                     break
 
             z1 = min(p1[2] + radius, conv.safetyheight)
-            x1 = p1[0] + cx * circ(radius, z1 - p1[2])
+            x1 = p1[0] + cx * self.circ(radius, z1 - p1[2])
             conv.g.rapid(x1, p1[1])
             conv.g.cut(z=z1)
 
@@ -595,7 +583,7 @@ class ArcEntryCut:
                     break
 
             z1 = min(p1[2] + radius, conv.safetyheight)
-            y1 = p1[1] + cy * circ(radius, z1 - p1[2])
+            y1 = p1[1] + cy * self.circ(radius, z1 - p1[2])
             conv.g.rapid(p1[0], y1)
             conv.g.cut(z=z1)
 
@@ -612,10 +600,29 @@ class ArcEntryCut:
         if self.feed:
             conv.g.set_feed(conv.feed)
 
+    def circ(self, r, b):
+        """
+        Calculate the portion of the arc to do so that none is above the
+        safety height (that's just silly)
+        """
+
+        z = r ** 2 - (r - b) ** 2
+        if z < 0:
+            z = 0
+        return z ** .5
+
 
 class Image2Gcode:
 
     def __init__(self):
+
+        self.convert_makers = [ConvertScanIncreasing,
+                               ConvertScanDecreasing,
+                               ConvertScanAlternating,
+                               ConvertScanUpmill,
+                               ConvertScanDownmill]
+
+        self.callback = None
 
         self.i2g = None
 
@@ -648,7 +655,8 @@ class Image2Gcode:
         # 0
         # 0
         self.feed = None
-        self.output = None
+        self.output_buffer = cStringIO.StringIO()
+        self.output_file = None
         self.plunge = None
 
     def load_file(self, file_name=None):
@@ -693,11 +701,11 @@ class Image2Gcode:
         self.spindle_speed = 24000
 
         if rows:
-            self.convert_rows = convert_makers[0]()
+            self.convert_rows = self.convert_makers[0]()
         else:
             self.convert_rows = None
         if columns:
-            self.convert_cols = convert_makers[0]()
+            self.convert_cols = self.convert_makers[0]()
         else:
             self.convert_cols = None
 
@@ -729,8 +737,8 @@ class Image2Gcode:
 
         return image_properties
 
-    def set_output(self, file_name):
-        self.output = file_name
+    def set_output_file(self, file_name):
+        self.output_file = file_name
 
     def execute(self, settings, callback):
 
@@ -760,7 +768,8 @@ class Image2Gcode:
                              self.settings["rough_offset"],
                              self.settings["rough_depth"],
                              self.settings["plunge"],
-                             self.output,
+                             self.output_buffer,
+                             self.output_file,
                              self.callback
                              )
 
