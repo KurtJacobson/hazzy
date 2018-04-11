@@ -40,12 +40,6 @@ import operator
 epsilon = 1e-5
 
 
-def tobytes(img):
-    if hasattr(img, 'tobytes'):
-        return img.tobytes()
-    return img.tostring()
-
-
 class Tools:
 
     def __init__(self):
@@ -672,14 +666,14 @@ class Image2Gcode:
         if bit_depth == "I;16":
             depth = 16
             self.numpy_image = numpy.fromstring(
-                tobytes(image_file),
+                self.tobytes(image_file),
                 dtype=numpy.uint16).reshape((h, w)).astype(numpy.float32)
             self.numpy_image = self.numpy_image / int(0xffff)
 
         elif bit_depth == "L":
             depth = 8
             self.numpy_image = numpy.fromstring(
-                tobytes(image_file),
+                self.tobytes(image_file),
                 dtype=numpy.uint8).reshape((h, w)).astype(numpy.float32)
             self.numpy_image = self.numpy_image / int(0xff)
         else:
@@ -773,3 +767,8 @@ class Image2Gcode:
                              )
 
         self.i2g.convert()
+
+    def tobytes(self, img):
+        if hasattr(img, 'tobytes'):
+            return img.tobytes()
+        return img.tostring()
